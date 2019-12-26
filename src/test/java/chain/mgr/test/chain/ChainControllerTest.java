@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019 the original author or authors.
+ * Copyright 2014-2019  the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,17 +11,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package chain.mgr.test.node;
+package chain.mgr.test.chain;
 
+import com.alibaba.fastjson.JSON;
 import com.webank.webase.chain.mgr.Application;
-import com.webank.webase.chain.mgr.node.NodeService;
-import com.webank.webase.chain.mgr.node.entity.TbNode;
-import org.junit.Assert;
+import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,16 +32,17 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+/**
+ * test chain controller
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @WebAppConfiguration
-public class NodeControllerTest {
+public class ChainControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
-    @Autowired
-    private NodeService nodeService;
 
     @Before
     public void setUp() throws Exception {
@@ -49,30 +50,37 @@ public class NodeControllerTest {
     }
 
     @Test
-    public void testQueryNodeList() throws Exception {
-        ResultActions resultActions = mockMvc
-                .perform(MockMvcRequestBuilders.get("/node/nodeList/100001/1/1/10?nodeName="));
-        resultActions.andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
-        System.out.println("======================response:"
-                + resultActions.andReturn().getResponse().getContentAsString());
+    public void testNewChain() throws Exception {
+        ChainInfo param = new ChainInfo();
+        param.setChainName("aaa");
+        param.setChainType(0);
+        param.setDescription("test");
+
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post( "/chain/new").
+            content(JSON.toJSONString(param)).
+            contentType(MediaType.APPLICATION_JSON)
+        );
+        resultActions.
+            andExpect(MockMvcResultMatchers.status().isOk()).
+            andDo(MockMvcResultHandlers.print());
+        System.out.println("response:"+resultActions.andReturn().getResponse().getContentAsString());
     }
 
     @Test
-    public void testGetNodeInfo() throws Exception {
-        ResultActions resultActions =
-                mockMvc.perform(MockMvcRequestBuilders.get("/nodeInfo/100001/1"));
-        resultActions.andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
-        System.out.println("======================response:"
-                + resultActions.andReturn().getResponse().getContentAsString());
+    public void testQueryChainList() throws Exception {
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/chain/all"));
+        resultActions.
+            andExpect(MockMvcResultMatchers.status().isOk()).
+            andDo(MockMvcResultHandlers.print());
+        System.out.println("response:"+resultActions.andReturn().getResponse().getContentAsString());
     }
 
     @Test
-    public void testQueryNodeId() {
-        TbNode tbNode = nodeService.queryByNodeId(
-                "e5e7efc9e8d5bed699313d5a0cd5b024b3c11811d50473b987b9429c2f6379742c88249a7a8ea64ab0e6f2b69fb8bb280454f28471e38621bea8f38be45bc42d");
-        System.out.println(tbNode);
-        Assert.assertNull(tbNode);
+    public void testRemoveChain() throws Exception {
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.delete("/chain/100005"));
+        resultActions.
+            andExpect(MockMvcResultMatchers.status().isOk()).
+            andDo(MockMvcResultHandlers.print());
+        System.out.println("response:"+resultActions.andReturn().getResponse().getContentAsString());
     }
 }

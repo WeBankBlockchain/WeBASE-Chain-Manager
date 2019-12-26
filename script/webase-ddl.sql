@@ -5,12 +5,13 @@ DROP TABLE IF EXISTS tb_chain;
 CREATE TABLE tb_chain (
   chain_id int(11) NOT NULL AUTO_INCREMENT COMMENT '区块链编号',
   chain_name varchar(120) DEFAULT NULL COMMENT '区块链名称',
+  chain_type tinyint(4) DEFAULT '0' COMMENT '类型（ 0-非国密 1-国密）',
   description varchar(1024) COMMENT '描述',
   create_time datetime DEFAULT NULL COMMENT '创建时间',
   modify_time datetime DEFAULT NULL COMMENT '修改时间',
   PRIMARY KEY (chain_id),
   UNIQUE KEY unique_name (chain_name)
-) ENGINE=InnoDB AUTO_INCREMENT=300001 DEFAULT CHARSET=utf8 COMMENT='区块链信息表';
+) ENGINE=InnoDB AUTO_INCREMENT=100001 DEFAULT CHARSET=utf8 COMMENT='区块链信息表';
 
 -- ----------------------------
 -- Table structure for tb_group
@@ -25,7 +26,7 @@ CREATE TABLE IF NOT EXISTS tb_group (
     group_type tinyint(4) DEFAULT '1' COMMENT '群组类型(1-同步的，2-手动创建的)',
     create_time datetime DEFAULT NULL COMMENT '创建时间',
     modify_time datetime DEFAULT NULL COMMENT '修改时间',
-    PRIMARY KEY (group_id)
+    PRIMARY KEY (group_id,chain_id)
 ) COMMENT='群组信息表' ENGINE=InnoDB CHARSET=utf8;
 
 
@@ -43,8 +44,8 @@ CREATE TABLE IF NOT EXISTS tb_front (
     create_time datetime DEFAULT NULL COMMENT '创建时间',
     modify_time datetime DEFAULT NULL COMMENT '修改时间',
     PRIMARY KEY (front_id),
-    UNIQUE KEY unique_node_id (node_id)
-) ENGINE=InnoDB AUTO_INCREMENT=500001 DEFAULT CHARSET=utf8 COMMENT='前置服务信息表';
+    UNIQUE KEY unique_chain_node (chain_id,node_id)
+) ENGINE=InnoDB AUTO_INCREMENT=200001 DEFAULT CHARSET=utf8 COMMENT='前置服务信息表';
 
 
 -- ----------------------------
@@ -58,8 +59,8 @@ CREATE TABLE IF NOT EXISTS tb_front_group_map (
     create_time datetime DEFAULT NULL COMMENT '创建时间',
     modify_time datetime DEFAULT NULL COMMENT '修改时间',
     PRIMARY KEY (map_id),
-    unique unique_front_group (front_id,group_id)
-) ENGINE=InnoDB AUTO_INCREMENT=600001 DEFAULT CHARSET=utf8 COMMENT='前置群组映射表';
+    unique unique_chain_front_group (chain_id,front_id,group_id)
+) ENGINE=InnoDB AUTO_INCREMENT=300001 DEFAULT CHARSET=utf8 COMMENT='前置群组映射表';
 
 
 -- ----------------------------
@@ -78,7 +79,7 @@ CREATE TABLE IF NOT EXISTS tb_node (
     description varchar(1024) COMMENT '描述',
     create_time datetime DEFAULT NULL COMMENT '创建时间',
     modify_time datetime DEFAULT NULL COMMENT '修改时间',
-    PRIMARY KEY (node_id,group_id)
+    PRIMARY KEY (node_id,chain_id,group_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='节点表';
 
 
@@ -103,5 +104,5 @@ CREATE TABLE IF NOT EXISTS tb_contract (
     create_time datetime DEFAULT NULL COMMENT '创建时间',
     modify_time datetime DEFAULT NULL COMMENT '修改时间',
     PRIMARY KEY (contract_id),
-    UNIQUE KEY uk_group_path_name (group_id,contract_path,contract_name)
-) ENGINE=InnoDB AUTO_INCREMENT=200001 DEFAULT CHARSET=utf8 COMMENT='合约表';
+    UNIQUE KEY uk_group_path_name (chain_id,group_id,contract_path,contract_name)
+) ENGINE=InnoDB AUTO_INCREMENT=400001 DEFAULT CHARSET=utf8 COMMENT='合约表';

@@ -77,8 +77,8 @@ public class ContractService {
      */
     private TbContract newContract(Contract contract) {
         // check contract not exist.
-        verifyContractNotExist(contract.getGroupId(), contract.getContractName(),
-                contract.getContractPath());
+        verifyContractNotExist(contract.getChainId(), contract.getGroupId(),
+                contract.getContractName(), contract.getContractPath());
 
         // add to database.
         TbContract tbContract = new TbContract();
@@ -93,27 +93,39 @@ public class ContractService {
      */
     private TbContract updateContract(Contract contract) {
         // check not deploy
-        TbContract tbContract =
-                verifyContractNotDeploy(contract.getContractId(), contract.getGroupId());
+        TbContract tbContract = verifyContractNotDeploy(contract.getChainId(),
+                contract.getContractId(), contract.getGroupId());
         // check contractName
-        verifyContractNameNotExist(contract.getGroupId(), contract.getContractPath(),
-                contract.getContractName(), contract.getContractId());
+        verifyContractNameNotExist(contract.getChainId(), contract.getGroupId(),
+                contract.getContractPath(), contract.getContractName(), contract.getContractId());
         BeanUtils.copyProperties(contract, tbContract);
         contractMapper.update(tbContract);
         return tbContract;
     }
 
-
     /**
      * delete contract by contractId.
      */
-    public void deleteContract(Integer contractId, int groupId) throws NodeMgrException {
+    public void deleteContract(int chainId, int contractId, int groupId) throws NodeMgrException {
         log.debug("start deleteContract contractId:{} groupId:{}", contractId, groupId);
         // check contract id
-        verifyContractNotDeploy(contractId, groupId);
+        verifyContractNotDeploy(chainId, contractId, groupId);
         // remove
         contractMapper.remove(contractId);
         log.debug("end deleteContract");
+    }
+
+    /**
+     * delete contract by chainId.
+     */
+    public void deleteContractByChainId(int chainId) throws NodeMgrException {
+        log.debug("start deleteContractByChainId chainId:{}", chainId);
+        if (chainId == 0) {
+            return;
+        }
+        // remove
+        contractMapper.removeByChainId(chainId);
+        log.debug("end deleteContractByChainId");
     }
 
     /**
@@ -186,12 +198,13 @@ public class ContractService {
         log.info("start deployContract. inputParam:{}", JSON.toJSONString(inputParam));
         int groupId = inputParam.getGroupId();
         String contractName = inputParam.getContractName();
-        // String version = Instant.now().toEpochMilli() + "";
         // check contract
-        verifyContractNotDeploy(inputParam.getContractId(), inputParam.getGroupId());
+        verifyContractNotDeploy(inputParam.getChainId(), inputParam.getContractId(),
+                inputParam.getGroupId());
         // check contractName
-        verifyContractNameNotExist(inputParam.getGroupId(), inputParam.getContractPath(),
-                inputParam.getContractName(), inputParam.getContractId());
+        verifyContractNameNotExist(inputParam.getChainId(), inputParam.getGroupId(),
+                inputParam.getContractPath(), inputParam.getContractName(),
+                inputParam.getContractId());
 
         JSONArray abiArray = JSONArray.parseArray(inputParam.getContractAbi());
         if (abiArray == null || abiArray.isEmpty()) {
@@ -204,14 +217,13 @@ public class ContractService {
         params.put("groupId", groupId);
         params.put("user", inputParam.getUser());
         params.put("contractName", contractName);
-        // params.put("version", version);
         params.put("abiInfo", JSONArray.parseArray(inputParam.getContractAbi()));
         params.put("bytecodeBin", inputParam.getBytecodeBin());
         params.put("funcParam", inputParam.getConstructorParams());
         params.put("useAes", constants.getIsPrivateKeyEncrypt());
 
         // deploy
-        String contractAddress = frontRestTools.postForEntity(groupId,
+        String contractAddress = frontRestTools.postForEntity(inputParam.getChainId(), groupId,
                 FrontRestTools.URI_CONTRACT_DEPLOY, params, String.class);
         if (StringUtils.isBlank(contractAddress)) {
             log.error("fail deploy, contractAddress is empty");
@@ -223,7 +235,6 @@ public class ContractService {
         BeanUtils.copyProperties(inputParam, tbContract);
         tbContract.setContractAddress(contractAddress);
         tbContract.setContractStatus(ContractStatus.DEPLOYED.getValue());
-        // tbContract.setContractVersion(version);
         tbContract.setDeployTime(LocalDateTime.now());
         contractMapper.update(tbContract);
 
@@ -256,18 +267,19 @@ public class ContractService {
         }
 
         // check contractId
-        verifyContractIdExist(param.getContractId(), param.getGroupId());
+        verifyContractIdExist(param.getChainId(), param.getContractId(), param.getGroupId());
         // send abi
-        sendAbi(param.getGroupId(), param.getContractId(), param.getContractAddress());
+        sendAbi(param.getChainId(), param.getGroupId(), param.getContractId(),
+                param.getContractAddress());
         // check contract deploy
-        verifyContractDeploy(param.getContractId(), param.getGroupId());
+        verifyContractDeploy(param.getChainId(), param.getContractId(), param.getGroupId());
 
         // send transaction
         TransactionParam transParam = new TransactionParam();
         BeanUtils.copyProperties(param, transParam);
         transParam.setUseAes(constants.getIsPrivateKeyEncrypt());
 
-        Object frontRsp = frontRestTools.postForEntity(param.getGroupId(),
+        Object frontRsp = frontRestTools.postForEntity(param.getChainId(), param.getGroupId(),
                 FrontRestTools.URI_SEND_TRANSACTION, transParam, Object.class);
         log.debug("end sendTransaction. frontRsp:{}", JSON.toJSONString(frontRsp));
         return frontRsp;
@@ -277,8 +289,8 @@ public class ContractService {
     /**
      * verify that the contract does not exist.
      */
-    private void verifyContractNotExist(int groupId, String name, String path) {
-        ContractParam param = new ContractParam(groupId, path, name);
+    private void verifyContractNotExist(int chainId, int groupId, String name, String path) {
+        ContractParam param = new ContractParam(chainId, groupId, path, name);
         TbContract contract = queryContract(param);
         if (Objects.nonNull(contract)) {
             log.warn("contract is exist. groupId:{} name:{} path:{}", groupId, name, path);
@@ -289,8 +301,8 @@ public class ContractService {
     /**
      * verify that the contract had not deployed.
      */
-    private TbContract verifyContractNotDeploy(int contractId, int groupId) {
-        TbContract contract = verifyContractIdExist(contractId, groupId);
+    private TbContract verifyContractNotDeploy(int chainId, int contractId, int groupId) {
+        TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
         if (ContractStatus.DEPLOYED.getValue() == contract.getContractStatus()) {
             log.info("contract had bean deployed contractId:{}", contractId);
             throw new NodeMgrException(ConstantCode.CONTRACT_HAS_BEAN_DEPLOYED);
@@ -301,8 +313,8 @@ public class ContractService {
     /**
      * verify that the contract had bean deployed.
      */
-    private TbContract verifyContractDeploy(int contractId, int groupId) {
-        TbContract contract = verifyContractIdExist(contractId, groupId);
+    private TbContract verifyContractDeploy(int chainId, int contractId, int groupId) {
+        TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
         if (ContractStatus.DEPLOYED.getValue() != contract.getContractStatus()) {
             log.info("contract had bean deployed contractId:{}", contractId);
             throw new NodeMgrException(ConstantCode.CONTRACT_NOT_DEPLOY);
@@ -313,8 +325,8 @@ public class ContractService {
     /**
      * verify that the contractId is exist.
      */
-    private TbContract verifyContractIdExist(int contractId, int groupId) {
-        ContractParam param = new ContractParam(contractId, groupId);
+    private TbContract verifyContractIdExist(int chainId, int contractId, int groupId) {
+        ContractParam param = new ContractParam(chainId, contractId, groupId);
         TbContract contract = queryContract(param);
         if (Objects.isNull(contract)) {
             log.info("contractId is invalid. contractId:{}", contractId);
@@ -326,8 +338,9 @@ public class ContractService {
     /**
      * contract name can not be repeated.
      */
-    private void verifyContractNameNotExist(int groupId, String path, String name, int contractId) {
-        ContractParam param = new ContractParam(groupId, path, name);
+    private void verifyContractNameNotExist(int chainId, int groupId, String path, String name,
+            int contractId) {
+        ContractParam param = new ContractParam(chainId, groupId, path, name);
         TbContract localContract = queryContract(param);
         if (Objects.isNull(localContract)) {
             return;
@@ -337,25 +350,24 @@ public class ContractService {
         }
     }
 
-
     /**
      * delete by groupId
      */
-    public void deleteByGroupId(int groupId) {
-        if (groupId == 0) {
+    public void deleteByGroupId(int chainId, int groupId) {
+        if (chainId == 0 || groupId == 0) {
             return;
         }
-        contractMapper.removeByGroupId(groupId);
+        contractMapper.removeByGroupId(chainId, groupId);
     }
 
 
     /**
      * send abi.
      */
-    public void sendAbi(int groupId, int contractId, String address) {
+    public void sendAbi(int chainId, int groupId, int contractId, String address) {
         log.info("start sendAbi, groupId:{} contractId:{} address:{}", groupId, contractId,
                 address);
-        TbContract contract = verifyContractIdExist(contractId, groupId);
+        TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
         String localAddress = contract.getContractAddress();
         String abiInfo = contract.getContractAbi();
         if (StringUtils.isBlank(address)) {
@@ -382,7 +394,7 @@ public class ContractService {
         param.setAbiInfo(JSONArray.parseArray(abiInfo, AbiDefinition.class));
         param.setContractBin(contract.getContractBin());
 
-        frontInterface.sendAbi(groupId, param);
+        frontInterface.sendAbi(chainId, groupId, param);
 
         // save address
         if (StringUtils.isBlank(contract.getContractAddress())) {

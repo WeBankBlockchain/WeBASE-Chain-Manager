@@ -44,6 +44,7 @@ import org.springframework.web.context.WebApplicationContext;
 public class GroupControllerTest {
     
     private MockMvc mockMvc;
+    private Integer chainId = 100001;
     private String nodeId = "6d8d03b04da71c48273a19a24a34d9fe7b48155d3450e697f6a7c6012d0b22a82b53c25ecbe455c8fa439ceb556dd8c885c3d82309d375d355d6ae662f00a2ac";
 
     @Autowired
@@ -60,6 +61,7 @@ public class GroupControllerTest {
         nodeList.add(nodeId);
         
         ReqGenerateGroup param = new ReqGenerateGroup();
+        param.setChainId(chainId);
         param.setGenerateGroupId(2);
         param.setTimestamp(BigInteger.valueOf(new Date().getTime()));
         param.setNodeList(nodeList);
@@ -96,7 +98,7 @@ public class GroupControllerTest {
     
     @Test
     public void testGeneral() throws Exception {
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/group/general/1"));
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/group/general/100001/1"));
         resultActions.
             andExpect(MockMvcResultMatchers.status().isOk()).
             andDo(MockMvcResultHandlers.print());
@@ -105,7 +107,7 @@ public class GroupControllerTest {
 
     @Test
     public void testGetAll() throws Exception {
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/group/all"));
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/group/all/100001"));
         resultActions.
             andExpect(MockMvcResultMatchers.status().isOk()).
             andDo(MockMvcResultHandlers.print());

@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.chain.mgr.front.entity;
+package com.webank.webase.chain.mgr.chain.entity;
 
 import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class TbFront {
-    private Integer frontId;
+public class TbChain {
     private Integer chainId;
-    private String nodeId;
-    private String frontIp;
-    private Integer frontPort;
-    private String agency;
+    private String chainName;
+    private Integer chainType;
     private String description;
     private LocalDateTime createTime;
     private LocalDateTime modifyTime;

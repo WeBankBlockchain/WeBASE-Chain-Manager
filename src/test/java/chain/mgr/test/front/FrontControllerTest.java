@@ -69,7 +69,7 @@ public class FrontControllerTest {
 
     @Test
     public void testQueryFrontList() throws Exception {
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/front/find?frontId="));
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/front/find?chainId=100001"));
         resultActions.
             andExpect(MockMvcResultMatchers.status().isOk()).
             andDo(MockMvcResultHandlers.print());
@@ -78,7 +78,7 @@ public class FrontControllerTest {
 
     @Test
     public void testRemoveFront() throws Exception {
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.delete("/front/500001"));
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.delete("/front/200005"));
         resultActions.
             andExpect(MockMvcResultMatchers.status().isOk()).
             andDo(MockMvcResultHandlers.print());

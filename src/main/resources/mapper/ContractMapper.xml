@@ -10,6 +10,8 @@
       property="contractName"/>
     <result column="contract_path" javaType="java.lang.String" jdbcType="VARCHAR"
       property="contractPath"/>
+    <result column="chain_id" javaType="java.lang.Integer" jdbcType="INTEGER"
+      property="chainId"/>
     <result column="group_id" javaType="java.lang.Integer" jdbcType="INTEGER"
       property="groupId"/>
     <result column="contract_source" javaType="java.lang.String" jdbcType="VARCHAR"
@@ -36,24 +38,29 @@
       property="modifyTime"/>
   </resultMap>
 
-
   <insert id="add" parameterType="com.webank.webase.chain.mgr.contract.entity.TbContract">
     insert into
-    tb_contract(group_id,contract_path,contract_name,contract_source,contract_abi,contract_bin,bytecodeBin,contract_address,description,deploy_time,create_time,modify_time)
-    values(#{groupId},#{contractPath},#{contractName},#{contractSource},#{contractAbi},#{contractBin},#{bytecodeBin},#{contractAddress},#{description},#{deployTime},NOW(),NOW())
+    tb_contract(chain_id,group_id,contract_path,contract_name,contract_source,contract_abi,contract_bin,bytecodeBin,contract_address,description,deploy_time,create_time,modify_time)
+    values(#{chainId},#{groupId},#{contractPath},#{contractName},#{contractSource},#{contractAbi},#{contractBin},#{bytecodeBin},#{contractAddress},#{description},#{deployTime},NOW(),NOW())
     <selectKey keyProperty="contractId" order="AFTER" resultType="java.lang.Integer">
       SELECT LAST_INSERT_ID()
     </selectKey>
   </insert>
 
-  <delete id="remove" parameterType="java.lang.Integer">
+  <delete id="remove">
 		delete from tb_contract where contract_id = #{contractId}
-	</delete>
+  </delete>
 
-  <delete id="removeByGroupId" parameterType="java.lang.Integer">
-		delete from tb_contract where group_id = #{groupId}
-	</delete>
+  <delete id="removeByGroupId">
+		delete from tb_contract 
+		where chain_id = #{chainId}
+          and group_id = #{groupId}
+  </delete>
 
+  <delete id="removeByChainId">
+		delete from tb_contract 
+		where chain_id = #{chainId}
+  </delete>
 
   <update id="update" parameterType="com.webank.webase.chain.mgr.contract.entity.TbContract">
     update tb_contract set modify_time = now()
@@ -93,14 +100,16 @@
 		contract_address = #{contractAddress}
 		where group_id = #{groupId}
 		and contract_name = #{contractName}
-	</update>
-
+  </update>
 
   <select id="countOfContract" parameterType="com.webank.webase.chain.mgr.contract.entity.ContractParam"
     resultType="java.lang.Integer">
     select count(1) from tb_contract where 1=1
     <if test="contractId != null">
       and contract_id = #{contractId}
+    </if>
+    <if test="chainId != null">
+      and chain_id = #{chainId}
     </if>
     <if test="groupId != null">
       and group_id = #{groupId}
@@ -122,12 +131,14 @@
     </if>
   </select>
 
-
   <select id="listOfContract" parameterType="com.webank.webase.chain.mgr.contract.entity.ContractParam"
     resultMap="contractMap">
     select * from tb_contract where 1=1
     <if test="contractId != null">
       and contract_id = #{contractId}
+    </if>
+    <if test="chainId != null">
+      and chain_id = #{chainId}
     </if>
     <if test="groupId != null">
       and group_id = #{groupId}
@@ -153,14 +164,17 @@
   </select>
 
   <select id="queryByContractId" parameterType="java.lang.Integer" resultMap="contractMap">
-		select * from tb_contract where contract_id = #{contractId}
-	</select>
+	select * from tb_contract where contract_id = #{contractId}
+  </select>
 
   <select id="queryContract" parameterType="com.webank.webase.chain.mgr.contract.entity.ContractParam"
     resultMap="contractMap">
     select * from tb_contract where 1=1
     <if test="contractId != null">
       and contract_id = #{contractId}
+    </if>
+    <if test="chainId != null">
+      and chain_id = #{chainId}
     </if>
     <if test="groupId != null">
       and group_id = #{groupId}
@@ -174,7 +188,7 @@
     <if test="contractAddress != null and contractAddress != ''">
       and contract_address = #{contractAddress}
     </if>
-    <if test="contractStatus != null and contractStatus != ''">
+    <if test="contractStatus != null">
       and contract_status = #{contractStatus}
     </if>
     <if test="contractPath != null and contractPath != ''">

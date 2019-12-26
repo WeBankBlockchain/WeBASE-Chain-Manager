@@ -96,10 +96,10 @@ public class FrontInterfaceService {
     /**
      * send contract abi
      */
-    public void sendAbi(int groupId, PostAbiInfo param) {
+    public void sendAbi(Integer chainId, Integer groupId, PostAbiInfo param) {
         log.debug("start sendAbi groupId:{} param:{}", groupId, JSON.toJSONString(param));
 
-        frontRestTools.postForEntity(groupId, FrontRestTools.URI_CONTRACT_SENDABI, param,
+        frontRestTools.postForEntity(chainId, groupId, FrontRestTools.URI_CONTRACT_SENDABI, param,
                 Object.class);
         log.debug("end sendAbi groupId:{} param:{}", groupId, JSON.toJSONString(param));
 
@@ -159,19 +159,19 @@ public class FrontInterfaceService {
     /**
      * get peers.
      */
-    public PeerInfo[] getPeers(Integer groupId) {
-        return frontRestTools.getForEntity(groupId, URI_PEERS, PeerInfo[].class);
+    public PeerInfo[] getPeers(Integer chainId, Integer groupId) {
+        return frontRestTools.getForEntity(chainId, groupId, URI_PEERS, PeerInfo[].class);
     }
 
     /**
      * get contract code.
      */
-    public String getContractCode(Integer groupId, String address, BigInteger blockNumber)
-            throws NodeMgrException {
+    public String getContractCode(Integer chainId, Integer groupId, String address,
+            BigInteger blockNumber) throws NodeMgrException {
         log.debug("start getContractCode groupId:{} address:{} blockNumber:{}", groupId, address,
                 blockNumber);
         String uri = String.format(FrontRestTools.URI_CODE, address, blockNumber);
-        String contractCode = frontRestTools.getForEntity(groupId, uri, String.class);
+        String contractCode = frontRestTools.getForEntity(chainId, groupId, uri, String.class);
         log.debug("end getContractCode. contractCode:{}", contractCode);
         return contractCode;
     }
@@ -179,9 +179,10 @@ public class FrontInterfaceService {
     /**
      * get group peers
      */
-    public List<String> getGroupPeers(Integer groupId) {
+    public List<String> getGroupPeers(Integer chainId, Integer groupId) {
         log.debug("start getGroupPeers. groupId:{}", groupId);
-        List<String> groupPeers = frontRestTools.getForEntity(groupId, URI_GROUP_PEERS, List.class);
+        List<String> groupPeers =
+                frontRestTools.getForEntity(chainId, groupId, URI_GROUP_PEERS, List.class);
         log.debug("end getGroupPeers. groupPeers:{}", JSON.toJSONString(groupPeers));
         return groupPeers;
     }
@@ -189,10 +190,10 @@ public class FrontInterfaceService {
     /**
      * get group peers
      */
-    public List<String> getObserverList(Integer groupId) {
+    public List<String> getObserverList(Integer chainId, Integer groupId) {
         log.debug("start getObserverList. groupId:{}", groupId);
         List<String> observers =
-                frontRestTools.getForEntity(groupId, URI_GET_OBSERVER_LIST, List.class);
+                frontRestTools.getForEntity(chainId, groupId, URI_GET_OBSERVER_LIST, List.class);
         log.info("end getObserverList. observers:{}", JSON.toJSONString(observers));
         return observers;
     }
@@ -209,9 +210,9 @@ public class FrontInterfaceService {
     /**
      * get consensusStatus
      */
-    public String getConsensusStatus(Integer groupId) {
+    public String getConsensusStatus(Integer chainId, Integer groupId) {
         log.debug("start getConsensusStatus. groupId:{}", groupId);
-        String consensusStatus = frontRestTools.getForEntity(groupId,
+        String consensusStatus = frontRestTools.getForEntity(chainId, groupId,
                 FrontRestTools.URI_CONSENSUS_STATUS, String.class);
         log.debug("end getConsensusStatus. consensusStatus:{}", consensusStatus);
         return consensusStatus;
@@ -220,10 +221,10 @@ public class FrontInterfaceService {
     /**
      * get syncStatus
      */
-    public SyncStatus getSyncStatus(Integer groupId) {
+    public SyncStatus getSyncStatus(Integer chainId, Integer groupId) {
         log.debug("start getSyncStatus. groupId:{}", groupId);
-        SyncStatus ststus = frontRestTools.getForEntity(groupId, FrontRestTools.URI_CSYNC_STATUS,
-                SyncStatus.class);
+        SyncStatus ststus = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_CSYNC_STATUS, SyncStatus.class);
         log.debug("end getSyncStatus. ststus:{}", JSON.toJSONString(ststus));
         return ststus;
     }
@@ -231,9 +232,9 @@ public class FrontInterfaceService {
     /**
      * get latest block number
      */
-    public BigInteger getLatestBlockNumber(Integer groupId) {
+    public BigInteger getLatestBlockNumber(Integer chainId, Integer groupId) {
         log.debug("start getLatestBlockNumber. groupId:{}", groupId);
-        BigInteger latestBlockNmber = frontRestTools.getForEntity(groupId,
+        BigInteger latestBlockNmber = frontRestTools.getForEntity(chainId, groupId,
                 FrontRestTools.URI_BLOCK_NUMBER, BigInteger.class);
         log.debug("end getLatestBlockNumber. latestBlockNmber:{}", latestBlockNmber);
         return latestBlockNmber;
@@ -242,9 +243,9 @@ public class FrontInterfaceService {
     /**
      * get sealerList.
      */
-    public List<String> getSealerList(Integer groupId) {
+    public List<String> getSealerList(Integer chainId, Integer groupId) {
         log.debug("start getSealerList. groupId:{}", groupId);
-        List getSealerList = frontRestTools.getForEntity(groupId,
+        List getSealerList = frontRestTools.getForEntity(chainId, groupId,
                 FrontRestTools.URI_GET_SEALER_LIST, List.class);
         log.debug("end getSealerList. getSealerList:{}", JSON.toJSONString(getSealerList));
         return getSealerList;
@@ -309,7 +310,8 @@ public class FrontInterfaceService {
     public void refreshFront(String frontIp, Integer frontPort) {
         log.debug("start refreshFront groupId:{} frontIp:{} frontPort:{} ", frontIp, frontPort);
         Integer groupId = Integer.MAX_VALUE;
-        getFromSpecificFront(groupId, frontIp, frontPort, FrontRestTools.URI_REFRESH_FRONT, Object.class);
+        getFromSpecificFront(groupId, frontIp, frontPort, FrontRestTools.URI_REFRESH_FRONT,
+                Object.class);
         log.debug("end refreshFront");
     }
 }

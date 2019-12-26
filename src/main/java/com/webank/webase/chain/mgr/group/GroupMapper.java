@@ -14,7 +14,6 @@
 package com.webank.webase.chain.mgr.group;
 
 import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
-import com.webank.webase.chain.mgr.group.entity.GroupParam;
 import com.webank.webase.chain.mgr.group.entity.TbGroup;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
@@ -34,26 +33,29 @@ public interface GroupMapper {
     /**
      * remove by id.
      */
-    int remove(@Param("groupId") Integer groupId);
+    int remove(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId);
 
     /**
      * update status.
      */
-    int updateStatus(@Param("groupId") Integer groupId, @Param("groupStatus") Integer groupStatus);
+    int updateStatus(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId,
+            @Param("groupStatus") Integer groupStatus);
 
     /**
      * query group count.
      */
-    int getCount(GroupParam groupParam);
+    int getCount(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId,
+            @Param("groupStatus") Integer groupStatus);
 
     /**
      * get all group.
      */
-    List<TbGroup> getList(GroupParam groupParam);
+    List<TbGroup> getList(@Param("chainId") Integer chainId,
+            @Param("groupStatus") Integer groupStatus);
 
     /**
      * query general info.
      */
-    GroupGeneral getGeneral(@Param("groupId") Integer groupId);
+    GroupGeneral getGeneral(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId);
 
 }

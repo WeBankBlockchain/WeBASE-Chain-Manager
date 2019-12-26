@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019  the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -22,12 +22,14 @@ import lombok.NoArgsConstructor;
 public class TbFrontGroupMap {
 
     private int mapId;
+    private Integer chainId;
     private Integer frontId;
     private Integer groupId;
     private LocalDateTime createTime;
     private LocalDateTime modifyTime;
 
-    public TbFrontGroupMap(Integer frontId,Integer groupId){
+    public TbFrontGroupMap(Integer chainId, Integer frontId, Integer groupId) {
+        this.chainId = chainId;
         this.frontId = frontId;
         this.groupId = groupId;
     }

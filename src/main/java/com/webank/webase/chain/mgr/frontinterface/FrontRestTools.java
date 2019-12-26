@@ -261,30 +261,30 @@ public class FrontRestTools {
     /**
      * get from front for entity.
      */
-    public <T> T getForEntity(Integer groupId, String uri, Class<T> clazz) {
-        return restTemplateExchange(groupId, uri, HttpMethod.GET, null, clazz);
+    public <T> T getForEntity(Integer chainId, Integer groupId, String uri, Class<T> clazz) {
+        return restTemplateExchange(chainId, groupId, uri, HttpMethod.GET, null, clazz);
     }
 
     /**
      * post from front for entity.
      */
-    public <T> T postForEntity(Integer groupId, String uri, Object params, Class<T> clazz) {
-        return restTemplateExchange(groupId, uri, HttpMethod.POST, params, clazz);
+    public <T> T postForEntity(Integer chainId, Integer groupId, String uri, Object params, Class<T> clazz) {
+        return restTemplateExchange(chainId, groupId, uri, HttpMethod.POST, params, clazz);
     }
 
     /**
      * delete from front for entity.
      */
-    public <T> T deleteForEntity(Integer groupId, String uri, Object params, Class<T> clazz) {
-        return restTemplateExchange(groupId, uri, HttpMethod.DELETE, params, clazz);
+    public <T> T deleteForEntity(Integer chainId, Integer groupId, String uri, Object params, Class<T> clazz) {
+        return restTemplateExchange(chainId, groupId, uri, HttpMethod.DELETE, params, clazz);
     }
 
     /**
      * restTemplate exchange.
      */
-    private <T> T restTemplateExchange(int groupId, String uri, HttpMethod method,
+    private <T> T restTemplateExchange(Integer chainId, Integer groupId, String uri, HttpMethod method,
         Object param, Class<T> clazz) {
-        List<FrontGroup> frontList = frontGroupMapCache.getMapListByGroupId(groupId);
+        List<FrontGroup> frontList = frontGroupMapCache.getMapListByChainId(chainId, groupId);
         if (frontList == null || frontList.size() == 0) {
             log.error("fail restTemplateExchange. frontList is empty");
             throw new NodeMgrException(ConstantCode.FRONT_LIST_NOT_FOUNT);
@@ -297,7 +297,7 @@ public class FrontRestTools {
             try {
                 HttpEntity entity = buildHttpEntity(param);// build entity
                 if (null == restTemplate) {
-                    log.error("fail restTemplateExchange, rest is null. groupId:{} uri:{}", groupId,uri);
+                    log.error("fail restTemplateExchange, rest is null. groupId:{} uri:{}", chainId,uri);
                     throw new NodeMgrException(ConstantCode.SYSTEM_EXCEPTION);
                 }
                 ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);

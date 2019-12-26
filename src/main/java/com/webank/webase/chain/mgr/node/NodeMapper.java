@@ -71,5 +71,10 @@ public interface NodeMapper {
     /**
      * delete by groupId.
      */
-    Integer deleteByGroupId(@Param("groupId") Integer groupId);
+    Integer deleteByGroupId(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId);
+    
+    /**
+     * delete by chainId.
+     */
+    Integer deleteByChainId(@Param("chainId") Integer chainId);
 }

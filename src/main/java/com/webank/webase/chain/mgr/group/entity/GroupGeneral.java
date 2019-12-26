@@ -18,6 +18,7 @@ import lombok.Data;
 @Data
 public class GroupGeneral {
     private Integer groupId;
+    private Integer chainId;
     private int nodeCount;
     private int contractCount;
 }

@@ -27,6 +27,7 @@ public class TbNode {
 
     private String nodeId;
     private String nodeName;
+    private Integer chainId;
     private Integer groupId;
     private String nodeIp;
     private Integer p2pPort;

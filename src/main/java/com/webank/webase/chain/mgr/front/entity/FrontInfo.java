@@ -19,6 +19,8 @@ import lombok.Data;
 
 @Data
 public class FrontInfo {
+    @NotNull
+    private Integer chainId;
     @NotBlank
     private String frontIp;
     @NotNull

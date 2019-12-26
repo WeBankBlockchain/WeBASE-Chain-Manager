@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019 the original author or authors.
+ * Copyright 2014-2019  the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,28 +11,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.contract.entity;
+package com.webank.webase.chain.mgr.chain.entity;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * Contract.
- */
 @Data
-public class Contract {
-    @NotNull
+@NoArgsConstructor
+@AllArgsConstructor
+public class ChainParam {
     private Integer chainId;
-    @NotNull
-    private Integer groupId;
-    private Integer contractId;
-    @NotBlank
-    private String contractName;
-    @NotBlank
-    private String contractPath;
-    private String contractSource;
-    private String contractAbi;
-    private String contractBin;
-    private String bytecodeBin;
+    private String chainName;
 }

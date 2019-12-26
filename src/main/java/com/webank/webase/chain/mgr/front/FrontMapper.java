@@ -24,8 +24,6 @@ public interface FrontMapper {
 
     int add(TbFront tbFront);
 
-    int remove(@Param("frontId") int frontId);
-
     Integer getCount(FrontParam param);
 
     List<TbFront> getList(FrontParam param);
@@ -33,4 +31,8 @@ public interface FrontMapper {
     TbFront getById(@Param("frontId") int frontId);
     
     TbFront getByNodeId(@Param("nodeId") String nodeId);
+    
+    int removeById(@Param("frontId") int frontId);
+    
+    int removeByChainId(@Param("chainId") int chainId);
 }

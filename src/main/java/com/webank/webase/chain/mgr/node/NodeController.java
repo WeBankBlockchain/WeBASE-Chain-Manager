@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019  the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -46,31 +46,32 @@ public class NodeController {
     /**
      * qurey node info list.
      */
-    @GetMapping(value = "/nodeList/{groupId}/{pageNumber}/{pageSize}")
-    public BasePageResponse queryNodeList(@PathVariable("groupId") Integer groupId,
-        @PathVariable("pageNumber") Integer pageNumber,
-        @PathVariable("pageSize") Integer pageSize,
-        @RequestParam(value = "nodeName", required = false) String nodeName)
-        throws NodeMgrException {
+    @GetMapping(value = "/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}")
+    public BasePageResponse queryNodeList(@PathVariable("chainId") Integer chainId,
+            @PathVariable("groupId") Integer groupId,
+            @PathVariable("pageNumber") Integer pageNumber,
+            @PathVariable("pageSize") Integer pageSize,
+            @RequestParam(value = "nodeName", required = false) String nodeName)
+            throws NodeMgrException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info(
-            "start queryNodeList startTime:{} groupId:{}  pageNumber:{} pageSize:{} nodeName:{}",
-            startTime.toEpochMilli(), groupId, pageNumber,
-            pageSize, nodeName);
+                "start queryNodeList startTime:{} groupId:{}  pageNumber:{} pageSize:{} nodeName:{}",
+                startTime.toEpochMilli(), groupId, pageNumber, pageSize, nodeName);
 
         // param
         NodeParam queryParam = new NodeParam();
+        queryParam.setChainId(chainId);
         queryParam.setGroupId(groupId);
-        queryParam.setPageSize(pageSize);
         queryParam.setNodeName(nodeName);
+        queryParam.setPageSize(pageSize);
 
-        //check node status before query
-        nodeService.checkAndUpdateNodeStatus(groupId);
+        // check node status before query
+        nodeService.checkAndUpdateNodeStatus(chainId, groupId);
         Integer count = nodeService.countOfNode(queryParam);
         if (count != null && count > 0) {
-            Integer start = Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize)
-                .orElse(null);
+            Integer start =
+                    Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).orElse(null);
             queryParam.setStart(start);
 
             List<TbNode> listOfnode = nodeService.qureyNodeList(queryParam);
@@ -79,23 +80,24 @@ public class NodeController {
         }
 
         log.info("end queryNodeList useTime:{} result:{}",
-            Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(pagesponse));
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(pagesponse));
         return pagesponse;
     }
 
     /**
      * get node info.
      */
-    @GetMapping(value = "/nodeInfo/{groupId}")
-    public BaseResponse getNodeInfo(@PathVariable("groupId") Integer groupId)
-        throws NodeMgrException {
+    @GetMapping(value = "/nodeInfo/{chainId}/{groupId}")
+    public BaseResponse getNodeInfo(@PathVariable("chainId") Integer chainId,
+            @PathVariable("groupId") Integer groupId) throws NodeMgrException {
 
         Instant startTime = Instant.now();
-        log.info("start addNodeInfo startTime:{} groupId:{}",
-            startTime.toEpochMilli(), groupId);
+        log.info("start addNodeInfo startTime:{} groupId:{}", startTime.toEpochMilli(), groupId);
 
         // param
         NodeParam param = new NodeParam();
+        param.setChainId(chainId);
         param.setGroupId(groupId);
 
         // query node row
@@ -105,7 +107,8 @@ public class NodeController {
         baseResponse.setData(tbNode);
 
         log.info("end addNodeInfo useTime:{} result:{}",
-            Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(baseResponse));
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(baseResponse));
         return baseResponse;
     }
 

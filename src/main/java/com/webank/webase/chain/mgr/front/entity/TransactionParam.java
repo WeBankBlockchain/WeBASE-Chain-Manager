@@ -26,6 +26,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TransactionParam {
     @NotNull
+    private Integer chainId;
+    @NotNull
     private Integer groupId;
     private String user;
     @NotBlank

@@ -27,8 +27,6 @@ public interface ContractMapper {
 
     Integer add(TbContract tbContract);
 
-    Integer remove(@Param("contractId") Integer contractId);
-
     Integer update(TbContract tbContract);
 
     int countOfContract(ContractParam param);
@@ -48,6 +46,10 @@ public interface ContractMapper {
     void updateSystemContract(@Param("groupId") Integer groupId,
             @Param("contractName") String contractName, @Param("contractBin") String contractBin,
             @Param("contractAddress") String contractAddress);
-
-    void removeByGroupId(@Param("groupId") Integer groupId);
+    
+    Integer remove(@Param("contractId") Integer contractId);
+    
+    Integer removeByChainId(@Param("chainId") Integer chainId);
+    
+    Integer removeByGroupId(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId);
 }

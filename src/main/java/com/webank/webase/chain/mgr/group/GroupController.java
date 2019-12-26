@@ -21,7 +21,6 @@ import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
 import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
-import com.webank.webase.chain.mgr.group.entity.GroupParam;
 import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
 import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
 import com.webank.webase.chain.mgr.group.entity.TbGroup;
@@ -29,7 +28,6 @@ import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import javax.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,14 +74,15 @@ public class GroupController extends BaseController {
     /**
      * start group.
      */
-    @GetMapping("/start/{startGroupId}/{nodeId}")
-    public BaseResponse startGroup(@PathVariable("nodeId") String nodeId,
+    @GetMapping("/start/{chainId}/{startGroupId}/{nodeId}")
+    public BaseResponse startGroup(@PathVariable("chainId") Integer chainId,
+            @PathVariable("nodeId") String nodeId,
             @PathVariable("startGroupId") Integer startGroupId) throws NodeMgrException {
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start startGroup startTime:{} groupId:{}", startTime.toEpochMilli(),
                 startGroupId);
-        groupService.startGroup(nodeId, startGroupId);
+        groupService.startGroup(chainId, nodeId, startGroupId);
         log.info("end startGroup useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(baseResponse));
@@ -94,8 +93,8 @@ public class GroupController extends BaseController {
      * batch start group.
      */
     @PostMapping("/batchStart")
-    public BaseResponse batchStartGroup(@RequestBody @Valid ReqStartGroup req,
-            BindingResult result) throws NodeMgrException {
+    public BaseResponse batchStartGroup(@RequestBody @Valid ReqStartGroup req, BindingResult result)
+            throws NodeMgrException {
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start batchStartGroup startTime:{} groupId:{}", startTime.toEpochMilli(),
@@ -125,14 +124,14 @@ public class GroupController extends BaseController {
     /**
      * get group general.
      */
-    @GetMapping("/general/{groupId}")
-    public BaseResponse getGroupGeneral(@PathVariable("groupId") Integer groupId)
-            throws NodeMgrException {
+    @GetMapping("/general/{chainId}/{groupId}")
+    public BaseResponse getGroupGeneral(@PathVariable("chainId") Integer chainId,
+            @PathVariable("groupId") Integer groupId) throws NodeMgrException {
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start getGroupGeneral startTime:{} groupId:{}", startTime.toEpochMilli(),
                 groupId);
-        GroupGeneral groupGeneral = groupService.queryGroupGeneral(groupId);
+        GroupGeneral groupGeneral = groupService.queryGroupGeneral(chainId, groupId);
         baseResponse.setData(groupGeneral);
         log.info("end getGroupGeneral useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
@@ -143,24 +142,18 @@ public class GroupController extends BaseController {
     /**
      * query all group.
      */
-    @GetMapping("/all/{pageNumber}/{pageSize}")
-    public BasePageResponse getAllGroup(@PathVariable("pageNumber") Integer pageNumber,
-            @PathVariable("pageSize") Integer pageSize) throws NodeMgrException {
+    @GetMapping("/all/{chainId}")
+    public BasePageResponse getAllGroup(@PathVariable("chainId") Integer chainId)
+            throws NodeMgrException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start getAllGroup startTime:{}", startTime.toEpochMilli());
-        
-        Integer start = Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize)
-                .orElse(null);
-        GroupParam groupParam = new GroupParam();
-        groupParam.setGroupStatus(DataStatus.NORMAL.getValue());
-        groupParam.setStart(start);
-        groupParam.setPageSize(pageSize);
 
         // get group list
-        Integer count = groupService.countOfGroup(groupParam);
+        Integer count = groupService.countOfGroup(chainId, null, DataStatus.NORMAL.getValue());
         if (count != null && count > 0) {
-            List<TbGroup> groupList = groupService.getGroupList(groupParam);
+            List<TbGroup> groupList =
+                    groupService.getGroupList(chainId, DataStatus.NORMAL.getValue());
             pagesponse.setTotalCount(count);
             pagesponse.setData(groupList);
         }

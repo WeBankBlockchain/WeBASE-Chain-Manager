@@ -18,6 +18,7 @@ import lombok.Data;
 @Data
 public class QueryContractParam {
 
+    private Integer chainId;
     private Integer groupId;
     private String contractName;
     private String contractAddress;

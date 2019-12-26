@@ -25,6 +25,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReqStartGroup {
     @NotNull
+    private Integer chainId;
+    @NotNull
     private Integer generateGroupId;
     @NotEmpty
     private List<String> nodeList;

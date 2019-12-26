@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019  the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -25,10 +25,13 @@ import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.front.entity.TbFront;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import javax.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,13 +60,14 @@ public class FrontController extends BaseController {
     public BaseResponse newFront(@RequestBody @Valid FrontInfo frontInfo, BindingResult result) {
         checkBindResult(result);
         Instant startTime = Instant.now();
-        log.info("start newFront startTime:{} frontInfo:{}",
-            startTime.toEpochMilli(), JSON.toJSONString(frontInfo));
+        log.info("start newFront startTime:{} frontInfo:{}", startTime.toEpochMilli(),
+                JSON.toJSONString(frontInfo));
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         TbFront tbFront = frontService.newFront(frontInfo);
         baseResponse.setData(tbFront);
         log.info("end newFront useTime:{} result:{}",
-            Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(baseResponse));
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -73,20 +77,22 @@ public class FrontController extends BaseController {
      */
     @GetMapping(value = "/find")
     public BasePageResponse queryFrontList(
-        @RequestParam(value = "frontId", required = false) Integer frontId,
-        @RequestParam(value = "groupId", required = false) Integer groupId)
-        throws NodeMgrException {
+            @RequestParam(value = "chainId", required = false) Integer chainId,
+            @RequestParam(value = "frontId", required = false) Integer frontId,
+            @RequestParam(value = "groupId", required = false) Integer groupId)
+            throws NodeMgrException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start queryFrontList startTime:{} frontId:{} groupId:{}",
-            startTime.toEpochMilli(), frontId, groupId);
+                startTime.toEpochMilli(), frontId, groupId);
 
-        //param
+        // param
         FrontParam param = new FrontParam();
+        param.setChainId(chainId);
         param.setFrontId(frontId);
         param.setGroupId(groupId);
 
-        //query front info
+        // query front info
         int count = frontService.getFrontCount(param);
         pagesponse.setTotalCount(count);
         if (count > 0) {
@@ -95,7 +101,8 @@ public class FrontController extends BaseController {
         }
 
         log.info("end queryFrontList useTime:{} result:{}",
-            Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(pagesponse));
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(pagesponse));
         return pagesponse;
     }
 
@@ -105,15 +112,92 @@ public class FrontController extends BaseController {
     @DeleteMapping(value = "/{frontId}")
     public BaseResponse removeFront(@PathVariable("frontId") Integer frontId) {
         Instant startTime = Instant.now();
-        log.info("start removeFront startTime:{} frontId:{}",
-            startTime.toEpochMilli(), frontId);
+        log.info("start removeFront startTime:{} frontId:{}", startTime.toEpochMilli(), frontId);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
 
-        //remove
-        frontService.removeFront(frontId);
+        // remove
+        frontService.removeByFrontId(frontId);
 
         log.info("end removeFront useTime:{} result:{}",
-            Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(baseResponse));
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(baseResponse));
         return baseResponse;
+    }
+
+    @GetMapping(value = "/mointorInfo/{frontId}")
+    public BaseResponse getChainMoinntorInfo(@PathVariable("frontId") Integer frontId,
+            @RequestParam(required = false) @DateTimeFormat(
+                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
+            @RequestParam(required = false) @DateTimeFormat(
+                    iso = ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) @DateTimeFormat(
+                    iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
+            @RequestParam(required = false) @DateTimeFormat(
+                    iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
+            @RequestParam(required = false, defaultValue = "1") int gap,
+            @RequestParam(required = false, defaultValue = "1") int groupId)
+            throws NodeMgrException {
+        Instant startTime = Instant.now();
+        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+        log.info(
+                "start getChainInfo. startTime:{} frontId:{} beginDate:{} endDate:{} "
+                        + "contrastBeginDate:{} contrastEndDate:{} gap:{} groupId:{}",
+                startTime.toEpochMilli(), frontId, beginDate, endDate, contrastBeginDate,
+                contrastEndDate, gap, groupId);
+        Object rspObj = frontService.getNodeMonitorInfo(frontId, beginDate, endDate,
+                contrastBeginDate, contrastEndDate, gap, groupId);
+
+        response.setData(rspObj);
+        log.info("end getChainInfo. endTime:{} response:{}",
+                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+
+        return response;
+    }
+
+    /**
+     * get ratio of performance.
+     */
+    @GetMapping(value = "/ratio/{frontId}")
+    public BaseResponse getPerformanceRatio(@PathVariable("frontId") Integer frontId,
+            @RequestParam("beginDate") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime beginDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(value = "contrastBeginDate", required = false) @DateTimeFormat(
+                    iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
+            @RequestParam(value = "contrastEndDate", required = false) @DateTimeFormat(
+                    iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
+            @RequestParam(value = "gap", required = false, defaultValue = "1") int gap)
+            throws NodeMgrException {
+        Instant startTime = Instant.now();
+        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+        log.info(
+                "start getPerformanceRatio. startTime:{} frontId:{} beginDate:{}"
+                        + " endDate:{} contrastBeginDate:{} contrastEndDate:{} gap:{}",
+                startTime.toEpochMilli(), frontId, beginDate, endDate, contrastBeginDate,
+                contrastEndDate, gap);
+
+        Object rspObj = frontService.getPerformanceRatio(frontId, beginDate, endDate,
+                contrastBeginDate, contrastEndDate, gap);
+        response.setData(rspObj);
+        log.info("end getPerformanceRatio. useTime:{} response:{}",
+                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+
+        return response;
+    }
+
+    /**
+     * get config of performance.
+     */
+    @GetMapping(value = "/config/{frontId}")
+    public BaseResponse getPerformanceConfig(@PathVariable("frontId") Integer frontId)
+            throws NodeMgrException {
+        Instant startTime = Instant.now();
+        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("start getPerformanceConfig. startTime:{} frontId:{}", startTime.toEpochMilli(),
+                frontId);
+        Object frontRsp = frontService.getPerformanceConfig(frontId);
+        response.setData(frontRsp);
+        log.info("end getPerformanceConfig. useTime:{} response:{}",
+                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+        return response;
     }
 }

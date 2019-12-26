@@ -11,14 +11,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.frontgroupmap.entity;
+package com.webank.webase.chain.mgr.chain;
 
-import lombok.Data;
+import com.webank.webase.chain.mgr.chain.entity.ChainParam;
+import com.webank.webase.chain.mgr.chain.entity.TbChain;
+import java.util.List;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
-@Data
-public class MapListParam {
-    private Integer mapId;
-    private Integer chainId;
-    private Integer frontId;
-    private Integer groupId;
+@Repository
+public interface ChainMapper {
+
+    int add(TbChain tbChain);
+
+    Integer getCount(ChainParam param);
+
+    List<TbChain> getList(ChainParam param);
+    
+    TbChain getChainById(@Param("chainId") Integer chainId);
+    
+    int remove(@Param("chainId") Integer chainId);
 }

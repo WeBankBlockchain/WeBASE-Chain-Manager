@@ -78,6 +78,12 @@ public class ConstantCode {
 
     public static final RetCode ENCRYPT_TYPE_NOT_MATCH =
             RetCode.mark(205020, "front's encrypt type not match");
+    
+    public static final RetCode CHAIN_EXISTS = RetCode.mark(205003, "chain name already exists");
+    
+    public static final RetCode SAVE_CHAIN_FAIL = RetCode.mark(205006, "save chain fail");
+    
+    public static final RetCode INVALID_CHAIN_ID = RetCode.mark(205000, "invalid chain id");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");

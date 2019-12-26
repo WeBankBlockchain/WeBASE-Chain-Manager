@@ -39,16 +39,18 @@ public class FrontGroupMapCache {
     /**
      * reset mapList.
      */
-    public List<FrontGroup> resetMapList() {
-        mapList = mapService.getList(new MapListParam());
+    public List<FrontGroup> resetMapList(int chainId) {
+        MapListParam param = new MapListParam();
+        param.setChainId(chainId);
+        mapList = mapService.getList(param);
         return mapList;
     }
 
     /**
      * get mapList.
      */
-    public List<FrontGroup> getMapListByGroupId(int groupId) {
-        List<FrontGroup> list = getAllMap();
+    public List<FrontGroup> getMapListByChainId(int chainId, int groupId) {
+        List<FrontGroup> list = getAllMap(chainId);
         if (list == null) {
             return null;
         }
@@ -60,9 +62,9 @@ public class FrontGroupMapCache {
     /**
      * get all mapList.
      */
-    public List<FrontGroup> getAllMap() {
+    public List<FrontGroup> getAllMap(int chainId) {
         if (mapList == null || mapList.size() == 0) {
-            mapList = resetMapList();
+            mapList = resetMapList(chainId);
         }
         return mapList;
     }

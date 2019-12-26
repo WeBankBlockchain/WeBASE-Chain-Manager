@@ -6,6 +6,7 @@
 <mapper namespace="com.webank.webase.chain.mgr.node.NodeMapper">
   <resultMap id="nodeMap" type="com.webank.webase.chain.mgr.node.entity.TbNode">
     <id column="node_id" javaType="java.lang.String" jdbcType="VARCHAR" property="nodeId"/>
+    <id column="chain_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="chainId"/>
     <id column="group_id" javaType="java.lang.Integer" jdbcType="INTEGER" property="groupId"/>
     <result column="node_name" javaType="java.lang.String" jdbcType="VARCHAR" property="nodeName"/>
     <result column="node_ip" javaType="java.lang.String" jdbcType="VARCHAR" property="nodeIp"/>
@@ -26,14 +27,17 @@
 
   <insert id="add" parameterType="com.webank.webase.chain.mgr.node.entity.TbNode">
     insert ignore into tb_node
-    (node_id,node_name,group_id,node_ip,p2p_port,description,create_time,modify_time)
-    values(#{nodeId},#{nodeName},#{groupId},#{nodeIp},#{p2pPort},#{description},NOW(),NOW())
+    (node_id,node_name,chain_id,group_id,node_ip,p2p_port,description,create_time,modify_time)
+    values(#{nodeId},#{nodeName},#{chainId},#{groupId},#{nodeIp},#{p2pPort},#{description},NOW(),NOW())
   </insert>
 
 
   <select id="getCount" parameterType="com.webank.webase.chain.mgr.node.entity.NodeParam"
     resultType="java.lang.Integer">
     select count(1) from tb_node where 1=1
+    <if test="chainId != null">
+      and chain_id = #{chainId}
+    </if>
     <if test="groupId != null">
       and group_id = #{groupId}
     </if>
@@ -51,6 +55,9 @@
   <select id="getList" parameterType="com.webank.webase.chain.mgr.node.entity.NodeParam"
     resultMap="nodeMap">
     select a.* from tb_node a where 1=1
+    <if test="chainId != null">
+      and chain_id = #{chainId}
+    </if>
     <if test="groupId != null">
       and a.group_id = #{groupId}
     </if>
@@ -76,11 +83,11 @@
 
   <select id="queryNodeByIpAndP2pPort" resultMap="nodeMap">
 		select * from tb_node where node_ip = #{nodeIp} and p2p_port = #{p2pPort}
-	</select>
+  </select>
 
   <select id="queryByNodeId" resultMap="nodeMap">
 		select * from tb_node where node_id = #{nodeId}
-	</select>
+  </select>
 
   <update id="update" parameterType="com.webank.webase.chain.mgr.node.entity.TbNode">
     update tb_node set modify_time=NOW()
@@ -102,6 +109,9 @@
   <select id="queryNodeInfo" parameterType="com.webank.webase.chain.mgr.node.entity.NodeParam"
     resultMap="nodeMap">
     select * from tb_node where 1=1
+    <if test="chainId != null">
+      and chain_id = #{chainId}
+    </if>
     <if test="groupId != null">
       and group_id = #{groupId}
     </if>
@@ -121,10 +131,16 @@
   </select>
 
   <delete id="deleteByNodeAndGroup">
-		delete from tb_node where node_id=#{nodeId} and group_id = #{groupId}
-	</delete>
+	delete from tb_node where node_id=#{nodeId} and group_id = #{groupId}
+  </delete>
 
   <delete id="deleteByGroupId">
-		delete from tb_node where group_id = #{groupId}
-	</delete>
+	delete from tb_node 
+	where chain_id = #{chainId}
+      and group_id = #{groupId}
+  </delete>
+
+  <delete id="deleteByChainId">
+	delete from tb_node where chain_id = #{chainId}
+  </delete>
 </mapper>

@@ -15,7 +15,7 @@ mybatis:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/webasechainmanager138?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull
+    url: jdbc:mysql://127.0.0.1:3306/webasechainmanager?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull
     username: "defaultAccount"
     password: "defaultPassword"
 
@@ -45,6 +45,3 @@ executor:
   maxPoolSize: 10
   queueSize: 50
   threadNamePrefix: "chain-mgr-async-"
-
-sdk:
-  encryptType: 1    # 1:guomi, 0:standard

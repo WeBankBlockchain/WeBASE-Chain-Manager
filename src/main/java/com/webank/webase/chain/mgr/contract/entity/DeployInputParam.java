@@ -28,6 +28,8 @@ public class DeployInputParam{
     @NotBlank
     private String user;
     @NotNull
+    private Integer chainId;
+    @NotNull
     private Integer groupId;
     @NotNull
     private Integer contractId;

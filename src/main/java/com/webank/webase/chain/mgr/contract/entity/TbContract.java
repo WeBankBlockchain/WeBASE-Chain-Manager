@@ -28,6 +28,7 @@ public class TbContract {
     private String contractPath;
     private String contractName;
     private Integer contractStatus;
+    private Integer chainId;
     private Integer groupId;
     private Integer contractType;
     private String contractSource;
@@ -41,12 +42,13 @@ public class TbContract {
     private LocalDateTime modifyTime;
 
     /**
-     * init by contractId、contractName、groupId、contractPath.
+     * init by contractId、contractName、chainId、groupId.
      */
-    public TbContract(Integer contractId, String contractName, Integer groupId) {
+    public TbContract(Integer contractId, String contractName, Integer chainId, Integer groupId) {
         super();
         this.contractId = contractId;
         this.contractName = contractName;
+        this.chainId = chainId;
         this.groupId = groupId;
     }
 

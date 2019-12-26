@@ -30,8 +30,8 @@ public class FrontGroupMapService {
     /**
      * add new mapping
      */
-    public TbFrontGroupMap newFrontGroup(Integer frontId, Integer groupId) {
-        TbFrontGroupMap tbFrontGroupMap = new TbFrontGroupMap(frontId, groupId);
+    public TbFrontGroupMap newFrontGroup(Integer chainId, Integer frontId, Integer groupId) {
+        TbFrontGroupMap tbFrontGroupMap = new TbFrontGroupMap(chainId, frontId, groupId);
 
         //add db
         frontGroupMapMapper.add(tbFrontGroupMap);
@@ -46,14 +46,25 @@ public class FrontGroupMapService {
     }
 
     /**
+     * remove by chainId
+     */
+    public void removeByChainId(int chainId) {
+        if (chainId == 0) {
+            return;
+        }
+        //remove by chainId
+        frontGroupMapMapper.removeByChainId(chainId);
+    }
+    
+    /**
      * remove by groupId
      */
-    public void removeByGroupId(int groupId) {
-        if (groupId == 0) {
+    public void removeByGroupId(int chainId, int groupId) {
+        if (chainId == 0 || groupId == 0) {
             return;
         }
         //remove by groupId
-        frontGroupMapMapper.removeByGroupId(groupId);
+        frontGroupMapMapper.removeByGroupId(chainId, groupId);
     }
 
     /**
