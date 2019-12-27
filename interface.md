@@ -570,7 +570,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/mointorInfo/200001?beginDate=20
 - 请求地址：
 
 ```
-/front/ratio/{nodeId}?gap={gap}&beginDate={beginDate}&endDate={endDate}&contrastBeginDate={contrastBeginDate}&contrastEndDate={contrastEndDate}
+/front/ratio/{frontId}?gap={gap}&beginDate={beginDate}&endDate={endDate}&contrastBeginDate={contrastBeginDate}&contrastEndDate={contrastEndDate}
 ```
 
 - 请求方式：GET
