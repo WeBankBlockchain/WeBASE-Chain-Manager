@@ -79,11 +79,22 @@ public class ConstantCode {
     public static final RetCode ENCRYPT_TYPE_NOT_MATCH =
             RetCode.mark(205020, "front's encrypt type not match");
     
-    public static final RetCode CHAIN_EXISTS = RetCode.mark(205003, "chain name already exists");
+    public static final RetCode CHAIN_EXISTS = RetCode.mark(205021, "chain name already exists");
     
-    public static final RetCode SAVE_CHAIN_FAIL = RetCode.mark(205006, "save chain fail");
+    public static final RetCode SAVE_CHAIN_FAIL = RetCode.mark(205022, "save chain fail");
     
-    public static final RetCode INVALID_CHAIN_ID = RetCode.mark(205000, "invalid chain id");
+    public static final RetCode INVALID_CHAIN_ID = RetCode.mark(205023, "invalid chain id");
+    
+    public static final RetCode USER_EXISTS = RetCode.mark(205024, "user already exists");
+    
+    public static final RetCode PUBLICKEY_NULL = RetCode.mark(205025, "publicKey cannot be empty");
+    
+    public static final RetCode PUBLICKEY_LENGTH_ERROR = RetCode
+            .mark(205026, "publicKey's length is 130,address's length is 42");
+    
+    public static final RetCode USER_ID_NULL = RetCode.mark(205027, "user id cannot be empty");
+
+    public static final RetCode INVALID_USER = RetCode.mark(205028, "invalid user");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");

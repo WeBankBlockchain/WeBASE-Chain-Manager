@@ -26,6 +26,7 @@ import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
+import com.webank.webase.chain.mgr.user.UserService;
 import java.util.List;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
@@ -53,6 +54,8 @@ public class ChainService {
     private NodeService nodeService;
     @Autowired
     private ContractService contractService;
+    @Autowired
+    private UserService userService;
     @Autowired
     private FrontGroupMapCache frontGroupMapCache;
     @Autowired
@@ -132,6 +135,8 @@ public class ChainService {
         nodeService.deleteByChainId(chainId);
         // remove contract
         contractService.deleteContractByChainId(chainId);
+        // remove user and key
+        userService.deleteByChainId(chainId);
         // reset group list
         resetGroupListTask.asyncResetGroupList();
         // clear cache

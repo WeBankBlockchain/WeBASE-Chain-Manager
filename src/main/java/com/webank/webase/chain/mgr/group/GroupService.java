@@ -40,6 +40,7 @@ import com.webank.webase.chain.mgr.group.entity.TbGroup;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.node.entity.TbNode;
+import com.webank.webase.chain.mgr.user.UserService;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -76,6 +77,8 @@ public class GroupService {
     private NodeService nodeService;
     @Autowired
     private ContractService contractService;
+    @Autowired
+    private UserService userService;
     @Autowired
     private ConstantProperties constants;
 
@@ -267,7 +270,7 @@ public class GroupService {
             frontParam.setChainId(chainId);
             List<TbFront> frontList = frontService.getFrontList(frontParam);
             if (frontList == null || frontList.size() == 0) {
-                log.info("not fount any front.");
+                log.info("chain {} not fount any front.", chainId);
                 // remove all group
                 // removeAllGroup(chainId);
                 continue;
@@ -488,6 +491,8 @@ public class GroupService {
         nodeService.deleteByGroupId(chainId, groupId);
         // remove contract
         contractService.deleteByGroupId(chainId, groupId);
+        //remove user and key
+        userService.deleteByGroupId(chainId, groupId);
     }
 
     /**

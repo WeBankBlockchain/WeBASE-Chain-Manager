@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019 the original author or authors.
+ * Copyright 2014-2019  the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,28 +11,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.front.entity;
+package com.webank.webase.chain.mgr.user.entity;
 
-import java.util.List;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * param of send transaction.
- */
 @Data
 @NoArgsConstructor
-public class TransactionParam {
+public class UpdateUserInputParam {
+
     @NotNull
-    private Integer groupId;
-    private String user;
+    public Integer userId;
     @NotBlank
-    private String contractName;
-    @NotBlank
-    private String funcName;
-    private String contractAddress;
-    private Boolean useAes;
-    private List<Object> funcParam;
+    public String description;
 }

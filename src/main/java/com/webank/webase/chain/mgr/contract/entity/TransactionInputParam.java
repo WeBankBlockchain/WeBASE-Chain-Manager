@@ -26,5 +26,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 public class TransactionInputParam extends TransactionParam {
     @NotNull
+    private Integer chainId;
+    @NotNull
     private Integer contractId;
 }
