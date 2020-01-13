@@ -45,7 +45,7 @@ import dialog from "./groupdialog";
 import router from "@/router";
 import { getChains } from "@/api/api";
 // import { delCookie } from '@/util/util'
-// import Bus from "@/bus"
+import Bus from "@/bus"
 export default {
     name: "conetnt-head",
     props: {
@@ -90,11 +90,17 @@ export default {
             chainList: []
         };
     },
+    beforeDestroy: function () {
+        Bus.$off("delete")
+    },
     mounted: function () {
         if (localStorage.getItem("chainName")) {
             this.chainName = localStorage.getItem("chainName");
         }
         this.getChainList();
+        Bus.$on('delete',data => {
+            this.getChainList()
+        })
     },
     methods: {
         getChainList: function(){
@@ -102,10 +108,34 @@ export default {
                 if(res.data.code === 0){
                     this.chainList = res.data.data
                     if(!localStorage.getItem('chainId')){
-                        localStorage.setItem("chainId",res.data.data[0].chainId)
-                        localStorage.setItem("chainName",res.data.data[0].chainName)
+                        if(res.data.data.length){
+                            localStorage.setItem("chainId",res.data.data[0].chainId);
+                            localStorage.setItem("chainName",res.data.data[0].chainName);
+                            this.chainName = localStorage.getItem('chainName')
+                        }else{
+                            localStorage.setItem("chainId","");
+                            localStorage.setItem("chainName","");
+                            this.chainName = ""
+                        }
                     }else{
-
+                        let num = 0
+                        for(let i = 0; i < this.chainList.length; i++){
+                            if(this.chainList[i].chainId == localStorage.getItem('chainId')){
+                                num++
+                            }
+                        }
+                        if(num == 0){
+                            if(this.chainList && this.chainList.length){
+                                localStorage.setItem("chainId",this.chainList[0].chainId);
+                                localStorage.setItem("chainName",this.chainList[0].chainName);
+                                this.chainName = localStorage.getItem('chainName')
+                            }else{
+                                localStorage.setItem("chainId","");
+                                localStorage.setItem("chainName","");
+                                this.chainName = ""
+                            }
+                            
+                        }
                     }
                 }
             }).catch(err => {
@@ -134,16 +164,10 @@ export default {
             this.$emit('changGroup', val.chainId);
             this.dialogShow = true;
         },
-        // changGroupSucess(val){
-
-        // },
         changeNetwork: function() {
             this.chainName = localStorage.getItem("chainName");
             this.dialogShow = false;
         },
-        // close: function() {
-        //     this.dialogShow = false;
-        // },
         skip: function () {
             if (this.route) {
                 this.$router.push(this.way);
@@ -151,15 +175,6 @@ export default {
                 this.$router.go(-1);
             }
         },
-        // signOut: function () {
-        //     localStorage.removeItem("user");
-        //     loginOut()
-        //         .then()
-        //         .catch();
-        //     delCookie("JSESSIONID");
-        //     delCookie("NODE_MGR_ACCOUNT_C");
-        //     this.$router.push("/login");
-        // },
         changePassword: function () {
             this.changePasswordDialogVisible = true;
         },

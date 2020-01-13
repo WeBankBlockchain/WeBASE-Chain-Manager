@@ -57,6 +57,7 @@ import contentHead from "@/components/contentHead";
 import { getChains,deleteChain } from "@/api/api"
 import addChain from "./dialog/addChain"
 import errCode from "@/util/errCode"
+import Bus from "@/bus"
 export default {
     name: "chain",
     components: {
@@ -95,6 +96,7 @@ export default {
             })
         },
         addChainClose: function(){
+            Bus.$emit("delete")
             this.addChainShow = false;
             this.getChainList()
         },
@@ -119,6 +121,7 @@ export default {
                         type: 'success',
                         message: '删除成功'
                     }); 
+                    Bus.$emit("delete")
                     this.getChainList()
                 }else {
                     this.$message({
