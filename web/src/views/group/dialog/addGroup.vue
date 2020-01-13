@@ -79,7 +79,7 @@ export default {
                 generateGroupId: [
                     {
                         required: true,
-                        message: "请输入ip名称",
+                        message: "请输入群组编号",
                         trigger: "blur"
                     }
                 ]

@@ -61,7 +61,9 @@ export default {
         }
     },
     mounted: function(){
-        this.getGroupList()
+        if(localStorage.getItem('chainId')){
+            this.getGroupList()
+        }
     },
     methods: {
         changGroup: function(){
@@ -71,7 +73,6 @@ export default {
             this.addGroupShow = true
         },
         getGroupList: function(){
-            
             getGroups(localStorage.getItem('chainId')).then(res => {
                 if(res.data.code === 0){
                     this.groupData = res.data.data
@@ -90,7 +91,9 @@ export default {
         },
         addGroupClose: function(){
             this.addGroupShow = false;
-            this.getGroupList()
+            if(localStorage.getItem('chainId')){
+                this.getGroupList()
+            }
         },
         route: function(row){
             router.push({

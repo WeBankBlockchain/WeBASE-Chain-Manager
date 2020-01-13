@@ -41,7 +41,7 @@
 </template>
 <script>
 import { addFront } from "@/api/api"
-// import errcode from "@/util/errcode";
+import errCode from "@/util/errCode"
 export default {
     name: "setFront",
     props: ["show", 'showClose'],
@@ -137,7 +137,7 @@ export default {
                     this.$emit("close")
                 } else {
                     this.$message({
-                        message: errcode.errCode[res.data.code].cn || '添加前置失败',
+                        message: errCode.errCode[res.data.code].zh,
                         type: "error"
                     });
                 }

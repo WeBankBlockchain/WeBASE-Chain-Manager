@@ -94,8 +94,10 @@ export default {
         }
     },
     mounted: function(){
-        this.getFrontList();
-        this.getGroupList()
+        if(localStorage.getItem('chainId')){
+            this.getFrontList();
+            this.getGroupList()
+        }
     },
     methods: {
         changGroup: function(){
@@ -110,8 +112,9 @@ export default {
         },
         setFrontClose: function(){
             this.setFrontShow = false;
-            this.getFrontList()
-
+            if(localStorage.getItem('chainId')){
+                 this.getFrontList()
+            }
         },
         getFrontList: function(){
             let data = {
