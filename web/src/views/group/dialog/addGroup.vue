@@ -134,10 +134,17 @@ export default {
                     this.groupId = res.data.data.groupId
                     this.startAllGroup(this.groupId,this.groupFrom.nodeList)
                 }else {
-                    this.$message({
-                        type: "error",
-                        message: errCode.errCode[res.data.code].zh
-                    })
+                    if (res.data.code == 4 || res.data.code == 5 || res.data.code == 6 || res.data.code == 7){
+                        this.$message({
+                            type: "error",
+                            message: res.data.message
+                        })
+                    }else{
+                        this.$message({
+                            type: "error",
+                            message: errCode.errCode[res.data.code].zh
+                        })
+                    }
                 }
             }).catch(err => {
                 this.$message({
@@ -156,10 +163,17 @@ export default {
                 if(res.data.code === 0){
                     this.update()
                 }else {
-                    this.$message({
-                        type: "error",
-                        message: errCode.errCode[res.data.code].zh
-                    })
+                    if (res.data.code == 4 || res.data.code == 5 || res.data.code == 6 || res.data.code == 7){
+                        this.$message({
+                            type: "error",
+                            message: res.data.message
+                        })
+                    }else{
+                        this.$message({
+                            type: "error",
+                            message: errCode.errCode[res.data.code].zh
+                        })
+                    }
                 }
             }).catch(err => {
                 this.$message({
@@ -178,10 +192,17 @@ export default {
                     this.loading = false;
                     this.modelClose();
                 }else {
-                    this.$message({
-                        type: "error",
-                        message: errCode.errCode[res.data.code].zh
-                    })
+                    if (res.data.code == 4 || res.data.code == 5 || res.data.code == 6 || res.data.code == 7){
+                        this.$message({
+                            type: "error",
+                            message: res.data.message
+                        })
+                    }else{
+                        this.$message({
+                            type: "error",
+                            message: errCode.errCode[res.data.code].zh
+                        })
+                    }
                 }
             }).catch(err => {
                 this.$message({
