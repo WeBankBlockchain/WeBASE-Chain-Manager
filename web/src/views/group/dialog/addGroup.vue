@@ -130,6 +130,7 @@ export default {
                 description: this.groupFrom.description
             }
             addGroup(data).then(res => {
+                this.loading = false;
                 if(res.data.code === 0){
                     this.groupId = res.data.data.groupId
                     this.startAllGroup(this.groupId,this.groupFrom.nodeList)
@@ -147,6 +148,7 @@ export default {
                     }
                 }
             }).catch(err => {
+                this.loading = false;
                 this.$message({
                     type: "error",
                     message: "系统错误"
