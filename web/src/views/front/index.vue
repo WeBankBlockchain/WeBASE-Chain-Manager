@@ -64,6 +64,14 @@
                         label="创建时间"
                         width="180">
                     </el-table-column>
+                    <el-table-column
+                        fixed="right"
+                        label="操作"
+                        width="100">
+                        <template slot-scope="scope">
+                            <el-button @click="handleClick(scope.row)" type="text" size="small">删除</el-button>
+                        </template>
+                    </el-table-column>
                 </el-table>
              </div>
         </div>
@@ -74,7 +82,7 @@
 <script>
 import contentHead from "@/components/contentHead";
 import setFront from "./dialog/setFront"
-import { getFronts,getGroups } from "@/api/api"
+import { getFronts,getGroups,delFront } from "@/api/api"
 import router from "@/router"
 import errCode from "@/util/errCode"
 
@@ -154,6 +162,41 @@ export default {
                     if(res.data.data.length){
                         this.groupId = res.data.data[0].groupId
                     }
+                }else {
+                    this.$message({
+                        type: "error",
+                        message: errCode.errCode[res.data.code].zh
+                    })
+                }
+            }).catch(err => {
+                this.$message({
+                    type: "error",
+                    message: "系统错误"
+                })
+            })
+        },
+        handleClick: function(val){
+            this.$confirm('此操作将在数据库删除该前置,删除后可以再次添加 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+                }).then(() => {
+                    this.deleteData(val)
+                }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });          
+            });
+        },
+        deleteData (val) {
+            delFront(val.frontId).then(res => {
+                if(res.data.code === 0){
+                    this.$message({
+                        type: 'success',
+                        message: '删除成功'
+                    });
+                    this.getFrontList()
                 }else {
                     this.$message({
                         type: "error",

@@ -93,6 +93,7 @@ export default {
                 description: this.chainFrom.description
             }
             addChain(data).then(res => {
+                this.loading = false
                 if(res.data.code === 0){
                     this.modelClose();
                 }else {
@@ -102,6 +103,7 @@ export default {
                     })
                 }
             }).catch(err => {
+                this.loading = false
                 this.$message({
                     type: "error",
                     message: "系统错误"
