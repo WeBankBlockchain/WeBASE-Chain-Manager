@@ -122,6 +122,18 @@ let errCode = {
     "305000": {
         en: "param exception",
         zh: "参数异常"
+    },
+    "4": {
+        en: "param exception",
+        zh: "参数异常"
+    },
+    "5": {
+        en: "node exception",
+        zh: "节点异常"
+    },
+    "6": {
+        en: "no connection with the corresponding node",
+        zh: "未与相应节点建立连接"
     }
 }
 

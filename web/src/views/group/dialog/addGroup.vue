@@ -135,17 +135,10 @@ export default {
                     this.groupId = res.data.data.groupId
                     this.startAllGroup(this.groupId,this.groupFrom.nodeList)
                 }else {
-                    if (res.data.code == 4 || res.data.code == 5 || res.data.code == 6 || res.data.code == 7){
-                        this.$message({
-                            type: "error",
-                            message: res.data.message
-                        })
-                    }else{
-                        this.$message({
-                            type: "error",
-                            message: errCode.errCode[res.data.code].zh
-                        })
-                    }
+                    this.$message({
+                        type: "error",
+                        message: errCode.errCode[res.data.code].zh || "新建群组失败"
+                    })
                 }
             }).catch(err => {
                 this.loading = false;
@@ -165,17 +158,10 @@ export default {
                 if(res.data.code === 0){
                     this.update()
                 }else {
-                    if (res.data.code == 4 || res.data.code == 5 || res.data.code == 6 || res.data.code == 7){
-                        this.$message({
-                            type: "error",
-                            message: res.data.message
-                        })
-                    }else{
-                        this.$message({
-                            type: "error",
-                            message: errCode.errCode[res.data.code].zh
-                        })
-                    }
+                    this.$message({
+                        type: "error",
+                         message: errCode.errCode[res.data.code].zh || "启动群组失败"
+                    })
                 }
             }).catch(err => {
                 this.$message({
@@ -194,17 +180,10 @@ export default {
                     this.loading = false;
                     this.modelClose();
                 }else {
-                    if (res.data.code == 4 || res.data.code == 5 || res.data.code == 6 || res.data.code == 7){
-                        this.$message({
-                            type: "error",
-                            message: res.data.message
-                        })
-                    }else{
-                        this.$message({
-                            type: "error",
-                            message: errCode.errCode[res.data.code].zh
-                        })
-                    }
+                    this.$message({
+                        type: "error",
+                        message: errCode.errCode[res.data.code].zh || "群组更新失败"
+                    })
                 }
             }).catch(err => {
                 this.$message({
