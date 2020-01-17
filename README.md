@@ -4,7 +4,8 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f5be085401f54e7080a654693ac260d4)](https://www.codacy.com/gh/WeBankFinTech/WeBASE-Front?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=WeBankFinTech/WeBASE-Chain-Manager&amp;utm_campaign=Badge_Grade)
 [![Code Lines](https://tokei.rs/b1/github/WeBankFinTech/WeBASE-Front?category=code)](https://github.com/WeBankFinTech/WeBASE-Chain-Manager)
 [![license](http://img.shields.io/badge/license-Apache%20v2-blue.svg)](http://www.apache.org/licenses/)
-[![GitHub (pre-)release](https://img.shields.io/github/release/WeBankFinTech/WeBASE-Chain-Manager/all.svg)](https://github.com/WeBankFinTech/WeBASE-Chain-Manager/releases)
+
+
 ## 简介
 WeBASE-Chain-Manager为链管理服务，可以管理链、群组和节点前置。支持管理国密/非国密链、新建/启动群组等。
 
