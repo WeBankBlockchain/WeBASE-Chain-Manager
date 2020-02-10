@@ -233,7 +233,7 @@ public class FrontService {
      */
     public Object getNodeMonitorInfo(Integer frontId, LocalDateTime beginDate,
             LocalDateTime endDate, LocalDateTime contrastBeginDate, LocalDateTime contrastEndDate,
-            int gap, int groupId) {
+        int gap, int groupId) {
         log.debug(
                 "start getNodeMonitorInfo.  frontId:{} beginDate:{} endDate:{}"
                         + " contrastBeginDate:{} contrastEndDate:{} gap:{} groupId:{}",
