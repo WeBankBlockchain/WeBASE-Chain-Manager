@@ -13,7 +13,7 @@ module.exports = {
     proxyTable: {
         '/chain':{
                   
-          target:'http://127.0.0.1:5105',
+          target:'http://127.0.0.1:5005',
           changeOrigin:true,
           pathRewrite:{
               '^/chain':''
