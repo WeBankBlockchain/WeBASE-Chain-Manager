@@ -20,9 +20,10 @@
 
 | 序号 | 输入参数    | 类型   | 可为空 | 备注                       |
 | ---- | ----------- | ------ | ------ | -------------------------- |
-| 1    | chainName   | string | 否     | 链名称                     |
-| 2    | chainType   | int    | 否     | 链类型（0-非国密，1-国密） |
-| 3    | description | string | 是     | 备注                       |
+| 1    | chainId     | int    | 否     | 链编号                     |
+| 2    | chainName   | string | 否     | 链名称                     |
+| 3    | chainType   | int    | 否     | 链类型（0-非国密，1-国密） |
+| 4    | description | string | 是     | 备注                       |
 
 ***2）入参示例***
 
@@ -32,6 +33,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/chain/new
 
 ```
 {
+    "chainId": 100001,
     "chainName": "链一",
     "chainType": 0,
     "description": "test"
@@ -753,16 +755,16 @@ http://127.0.0.1:5001/WeBASE-Node-Manager/front/config/200001
 }
 ```
 
-### 3 群组管理模块
+## 3 群组管理模块
 
 ### 3.1 生成新群组
 
-​	节点和前置一一对应，节点编号可以从前置列表获取。
+​	向单个节点请求生成新群组配置信息，节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于不同链管理服务，每个节点都要请求一遍。
 
 #### 3.1.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址： **/group/generate**
+- 请求地址： **/group/generate/{nodeId}**
 - 请求方式：POST
 - 请求头：Content-type: application/json
 - 返回格式：JSON
@@ -771,18 +773,18 @@ http://127.0.0.1:5001/WeBASE-Node-Manager/front/config/200001
 
 ***1）入参表***
 
-| 序号 | 输入参数        | 类型         | 可为空 | 备注                   |
-| ---- | --------------- | ------------ | ------ | ---------------------- |
-| 1    | chainId         | int          | 否     | 链编号                 |
-| 2    | generateGroupId | int          | 否     | 生成的群组编号         |
-| 3    | timestamp       | BigInteger   | 否     | 创世块时间（单位：ms） |
-| 4    | nodeList        | List<String> | 否     | 节点编号列表           |
-| 5    | description     | string       | 是     | 备注                   |
+| 序号 | 输入参数        | 类型         | 可为空 | 备注                                 |
+| ---- | --------------- | ------------ | ------ | ------------------------------------ |
+| 1    | chainId         | int          | 否     | 链编号                               |
+| 2    | generateGroupId | int          | 否     | 生成的群组编号                       |
+| 3    | timestamp       | BigInteger   | 否     | 创世块时间（单位：ms）               |
+| 4    | nodeList        | List<String> | 否     | 节点编号列表（新群组的所有节点编号） |
+| 5    | description     | string       | 是     | 备注                                 |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate/78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2
 ```
 
 ```
@@ -844,18 +846,107 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 }
 ```
 
-### 3.2 启动群组
+### 3.2 批量生成新群组
 
-​	生成新群组后，新群组下每一个节点都要启动，节点和前置一一对应。
+​	向新群组下所有节点请求生成新群组配置信息，节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于同一个链管理服务。
 
 #### 3.2.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/group/generate**
+- 请求方式：POST
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 3.2.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数        | 类型         | 可为空 | 备注                                 |
+| ---- | --------------- | ------------ | ------ | ------------------------------------ |
+| 1    | chainId         | int          | 否     | 链编号                               |
+| 2    | generateGroupId | int          | 否     | 生成的群组编号                       |
+| 3    | timestamp       | BigInteger   | 否     | 创世块时间（单位：ms）               |
+| 4    | nodeList        | List<String> | 否     | 节点编号列表（新群组的所有节点编号） |
+| 5    | description     | string       | 是     | 备注                                 |
+
+***2）入参示例***
+
+```
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
+```
+
+```
+{
+    "chainId": 100001,
+    "generateGroupId": 2,
+    "timestamp": 1574853659000,
+    "nodeList": [
+       "78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2"
+    ],
+    "description": "description"
+}
+```
+
+#### 3.2.3 返回参数
+
+***1）出参表***
+
+| 序号 | 输出参数    | 类型          |      | 备注                       |
+| ---- | ----------- | ------------- | ---- | -------------------------- |
+| 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message     | String        | 否   | 描述                       |
+| 3    | data        | Object        | 否   | 组织信息对象               |
+| 3.1  | groupId     | int           | 否   | 群组编号                   |
+| 3.2  | chainId     | int           | 否   | 链编号                     |
+| 3.3  | groupName   | String        | 否   | 群组名称                   |
+| 3.4  | nodeCount   | int           | 否   | 节点数量                   |
+| 3.5  | description | String        | 是   | 描述                       |
+| 3.6  | createTime  | LocalDateTime | 否   | 落库时间                   |
+| 3.7  | modifyTime  | LocalDateTime | 否   | 修改时间                   |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "groupId": 2,
+        "chainId": 100001,
+        "groupName": "group2",
+        "nodeCount": 1,
+        "description": "test",
+        "createTime": "2019-02-14 17:33:50",
+        "modifyTime": "2019-03-15 09:36:17"
+    }
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 102000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
+### 3.3 启动群组
+
+​	生成新群组后，新群组下每一个节点都要启动，节点和前置一一对应。适用于新群组下的节点属于不同链管理服务，每个节点都要请求一遍。
+
+#### 3.3.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
 - 请求地址：**/start/{chainId}/{startGroupId}/{nodeId}**
 - 请求方式：GET
 - 返回格式：JSON
 
-#### 3.2.2 请求参数
+#### 3.3.2 请求参数
 
 ***1）入参表***
 
@@ -871,7 +962,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 http://127.0.0.1:5005/WeBASE-Chain-Manager/group/start/100001/2/78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2
 ```
 
-#### 3.2.3 返回参数 
+#### 3.3.3 返回参数 
 
 ***1）出参表***
 
@@ -903,11 +994,11 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/start/100001/2/78e467957af3d0f7
 }
 ```
 
-### 3.3 批量启动群组
+### 3.4 批量启动群组
 
-​	节点和前置一一对应，节点编号可以从前置列表获取。
+​	节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于同一个链管理服务。
 
-#### 3.3.1 传输协议规范
+#### 3.4.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
 - 请求地址： **/group/batchStart**
@@ -915,7 +1006,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/start/100001/2/78e467957af3d0f7
 - 请求头：Content-type: application/json
 - 返回格式：JSON
 
-#### 3.3.2 请求参数
+#### 3.4.2 请求参数
 
 ***1）入参表***
 
@@ -941,7 +1032,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 }
 ```
 
-#### 3.3.3 返回参数
+#### 3.4.3 返回参数
 
 ***1）出参表***
 
@@ -973,18 +1064,18 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 }
 ```
 
-### 3.4 更新群组
+### 3.5 更新群组
 
 ​	生成新群组并启动新群组的每一个节点后，调用此接口更新群组相关信息。
 
-#### 3.4.1 传输协议规范
+#### 3.5.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
 - 请求地址：**/update**
 - 请求方式：GET
 - 返回格式：JSON
 
-#### 3.4.2 请求参数
+#### 3.5.2 请求参数
 
 ***1）入参表***
 
@@ -996,7 +1087,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 http://127.0.0.1:5005/WeBASE-Chain-Manager/group/update
 ```
 
-#### 3.4.3 返回参数 
+#### 3.5.3 返回参数 
 
 ***1）出参表***
 
@@ -1028,16 +1119,16 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/update
 }
 ```
 
-### 3.5 获取群组概况
+### 3.6 获取群组概况
 
-#### 3.5.1 传输协议规范
+#### 3.6.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
 - 请求地址：**/group/general/{chainId}/{groupId}**
 - 请求方式：GET
 - 返回格式：JSON
 
-#### 3.5.2 请求参数
+#### 3.6.2 请求参数
 
 ***1）入参表***
 
@@ -1052,7 +1143,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/update
 http://127.0.0.1:5005/WeBASE-Chain-Manager/group/100001/300001
 ```
 
-#### 3.5.3 返回参数 
+#### 3.6.3 返回参数 
 
 ***1）出参表***
 
@@ -1089,16 +1180,16 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/100001/300001
 }
 ```
 
-### 3.6 获取所有群组列表
+### 3.7 获取所有群组列表
 
-#### 3.6.1 传输协议规范
+#### 3.7.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
 - 请求地址：**/group/all/{chainId}**
 - 请求方式：GET
 - 返回格式：JSON
 
-#### 3.6.2 请求参数
+#### 3.7.2 请求参数
 
 ***1）入参表***
 无
@@ -1109,7 +1200,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/100001/300001
 http://127.0.0.1:5005/WeBASE-Chain-Manager/group/all/100001
 ```
 
-#### 3.6.3 返回参数 
+#### 3.7.3 返回参数 
 
 ***1）出参表***
 
@@ -2280,4 +2371,5 @@ http://127.0.0.1:5001/WeBASE-Node-Manager/user/userList/100001/1/1/10?userParam=
 | 205026 | publicKey's length is 130,address's length is 42 | 公钥或地址长度不对 |
 | 205027 | user id cannot be empty                          | 用户编号不能为空   |
 | 205028 | invalid user                                     | 无效用户           |
+| 205029 | chain id already exists                          | 链编号已存在       |
 | 305000 | param exception                                  | 参数异常           |

@@ -3,7 +3,7 @@
 -- ----------------------------
 DROP TABLE IF EXISTS tb_chain;
 CREATE TABLE tb_chain (
-  chain_id int(11) NOT NULL AUTO_INCREMENT COMMENT '区块链编号',
+  chain_id int(11) NOT NULL COMMENT '区块链编号',
   chain_name varchar(120) DEFAULT NULL COMMENT '区块链名称',
   chain_type tinyint(4) DEFAULT '0' COMMENT '类型（ 0-非国密 1-国密）',
   description varchar(1024) COMMENT '描述',
@@ -11,7 +11,7 @@ CREATE TABLE tb_chain (
   modify_time datetime DEFAULT NULL COMMENT '修改时间',
   PRIMARY KEY (chain_id),
   UNIQUE KEY unique_name (chain_name)
-) ENGINE=InnoDB AUTO_INCREMENT=100001 DEFAULT CHARSET=utf8 COMMENT='区块链信息表';
+) ENGINE=InnoDB CHARSET=utf8 COMMENT='区块链信息表';
 
 -- ----------------------------
 -- Table structure for tb_group

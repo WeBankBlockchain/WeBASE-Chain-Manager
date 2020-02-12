@@ -13,11 +13,8 @@
   </resultMap>
 
   <insert id="add">
-    insert ignore into tb_chain (chain_name,chain_type,description,create_time,modify_time)
-    values(#{chainName},#{chainType},#{description},NOW(),NOW())
-    <selectKey keyProperty="chainId" order="AFTER" resultType="java.lang.Integer">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
+    insert ignore into tb_chain (chain_id,chain_name,chain_type,description,create_time,modify_time)
+    values(#{chainId},#{chainName},#{chainType},#{description},NOW(),NOW())
   </insert>
 
   <select id="getCount" resultType="java.lang.Integer" parameterType="com.webank.webase.chain.mgr.chain.entity.ChainParam">

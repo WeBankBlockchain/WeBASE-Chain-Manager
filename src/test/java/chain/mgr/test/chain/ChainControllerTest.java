@@ -52,6 +52,7 @@ public class ChainControllerTest {
     @Test
     public void testNewChain() throws Exception {
         ChainInfo param = new ChainInfo();
+        param.setChainId(1001);
         param.setChainName("aaa");
         param.setChainType(0);
         param.setDescription("test");
