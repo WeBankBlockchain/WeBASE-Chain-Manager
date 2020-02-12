@@ -3,12 +3,13 @@
         <el-dialog title="新增区块链" :visible.sync="dialogVisible" :before-close="modelClose" class="dialog-wrapper" width="400px" :center="true" :show-close='true'>
             <div>
                 <el-form :model="chainFrom" :rules="rules" ref="chainFrom" label-width="100px" class="demo-ruleForm">
-                    <el-form-item label="区块链名称" prop="chainName" style="width:330px">
-                        <el-input v-model="chainFrom.chainName"></el-input>
-                    </el-form-item>
                     <el-form-item label="区块链编号" prop="chainId" style="width:330px">
                         <el-input v-model="chainFrom.chainId"></el-input>
                     </el-form-item>
+                    <el-form-item label="区块链名称" prop="chainName" style="width:330px">
+                        <el-input v-model="chainFrom.chainName"></el-input>
+                    </el-form-item>
+                    
                     <el-form-item label="区块链类型" prop="type" style="width:330px">
                         <el-select v-model="chainFrom.type" placeholder="请选择">
                             <el-option
