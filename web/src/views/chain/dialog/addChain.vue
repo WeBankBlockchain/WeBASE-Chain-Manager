@@ -6,6 +6,9 @@
                     <el-form-item label="区块链名称" prop="chainName" style="width:330px">
                         <el-input v-model="chainFrom.chainName"></el-input>
                     </el-form-item>
+                    <el-form-item label="区块链编号" prop="chainId" style="width:330px">
+                        <el-input v-model="chainFrom.chainId"></el-input>
+                    </el-form-item>
                     <el-form-item label="区块链类型" prop="type" style="width:330px">
                         <el-select v-model="chainFrom.type" placeholder="请选择">
                             <el-option
@@ -40,6 +43,7 @@ export default {
             dialogVisible: this.show,
             chainFrom: {
                 chainName: "",
+                chainId: "",
                 type: 0,
                 description: ""
             },
@@ -49,6 +53,18 @@ export default {
                     {
                         required: true,
                         message: "请输入区块链名称",
+                        trigger: "blur"
+                    }
+                ],
+                chainId: [
+                    {
+                        required: true,
+                        message: "请输入区块链编号",
+                        trigger: "blur"
+                    },
+                    {
+                        pattren: /^[0-9]*$/,
+                        message: "区块链编号仅允许数字和英文",
                         trigger: "blur"
                     }
                 ],
@@ -90,7 +106,8 @@ export default {
             let data = {
                 chainName: this.chainFrom.chainName,
                 chainType: this.chainFrom.type,
-                description: this.chainFrom.description
+                description: this.chainFrom.description,
+                chainId: this.chainFrom.chainId,
             }
             addChain(data).then(res => {
                 this.loading = false
