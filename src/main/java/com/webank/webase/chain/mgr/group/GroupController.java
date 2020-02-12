@@ -53,6 +53,26 @@ public class GroupController extends BaseController {
     private ResetGroupListTask resetGroupListTask;
 
     /**
+     * generate group to single node.
+     */
+    @PostMapping("/generate/{nodeId}")
+    public BaseResponse generateToSingleNode(@PathVariable("nodeId") String nodeId,
+            @RequestBody @Valid ReqGenerateGroup req, BindingResult result)
+            throws NodeMgrException {
+        checkBindResult(result);
+        Instant startTime = Instant.now();
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("start generateToSingleNode startTime:{} nodeId:{}", startTime.toEpochMilli(),
+                nodeId);
+        TbGroup tbGroup = groupService.generateToSingleNode(nodeId, req);
+        baseResponse.setData(tbGroup);
+        log.info("end generateToSingleNode useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(baseResponse));
+        return baseResponse;
+    }
+
+    /**
      * generate group.
      */
     @PostMapping("/generate")
@@ -65,7 +85,7 @@ public class GroupController extends BaseController {
                 req.getGenerateGroupId());
         TbGroup tbGroup = groupService.generateGroup(req);
         baseResponse.setData(tbGroup);
-        log.info("end getGroupGeneral useTime:{} result:{}",
+        log.info("end generateGroup useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(baseResponse));
         return baseResponse;

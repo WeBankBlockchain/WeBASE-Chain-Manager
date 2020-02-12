@@ -44,7 +44,7 @@ import org.springframework.web.context.WebApplicationContext;
 public class GroupControllerTest {
     
     private MockMvc mockMvc;
-    private Integer chainId = 100001;
+    private Integer chainId = 1001;
     private String nodeId = "6d8d03b04da71c48273a19a24a34d9fe7b48155d3450e697f6a7c6012d0b22a82b53c25ecbe455c8fa439ceb556dd8c885c3d82309d375d355d6ae662f00a2ac";
 
     @Autowired
@@ -53,6 +53,28 @@ public class GroupControllerTest {
     @Before
     public void setUp() throws Exception {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    }
+    
+    @Test
+    public void testGenerateSingle() throws Exception {
+        List<String> nodeList = new ArrayList<>();
+        nodeList.add(nodeId);
+        
+        ReqGenerateGroup param = new ReqGenerateGroup();
+        param.setChainId(chainId);
+        param.setGenerateGroupId(2);
+        param.setTimestamp(BigInteger.valueOf(new Date().getTime()));
+        param.setNodeList(nodeList);
+        param.setDescription("test");
+        
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/group/generate/6d8d03b04da71c48273a19a24a34d9fe7b48155d3450e697f6a7c6012d0b22a82b53c25ecbe455c8fa439ceb556dd8c885c3d82309d375d355d6ae662f00a2ac").
+                content(JSON.toJSONString(param)).
+                contentType(MediaType.APPLICATION_JSON)
+                );
+        resultActions.
+        andExpect(MockMvcResultMatchers.status().isOk()).
+        andDo(MockMvcResultHandlers.print());
+        System.out.println("response:"+resultActions.andReturn().getResponse().getContentAsString());
     }
     
     @Test

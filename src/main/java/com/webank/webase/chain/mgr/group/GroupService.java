@@ -88,6 +88,40 @@ public class GroupService {
      * @param req info
      * @return
      */
+    public TbGroup generateToSingleNode(String nodeId, ReqGenerateGroup req) {
+        // check id
+        Integer chainId = req.getChainId();
+        Integer generateGroupId = req.getGenerateGroupId();
+        checkGroupIdExisted(chainId, generateGroupId);
+        
+        TbFront tbFront = frontService.getByNodeId(nodeId);
+        if (tbFront == null) {
+            log.error("fail generateToSingleNode node not exists.");
+            throw new NodeMgrException(ConstantCode.NODE_NOT_EXISTS);
+        }
+        // request front to generate
+        GenerateGroupInfo generateGroupInfo = new GenerateGroupInfo();
+        BeanUtils.copyProperties(req, generateGroupInfo);
+        GroupHandleResult groupHandleResult = frontInterface.generateGroup(tbFront.getFrontIp(),
+                tbFront.getFrontPort(), generateGroupInfo);
+        int code = NodeMgrTools.parseHexStr2Int(groupHandleResult.getCode());
+        // check result
+        if (!GenerateNormalStatus.isInclude(code)) {
+            log.error("fail generateToSingleNode nodeId:{} code:{}.", nodeId, code);
+            throw new NodeMgrException(code, groupHandleResult.getMessage());
+        }
+        // save group
+        TbGroup tbGroup = saveGroup(generateGroupId, chainId, req.getNodeList().size(),
+                req.getDescription(), GroupType.MANUAL.getValue());
+        return tbGroup;
+    }
+    
+    /**
+     * generate group to single node.
+     * 
+     * @param req info
+     * @return
+     */
     public TbGroup generateGroup(ReqGenerateGroup req) {
         // check id
         Integer chainId = req.getChainId();

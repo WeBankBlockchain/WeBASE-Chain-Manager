@@ -68,11 +68,18 @@ public class ChainService {
     public TbChain newChain(ChainInfo chainInfo) {
         log.debug("start newChain chainInfo:{}", chainInfo);
         
+        // check id
+        TbChain tbChainInfo = getChainById(chainInfo.getChainId());
+        if (tbChainInfo != null) {
+            throw new NodeMgrException(ConstantCode.CHAIN_ID_EXISTS);
+        }
+        
+        // check name
         ChainParam param = new ChainParam();
         param.setChainName(chainInfo.getChainName());
-        int count = getChainCount(param);
-        if (count > 0) {
-            throw new NodeMgrException(ConstantCode.CHAIN_EXISTS);
+        int nameCount = getChainCount(param);
+        if (nameCount > 0) {
+            throw new NodeMgrException(ConstantCode.CHAIN_NAME_EXISTS);
         }
         
         // copy attribute
@@ -80,12 +87,12 @@ public class ChainService {
         BeanUtils.copyProperties(chainInfo, tbChain);
         
         // save chain info
-        chainMapper.add(tbChain);
-        if (tbChain.getChainId() == null || tbChain.getChainId() == 0) {
+        int result = chainMapper.add(tbChain);
+        if (result == 0) {
             log.warn("fail newChain, after save, tbChain:{}", JSON.toJSONString(tbChain));
             throw new NodeMgrException(ConstantCode.SAVE_CHAIN_FAIL);
         }
-        return tbChain;
+        return getChainById(chainInfo.getChainId());
     }
 
     /**
