@@ -31,28 +31,6 @@
             <el-popover placement="bottom" width="120" min-width="50px" v-model='popoverShow' trigger="click">
                 <ul class="group-item">
                     <li class="group-item-list" v-for='item in chainList' :key='item.chainId' @click='changeGroup(item)'>{{item.chainName}}</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
-                    <li>1</li>
                 </ul>
                 <span slot="reference" class="contant-head-name" style="color: #fff" @click='checkGroup'>区块链: {{chainName || '-'}}</span>
             </el-popover>
