@@ -418,3 +418,7 @@ th {
 .el-pager li.active{
     color: #00c1d4
 }
+.el-popover{
+    max-height: 200px;
+    overflow-y: auto
+}

@@ -28,7 +28,7 @@
             <a v-if="headHref" target="_blank" :href="headHref.href" class="font-color-fff font-12">{{headHref.content}}</a>
         </div>
         <div class="content-head-network" style="padding-right: 40px;">
-            <el-popover placement="bottom" width="120" min-width="50px" trigger="click">
+            <el-popover placement="bottom" width="120" min-width="50px" v-model='popoverShow' trigger="click">
                 <ul class="group-item">
                     <li class="group-item-list" v-for='item in chainList' :key='item.chainId' @click='changeGroup(item)'>{{item.chainName}}</li>
                 </ul>
@@ -87,7 +87,8 @@ export default {
             way: this.route || "",
             changePasswordDialogVisible: false,
             groupList: [],
-            chainList: []
+            chainList: [],
+            popoverShow: false
         };
     },
     beforeDestroy: function () {
@@ -163,6 +164,7 @@ export default {
             localStorage.setItem("chainId", val.chainId);
             this.$emit('changGroup', val.chainId);
             this.dialogShow = true;
+            this.popoverShow = false
         },
         changeNetwork: function() {
             this.chainName = localStorage.getItem("chainName");
@@ -284,4 +286,5 @@ export default {
 .group-item-list:hover {
     color: #0db1c1;
 }
+
 </style>
