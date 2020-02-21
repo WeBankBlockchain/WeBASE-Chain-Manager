@@ -1745,7 +1745,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/200001
 | 7    | bytecodeBin       | String         | 否     | 合约bin                    |
 | 8    | contractId      | String         | 否     | 合约名称               |
 | 9    | contractPath      | String         | 否     | 合约所在目录               |
-| 10   | user              | String         | 否     | 私钥用户               |
+| 10   | user              | String         | 否     | 私钥用户address               |
 | 11    | constructorParams | List | 是     | 构造函数入参               |
 
 
@@ -1763,7 +1763,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/deploy
     "bytecodeBin": "60806040523480156100105761146031c79ef057dd274c87bff322ea2269b80029",
     "contractAbi": "[]",
     "contractSource": "cHJhZ21hIHNvbGlkaXR5IF4wLICAJbmFtZSA9IG47CiAgICB9Cn0=",
-    "user": 700006,
+    "user": "psw6ZZ/qUbS7xYK096ZDQ+U9TQhspdT01PH83BENVQVCUBrsd/tB2GrcSJmS2XHb/jNh+OxBAdktdq21Z9Da2v91NDsAp9DrpqRVCSFgYyg=",
     "contractName": "HeHe",
     "contractId": 400008,
     "contractPath": "Hi",
