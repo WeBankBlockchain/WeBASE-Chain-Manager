@@ -200,4 +200,38 @@ public class FrontController extends BaseController {
                 Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
         return response;
     }
+
+    /**
+     * check node process.
+     */
+    @GetMapping(value = "/checkNodeProcess/{frontId}")
+    public BaseResponse checkNodeProcess(@PathVariable("frontId") Integer frontId)
+            throws NodeMgrException {
+        Instant startTime = Instant.now();
+        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("start checkNodeProcess. startTime:{} frontId:{}", startTime.toEpochMilli(),
+                frontId);
+        Object frontRsp = frontService.checkNodeProcess(frontId);
+        response.setData(frontRsp);
+        log.info("end checkNodeProcess. useTime:{} response:{}",
+                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+        return response;
+    }
+
+    /**
+     * get group size infos.
+     */
+    @GetMapping(value = "/getGroupSizeInfos/{frontId}")
+    public BaseResponse getGroupSizeInfos(@PathVariable("frontId") Integer frontId)
+            throws NodeMgrException {
+        Instant startTime = Instant.now();
+        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("start getGroupSizeInfos. startTime:{} frontId:{}", startTime.toEpochMilli(),
+                frontId);
+        Object frontRsp = frontService.getGroupSizeInfos(frontId);
+        response.setData(frontRsp);
+        log.info("end getGroupSizeInfos. useTime:{} response:{}",
+                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+        return response;
+    }
 }
