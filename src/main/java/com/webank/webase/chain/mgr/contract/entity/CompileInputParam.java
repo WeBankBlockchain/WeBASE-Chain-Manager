@@ -15,7 +15,6 @@
  */
 package com.webank.webase.chain.mgr.contract.entity;
 
-import java.util.List;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
@@ -24,25 +23,14 @@ import lombok.Data;
  * receive contract info entity.
  */
 @Data
-public class DeployInputParam{
-    @NotBlank
-    private String user;
+public class CompileInputParam{
     @NotNull
     private Integer chainId;
     @NotNull
     private Integer groupId;
-    @NotNull
-    private Integer contractId;
     @NotBlank
     private String contractName;
     @NotBlank
-    private String contractPath;
     private String contractSource;
-    @NotBlank
-    private String contractAbi;
-    private String contractBin;
-    @NotBlank
-    private String bytecodeBin;
-    private List<Object> constructorParams;
 }
 
