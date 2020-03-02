@@ -53,32 +53,35 @@ import org.springframework.web.client.RestTemplate;
 public class FrontRestTools {
 
     //public static final String FRONT_URL = "http://%1s:%2d/WeBASE-Front/%3s";
-    public static final String FRONT_TRANS_RECEIPT_BY_HASH_URI = "web3/transactionReceipt/%1s";
+    public static final String URI_BLOCK_NUMBER = "web3/blockNumber";
     public static final String URI_BLOCK_BY_NUMBER = "web3/blockByNumber/%1d";
     public static final String URI_BLOCK_BY_HASH = "web3/blockByHash/%1s";
     public static final String URI_TRANS_TOTAL = "web3/transaction-total";
     public static final String URI_TRANS_BY_HASH = "web3/transaction/%1s";
-    public static final String URI_GROUP_PEERS = "web3/groupPeers";
-    public static final String URI_NODEID_LIST = "web3/nodeIdList";
+    public static final String URI_TRANS_RECEIPT = "web3/transactionReceipt/%1s";
+    public static final String URI_CODE = "web3/code/%1s/%2s";
     public static final String URI_GROUP_PLIST = "web3/groupList";
+    public static final String URI_NODEID_LIST = "web3/nodeIdList";
+    public static final String URI_GET_SEALER_LIST = "web3/sealerList";
+    public static final String URI_GET_OBSERVER_LIST = "web3/observerList";
+    public static final String URI_GROUP_PEERS = "web3/groupPeers";
     public static final String URI_PEERS = "web3/peers";
     public static final String URI_CONSENSUS_STATUS = "web3/consensusStatus";
     public static final String URI_CSYNC_STATUS = "web3/syncStatus";
     public static final String URI_SYSTEMCONFIG_BY_KEY = "web3/systemConfigByKey/%1s";
-    public static final String URI_CODE = "web3/code/%1s/%2s";
-    public static final String URI_BLOCK_NUMBER = "web3/blockNumber";
-    public static final String URI_GET_SEALER_LIST = "web3/sealerList";
-    public static final String URI_GET_OBSERVER_LIST = "web3/observerList";
     public static final String URI_GENERATE_GROUP = "web3/generateGroup";
     public static final String URI_START_GROUP = "web3/startGroup/%1s";
     public static final String URI_REFRESH_FRONT = "web3/refresh";
     public static final String FRONT_PERFORMANCE_RATIO = "performance";
     public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
-    public static final String URI_KEY_PAIR = "privateKey?useAes=%1b";
+    public static final String URI_KEY_PAIR = "privateKey?useAes=%1s&type=2&userName=%2s";
+    public static final String URI_CONTRACT_COMPILE = "contract/contractCompile";
     public static final String URI_CONTRACT_DEPLOY = "contract/deploy";
     public static final String URI_CONTRACT_SENDABI = "contract/abiInfo";
     public static final String URI_SEND_TRANSACTION = "trans/handle";
     public static final String URI_CHAIN = "chain";
+    public static final String URI_CHECK_NODE_PROCESS = "chain/checkNodeProcess";
+    public static final String URI_GET_GROUP_SIZE_INFOS = "chain/getGroupSizeInfos";
 
     public static final String URI_PERMISSION = "permission";
     public static final String URI_PERMISSION_FULL_LIST = "permission/full";
@@ -96,7 +99,7 @@ public class FrontRestTools {
 
     //不需要在url中包含groupId的
     private static final List<String> URI_NOT_CONTAIN_GROUP_ID = Arrays
-        .asList(URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION, URI_KEY_PAIR, URI_CONTRACT_SENDABI,
+        .asList(URI_CONTRACT_COMPILE,URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION, URI_KEY_PAIR, URI_CONTRACT_SENDABI,
                 URI_PERMISSION, URI_PERMISSION_FULL_LIST, URI_CNS_LIST, URI_SYS_CONFIG_LIST,
                 URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS, URI_CRUD, URI_PERMISSION_SORTED_LIST,
                 URI_PERMISSION_SORTED_FULL_LIST, URI_CERT, URI_ENCRYPT_TYPE);

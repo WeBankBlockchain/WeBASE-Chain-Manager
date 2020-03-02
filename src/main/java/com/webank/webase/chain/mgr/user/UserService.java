@@ -74,8 +74,8 @@ public class UserService {
             throw new NodeMgrException(ConstantCode.USER_EXISTS);
         }
 
-        String keyUri =
-                String.format(FrontRestTools.URI_KEY_PAIR, constants.getIsPrivateKeyEncrypt());
+        String keyUri = String.format(FrontRestTools.URI_KEY_PAIR,
+                constants.getIsPrivateKeyEncrypt(), user.getUserName());
         KeyPair keyPair = frontRestTools.getForEntity(chainId, groupId, keyUri, KeyPair.class);
         String privateKey = Optional.ofNullable(keyPair).map(k -> k.getPrivateKey()).orElse(null);
         String publicKey = Optional.ofNullable(keyPair).map(k -> k.getPublicKey()).orElse(null);
@@ -196,8 +196,8 @@ public class UserService {
     /**
      * query user row.
      */
-    public TbUser queryUser(Integer userId, Integer chainId, Integer groupId, String userName, String address)
-            throws NodeMgrException {
+    public TbUser queryUser(Integer userId, Integer chainId, Integer groupId, String userName,
+            String address) throws NodeMgrException {
         log.debug("start queryUser userId:{} groupId:{} userName:{} address:{}", userId, groupId,
                 userName, address);
         try {
@@ -291,7 +291,7 @@ public class UserService {
         // delete map
         userMapper.deleteUserKeyMap(chainId);
     }
-    
+
     /**
      * delete by groupId.
      */

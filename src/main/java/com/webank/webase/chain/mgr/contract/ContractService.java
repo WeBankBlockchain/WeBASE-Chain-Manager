@@ -19,9 +19,11 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
+import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
 import com.webank.webase.chain.mgr.contract.entity.Contract;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
+import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
 import com.webank.webase.chain.mgr.contract.entity.TbContract;
 import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
 import com.webank.webase.chain.mgr.front.entity.TransactionParam;
@@ -58,6 +60,27 @@ public class ContractService {
     private static final int CONTRACT_ADDRESS_LENGTH = 42;
 
     /**
+     * compile contract.
+     */
+    public RspContractCompile compileContract(CompileInputParam inputParam)
+            throws NodeMgrException {
+        log.info("start compileContract. inputParam:{}", JSON.toJSONString(inputParam));
+
+        // compile param
+        Map<String, Object> params = new HashMap<>();
+        params.put("contractName", inputParam.getContractName());
+        params.put("solidityBase64", inputParam.getContractSource());
+
+        // compile
+        RspContractCompile rspContractCompile =
+                frontRestTools.postForEntity(inputParam.getChainId(), inputParam.getGroupId(),
+                        FrontRestTools.URI_CONTRACT_COMPILE, params, RspContractCompile.class);
+
+        log.debug("end compileContract.");
+        return rspContractCompile;
+    }
+
+    /**
      * add new contract data.
      */
     public TbContract saveContract(Contract contract) throws NodeMgrException {
@@ -84,7 +107,7 @@ public class ContractService {
         TbContract tbContract = new TbContract();
         BeanUtils.copyProperties(contract, tbContract);
         contractMapper.add(tbContract);
-        return tbContract;
+        return queryByContractId(tbContract.getContractId());
     }
 
 
@@ -100,7 +123,7 @@ public class ContractService {
                 contract.getContractPath(), contract.getContractName(), contract.getContractId());
         BeanUtils.copyProperties(contract, tbContract);
         contractMapper.update(tbContract);
-        return tbContract;
+        return queryByContractId(tbContract.getContractId());
     }
 
     /**
@@ -240,7 +263,7 @@ public class ContractService {
 
         log.debug("end deployContract. contractId:{} groupId:{} contractAddress:{}",
                 tbContract.getContractId(), groupId, contractAddress);
-        return tbContract;
+        return queryByContractId(tbContract.getContractId());
     }
 
     /**
@@ -266,17 +289,16 @@ public class ContractService {
             throw new NodeMgrException(ConstantCode.INVALID_PARAM_INFO);
         }
 
-        // check contractId
-        verifyContractIdExist(param.getChainId(), param.getContractId(), param.getGroupId());
-        // send abi
-        sendAbi(param.getChainId(), param.getGroupId(), param.getContractId(),
-                param.getContractAddress());
         // check contract deploy
         verifyContractDeploy(param.getChainId(), param.getContractId(), param.getGroupId());
+        // send abi
+        TbContract contract = sendAbi(param.getChainId(), param.getGroupId(), param.getContractId(),
+                param.getContractAddress());
 
         // send transaction
         TransactionParam transParam = new TransactionParam();
         BeanUtils.copyProperties(param, transParam);
+        transParam.setContractAddress(contract.getContractAddress());
         transParam.setUseAes(constants.getIsPrivateKeyEncrypt());
 
         Object frontRsp = frontRestTools.postForEntity(param.getChainId(), param.getGroupId(),
@@ -364,7 +386,7 @@ public class ContractService {
     /**
      * send abi.
      */
-    public void sendAbi(int chainId, int groupId, int contractId, String address) {
+    public TbContract sendAbi(int chainId, int groupId, int contractId, String address) {
         log.info("start sendAbi, groupId:{} contractId:{} address:{}", groupId, contractId,
                 address);
         TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
@@ -372,15 +394,15 @@ public class ContractService {
         String abiInfo = contract.getContractAbi();
         if (StringUtils.isBlank(address)) {
             log.warn("ignore sendAbi. inputAddress is empty");
-            return;
+            return contract;
         }
         if (StringUtils.isBlank(abiInfo)) {
             log.warn("ignore sendAbi. abiInfo is empty");
-            return;
+            return contract;
         }
         if (address.equals(localAddress)) {
             log.info("ignore sendAbi. inputAddress:{} localAddress:{}", address, localAddress);
-            return;
+            return contract;
         }
         if (address.length() != CONTRACT_ADDRESS_LENGTH) {
             log.warn("fail sendAbi. inputAddress:{}", address);
@@ -405,5 +427,7 @@ public class ContractService {
         contract.setDeployTime(LocalDateTime.now());
         contract.setDescription("address add by sendAbi");
         contractMapper.update(contract);
+        
+        return contract;
     }
 }

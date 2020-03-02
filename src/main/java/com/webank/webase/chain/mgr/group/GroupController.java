@@ -20,10 +20,12 @@ import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
 import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
 import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
 import com.webank.webase.chain.mgr.group.entity.TbGroup;
+import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import java.time.Duration;
 import java.time.Instant;
@@ -37,6 +39,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -51,6 +54,8 @@ public class GroupController extends BaseController {
     private GroupService groupService;
     @Autowired
     private ResetGroupListTask resetGroupListTask;
+    @Autowired
+    private FrontInterfaceService frontInterfaceService;
 
     /**
      * generate group to single node.
@@ -185,5 +190,43 @@ public class GroupController extends BaseController {
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(pagesponse));
         return pagesponse;
+    }
+    
+    /**
+     * get node consensus list.
+     */
+    @GetMapping("getConsensusList/{chainId}/{groupId}")
+    public Object getConsensusList(@PathVariable("chainId") Integer chainId,
+            @PathVariable("groupId") Integer groupId,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(defaultValue = "1") Integer pageNumber) {
+
+        Instant startTime = Instant.now();
+        log.info("start getConsensusList startTime:{}", startTime.toEpochMilli());
+
+        Object result =
+                frontInterfaceService.getConsensusList(chainId, groupId, pageSize, pageNumber);
+
+        log.info("end getConsensusList useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(result));
+        return result;
+    }
+
+    /**
+     * set node consensus status.
+     */
+    @PostMapping(value = "setConsensusStatus")
+    public Object setConsensusStatus(@RequestBody @Valid ConsensusParam consensusParam,
+            BindingResult result) throws NodeMgrException {
+        checkBindResult(result);
+        Instant startTime = Instant.now();
+        log.info("start setConsensusStatus startTime:{} consensusParam:{}",
+                startTime.toEpochMilli(), JSON.toJSONString(consensusParam));
+
+        Object res = frontInterfaceService.setConsensusStatus(consensusParam);
+
+        log.info("end setConsensusStatus useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(res));
+        return res;
     }
 }
