@@ -20,10 +20,12 @@ import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.SqlSortType;
 import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
 import com.webank.webase.chain.mgr.contract.entity.Contract;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
 import com.webank.webase.chain.mgr.contract.entity.QueryContractParam;
+import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
 import com.webank.webase.chain.mgr.contract.entity.TbContract;
 import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
 import java.time.Duration;
@@ -50,6 +52,28 @@ public class ContractController extends BaseController {
 
     @Autowired
     private ContractService contractService;
+
+    /**
+     * compile deployInputParam.
+     */
+    @PostMapping(value = "/compile")
+    public BaseResponse compileContract(@RequestBody @Valid CompileInputParam compileInputParam,
+            BindingResult result) throws NodeMgrException {
+        checkBindResult(result);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start compileContract startTime:{} compileInputParam:{}",
+                startTime.toEpochMilli(), JSON.toJSONString(compileInputParam));
+
+        RspContractCompile rspContractCompile = contractService.compileContract(compileInputParam);
+        baseResponse.setData(rspContractCompile);
+
+        log.info("end compileContract useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(baseResponse));
+
+        return baseResponse;
+    }
 
     /**
      * add new contract info.
@@ -100,8 +124,9 @@ public class ContractController extends BaseController {
      * qurey contract info list.
      */
     @PostMapping(value = "/contractList")
-    public BasePageResponse queryContractList(@RequestBody QueryContractParam inputParam)
-            throws NodeMgrException {
+    public BasePageResponse queryContractList(@RequestBody @Valid QueryContractParam inputParam,
+            BindingResult result) throws NodeMgrException {
+        checkBindResult(result);
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start contractList. startTime:{} inputParam:{}", startTime.toEpochMilli(),
