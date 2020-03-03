@@ -197,38 +197,6 @@ public class FrontService {
     }
 
     /**
-     * check front ip and prot
-     *
-     * if exist:throw exception
-     */
-    private void checkFrontNotExist(String frontIp, int frontPort) {
-        SyncStatus syncStatus =
-                frontInterface.getSyncStatusFromSpecificFront(frontIp, frontPort, 1);
-        FrontParam param = new FrontParam();
-        param.setNodeId(syncStatus.getNodeId());
-        int count = getFrontCount(param);
-        if (count > 0) {
-            throw new NodeMgrException(ConstantCode.FRONT_EXISTS);
-        }
-    }
-
-
-    /**
-     * get front count
-     */
-    public int getFrontCount(FrontParam param) {
-        Integer count = frontMapper.getCount(param);
-        return count == null ? 0 : count;
-    }
-
-    /**
-     * get front list
-     */
-    public List<TbFront> getFrontList(FrontParam param) {
-        return frontMapper.getList(param);
-    }
-
-    /**
      * get monitor info.
      */
     public Object getNodeMonitorInfo(Integer frontId, LocalDateTime beginDate,
@@ -257,7 +225,7 @@ public class FrontService {
         String url = String.format(cproperties.getFrontUrl(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), FrontRestTools.URI_CHAIN);
         url = url + "?" + chainUrlParam;
-        log.info("getNodeMonitorInfo request url:{}", url);
+        log.debug("getNodeMonitorInfo request url:{}", url);
 
         Object rspObj = genericRestTemplate.getForObject(url, Object.class);
         log.debug("end getNodeMonitorInfo. rspObj:{}", JSON.toJSONString(rspObj));
@@ -293,7 +261,7 @@ public class FrontService {
         String url = String.format(cproperties.getFrontUrl(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), FrontRestTools.FRONT_PERFORMANCE_RATIO);
         url = url + "?" + urlParam;
-        log.info("getPerformanceRatio request url:{}", url);
+        log.debug("getPerformanceRatio request url:{}", url);
 
         Object rspObj = genericRestTemplate.getForObject(url, Object.class);
         log.debug("end getPerformanceRatio. rspObj:{}", JSON.toJSONString(rspObj));
@@ -315,11 +283,70 @@ public class FrontService {
         // request url
         String url = String.format(cproperties.getFrontUrl(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), FrontRestTools.FRONT_PERFORMANCE_CONFIG);
-        log.info("getPerformanceConfig request url:{}", url);
+        log.debug("getPerformanceConfig request url:{}", url);
 
         Object rspObj = genericRestTemplate.getForObject(url, Object.class);
         log.debug("end getPerformanceConfig. frontRsp:{}", JSON.toJSONString(rspObj));
         return rspObj;
+    }
+
+    /**
+     * check node process.
+     */
+    public Object checkNodeProcess(int frontId) {
+        log.debug("start checkNodeProcess. frontId:{} ", frontId);
+
+        // query by front Id
+        TbFront tbFront = frontService.getById(frontId);
+        if (tbFront == null) {
+            throw new NodeMgrException(ConstantCode.INVALID_FRONT_ID);
+        }
+
+        // request url
+        String url = String.format(cproperties.getFrontUrl(), tbFront.getFrontIp(),
+                tbFront.getFrontPort(), FrontRestTools.URI_CHECK_NODE_PROCESS);
+        log.debug("checkNodeProcess request url:{}", url);
+
+        Object response = genericRestTemplate.getForObject(url, Object.class);
+        log.debug("end checkNodeProcess. response:{}", JSON.toJSONString(response));
+        return response;
+    }
+    
+    /**
+     * check node process.
+     */
+    public Object getGroupSizeInfos(int frontId) {
+        log.debug("start getGroupSizeInfos. frontId:{} ", frontId);
+        
+        // query by front Id
+        TbFront tbFront = frontService.getById(frontId);
+        if (tbFront == null) {
+            throw new NodeMgrException(ConstantCode.INVALID_FRONT_ID);
+        }
+        
+        // request url
+        String url = String.format(cproperties.getFrontUrl(), tbFront.getFrontIp(),
+                tbFront.getFrontPort(), FrontRestTools.URI_GET_GROUP_SIZE_INFOS);
+        log.debug("getGroupSizeInfos request url:{}", url);
+        
+        Object response = genericRestTemplate.getForObject(url, Object.class);
+        log.debug("end getGroupSizeInfos. response:{}", JSON.toJSONString(response));
+        return response;
+    }
+
+    /**
+     * get front count
+     */
+    public int getFrontCount(FrontParam param) {
+        Integer count = frontMapper.getCount(param);
+        return count == null ? 0 : count;
+    }
+
+    /**
+     * get front list
+     */
+    public List<TbFront> getFrontList(FrontParam param) {
+        return frontMapper.getList(param);
     }
 
     /**

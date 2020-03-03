@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
@@ -13,18 +13,12 @@
  */
 package com.webank.webase.chain.mgr.contract.entity;
 
-import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class QueryContractParam {
-    @NotNull
-    private Integer chainId;
-    @NotNull
-    private Integer groupId;
+public class RspContractCompile {
     private String contractName;
-    private String contractAddress;
-    private Integer contractStatus;
-    private Integer pageNumber;
-    private Integer pageSize;
+    private String contractAbi;
+    private String bytecodeBin;
+    private String errors;
 }
