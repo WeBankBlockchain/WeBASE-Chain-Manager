@@ -19,7 +19,7 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.front.entity.TbFront;
@@ -80,7 +80,7 @@ public class FrontController extends BaseController {
             @RequestParam(value = "chainId", required = false) Integer chainId,
             @RequestParam(value = "frontId", required = false) Integer frontId,
             @RequestParam(value = "groupId", required = false) Integer groupId)
-            throws NodeMgrException {
+            throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start queryFrontList startTime:{} frontId:{} groupId:{}",
@@ -136,7 +136,7 @@ public class FrontController extends BaseController {
                     iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
             @RequestParam(required = false, defaultValue = "1") int gap,
             @RequestParam(required = false, defaultValue = "1") int groupId)
-            throws NodeMgrException {
+            throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info(
@@ -166,7 +166,7 @@ public class FrontController extends BaseController {
             @RequestParam(value = "contrastEndDate", required = false) @DateTimeFormat(
                     iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
             @RequestParam(value = "gap", required = false, defaultValue = "1") int gap)
-            throws NodeMgrException {
+            throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info(
@@ -189,7 +189,7 @@ public class FrontController extends BaseController {
      */
     @GetMapping(value = "/config/{frontId}")
     public BaseResponse getPerformanceConfig(@PathVariable("frontId") Integer frontId)
-            throws NodeMgrException {
+            throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start getPerformanceConfig. startTime:{} frontId:{}", startTime.toEpochMilli(),
@@ -206,7 +206,7 @@ public class FrontController extends BaseController {
      */
     @GetMapping(value = "/checkNodeProcess/{frontId}")
     public BaseResponse checkNodeProcess(@PathVariable("frontId") Integer frontId)
-            throws NodeMgrException {
+            throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start checkNodeProcess. startTime:{} frontId:{}", startTime.toEpochMilli(),
@@ -223,7 +223,7 @@ public class FrontController extends BaseController {
      */
     @GetMapping(value = "/getGroupSizeInfos/{frontId}")
     public BaseResponse getGroupSizeInfos(@PathVariable("frontId") Integer frontId)
-            throws NodeMgrException {
+            throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start getGroupSizeInfos. startTime:{} frontId:{}", startTime.toEpochMilli(),

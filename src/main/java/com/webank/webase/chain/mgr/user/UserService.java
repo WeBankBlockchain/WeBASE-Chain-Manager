@@ -16,7 +16,7 @@ package com.webank.webase.chain.mgr.user;
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.HasPk;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.Web3Tools;
 import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
@@ -58,7 +58,7 @@ public class UserService {
      * add new user data.
      */
     @Transactional
-    public Integer addUserInfo(NewUserInputParam user) throws NodeMgrException {
+    public Integer addUserInfo(NewUserInputParam user) throws BaseException {
         log.debug("start addUserInfo User:{}", JSON.toJSONString(user));
 
         Integer chainId = user.getChainId();
@@ -71,7 +71,7 @@ public class UserService {
         TbUser userRow = queryByName(chainId, groupId, user.getUserName());
         if (userRow != null) {
             log.warn("fail addUserInfo. user info already exists");
-            throw new NodeMgrException(ConstantCode.USER_EXISTS);
+            throw new BaseException(ConstantCode.USER_EXISTS);
         }
 
         String keyUri = String.format(FrontRestTools.URI_KEY_PAIR,
@@ -84,7 +84,7 @@ public class UserService {
         if (StringUtils.isAnyBlank(privateKey, publicKey, address)) {
             log.warn("get key pair fail. privateKey:{} publicKey:{} address:{}", privateKey,
                     publicKey, address);
-            throw new NodeMgrException(ConstantCode.SYSTEM_EXCEPTION);
+            throw new BaseException(ConstantCode.SYSTEM_EXCEPTION);
         }
 
         // add row
@@ -93,7 +93,7 @@ public class UserService {
         Integer affectRow = userMapper.addUserRow(newUserRow);
         if (affectRow == 0) {
             log.warn("affect 0 rows of tb_user");
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
 
         Integer userId = newUserRow.getUserId();
@@ -103,7 +103,7 @@ public class UserService {
         Integer affectMapRow = userMapper.addUserKeyMapRow(newMapRow);
         if (affectMapRow == 0) {
             log.warn("affect 0 rows of tb_user_key_map");
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
 
         log.debug("end addNodeInfo userId:{}", userId);
@@ -114,19 +114,19 @@ public class UserService {
      * bind user info.
      */
     @Transactional
-    public Integer bindUserInfo(BindUserInputParam user) throws NodeMgrException {
+    public Integer bindUserInfo(BindUserInputParam user) throws BaseException {
         log.debug("start bindUserInfo User:{}", JSON.toJSONString(user));
 
         String publicKey = user.getPublicKey();
         if (StringUtils.isBlank(publicKey)) {
             log.info("fail bindUserInfo. publicKey cannot be empty");
-            throw new NodeMgrException(ConstantCode.PUBLICKEY_NULL);
+            throw new BaseException(ConstantCode.PUBLICKEY_NULL);
         }
 
         if (publicKey.length() != ConstantProperties.PUBLICKEY_LENGTH
                 && publicKey.length() != ConstantProperties.ADDRESS_LENGTH) {
             log.info("fail bindUserInfo. publicKey length error");
-            throw new NodeMgrException(ConstantCode.PUBLICKEY_LENGTH_ERROR);
+            throw new BaseException(ConstantCode.PUBLICKEY_LENGTH_ERROR);
         }
 
         // check group id
@@ -136,7 +136,7 @@ public class UserService {
         TbUser userRow = queryByName(user.getChainId(), user.getGroupId(), user.getUserName());
         if (Objects.nonNull(userRow)) {
             log.warn("fail bindUserInfo. userName is already exists");
-            throw new NodeMgrException(ConstantCode.USER_EXISTS);
+            throw new BaseException(ConstantCode.USER_EXISTS);
         }
         String address = publicKey;
         if (publicKey.length() == ConstantProperties.PUBLICKEY_LENGTH) {
@@ -147,7 +147,7 @@ public class UserService {
         TbUser addressRow = queryUser(null, user.getChainId(), user.getGroupId(), null, address);
         if (Objects.nonNull(addressRow)) {
             log.warn("fail bindUserInfo. address is already exists");
-            throw new NodeMgrException(ConstantCode.USER_EXISTS);
+            throw new BaseException(ConstantCode.USER_EXISTS);
         }
 
         // add row
@@ -157,7 +157,7 @@ public class UserService {
         Integer affectRow = userMapper.addUserRow(newUserRow);
         if (affectRow == 0) {
             log.warn("bindUserInfo affect 0 rows of tb_user");
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
 
         Integer userId = newUserRow.getUserId();
@@ -169,7 +169,7 @@ public class UserService {
     /**
      * query count of user.
      */
-    public Integer countOfUser(UserParam userParam) throws NodeMgrException {
+    public Integer countOfUser(UserParam userParam) throws BaseException {
         log.debug("start countOfUser. userParam:{}", JSON.toJSONString(userParam));
 
         try {
@@ -178,14 +178,14 @@ public class UserService {
             return count;
         } catch (RuntimeException ex) {
             log.error("fail countOfUser userParam:{}", JSON.toJSONString(userParam), ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
     }
 
     /**
      * query user list by page.
      */
-    public List<TbUser> qureyUserList(UserParam userParam) throws NodeMgrException {
+    public List<TbUser> qureyUserList(UserParam userParam) throws BaseException {
         log.debug("start qureyUserList userParam:{}", JSON.toJSONString(userParam));
         // query user list
         List<TbUser> listOfUser = userMapper.listOfUser(userParam);
@@ -197,7 +197,7 @@ public class UserService {
      * query user row.
      */
     public TbUser queryUser(Integer userId, Integer chainId, Integer groupId, String userName,
-            String address) throws NodeMgrException {
+            String address) throws BaseException {
         log.debug("start queryUser userId:{} groupId:{} userName:{} address:{}", userId, groupId,
                 userName, address);
         try {
@@ -208,28 +208,28 @@ public class UserService {
         } catch (RuntimeException ex) {
             log.error("fail queryUser userId:{} groupId:{} userName:{}  address:{}", userId,
                     groupId, userName, address, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
     }
 
     /**
      * query by userName.
      */
-    public TbUser queryByName(int chainId, int groupId, String userName) throws NodeMgrException {
+    public TbUser queryByName(int chainId, int groupId, String userName) throws BaseException {
         return queryUser(null, chainId, groupId, userName, null);
     }
 
     /**
      * query by userId.
      */
-    public TbUser queryByUserId(Integer userId) throws NodeMgrException {
+    public TbUser queryByUserId(Integer userId) throws BaseException {
         return queryUser(userId, null, null, null, null);
     }
 
     /**
      * update user info.
      */
-    public void updateUser(UpdateUserInputParam user) throws NodeMgrException {
+    public void updateUser(UpdateUserInputParam user) throws BaseException {
         TbUser tbUser = queryByUserId(user.getUserId());
         tbUser.setDescription(user.getDescription());
         updateUser(tbUser);
@@ -238,13 +238,13 @@ public class UserService {
     /**
      * update user info.
      */
-    public void updateUser(TbUser user) throws NodeMgrException {
+    public void updateUser(TbUser user) throws BaseException {
         log.debug("start updateUser user", JSON.toJSONString(user));
         Integer userId = Optional.ofNullable(user).map(u -> u.getUserId()).orElse(null);
         String description = Optional.ofNullable(user).map(u -> u.getDescription()).orElse(null);
         if (userId == null) {
             log.warn("fail updateUser. user id is null");
-            throw new NodeMgrException(ConstantCode.USER_ID_NULL);
+            throw new BaseException(ConstantCode.USER_ID_NULL);
         }
         TbUser tbUser = queryByUserId(userId);
         tbUser.setDescription(description);
@@ -253,11 +253,11 @@ public class UserService {
             Integer affectRow = userMapper.updateUser(tbUser);
             if (affectRow == 0) {
                 log.warn("affect 0 rows of tb_user");
-                throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+                throw new BaseException(ConstantCode.DB_EXCEPTION);
             }
         } catch (RuntimeException ex) {
             log.error("fail updateUser  userId:{} description:{}", userId, description, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
 
         log.debug("end updateOrtanization");
@@ -266,12 +266,12 @@ public class UserService {
     /**
      * get private key.
      */
-    public PrivateKeyInfo getPrivateKey(String userAddress) throws NodeMgrException {
+    public PrivateKeyInfo getPrivateKey(String userAddress) throws BaseException {
         log.debug("start getPrivateKey ");
         PrivateKeyInfo privateKeyInfoInfo = userMapper.queryPrivateKey(userAddress);
         if (Objects.isNull(privateKeyInfoInfo)) {
             log.error("fail getPrivateKey, invalid userAddress:{}", userAddress);
-            throw new NodeMgrException(ConstantCode.INVALID_USER);
+            throw new BaseException(ConstantCode.INVALID_USER);
         }
 
         privateKeyInfoInfo.setPrivateKey(privateKeyInfoInfo.getPrivateKey());

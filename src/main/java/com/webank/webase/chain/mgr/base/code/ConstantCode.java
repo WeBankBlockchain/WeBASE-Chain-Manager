@@ -97,6 +97,8 @@ public class ConstantCode {
     public static final RetCode INVALID_USER = RetCode.mark(205028, "invalid user");
     
     public static final RetCode CHAIN_ID_EXISTS = RetCode.mark(205029, "chain id already exists");
+    
+    public static final RetCode CONTRACT_COMPILE_ERROR = RetCode.mark(205030, "contract compile error");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");

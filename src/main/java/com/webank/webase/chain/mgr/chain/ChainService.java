@@ -15,7 +15,7 @@ package com.webank.webase.chain.mgr.chain;
 
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.chain.entity.ChainParam;
 import com.webank.webase.chain.mgr.chain.entity.TbChain;
@@ -71,7 +71,7 @@ public class ChainService {
         // check id
         TbChain tbChainInfo = getChainById(chainInfo.getChainId());
         if (tbChainInfo != null) {
-            throw new NodeMgrException(ConstantCode.CHAIN_ID_EXISTS);
+            throw new BaseException(ConstantCode.CHAIN_ID_EXISTS);
         }
         
         // check name
@@ -79,7 +79,7 @@ public class ChainService {
         param.setChainName(chainInfo.getChainName());
         int nameCount = getChainCount(param);
         if (nameCount > 0) {
-            throw new NodeMgrException(ConstantCode.CHAIN_NAME_EXISTS);
+            throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS);
         }
         
         // copy attribute
@@ -90,7 +90,7 @@ public class ChainService {
         int result = chainMapper.add(tbChain);
         if (result == 0) {
             log.warn("fail newChain, after save, tbChain:{}", JSON.toJSONString(tbChain));
-            throw new NodeMgrException(ConstantCode.SAVE_CHAIN_FAIL);
+            throw new BaseException(ConstantCode.SAVE_CHAIN_FAIL);
         }
         return getChainById(chainInfo.getChainId());
     }
@@ -127,7 +127,7 @@ public class ChainService {
         param.setChainId(chainId);
         int count = getChainCount(param);
         if (count == 0) {
-            throw new NodeMgrException(ConstantCode.INVALID_CHAIN_ID);
+            throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
         }
 
         // remove chain

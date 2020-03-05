@@ -18,7 +18,7 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.user.entity.BindUserInputParam;
 import com.webank.webase.chain.mgr.user.entity.NewUserInputParam;
 import com.webank.webase.chain.mgr.user.entity.PrivateKeyInfo;
@@ -55,7 +55,7 @@ public class UserController extends BaseController {
      */
     @PostMapping(value = "/userInfo")
     public BaseResponse addUserInfo(@RequestBody @Valid NewUserInputParam user,
-            BindingResult result) throws NodeMgrException {
+            BindingResult result) throws BaseException {
         checkBindResult(result);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
@@ -78,7 +78,7 @@ public class UserController extends BaseController {
      */
     @PostMapping(value = "/bind")
     public BaseResponse bindUserInfo(@RequestBody @Valid BindUserInputParam user,
-            BindingResult result) throws NodeMgrException {
+            BindingResult result) throws BaseException {
         checkBindResult(result);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
@@ -101,7 +101,7 @@ public class UserController extends BaseController {
      */
     @PutMapping(value = "/userInfo")
     public BaseResponse updateUserInfo(@RequestBody @Valid UpdateUserInputParam user,
-            BindingResult result) throws NodeMgrException {
+            BindingResult result) throws BaseException {
         checkBindResult(result);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
@@ -125,7 +125,7 @@ public class UserController extends BaseController {
      */
     @GetMapping(value = "/privateKey/{address}")
     public BaseResponse getPrivateKey(@PathVariable("address") String address)
-            throws NodeMgrException {
+            throws BaseException {
         BaseResponse pagesponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start getPrivateKey", startTime.toEpochMilli());
@@ -148,7 +148,7 @@ public class UserController extends BaseController {
             @PathVariable("pageNumber") Integer pageNumber,
             @PathVariable("pageSize") Integer pageSize,
             @RequestParam(value = "userParam", required = false) String commParam)
-            throws NodeMgrException {
+            throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start userList startTime:{} groupId:{} pageNumber:{} pageSize:{} commParam:{}",
