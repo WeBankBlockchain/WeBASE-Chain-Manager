@@ -14,7 +14,7 @@
 package com.webank.webase.chain.mgr.base.controller;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -40,15 +40,15 @@ public class ErrorController extends BasicErrorController {
                 getErrorAttributes(request, isIncludeStackTrace(request, MediaType.ALL));
         String mesage = body.get("message").toString();
         if (StringUtils.isBlank(mesage)) {
-            throw new NodeMgrException(ConstantCode.SYSTEM_EXCEPTION);
+            throw new BaseException(ConstantCode.SYSTEM_EXCEPTION);
         }
         int index = mesage.indexOf("_");
         if (index > 0) {
             String code = mesage.substring(0, index);
             String msg = mesage.substring(index);
-            throw new NodeMgrException(Integer.valueOf(code), msg);
+            throw new BaseException(Integer.valueOf(code), msg);
         } else {
-            throw new NodeMgrException(ConstantCode.SYSTEM_EXCEPTION.getCode(), mesage);
+            throw new BaseException(ConstantCode.SYSTEM_EXCEPTION.getCode(), mesage);
         }
     }
 

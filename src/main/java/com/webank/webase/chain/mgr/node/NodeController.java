@@ -18,7 +18,7 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.front.entity.TransactionCount;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
@@ -61,7 +61,7 @@ public class NodeController extends BaseController {
             @PathVariable("pageNumber") Integer pageNumber,
             @PathVariable("pageSize") Integer pageSize,
             @RequestParam(value = "nodeName", required = false) String nodeName)
-            throws NodeMgrException {
+            throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info(
@@ -100,7 +100,7 @@ public class NodeController extends BaseController {
     @GetMapping(value = "/nodeInfo/{chainId}/{groupId}/{nodeId}")
     public BaseResponse getNodeInfo(@PathVariable("chainId") Integer chainId,
             @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId)
-            throws NodeMgrException {
+            throws BaseException {
 
         Instant startTime = Instant.now();
         log.info("start getNodeInfo startTime:{} nodeId:{}", startTime.toEpochMilli(), nodeId);
@@ -128,7 +128,7 @@ public class NodeController extends BaseController {
      */
     @GetMapping("/getBlockNumber/{chainId}/{groupId}")
     public BaseResponse getBlockNumber(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId) throws NodeMgrException {
+            @PathVariable("groupId") Integer groupId) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getBlockNumber startTime:{} chainId:{} groupId:{}",
                 startTime.toEpochMilli(), groupId, groupId);
@@ -147,7 +147,7 @@ public class NodeController extends BaseController {
     @GetMapping("/getBlockByNumber/{chainId}/{groupId}/{blockNumber}")
     public BaseResponse getBlockByNumber(@PathVariable("chainId") Integer chainId,
             @PathVariable("groupId") Integer groupId,
-            @PathVariable("blockNumber") BigInteger blockNumber) throws NodeMgrException {
+            @PathVariable("blockNumber") BigInteger blockNumber) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getBlockByNumber startTime:{} groupId:{} blockNumber:{}",
                 startTime.toEpochMilli(), groupId, blockNumber);
@@ -165,7 +165,7 @@ public class NodeController extends BaseController {
      */
     @GetMapping("/getTotalTransactionCount/{chainId}/{groupId}")
     public BaseResponse getTotalTransactionCount(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId) throws NodeMgrException {
+            @PathVariable("groupId") Integer groupId) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTotalTransactionCount startTime:{} chainId:{} groupId:{}",
                 startTime.toEpochMilli(), groupId, groupId);
@@ -185,7 +185,7 @@ public class NodeController extends BaseController {
     @GetMapping("/getTransactionByHash/{chainId}/{groupId}/{transHash}")
     public BaseResponse getTransactionByHash(@PathVariable("chainId") Integer chainId,
             @PathVariable("groupId") Integer groupId, @PathVariable("transHash") String transHash)
-            throws NodeMgrException {
+            throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTransactionByHash startTime:{} groupId:{} blockNumber:{}",
                 startTime.toEpochMilli(), groupId, transHash);
@@ -205,7 +205,7 @@ public class NodeController extends BaseController {
     @GetMapping("/getTransactionReceipt/{chainId}/{groupId}/{transHash}")
     public BaseResponse getTransactionReceipt(@PathVariable("chainId") Integer chainId,
             @PathVariable("groupId") Integer groupId, @PathVariable("transHash") String transHash)
-            throws NodeMgrException {
+            throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTransactionReceipt startTime:{} groupId:{} blockNumber:{}",
                 startTime.toEpochMilli(), groupId, transHash);

@@ -16,7 +16,7 @@ package com.webank.webase.chain.mgr.frontinterface;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
@@ -290,7 +290,7 @@ public class FrontRestTools {
         List<FrontGroup> frontList = frontGroupMapCache.getMapListByChainId(chainId, groupId);
         if (frontList == null || frontList.size() == 0) {
             log.error("fail restTemplateExchange. frontList is empty");
-            throw new NodeMgrException(ConstantCode.FRONT_LIST_NOT_FOUNT);
+            throw new BaseException(ConstantCode.FRONT_LIST_NOT_FOUNT);
         }
         ArrayList<FrontGroup> list = new ArrayList<>(frontList);
         RestTemplate restTemplate = caseRestemplate(uri);
@@ -301,7 +301,7 @@ public class FrontRestTools {
                 HttpEntity entity = buildHttpEntity(param);// build entity
                 if (null == restTemplate) {
                     log.error("fail restTemplateExchange, rest is null. groupId:{} uri:{}", chainId,uri);
-                    throw new NodeMgrException(ConstantCode.SYSTEM_EXCEPTION);
+                    throw new BaseException(ConstantCode.SYSTEM_EXCEPTION);
                 }
                 ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);
                 return response.getBody();
@@ -316,7 +316,7 @@ public class FrontRestTools {
             } catch (HttpStatusCodeException e) {
                 JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
                 log.error("http request fail. error:{}", JSON.toJSONString(error));
-                throw new NodeMgrException(error.getInteger("code"),
+                throw new BaseException(error.getInteger("code"),
                     error.getString("errorMessage"));
             }
         }

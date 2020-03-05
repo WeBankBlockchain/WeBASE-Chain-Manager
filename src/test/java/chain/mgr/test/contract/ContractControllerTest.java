@@ -16,12 +16,17 @@ package chain.mgr.test.contract;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.webank.webase.chain.mgr.Application;
+import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.contract.entity.Contract;
 import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
 import com.webank.webase.chain.mgr.contract.entity.QueryContractParam;
 import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -142,7 +147,7 @@ public class ContractControllerTest {
     }
 
     @Test
-    public void tesSendTransaction() throws Exception {
+    public void testSendTransaction() throws Exception {
         // abi
         String abiStr =
                 "[{\"constant\":false,\"inputs\":[{\"name\":\"num\",\"type\":\"uint256\"}],\"name\":\"trans\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"get\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"a\",\"type\":\"string\"}],\"name\":\"abb\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"b\",\"type\":\"string\"}],\"name\":\"bba\",\"type\":\"event\"}]";
@@ -165,6 +170,42 @@ public class ContractControllerTest {
                         .content(JSON.toJSONString(param)).contentType(MediaType.APPLICATION_JSON));
         resultActions.andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
+        System.out.println(
+                "response:" + resultActions.andReturn().getResponse().getContentAsString());
+    }
+    
+    @Test
+    public void testCompileContract() throws Exception {
+        List<File> fileList = new ArrayList<File>();
+        fileList.add(new File("D:\\project\\sol\\Evidence.sol"));
+        fileList.add(new File("D:\\project\\sol\\EvidenceFactory.sol"));
+        String base64 = CommonUtils.fileToZipBase64(fileList);
+        
+        Map<String, String> param = new HashMap<>();
+        param.put("contractSource", base64);
+        
+        ResultActions resultActions =
+                mockMvc.perform(MockMvcRequestBuilders.post("/contract/compile")
+                        .content(JSON.toJSONString(param)).contentType(MediaType.APPLICATION_JSON));
+        resultActions.andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+        System.out.println(
+                "response:" + resultActions.andReturn().getResponse().getContentAsString());
+    }
+    
+    @Test
+    public void testCompileContract2() throws Exception {
+        String filePath = "D:\\project\\sol\\sol.zip";
+        String base64 = CommonUtils.fileToBase64(filePath);
+        
+        Map<String, String> param = new HashMap<>();
+        param.put("contractSource", base64);
+        
+        ResultActions resultActions =
+                mockMvc.perform(MockMvcRequestBuilders.post("/contract/compile")
+                        .content(JSON.toJSONString(param)).contentType(MediaType.APPLICATION_JSON));
+        resultActions.andExpect(MockMvcResultMatchers.status().isOk())
+        .andDo(MockMvcResultHandlers.print());
         System.out.println(
                 "response:" + resultActions.andReturn().getResponse().getContentAsString());
     }
