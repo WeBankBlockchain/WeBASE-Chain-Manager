@@ -482,20 +482,20 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/mointorInfo/200001?beginDate=20
 
 ***1）出参表***
 
-| 序号      | 输出参数         | 类型            |      | 备注                            |
-| --------- | ---------------- | --------------- | ---- | ------------------------------- |
-| 1         | code             | Int             | 否   | 返回码                          |
-| 2         | message          | String          | 否   | 描述信息                        |
-| 3         | data             | Array           | 否   | 返回信息列表                    |
-| 3.1       |                  | Object          |      | 返回信息实体                    |
-| 3.1.1     | metricType       | String          | 否   | 测量类型：blockHeight、pbftView |
-| 3.1.2     | data             | Object          | 否   |                                 |
-| 3.1.2.1   | lineDataList     | Object          | 否   | 指定时间的数据                  |
-| 3.1.2.1.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                      |
-| 3.1.2.1.2 | valueList        | List\<Integer\> | 否   | 值列表                          |
-| 3.1.2.2   | contrastDataList | Object          | 否   | 比对时间的数据                  |
-| 3.1.2.2.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                      |
-| 3.1.2.2.2 | valueList        | List\<Integer\> | 否   | 值列表                          |
+| 序号      | 输出参数         | 类型            |      | 备注                                                         |
+| --------- | ---------------- | --------------- | ---- | ------------------------------------------------------------ |
+| 1         | code             | Int             | 否   | 返回码                                                       |
+| 2         | message          | String          | 否   | 描述信息                                                     |
+| 3         | data             | Array           | 否   | 返回信息列表                                                 |
+| 3.1       |                  | Object          |      | 返回信息实体                                                 |
+| 3.1.1     | metricType       | String          | 否   | 测量类型：blockHeight（块高）、pbftView（pbft视图）、pendingCount（待处理交易数量） |
+| 3.1.2     | data             | Object          | 否   |                                                              |
+| 3.1.2.1   | lineDataList     | Object          | 否   | 指定时间的数据                                               |
+| 3.1.2.1.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                                   |
+| 3.1.2.1.2 | valueList        | List\<Integer\> | 否   | 值列表                                                       |
+| 3.1.2.2   | contrastDataList | Object          | 否   | 比对时间的数据                                               |
+| 3.1.2.2.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                                   |
+| 3.1.2.2.2 | valueList        | List\<Integer\> | 否   | 值列表                                                       |
 
 ***2）出参示例***
 
@@ -601,20 +601,20 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/ratio/200001?gap=1&beginDate=20
 
 ***1）出参表***
 
-| 序号      | 输出参数         | 类型            |      | 备注                                      |
-| --------- | ---------------- | --------------- | ---- | ----------------------------------------- |
-| 1         | code             | Int             | 否   | 返回码                                    |
-| 2         | message          | String          | 否   | 描述信息                                  |
-| 3         | data             | Array           | 否   | 返回信息列表                              |
-| 3.1       |                  | Object          |      | 返回信息实体                              |
-| 3.1.1     | metricType       | String          | 否   | 测量类型: cpu、memory、disk、txbps、rxbps |
-| 3.1.2     | data             | Object          | 否   |                                           |
-| 3.1.2.1   | lineDataList     | Object          | 否   | 指定时间的数据                            |
-| 3.1.2.1.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                |
-| 3.1.2.1.2 | valueList        | List\<Integer\> | 否   | 值列表                                    |
-| 3.1.2.2   | contrastDataList | Object          | 否   | 比对时间的数据                            |
-| 3.1.2.2.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                |
-| 3.1.2.2.2 | valueList        | List\<Integer\> | 否   | 值列表                                    |
+| 序号      | 输出参数         | 类型            |      | 备注                                                         |
+| --------- | ---------------- | --------------- | ---- | ------------------------------------------------------------ |
+| 1         | code             | Int             | 否   | 返回码                                                       |
+| 2         | message          | String          | 否   | 描述信息                                                     |
+| 3         | data             | Array           | 否   | 返回信息列表                                                 |
+| 3.1       |                  | Object          |      | 返回信息实体                                                 |
+| 3.1.1     | metricType       | String          | 否   | 测量类型: cpu（cpu利用率：%）、memory（内存利用率：%）、disk（硬盘利用率：%）、txbps（上行bandwith：KB/s）、rxbps（下行bandwith：KB/s） |
+| 3.1.2     | data             | Object          | 否   |                                                              |
+| 3.1.2.1   | lineDataList     | Object          | 否   | 指定时间的数据                                               |
+| 3.1.2.1.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                                   |
+| 3.1.2.1.2 | valueList        | List\<Integer\> | 否   | 值列表                                                       |
+| 3.1.2.2   | contrastDataList | Object          | 否   | 比对时间的数据                                               |
+| 3.1.2.2.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                                   |
+| 3.1.2.2.2 | valueList        | List\<Integer\> | 否   | 值列表                                                       |
 
 ***2）出参示例***
 
@@ -711,19 +711,19 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/config/200001
 
 ***1）出参表***
 
-| 序号  | 输出参数        | 类型   |      | 备注             |
-| ----- | --------------- | ------ | ---- | ---------------- |
-| 1     | code            | int    | 否   | 返回码           |
-| 2     | message         | String | 否   | 描述信息         |
-| 3     | data            | Array  | 否   | 返回信息列表     |
-| 3.1   |                 | Object |      | 返回信息实体     |
-| 3.1.1 | ip              | String | 否   | ip地址           |
-| 3.1.2 | memoryTotalSize | String | 否   | 内存总量         |
-| 3.1.3 | memoryUsedSize  | String | 否   | 当前内存使用量   |
-| 3.1.4 | cpuSize         | String | 否   | CPU的大小        |
-| 3.1.5 | cpuAmount       | String | 否   | CPU的核数        |
-| 3.1.6 | diskTotalSize   | String | 否   | 文件系统总量     |
-| 3.1.7 | diskUsedSize    | String | 否   | 文件系统已使用量 |
+| 序号  | 输出参数        | 类型   |      | 备注                         |
+| ----- | --------------- | ------ | ---- | ---------------------------- |
+| 1     | code            | int    | 否   | 返回码                       |
+| 2     | message         | String | 否   | 描述信息                     |
+| 3     | data            | Array  | 否   | 返回信息列表                 |
+| 3.1   |                 | Object |      | 返回信息实体                 |
+| 3.1.1 | ip              | String | 否   | ip地址                       |
+| 3.1.2 | memoryTotalSize | String | 否   | 内存总量（单位：KB）         |
+| 3.1.3 | memoryUsedSize  | String | 否   | 当前内存使用量（单位：KB）   |
+| 3.1.4 | cpuSize         | String | 否   | CPU的大小（单位：MHz）       |
+| 3.1.5 | cpuAmount       | String | 否   | CPU的核数（单位：个）        |
+| 3.1.6 | diskTotalSize   | String | 否   | 文件系统总量（单位：KB）     |
+| 3.1.7 | diskUsedSize    | String | 否   | 文件系统已使用量（单位：KB） |
 
 ***2）出参示例***
 
