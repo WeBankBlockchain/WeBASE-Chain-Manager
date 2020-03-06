@@ -24,7 +24,7 @@ import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_PEER
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.HttpRequestTools;
 import com.webank.webase.chain.mgr.front.entity.TransactionCount;
@@ -87,7 +87,7 @@ public class FrontInterfaceService {
             return response.getBody();
         } catch (HttpStatusCodeException e) {
             JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
-            throw new NodeMgrException(error.getInteger("code"), error.getString("errorMessage"));
+            throw new BaseException(error.getInteger("code"), error.getString("errorMessage"));
         }
     }
 
@@ -208,7 +208,7 @@ public class FrontInterfaceService {
      * get contract code.
      */
     public String getContractCode(Integer chainId, Integer groupId, String address,
-            BigInteger blockNumber) throws NodeMgrException {
+            BigInteger blockNumber) throws BaseException {
         log.debug("start getContractCode groupId:{} address:{} blockNumber:{}", groupId, address,
                 blockNumber);
         String uri = String.format(FrontRestTools.URI_CODE, address, blockNumber);
@@ -365,7 +365,7 @@ public class FrontInterfaceService {
         log.debug("start setConsensusStatus. consensusParam:{}", JSON.toJSONString(consensusParam));
         if (Objects.isNull(consensusParam)) {
             log.error("fail setConsensusStatus. request param is null");
-            throw new NodeMgrException(ConstantCode.INVALID_PARAM_INFO);
+            throw new BaseException(ConstantCode.INVALID_PARAM_INFO);
         }
         ConsensusHandle consensusHandle = new ConsensusHandle();
         BeanUtils.copyProperties(consensusParam, consensusHandle);

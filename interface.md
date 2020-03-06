@@ -482,20 +482,20 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/mointorInfo/200001?beginDate=20
 
 ***1）出参表***
 
-| 序号      | 输出参数         | 类型            |      | 备注                            |
-| --------- | ---------------- | --------------- | ---- | ------------------------------- |
-| 1         | code             | Int             | 否   | 返回码                          |
-| 2         | message          | String          | 否   | 描述信息                        |
-| 3         | data             | Array           | 否   | 返回信息列表                    |
-| 3.1       |                  | Object          |      | 返回信息实体                    |
-| 3.1.1     | metricType       | String          | 否   | 测量类型：blockHeight、pbftView |
-| 3.1.2     | data             | Object          | 否   |                                 |
-| 3.1.2.1   | lineDataList     | Object          | 否   | 指定时间的数据                  |
-| 3.1.2.1.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                      |
-| 3.1.2.1.2 | valueList        | List\<Integer\> | 否   | 值列表                          |
-| 3.1.2.2   | contrastDataList | Object          | 否   | 比对时间的数据                  |
-| 3.1.2.2.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                      |
-| 3.1.2.2.2 | valueList        | List\<Integer\> | 否   | 值列表                          |
+| 序号      | 输出参数         | 类型            |      | 备注                                                         |
+| --------- | ---------------- | --------------- | ---- | ------------------------------------------------------------ |
+| 1         | code             | Int             | 否   | 返回码                                                       |
+| 2         | message          | String          | 否   | 描述信息                                                     |
+| 3         | data             | Array           | 否   | 返回信息列表                                                 |
+| 3.1       |                  | Object          |      | 返回信息实体                                                 |
+| 3.1.1     | metricType       | String          | 否   | 测量类型：blockHeight（块高）、pbftView（pbft视图）、pendingCount（待处理交易数量） |
+| 3.1.2     | data             | Object          | 否   |                                                              |
+| 3.1.2.1   | lineDataList     | Object          | 否   | 指定时间的数据                                               |
+| 3.1.2.1.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                                   |
+| 3.1.2.1.2 | valueList        | List\<Integer\> | 否   | 值列表                                                       |
+| 3.1.2.2   | contrastDataList | Object          | 否   | 比对时间的数据                                               |
+| 3.1.2.2.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                                   |
+| 3.1.2.2.2 | valueList        | List\<Integer\> | 否   | 值列表                                                       |
 
 ***2）出参示例***
 
@@ -601,20 +601,20 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/ratio/200001?gap=1&beginDate=20
 
 ***1）出参表***
 
-| 序号      | 输出参数         | 类型            |      | 备注                                      |
-| --------- | ---------------- | --------------- | ---- | ----------------------------------------- |
-| 1         | code             | Int             | 否   | 返回码                                    |
-| 2         | message          | String          | 否   | 描述信息                                  |
-| 3         | data             | Array           | 否   | 返回信息列表                              |
-| 3.1       |                  | Object          |      | 返回信息实体                              |
-| 3.1.1     | metricType       | String          | 否   | 测量类型: cpu、memory、disk、txbps、rxbps |
-| 3.1.2     | data             | Object          | 否   |                                           |
-| 3.1.2.1   | lineDataList     | Object          | 否   | 指定时间的数据                            |
-| 3.1.2.1.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                |
-| 3.1.2.1.2 | valueList        | List\<Integer\> | 否   | 值列表                                    |
-| 3.1.2.2   | contrastDataList | Object          | 否   | 比对时间的数据                            |
-| 3.1.2.2.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                |
-| 3.1.2.2.2 | valueList        | List\<Integer\> | 否   | 值列表                                    |
+| 序号      | 输出参数         | 类型            |      | 备注                                                         |
+| --------- | ---------------- | --------------- | ---- | ------------------------------------------------------------ |
+| 1         | code             | Int             | 否   | 返回码                                                       |
+| 2         | message          | String          | 否   | 描述信息                                                     |
+| 3         | data             | Array           | 否   | 返回信息列表                                                 |
+| 3.1       |                  | Object          |      | 返回信息实体                                                 |
+| 3.1.1     | metricType       | String          | 否   | 测量类型: cpu（cpu利用率：%）、memory（内存利用率：%）、disk（硬盘利用率：%）、txbps（上行bandwith：KB/s）、rxbps（下行bandwith：KB/s） |
+| 3.1.2     | data             | Object          | 否   |                                                              |
+| 3.1.2.1   | lineDataList     | Object          | 否   | 指定时间的数据                                               |
+| 3.1.2.1.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                                   |
+| 3.1.2.1.2 | valueList        | List\<Integer\> | 否   | 值列表                                                       |
+| 3.1.2.2   | contrastDataList | Object          | 否   | 比对时间的数据                                               |
+| 3.1.2.2.1 | timestampList    | List\<String\>  | 否   | 时间戳列表                                                   |
+| 3.1.2.2.2 | valueList        | List\<Integer\> | 否   | 值列表                                                       |
 
 ***2）出参示例***
 
@@ -711,19 +711,19 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/config/200001
 
 ***1）出参表***
 
-| 序号  | 输出参数        | 类型   |      | 备注             |
-| ----- | --------------- | ------ | ---- | ---------------- |
-| 1     | code            | int    | 否   | 返回码           |
-| 2     | message         | String | 否   | 描述信息         |
-| 3     | data            | Array  | 否   | 返回信息列表     |
-| 3.1   |                 | Object |      | 返回信息实体     |
-| 3.1.1 | ip              | String | 否   | ip地址           |
-| 3.1.2 | memoryTotalSize | String | 否   | 内存总量         |
-| 3.1.3 | memoryUsedSize  | String | 否   | 当前内存使用量   |
-| 3.1.4 | cpuSize         | String | 否   | CPU的大小        |
-| 3.1.5 | cpuAmount       | String | 否   | CPU的核数        |
-| 3.1.6 | diskTotalSize   | String | 否   | 文件系统总量     |
-| 3.1.7 | diskUsedSize    | String | 否   | 文件系统已使用量 |
+| 序号  | 输出参数        | 类型   |      | 备注                         |
+| ----- | --------------- | ------ | ---- | ---------------------------- |
+| 1     | code            | int    | 否   | 返回码                       |
+| 2     | message         | String | 否   | 描述信息                     |
+| 3     | data            | Array  | 否   | 返回信息列表                 |
+| 3.1   |                 | Object |      | 返回信息实体                 |
+| 3.1.1 | ip              | String | 否   | ip地址                       |
+| 3.1.2 | memoryTotalSize | String | 否   | 内存总量（单位：KB）         |
+| 3.1.3 | memoryUsedSize  | String | 否   | 当前内存使用量（单位：KB）   |
+| 3.1.4 | cpuSize         | String | 否   | CPU的大小（单位：MHz）       |
+| 3.1.5 | cpuAmount       | String | 否   | CPU的核数（单位：个）        |
+| 3.1.6 | diskTotalSize   | String | 否   | 文件系统总量（单位：KB）     |
+| 3.1.7 | diskUsedSize    | String | 否   | 文件系统已使用量（单位：KB） |
 
 ***2）出参示例***
 
@@ -2101,6 +2101,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTransactionReceipt/1001/1/0x2
 
 ### 5.1 编译合约
 
+​	接口参数为合约文件压缩成zip并Base64编码后的字符串。合约文件需要放在同级目录压缩，涉及引用请使用"./XXX.sol"。可参考测试类ContractControllerTest的testCompileContract()方法。
+
 #### 5.1.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
@@ -2113,12 +2115,9 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTransactionReceipt/1001/1/0x2
 
 ***1）入参表***
 
-| 序号 | 输入参数       | 类型   | 可为空 | 备注                 |
-| ---- | -------------- | ------ | ------ | -------------------- |
-| 1    | chainId        | Int    | 否     | 链编号               |
-| 2    | groupId        | Int    | 否     | 所属群组编号         |
-| 3    | contractName   | String | 否     | 合约名称             |
-| 4    | contractSource | String | 是     | 合约源码，Base64编码 |
+| 序号 | 输入参数       | 类型   | 可为空 | 备注                                        |
+| ---- | -------------- | ------ | ------ | ------------------------------------------- |
+| 1    | contractSource | String | 是     | 合约源码（合约文件压缩成zip，并Base64编码） |
 
 ***2）入参示例***
 
@@ -2128,10 +2127,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/compile
 
 ```
 {
-  "chainId": 1001,
-  "contractName": "HelloWorld",
-  "contractSource": "cHJhZ21hIHNvbGlkaXR5IF4wLjQuMjsNCmNvbnRyYWN0IEhlbGxvV29ybGR7DQogICAgc3RyaW5nIG5hbWU7DQogICAgZXZlbnQgU2V0TmFtZShzdHJpbmcgbmFtZSk7DQogICAgZnVuY3Rpb24gZ2V0KCljb25zdGFudCByZXR1cm5zKHN0cmluZyl7DQogICAgICAgIHJldHVybiBuYW1lOw0KICAgIH0NCiAgICBmdW5jdGlvbiBzZXQoc3RyaW5nIG4pew0KICAgICAgICBlbWl0IFNldE5hbWUobik7DQogICAgICAgIG5hbWU9bjsNCiAgICB9DQp9",
-  "groupId": 1
+  "contractSource": "UEsDBBQACAgIACGIZVAAAAAAAAAAAAAAAAAOAAAASGVsbG9Xb3JsZC5zb2yFjjELwjAQhfdC/8ONzVIkuBV3JxcHNyGkZwkkF0muBZH+dxPaYpGqb7x373vvHlTnFERvTWv4Adddva9lUxbaEwelGY5orb/4YNtnWUBS5GCoA1IOm+mCAxLDGfmUbtXKF1sPcuvj1pNm4wk65Eqk8sgqRQJyHyjOCTEvyJqc9YrxgxQTaWlaJ9GZ91haBmRl2IG+4+RfnvwNHF9QSwcIuSZqBJwAAABvAQAAUEsBAhQAFAAICAgAIYhlULkmagScAAAAbwEAAA4AAAAAAAAAAAAAAAAAAAAAAEhlbGxvV29ybGQuc29sUEsFBgAAAAABAAEAPAAAANgAAAAAAA=="
 }
 ```
 
@@ -2139,15 +2135,15 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/compile
 
 ***1）出参表***
 
-| 序号 | 输出参数     | 类型   |      | 备注                              |
-| ---- | ------------ | ------ | ---- | --------------------------------- |
-| 1    | code         | Int    | 否   | 返回码，0：成功 其它：失败        |
-| 2    | message      | String | 否   | 描述                              |
-| 3    |              | Object |      | 返回信息实体                      |
-| 3.1  | contractName | String | 否   | 合约名称                          |
-| 3.2  | contractAbi  | String | 是   | 编译合约生成的abi文件内容         |
-| 3.3  | bytecodeBin  | String | 是   | 合约bytecode binary，用于部署合约 |
-| 3.4  | errors       | String | 是   | 编译提示信息                      |
+| 序号  | 输出参数     | 类型   |      | 备注                              |
+| ----- | ------------ | ------ | ---- | --------------------------------- |
+| 1     | code         | Int    | 否   | 返回码，0：成功 其它：失败        |
+| 2     | message      | String | 否   | 描述                              |
+| 3     | data         | List   |      | 列表                              |
+| 3.1   |              | Object |      | 信息对象                          |
+| 3.1.1 | contractName | String | 否   | 合约名称                          |
+| 3.1.2 | contractAbi  | String | 是   | 编译合约生成的abi文件内容         |
+| 3.1.3 | bytecodeBin  | String | 是   | 合约bytecode binary，用于部署合约 |
 
 ***2）出参示例***
 
@@ -2157,12 +2153,13 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/compile
 {
   "code": 0,
   "message": "success",
-  "data": {
-    "contractName": "HelloWorld",
-    "contractAbi": "[{\"constant\":false,\"inputs\":[{\"name\":\"n\",\"type\":\"String\"}],\"name\":\"set\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"get\",\"outputs\":[{\"name\":\"\",\"type\":\"String\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"name\",\"type\":\"String\"}],\"name\":\"SetName\",\"type\":\"event\"}]",
-    "bytecodeBin": "608060405234801561001057600080fd5b50610373806100206000396000f30060806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634ed3885e146100515780636d4ce63c146100ba575b600080fd5b34801561005d57600080fd5b506100b8600480360381019080803590602001908201803590602001908080601f016020809104026020016040519081016040528093929190818152602001838380828437820191505050505050919291929050505061014a565b005b3480156100c657600080fd5b506100cf610200565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561010f5780820151818401526020810190506100f4565b50505050905090810190601f16801561013c5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b7f4df9dcd34ae35f40f2c756fd8ac83210ed0b76d065543ee73d868aec7c7fcf02816040518080602001828103825283818151815260200191508051906020019080838360005b838110156101ac578082015181840152602081019050610191565b50505050905090810190601f1680156101d95780820380516001836020036101000a031916815260200191505b509250505060405180910390a180600090805190602001906101fc9291906102a2565b5050565b606060008054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156102985780601f1061026d57610100808354040283529160200191610298565b820191906000526020600020905b81548152906001019060200180831161027b57829003601f168201915b5050505050905090565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106102e357805160ff1916838001178555610311565b82800160010185558215610311579182015b828111156103105782518255916020019190600101906102f5565b5b50905061031e9190610322565b5090565b61034491905b80821115610340576000816000905550600101610328565b5090565b905600a165627a7a72305820d3d37c423723b7082e475b2ff27e3db3abb1dad17430a8a7ec3f1e09a8b1e7b80029",
-    "errors": "XXX"
-  }
+  "data": [
+    {
+      "contractName": "HelloWorld",
+      "contractAbi": "[{\"constant\":false,\"inputs\":[{\"name\":\"n\",\"type\":\"string\"}],\"name\":\"set\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"get\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"n\",\"type\":\"string\"}],\"name\":\"set2\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"name\",\"type\":\"string\"}],\"name\":\"SetName\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"name\",\"type\":\"string\"}],\"name\":\"SetName2\",\"type\":\"event\"}]",
+      "bytecodeBin": "608060405234801561001057600080fd5b5061049d806100206000396000f300608060405260043610610057576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634ed3885e1461005c5780636d4ce63c146100c557806394ab626314610155575b600080fd5b34801561006857600080fd5b506100c3600480360381019080803590602001908201803590602001908080601f01602080910402602001604051908101604052809392919081815260200183838082843782019150505050505091929192905050506101be565b005b3480156100d157600080fd5b506100da610274565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561011a5780820151818401526020810190506100ff565b50505050905090810190601f1680156101475780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b34801561016157600080fd5b506101bc600480360381019080803590602001908201803590602001908080601f0160208091040260200160405190810160405280939291908181526020018383808284378201915050505050509192919290505050610316565b005b7f4df9dcd34ae35f40f2c756fd8ac83210ed0b76d065543ee73d868aec7c7fcf02816040518080602001828103825283818151815260200191508051906020019080838360005b83811015610220578082015181840152602081019050610205565b50505050905090810190601f16801561024d5780820380516001836020036101000a031916815260200191505b509250505060405180910390a180600090805190602001906102709291906103cc565b5050565b606060008054600181600116156101000203166002900480601f01602080910402602001604051908101604052809291908181526020018280546001816001161561010002031660029004801561030c5780601f106102e15761010080835404028352916020019161030c565b820191906000526020600020905b8154815290600101906020018083116102ef57829003601f168201915b5050505050905090565b7f5a10b7f1e7b0001e5072838ada067bb4410151e165607a3465bf0620c412e2a3816040518080602001828103825283818151815260200191508051906020019080838360005b8381101561037857808201518184015260208101905061035d565b50505050905090810190601f1680156103a55780820380516001836020036101000a031916815260200191505b509250505060405180910390a180600090805190602001906103c89291906103cc565b5050565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061040d57805160ff191683800117855561043b565b8280016001018555821561043b579182015b8281111561043a57825182559160200191906001019061041f565b5b509050610448919061044c565b5090565b61046e91905b8082111561046a576000816000905550600101610452565b5090565b905600a165627a7a72305820a29a15f3aad04ec24023c149e72a1c9690158e2b5835ce7b3054e0200947f1ea0029"
+    }
+  ]
 }
 ```
 

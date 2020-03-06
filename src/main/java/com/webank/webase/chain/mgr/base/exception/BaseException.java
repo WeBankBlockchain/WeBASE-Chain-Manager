@@ -16,19 +16,19 @@ package com.webank.webase.chain.mgr.base.exception;
 import com.webank.webase.chain.mgr.base.code.RetCode;
 
 /**
- * business exception.
+ * base business exception.
  */
-public class NodeMgrException extends RuntimeException {
+public class BaseException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
     private RetCode retCode;
 
-    public NodeMgrException(RetCode retCode) {
+    public BaseException(RetCode retCode) {
         super(retCode.getMessage());
         this.retCode = retCode;
     }
 
-    public NodeMgrException(int code, String msg) {
+    public BaseException(int code, String msg) {
         super(msg);
         this.retCode = new RetCode(code, msg);
     }

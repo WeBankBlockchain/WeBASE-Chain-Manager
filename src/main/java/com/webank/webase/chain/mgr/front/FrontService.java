@@ -16,9 +16,9 @@ package com.webank.webase.chain.mgr.front;
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.base.tools.NodeMgrTools;
+import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.chain.entity.TbChain;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
@@ -88,14 +88,14 @@ public class FrontService {
         Integer chainId = frontInfo.getChainId();
         TbChain tbChain = chainService.getChainById(chainId);
         if (tbChain == null) {
-            throw new NodeMgrException(ConstantCode.INVALID_CHAIN_ID);
+            throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
         }
 
         TbFront tbFront = new TbFront();
         String frontIp = frontInfo.getFrontIp();
         Integer frontPort = frontInfo.getFrontPort();
         // check front ip and port
-        NodeMgrTools.checkServerConnect(frontIp, frontPort);
+        CommonUtils.checkServerConnect(frontIp, frontPort);
         // check front's encrypt type same as chain(guomi or standard)
         int encryptType = frontInterface.getEncryptTypeFromSpecificFront(frontIp, frontPort);
         if (encryptType != tbChain.getChainType()) {
@@ -103,7 +103,7 @@ public class FrontService {
                     "fail newFront, frontIp:{},frontPort:{},front's encryptType:{},"
                             + "local encryptType not match:{}",
                     frontIp, frontPort, encryptType, EncryptType.encryptType);
-            throw new NodeMgrException(ConstantCode.ENCRYPT_TYPE_NOT_MATCH);
+            throw new BaseException(ConstantCode.ENCRYPT_TYPE_NOT_MATCH);
         }
         // query group list
         List<String> groupIdList = null;
@@ -111,7 +111,7 @@ public class FrontService {
             groupIdList = frontInterface.getGroupListFromSpecificFront(frontIp, frontPort);
         } catch (Exception e) {
             log.error("fail newFront, frontIp:{},frontPort:{}", frontIp, frontPort);
-            throw new NodeMgrException(ConstantCode.REQUEST_FRONT_FAIL);
+            throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
         }
         // check front not exist
         SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontIp, frontPort,
@@ -121,7 +121,7 @@ public class FrontService {
         param.setNodeId(syncStatus.getNodeId());
         int count = getFrontCount(param);
         if (count > 0) {
-            throw new NodeMgrException(ConstantCode.FRONT_EXISTS);
+            throw new BaseException(ConstantCode.FRONT_EXISTS);
         }
         // copy attribute
         BeanUtils.copyProperties(frontInfo, tbFront);
@@ -130,7 +130,7 @@ public class FrontService {
         frontMapper.add(tbFront);
         if (tbFront.getFrontId() == null || tbFront.getFrontId() == 0) {
             log.warn("fail newFront, after save, tbFront:{}", JSON.toJSONString(tbFront));
-            throw new NodeMgrException(ConstantCode.SAVE_FRONT_FAIL);
+            throw new BaseException(ConstantCode.SAVE_FRONT_FAIL);
         }
         for (String groupId : groupIdList) {
             Integer group = Integer.valueOf(groupId);
@@ -149,7 +149,7 @@ public class FrontService {
             // save nodes
             for (String nodeId : groupPeerList) {
                 PeerInfo newPeer =
-                        peerList.stream().map(p -> NodeMgrTools.object2JavaBean(p, PeerInfo.class))
+                        peerList.stream().map(p -> CommonUtils.object2JavaBean(p, PeerInfo.class))
                                 .filter(peer -> nodeId.equals(peer.getNodeId())).findFirst()
                                 .orElseGet(() -> new PeerInfo(nodeId));
                 nodeService.addNodeInfo(chainId, group, newPeer);
@@ -213,12 +213,12 @@ public class FrontService {
         List<String> nameList = Arrays.asList("beginDate", "endDate", "contrastBeginDate",
                 "contrastEndDate", "gap", "groupId");
 
-        String chainUrlParam = NodeMgrTools.convertUrlParam(nameList, valueList);
+        String chainUrlParam = CommonUtils.convertUrlParam(nameList, valueList);
 
         // query by front Id
         TbFront tbFront = frontService.getById(frontId);
         if (tbFront == null) {
-            throw new NodeMgrException(ConstantCode.INVALID_FRONT_ID);
+            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
         }
 
         // request url
@@ -249,12 +249,12 @@ public class FrontService {
                 Arrays.asList(beginDate, endDate, contrastBeginDate, contrastEndDate, gap);
 
         // request param to str
-        String urlParam = NodeMgrTools.convertUrlParam(nameList, valueList);
+        String urlParam = CommonUtils.convertUrlParam(nameList, valueList);
 
         // query by front Id
         TbFront tbFront = frontService.getById(frontId);
         if (tbFront == null) {
-            throw new NodeMgrException(ConstantCode.INVALID_FRONT_ID);
+            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
         }
 
         // request url
@@ -277,7 +277,7 @@ public class FrontService {
         // query by front Id
         TbFront tbFront = frontService.getById(frontId);
         if (tbFront == null) {
-            throw new NodeMgrException(ConstantCode.INVALID_FRONT_ID);
+            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
         }
 
         // request url
@@ -299,7 +299,7 @@ public class FrontService {
         // query by front Id
         TbFront tbFront = frontService.getById(frontId);
         if (tbFront == null) {
-            throw new NodeMgrException(ConstantCode.INVALID_FRONT_ID);
+            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
         }
 
         // request url
@@ -321,7 +321,7 @@ public class FrontService {
         // query by front Id
         TbFront tbFront = frontService.getById(frontId);
         if (tbFront == null) {
-            throw new NodeMgrException(ConstantCode.INVALID_FRONT_ID);
+            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
         }
         
         // request url
@@ -378,7 +378,7 @@ public class FrontService {
         param.setFrontId(frontId);
         int count = getFrontCount(param);
         if (count == 0) {
-            throw new NodeMgrException(ConstantCode.INVALID_FRONT_ID);
+            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
         }
 
         // remove front
