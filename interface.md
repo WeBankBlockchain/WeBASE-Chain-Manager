@@ -838,16 +838,16 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/getGroupSizeInfos/200001
 
 ***1）出参表***
 
-| 序号  | 输出参数  | 类型   |      | 备注            |
-| ----- | --------- | ------ | ---- | --------------- |
-| 1     | code      | Int    | 否   | 返回码          |
-| 2     | message   | String | 否   | 描述信息        |
-| 3     | data      | Array  | 否   | 返回信息列表    |
-| 3.1   |           | List   |      | 返回信息实体    |
-| 3.1.1 | groupId   | Int    | 否   | 群组id          |
-| 3.1.2 | groupName | String | 否   | 群组名          |
-| 3.1.3 | path      | String | 否   | 文件路径        |
-| 3.1.4 | size      | Long   | 否   | 大小（单位：B） |
+| 序号  | 输出参数  | 类型   |      | 备注             |
+| ----- | --------- | ------ | ---- | ---------------- |
+| 1     | code      | Int    | 否   | 返回码           |
+| 2     | message   | String | 否   | 描述信息         |
+| 3     | data      | Array  | 否   | 返回信息列表     |
+| 3.1   |           | List   |      | 返回信息实体     |
+| 3.1.1 | groupId   | Int    | 否   | 群组id           |
+| 3.1.2 | groupName | String | 否   | 群组名           |
+| 3.1.3 | path      | String | 否   | 文件路径         |
+| 3.1.4 | size      | Long   | 否   | 大小（单位：KB） |
 
 ***2）出参示例***
 
@@ -862,25 +862,25 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/getGroupSizeInfos/200001
       "groupId": 31231,
       "groupName": "group31231",
       "path": "/data/app/nodes/127.0.0.1/node0/data/group31231",
-      "size": 16686263
+      "size": 27085
     },
     {
       "groupId": 2,
       "groupName": "group2",
       "path": "/data/app/nodes/127.0.0.1/node0/data/group2",
-      "size": 24809946
+      "size": 23542
     },
     {
       "groupId": 1,
       "groupName": "group1",
       "path": "/data/app/nodes/127.0.0.1/node0/data/group1",
-      "size": 25077138
+      "size": 25077
     },
     {
       "groupId": 111,
       "groupName": "group111",
       "path": "/data/app/nodes/127.0.0.1/node0/data/group111",
-      "size": 21552047
+      "size": 21552
     }
   ]
 }
@@ -3141,4 +3141,5 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/userList/100001/1/1/10?userParam
 | 205027 | user id cannot be empty                          | 用户编号不能为空   |
 | 205028 | invalid user                                     | 无效用户           |
 | 205029 | chain id already exists                          | 链编号已存在       |
+| 205030 | contract compile error                           | 合约编译错误       |
 | 305000 | param exception                                  | 参数异常           |
