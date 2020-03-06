@@ -18,28 +18,46 @@ import com.alibaba.fastjson.JSONObject;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.code.RetCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.pagetools.entity.MapHandle;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -50,7 +68,7 @@ import org.fisco.bcos.web3j.crypto.Hash;
  * common method.
  */
 @Log4j2
-public class NodeMgrTools {
+public class CommonUtils {
 
     public static final String DEFAULT_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     public static final String DATE_TIME_FORMAT_NO_SPACE = "yyyyMMddHHmmss";
@@ -285,12 +303,12 @@ public class NodeMgrTools {
             state = address.isReachable(500);
         } catch (Exception ex) {
             log.error("fail checkServerHostConnect", ex);
-            throw new NodeMgrException(ConstantCode.SERVER_CONNECT_FAIL);
+            throw new BaseException(ConstantCode.SERVER_CONNECT_FAIL);
         }
 
         if (!state) {
             log.info("host connect state:{}", state);
-            throw new NodeMgrException(ConstantCode.SERVER_CONNECT_FAIL);
+            throw new BaseException(ConstantCode.SERVER_CONNECT_FAIL);
         }
     }
 
@@ -312,7 +330,7 @@ public class NodeMgrTools {
             socket.connect(address, 1000);
         } catch (Exception ex) {
             log.error("fail checkServerConnect", ex);
-            throw new NodeMgrException(ConstantCode.SERVER_CONNECT_FAIL);
+            throw new BaseException(ConstantCode.SERVER_CONNECT_FAIL);
         } finally {
             if (Objects.nonNull(socket)) {
                 try {
@@ -436,7 +454,7 @@ public class NodeMgrTools {
         });
         return list;
     }
-    
+
     /**
      * parseHexStr2Int.
      * 
@@ -448,5 +466,189 @@ public class NodeMgrTools {
             return 0;
         }
         return Integer.parseInt(str.substring(2), 16);
+    }
+
+    /**
+     * delete Files.
+     * 
+     * @param path path
+     * @return
+     */
+    public static boolean deleteFiles(String path) {
+        if (!path.endsWith(File.separator)) {
+            path = path + File.separator;
+        }
+        File dirFile = new File(path);
+        if (!dirFile.exists() || !dirFile.isDirectory()) {
+            return false;
+        }
+        boolean flag = true;
+        File[] files = dirFile.listFiles();
+        if (files == null) {
+            return false;
+        }
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isFile()) {
+                flag = deleteFile(files[i].getAbsolutePath());
+                if (!flag) {
+                    break;
+                }
+            } else {
+                flag = deleteFiles(files[i].getAbsolutePath());
+                if (!flag) {
+                    break;
+                }
+            }
+        }
+        if (!flag) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * delete single File.
+     * 
+     * @param filePath filePath
+     * @return
+     */
+    public static boolean deleteFile(String filePath) {
+        boolean flag = false;
+        File file = new File(filePath);
+        if (file.isFile() && file.exists()) {
+            file.delete();
+            flag = true;
+        }
+        return flag;
+    }
+
+    /**
+     * 文件转Base64
+     * 
+     * @param filePath 文件路径
+     * @return
+     */
+    public static String fileToBase64(String filePath) {
+        if (filePath == null) {
+            return null;
+        }
+        FileInputStream inputFile = null;
+        try {
+            File file = new File(filePath);
+            inputFile = new FileInputStream(file);
+            byte[] buffer = new byte[(int) file.length()];
+            inputFile.read(buffer);
+            return Base64.getEncoder().encodeToString(buffer);
+        } catch (IOException e) {
+            log.error("base64ToFile IOException:[{}]", e.toString());
+        } finally {
+            close(inputFile);
+        }
+        return null;
+    }
+
+    /**
+     * 文件压缩并Base64加密
+     * 
+     * @param srcFiles
+     * @return
+     */
+    public static String fileToZipBase64(List<File> srcFiles) {
+        long start = System.currentTimeMillis();
+        String toZipBase64 = "";
+        ZipOutputStream zos = null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            zos = new ZipOutputStream(baos);
+            for (File srcFile : srcFiles) {
+                byte[] buf = new byte[1024];
+                log.info("fileToZipBase64 fileName: [{}] size: [{}] ", srcFile.getName(),
+                        srcFile.length());
+                zos.putNextEntry(new ZipEntry(srcFile.getName()));
+                int len;
+                FileInputStream in = new FileInputStream(srcFile);
+                while ((len = in.read(buf)) != -1) {
+                    zos.write(buf, 0, len);
+                }
+                zos.closeEntry();
+                in.close();
+            }
+            long end = System.currentTimeMillis();
+            log.info("fileToZipBase64 cost time：[{}] ms", (end - start));
+        } catch (IOException e) {
+            log.error("fileToZipBase64 IOException:[{}]", e.toString());
+        } finally {
+            close(zos);
+        }
+
+        byte[] refereeFileBase64Bytes = Base64.getEncoder().encode(baos.toByteArray());
+        try {
+            toZipBase64 = new String(refereeFileBase64Bytes, "UTF-8");
+        } catch (IOException e) {
+            log.error("fileToZipBase64 IOException:[{}]", e.toString());
+        }
+        return toZipBase64;
+    }
+
+    /**
+     * zip Base64 解密 解压缩.
+     * 
+     * @param base64 base64加密字符
+     * @param path 解压文件夹路径
+     */
+    public static void zipBase64ToFile(String base64, String path) {
+        ByteArrayInputStream bais = null;
+        ZipInputStream zis = null;
+        try {
+            File file = new File(path);
+            if (!file.exists() && !file.isDirectory()) {
+                file.mkdirs();
+            }
+
+            byte[] byteBase64 = Base64.getDecoder().decode(base64);
+            bais = new ByteArrayInputStream(byteBase64);
+            zis = new ZipInputStream(bais);
+            ZipEntry entry = zis.getNextEntry();
+            File fout = null;
+            while (entry != null && !entry.isDirectory()) {
+                log.info("zipBase64ToFile file name:[{}]", entry.getName());
+                fout = new File(path, entry.getName());
+                BufferedOutputStream bos = null;
+                try {
+                    bos = new BufferedOutputStream(new FileOutputStream(fout));
+                    int offo = -1;
+                    byte[] buffer = new byte[1024];
+                    while ((offo = zis.read(buffer)) != -1) {
+                        bos.write(buffer, 0, offo);
+                    }
+                } catch (IOException e) {
+                    log.error("base64ToFile IOException:[{}]", e.toString());
+                } finally {
+                    close(bos);
+                }
+                // next
+                entry = zis.getNextEntry();
+            }
+        } catch (IOException e) {
+            log.error("base64ToFile IOException:[{}]", e.toString());
+        } finally {
+            close(zis);
+            close(bais);
+        }
+    }
+
+    /**
+     * close Closeable.
+     * 
+     * @param closeable object
+     */
+    private static void close(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                log.error("closeable IOException:[{}]", e.toString());
+            }
+        }
     }
 }

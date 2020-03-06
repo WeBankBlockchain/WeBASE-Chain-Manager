@@ -19,7 +19,7 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
 import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
@@ -63,7 +63,7 @@ public class GroupController extends BaseController {
     @PostMapping("/generate/{nodeId}")
     public BaseResponse generateToSingleNode(@PathVariable("nodeId") String nodeId,
             @RequestBody @Valid ReqGenerateGroup req, BindingResult result)
-            throws NodeMgrException {
+            throws BaseException {
         checkBindResult(result);
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
@@ -82,7 +82,7 @@ public class GroupController extends BaseController {
      */
     @PostMapping("/generate")
     public BaseResponse generateGroup(@RequestBody @Valid ReqGenerateGroup req,
-            BindingResult result) throws NodeMgrException {
+            BindingResult result) throws BaseException {
         checkBindResult(result);
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
@@ -102,7 +102,7 @@ public class GroupController extends BaseController {
     @GetMapping("/start/{chainId}/{startGroupId}/{nodeId}")
     public BaseResponse startGroup(@PathVariable("chainId") Integer chainId,
             @PathVariable("nodeId") String nodeId,
-            @PathVariable("startGroupId") Integer startGroupId) throws NodeMgrException {
+            @PathVariable("startGroupId") Integer startGroupId) throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start startGroup startTime:{} groupId:{}", startTime.toEpochMilli(),
@@ -119,7 +119,7 @@ public class GroupController extends BaseController {
      */
     @PostMapping("/batchStart")
     public BaseResponse batchStartGroup(@RequestBody @Valid ReqStartGroup req, BindingResult result)
-            throws NodeMgrException {
+            throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start batchStartGroup startTime:{} groupId:{}", startTime.toEpochMilli(),
@@ -135,7 +135,7 @@ public class GroupController extends BaseController {
      * update group.
      */
     @GetMapping("/update")
-    public BaseResponse updateGroup() throws NodeMgrException {
+    public BaseResponse updateGroup() throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start updateGroup startTime:{}", startTime.toEpochMilli());
@@ -151,7 +151,7 @@ public class GroupController extends BaseController {
      */
     @GetMapping("/general/{chainId}/{groupId}")
     public BaseResponse getGroupGeneral(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId) throws NodeMgrException {
+            @PathVariable("groupId") Integer groupId) throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start getGroupGeneral startTime:{} groupId:{}", startTime.toEpochMilli(),
@@ -169,7 +169,7 @@ public class GroupController extends BaseController {
      */
     @GetMapping("/all/{chainId}")
     public BasePageResponse getAllGroup(@PathVariable("chainId") Integer chainId)
-            throws NodeMgrException {
+            throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start getAllGroup startTime:{}", startTime.toEpochMilli());
@@ -217,7 +217,7 @@ public class GroupController extends BaseController {
      */
     @PostMapping(value = "setConsensusStatus")
     public Object setConsensusStatus(@RequestBody @Valid ConsensusParam consensusParam,
-            BindingResult result) throws NodeMgrException {
+            BindingResult result) throws BaseException {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start setConsensusStatus startTime:{} consensusParam:{}",

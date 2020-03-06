@@ -16,7 +16,6 @@
 package com.webank.webase.chain.mgr.contract.entity;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -24,12 +23,6 @@ import lombok.Data;
  */
 @Data
 public class CompileInputParam{
-    @NotNull
-    private Integer chainId;
-    @NotNull
-    private Integer groupId;
-    @NotBlank
-    private String contractName;
     @NotBlank
     private String contractSource;
 }

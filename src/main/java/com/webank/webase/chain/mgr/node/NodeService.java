@@ -17,8 +17,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
-import com.webank.webase.chain.mgr.base.tools.NodeMgrTools;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfConsensusStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfSyncStatus;
@@ -56,7 +56,7 @@ public class NodeService {
      * add new node data.
      */
     public void addNodeInfo(Integer chainId, Integer groupId, PeerInfo peerInfo)
-            throws NodeMgrException {
+            throws BaseException {
         String nodeIp = null;
         Integer nodeP2PPort = null;
 
@@ -81,7 +81,7 @@ public class NodeService {
     /**
      * query count of node.
      */
-    public Integer countOfNode(NodeParam queryParam) throws NodeMgrException {
+    public Integer countOfNode(NodeParam queryParam) throws BaseException {
         log.debug("start countOfNode queryParam:{}", JSON.toJSONString(queryParam));
         try {
             Integer nodeCount = nodeMapper.getCount(queryParam);
@@ -90,14 +90,14 @@ public class NodeService {
             return nodeCount;
         } catch (RuntimeException ex) {
             log.error("fail countOfNode . queryParam:{}", queryParam, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
     }
 
     /**
      * query node list by page.
      */
-    public List<TbNode> qureyNodeList(NodeParam queryParam) throws NodeMgrException {
+    public List<TbNode> qureyNodeList(NodeParam queryParam) throws BaseException {
         log.debug("start qureyNodeList queryParam:{}", JSON.toJSONString(queryParam));
 
         // query node list
@@ -127,7 +127,7 @@ public class NodeService {
     /**
      * query node info.
      */
-    public TbNode queryByNodeId(String nodeId) throws NodeMgrException {
+    public TbNode queryByNodeId(String nodeId) throws BaseException {
         log.debug("start queryNode nodeId:{}", nodeId);
         try {
             TbNode nodeRow = nodeMapper.queryByNodeId(nodeId);
@@ -135,7 +135,7 @@ public class NodeService {
             return nodeRow;
         } catch (RuntimeException ex) {
             log.error("fail queryNode . nodeId:{}", nodeId, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
     }
 
@@ -143,7 +143,7 @@ public class NodeService {
     /**
      * update node info.
      */
-    public void updateNode(TbNode tbNode) throws NodeMgrException {
+    public void updateNode(TbNode tbNode) throws BaseException {
         log.debug("start updateNodeInfo  param:{}", JSON.toJSONString(tbNode));
         Integer affectRow = 0;
         try {
@@ -151,12 +151,12 @@ public class NodeService {
             affectRow = nodeMapper.update(tbNode);
         } catch (RuntimeException ex) {
             log.error("updateNodeInfo exception", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
 
         if (affectRow == 0) {
             log.warn("affect 0 rows of tb_node");
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
         log.debug("end updateNodeInfo");
     }
@@ -174,7 +174,7 @@ public class NodeService {
     /**
      * delete by node and group.
      */
-    public void deleteByNodeAndGroupId(String nodeId, int groupId) throws NodeMgrException {
+    public void deleteByNodeAndGroupId(String nodeId, int groupId) throws BaseException {
         log.debug("start deleteByNodeAndGroupId nodeId:{} groupId:{}", nodeId, groupId);
         nodeMapper.deleteByNodeAndGroup(nodeId, groupId);
         log.debug("end deleteByNodeAndGroupId");
@@ -300,7 +300,7 @@ public class NodeService {
                 jsonArr.stream().filter(jsonObj -> jsonObj instanceof List).map(arr -> {
                     Object obj = JSONArray.parseArray(JSON.toJSONString(arr)).get(0);
                     try {
-                        NodeMgrTools.object2JavaBean(obj, PeerOfConsensusStatus.class);
+                        CommonUtils.object2JavaBean(obj, PeerOfConsensusStatus.class);
                     } catch (Exception e) {
                         return null;
                     }

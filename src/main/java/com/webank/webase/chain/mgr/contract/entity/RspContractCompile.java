@@ -20,5 +20,4 @@ public class RspContractCompile {
     private String contractName;
     private String contractAbi;
     private String bytecodeBin;
-    private String errors;
 }
