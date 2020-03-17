@@ -30,7 +30,7 @@ public interface FrontMapper {
 
     TbFront getById(@Param("frontId") int frontId);
     
-    TbFront getByNodeId(@Param("nodeId") String nodeId);
+    TbFront getByChainIdAndNodeId(@Param("chainId") int chainId, @Param("nodeId") String nodeId);
     
     int removeById(@Param("frontId") int frontId);
     

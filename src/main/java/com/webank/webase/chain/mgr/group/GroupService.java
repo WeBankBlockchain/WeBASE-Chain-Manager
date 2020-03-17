@@ -83,7 +83,7 @@ public class GroupService {
     private ConstantProperties constants;
 
     /**
-     * generate group.
+     * generate group to single node.
      * 
      * @param req info
      * @return
@@ -92,9 +92,8 @@ public class GroupService {
         // check id
         Integer chainId = req.getChainId();
         Integer generateGroupId = req.getGenerateGroupId();
-        checkGroupIdExisted(chainId, generateGroupId);
-        
-        TbFront tbFront = frontService.getByNodeId(nodeId);
+
+        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
         if (tbFront == null) {
             log.error("fail generateToSingleNode node not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
@@ -106,18 +105,20 @@ public class GroupService {
                 tbFront.getFrontPort(), generateGroupInfo);
         int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
         // check result
-        if (!GenerateNormalStatus.isInclude(code)) {
-            log.error("fail generateToSingleNode nodeId:{} code:{}.", nodeId, code);
-            throw new BaseException(code, groupHandleResult.getMessage());
+        if (code != 0) {
+            log.error("fail generateToSingleNode nodeId:{} message:{}.", nodeId,
+                    groupHandleResult.getMessage());
+            throw new BaseException(ConstantCode.GROUP_GENERATE_FAIL.getCode(),
+                    groupHandleResult.getMessage());
         }
         // save group
         TbGroup tbGroup = saveGroup(generateGroupId, chainId, req.getNodeList().size(),
                 req.getDescription(), GroupType.MANUAL.getValue());
         return tbGroup;
     }
-    
+
     /**
-     * generate group to single node.
+     * generate group.
      * 
      * @param req info
      * @return
@@ -130,7 +131,7 @@ public class GroupService {
 
         for (String nodeId : req.getNodeList()) {
             // get front
-            TbFront tbFront = frontService.getByNodeId(nodeId);
+            TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
             if (tbFront == null) {
                 log.error("fail generateGroup node not exists.");
                 throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
@@ -143,8 +144,10 @@ public class GroupService {
             int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
             // check result
             if (!GenerateNormalStatus.isInclude(code)) {
-                log.error("fail generateGroup nodeId:{} code:{}.", nodeId, code);
-                throw new BaseException(code, groupHandleResult.getMessage());
+                log.error("fail generateGroup nodeId:{} message:{}.", nodeId,
+                        groupHandleResult.getMessage());
+                throw new BaseException(ConstantCode.GROUP_GENERATE_FAIL.getCode(),
+                        groupHandleResult.getMessage());
             }
         }
         // save group
@@ -163,7 +166,7 @@ public class GroupService {
         // check id
         checkGroupIdValid(chainId, startGroupId);
         // get front
-        TbFront tbFront = frontService.getByNodeId(nodeId);
+        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
         if (tbFront == null) {
             log.error("fail startGroup node not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
@@ -173,9 +176,11 @@ public class GroupService {
                 tbFront.getFrontPort(), startGroupId);
         // check result
         int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
-        if (!StartNormalStatus.isInclude(code)) {
-            log.error("fail startGroup nodeId:{} code:{}.", nodeId, code);
-            throw new BaseException(code, groupHandleResult.getMessage());
+        if (code != 0) {
+            log.error("fail startGroup nodeId:{} message:{}.", nodeId,
+                    groupHandleResult.getMessage());
+            throw new BaseException(ConstantCode.GROUP_START_FAIL.getCode(),
+                    groupHandleResult.getMessage());
         }
         // refresh front
         frontInterface.refreshFront(tbFront.getFrontIp(), tbFront.getFrontPort());
@@ -192,7 +197,7 @@ public class GroupService {
         checkGroupIdValid(req.getChainId(), startGroupId);
         for (String nodeId : req.getNodeList()) {
             // get front
-            TbFront tbFront = frontService.getByNodeId(nodeId);
+            TbFront tbFront = frontService.getByChainIdAndNodeId(req.getChainId(), nodeId);
             if (tbFront == null) {
                 log.error("fail startGroup node not exists.");
                 throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
@@ -203,8 +208,10 @@ public class GroupService {
             // check result
             int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
             if (!StartNormalStatus.isInclude(code)) {
-                log.error("fail startGroup nodeId:{} code:{}.", nodeId, code);
-                throw new BaseException(code, groupHandleResult.getMessage());
+                log.error("fail startGroup nodeId:{} message:{}.", nodeId,
+                        groupHandleResult.getMessage());
+                throw new BaseException(ConstantCode.GROUP_START_FAIL.getCode(),
+                        groupHandleResult.getMessage());
             }
             // refresh front
             frontInterface.refreshFront(tbFront.getFrontIp(), tbFront.getFrontPort());
@@ -246,8 +253,7 @@ public class GroupService {
     /**
      * query all group info.
      */
-    public List<TbGroup> getGroupList(Integer chainId, Integer groupStatus)
-            throws BaseException {
+    public List<TbGroup> getGroupList(Integer chainId, Integer groupStatus) throws BaseException {
         log.debug("start getGroupList");
         try {
             List<TbGroup> groupList = groupMapper.getList(chainId, groupStatus);
@@ -525,7 +531,7 @@ public class GroupService {
         nodeService.deleteByGroupId(chainId, groupId);
         // remove contract
         contractService.deleteByGroupId(chainId, groupId);
-        //remove user and key
+        // remove user and key
         userService.deleteByGroupId(chainId, groupId);
     }
 
