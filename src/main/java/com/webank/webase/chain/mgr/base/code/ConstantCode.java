@@ -99,6 +99,10 @@ public class ConstantCode {
     public static final RetCode CHAIN_ID_EXISTS = RetCode.mark(205029, "chain id already exists");
     
     public static final RetCode CONTRACT_COMPILE_ERROR = RetCode.mark(205030, "contract compile error");
+    
+    public static final RetCode GROUP_GENERATE_FAIL = RetCode.mark(205031, "group generate fail");
+    
+    public static final RetCode GROUP_START_FAIL = RetCode.mark(205032, "group start fail");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");
