@@ -3142,4 +3142,6 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/userList/100001/1/1/10?userParam
 | 205028 | invalid user                                     | 无效用户           |
 | 205029 | chain id already exists                          | 链编号已存在       |
 | 205030 | contract compile error                           | 合约编译错误       |
+| 205031 | group generate fail                              | 群组创建失败       |
+| 205032 | group start fail                                 | 群组启动失败       |
 | 305000 | param exception                                  | 参数异常           |

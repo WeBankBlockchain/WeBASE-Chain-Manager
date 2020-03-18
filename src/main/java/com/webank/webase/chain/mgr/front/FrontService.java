@@ -311,24 +311,24 @@ public class FrontService {
         log.debug("end checkNodeProcess. response:{}", JSON.toJSONString(response));
         return response;
     }
-    
+
     /**
      * check node process.
      */
     public Object getGroupSizeInfos(int frontId) {
         log.debug("start getGroupSizeInfos. frontId:{} ", frontId);
-        
+
         // query by front Id
         TbFront tbFront = frontService.getById(frontId);
         if (tbFront == null) {
             throw new BaseException(ConstantCode.INVALID_FRONT_ID);
         }
-        
+
         // request url
         String url = String.format(cproperties.getFrontUrl(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), FrontRestTools.URI_GET_GROUP_SIZE_INFOS);
         log.debug("getGroupSizeInfos request url:{}", url);
-        
+
         Object response = genericRestTemplate.getForObject(url, Object.class);
         log.debug("end getGroupSizeInfos. response:{}", JSON.toJSONString(response));
         return response;
@@ -360,13 +360,13 @@ public class FrontService {
     }
 
     /**
-     * query front by frontId.
+     * query front by nodeId.
      */
-    public TbFront getByNodeId(String nodeId) {
-        if (nodeId == null) {
+    public TbFront getByChainIdAndNodeId(Integer chainId, String nodeId) {
+        if (chainId == null || nodeId == null) {
             return null;
         }
-        return frontMapper.getByNodeId(nodeId);
+        return frontMapper.getByChainIdAndNodeId(chainId, nodeId);
     }
 
     /**
