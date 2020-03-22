@@ -22,7 +22,6 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
  */
 @Data
 public class PostAbiInfo {
-
     private Integer groupId;
     private String contractName;
     private String address;

@@ -66,12 +66,12 @@ public class ContractController extends BaseController {
         log.info("start compileContract startTime:{} compileInputParam:{}",
                 startTime.toEpochMilli(), JSON.toJSONString(compileInputParam));
 
-        List<RspContractCompile> rspContractCompile = contractService.compileContract(compileInputParam);
+        List<RspContractCompile> rspContractCompile =
+                contractService.compileContract(compileInputParam);
         baseResponse.setData(rspContractCompile);
 
-        log.info("end compileContract useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+        log.info("end compileContract useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
 
         return baseResponse;
     }
@@ -93,9 +93,8 @@ public class ContractController extends BaseController {
 
         baseResponse.setData(tbContract);
 
-        log.info("end saveContract useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+        log.info("end saveContract useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return baseResponse;
     }
 
@@ -114,9 +113,8 @@ public class ContractController extends BaseController {
 
         contractService.deleteContract(chainId, contractId, groupId);
 
-        log.info("end deleteContract useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+        log.info("end deleteContract useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return baseResponse;
     }
 
@@ -150,9 +148,8 @@ public class ContractController extends BaseController {
             pagesponse.setTotalCount(count);
         }
 
-        log.info("end contractList. useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(pagesponse));
+        log.info("end contractList. useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return pagesponse;
     }
 
@@ -171,9 +168,8 @@ public class ContractController extends BaseController {
         TbContract contractRow = contractService.queryByContractId(contractId);
         baseResponse.setData(contractRow);
 
-        log.info("end queryContract useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+        log.info("end queryContract useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return baseResponse;
     }
 
@@ -192,9 +188,8 @@ public class ContractController extends BaseController {
         TbContract tbContract = contractService.deployContract(deployInputParam);
         baseResponse.setData(tbContract);
 
-        log.info("end deployContract useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+        log.info("end deployContract useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
 
         return baseResponse;
     }
@@ -212,9 +207,8 @@ public class ContractController extends BaseController {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Object transRsp = contractService.sendTransaction(param);
         baseResponse.setData(transRsp);
-        log.info("end sendTransaction useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+        log.info("end sendTransaction useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
 
         return baseResponse;
     }

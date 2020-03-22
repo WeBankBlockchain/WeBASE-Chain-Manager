@@ -19,6 +19,8 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.front.entity.TbFront;
 import com.webank.webase.chain.mgr.front.entity.TransactionCount;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
@@ -50,6 +52,8 @@ public class NodeController extends BaseController {
     @Autowired
     private NodeService nodeService;
     @Autowired
+    private FrontService frontService;
+    @Autowired
     private FrontInterfaceService frontInterfaceService;
 
     /**
@@ -68,15 +72,15 @@ public class NodeController extends BaseController {
                 "start queryNodeList startTime:{} groupId:{}  pageNumber:{} pageSize:{} nodeName:{}",
                 startTime.toEpochMilli(), groupId, pageNumber, pageSize, nodeName);
 
+        // check node status before query
+        nodeService.checkAndUpdateNodeStatus(chainId, groupId);
+
         // param
         NodeParam queryParam = new NodeParam();
         queryParam.setChainId(chainId);
         queryParam.setGroupId(groupId);
         queryParam.setNodeName(nodeName);
         queryParam.setPageSize(pageSize);
-
-        // check node status before query
-        nodeService.checkAndUpdateNodeStatus(chainId, groupId);
         Integer count = nodeService.countOfNode(queryParam);
         if (count != null && count > 0) {
             Integer start =
@@ -95,46 +99,28 @@ public class NodeController extends BaseController {
     }
 
     /**
-     * get node info.
-     */
-    @GetMapping(value = "/nodeInfo/{chainId}/{groupId}/{nodeId}")
-    public BaseResponse getNodeInfo(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId)
-            throws BaseException {
-
-        Instant startTime = Instant.now();
-        log.info("start getNodeInfo startTime:{} nodeId:{}", startTime.toEpochMilli(), nodeId);
-
-        // param
-        NodeParam param = new NodeParam();
-        param.setChainId(chainId);
-        param.setGroupId(groupId);
-        param.setNodeId(nodeId);;
-
-        // query node row
-        TbNode tbNode = nodeService.queryNodeInfo(param);
-
-        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        baseResponse.setData(tbNode);
-
-        log.info("end getNodeInfo useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
-        return baseResponse;
-    }
-
-    /**
      * get block number.
      */
-    @GetMapping("/getBlockNumber/{chainId}/{groupId}")
+    @GetMapping("/getBlockNumber/{chainId}/{groupId}/{nodeId}")
     public BaseResponse getBlockNumber(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId) throws BaseException {
+            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId)
+            throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getBlockNumber startTime:{} chainId:{} groupId:{}",
                 startTime.toEpochMilli(), groupId, groupId);
+
+        // get front
+        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
+        if (tbFront == null) {
+            log.error("fail getBlockNumber node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        BigInteger blockNumber = frontInterfaceService.getLatestBlockNumber(chainId, groupId);
+        BigInteger blockNumber = frontInterfaceService.getBlockNumberFromSpecificFront(
+                tbFront.getFrontIp(), tbFront.getFrontPort(), groupId);
         baseResponse.setData(blockNumber);
+
         log.info("end getBlockNumber useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(baseResponse));
@@ -144,16 +130,26 @@ public class NodeController extends BaseController {
     /**
      * get block by number.
      */
-    @GetMapping("/getBlockByNumber/{chainId}/{groupId}/{blockNumber}")
+    @GetMapping("/getBlockByNumber/{chainId}/{groupId}/{nodeId}/{blockNumber}")
     public BaseResponse getBlockByNumber(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId,
+            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
             @PathVariable("blockNumber") BigInteger blockNumber) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getBlockByNumber startTime:{} groupId:{} blockNumber:{}",
                 startTime.toEpochMilli(), groupId, blockNumber);
+
+        // get front
+        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
+        if (tbFront == null) {
+            log.error("fail getBlockByNumber node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        Block blockInfo = frontInterfaceService.getBlockByNumber(chainId, groupId, blockNumber);
+        Block blockInfo = frontInterfaceService.getBlockByNumberFromSpecificFront(
+                tbFront.getFrontIp(), tbFront.getFrontPort(), groupId, blockNumber);
         baseResponse.setData(blockInfo);
+
         log.info("end getBlockByNumber useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(baseResponse));
@@ -163,16 +159,27 @@ public class NodeController extends BaseController {
     /**
      * get total transaction count.
      */
-    @GetMapping("/getTotalTransactionCount/{chainId}/{groupId}")
+    @GetMapping("/getTotalTransactionCount/{chainId}/{groupId}/{nodeId}")
     public BaseResponse getTotalTransactionCount(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId) throws BaseException {
+            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId)
+            throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTotalTransactionCount startTime:{} chainId:{} groupId:{}",
                 startTime.toEpochMilli(), groupId, groupId);
+
+        // get front
+        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
+        if (tbFront == null) {
+            log.error("fail getTotalTransactionCount node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         TransactionCount transactionCount =
-                frontInterfaceService.getTotalTransactionCount(chainId, groupId);
+                frontInterfaceService.getTotalTransactionCountFromSpecificFront(
+                        tbFront.getFrontIp(), tbFront.getFrontPort(), groupId);
         baseResponse.setData(transactionCount);
+
         log.info("end getTotalTransactionCount useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(baseResponse));
@@ -182,17 +189,26 @@ public class NodeController extends BaseController {
     /**
      * get transaction by hash.
      */
-    @GetMapping("/getTransactionByHash/{chainId}/{groupId}/{transHash}")
+    @GetMapping("/getTransactionByHash/{chainId}/{groupId}/{nodeId}/{transHash}")
     public BaseResponse getTransactionByHash(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("transHash") String transHash)
-            throws BaseException {
+            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+            @PathVariable("transHash") String transHash) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTransactionByHash startTime:{} groupId:{} blockNumber:{}",
                 startTime.toEpochMilli(), groupId, transHash);
+
+        // get front
+        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
+        if (tbFront == null) {
+            log.error("fail getTransactionByHash node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        Transaction transaction =
-                frontInterfaceService.getTransactionByHash(chainId, groupId, transHash);
+        Transaction transaction = frontInterfaceService.getTransactionByHashFromSpecificFront(
+                tbFront.getFrontIp(), tbFront.getFrontPort(), groupId, transHash);
         baseResponse.setData(transaction);
+
         log.info("end getTransactionByHash useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(baseResponse));
@@ -202,17 +218,27 @@ public class NodeController extends BaseController {
     /**
      * get transaction receipt by hash.
      */
-    @GetMapping("/getTransactionReceipt/{chainId}/{groupId}/{transHash}")
+    @GetMapping("/getTransactionReceipt/{chainId}/{groupId}/{nodeId}/{transHash}")
     public BaseResponse getTransactionReceipt(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("transHash") String transHash)
-            throws BaseException {
+            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+            @PathVariable("transHash") String transHash) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTransactionReceipt startTime:{} groupId:{} blockNumber:{}",
                 startTime.toEpochMilli(), groupId, transHash);
+
+        // get front
+        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
+        if (tbFront == null) {
+            log.error("fail getTransactionReceipt node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         TransactionReceipt transactionReceipt =
-                frontInterfaceService.getTransactionReceipt(chainId, groupId, transHash);
+                frontInterfaceService.getTransactionReceiptFromSpecificFront(tbFront.getFrontIp(),
+                        tbFront.getFrontPort(), groupId, transHash);
         baseResponse.setData(transactionReceipt);
+
         log.info("end getTransactionReceipt useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(baseResponse));
