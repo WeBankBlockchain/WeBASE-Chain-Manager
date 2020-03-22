@@ -33,6 +33,7 @@ public class TransactionParam {
     @NotBlank
     private String funcName;
     private String contractAddress;
-    private Boolean useAes;
+    @NotBlank
+    private String contractAbi;
     private List<Object> funcParam;
 }

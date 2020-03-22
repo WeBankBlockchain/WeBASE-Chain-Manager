@@ -14,6 +14,7 @@
 package com.webank.webase.chain.mgr.contract.entity;
 
 import com.webank.webase.chain.mgr.front.entity.TransactionParam;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -27,6 +28,8 @@ import lombok.ToString;
 public class TransactionInputParam extends TransactionParam {
     @NotNull
     private Integer chainId;
+    @NotBlank
+    private String nodeId;
     @NotNull
     private Integer contractId;
 }

@@ -23,6 +23,7 @@ import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
 import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
+import com.webank.webase.chain.mgr.group.entity.ReqSetSysConfig;
 import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
 import com.webank.webase.chain.mgr.group.entity.TbGroup;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
@@ -62,8 +63,7 @@ public class GroupController extends BaseController {
      */
     @PostMapping("/generate/{nodeId}")
     public BaseResponse generateToSingleNode(@PathVariable("nodeId") String nodeId,
-            @RequestBody @Valid ReqGenerateGroup req, BindingResult result)
-            throws BaseException {
+            @RequestBody @Valid ReqGenerateGroup req, BindingResult result) throws BaseException {
         checkBindResult(result);
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
@@ -71,9 +71,8 @@ public class GroupController extends BaseController {
                 nodeId);
         TbGroup tbGroup = groupService.generateToSingleNode(nodeId, req);
         baseResponse.setData(tbGroup);
-        log.info("end generateToSingleNode useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+        log.info("end generateToSingleNode useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return baseResponse;
     }
 
@@ -90,9 +89,8 @@ public class GroupController extends BaseController {
                 req.getGenerateGroupId());
         TbGroup tbGroup = groupService.generateGroup(req);
         baseResponse.setData(tbGroup);
-        log.info("end generateGroup useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+        log.info("end generateGroup useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return baseResponse;
     }
 
@@ -186,12 +184,11 @@ public class GroupController extends BaseController {
         // reset group
         resetGroupListTask.asyncResetGroupList();
 
-        log.info("end getAllGroup useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(pagesponse));
+        log.info("end getAllGroup useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return pagesponse;
     }
-    
+
     /**
      * get node consensus list.
      */
@@ -207,8 +204,8 @@ public class GroupController extends BaseController {
         Object result =
                 frontInterfaceService.getConsensusList(chainId, groupId, pageSize, pageNumber);
 
-        log.info("end getConsensusList useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(result));
+        log.info("end getConsensusList useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return result;
     }
 
@@ -225,8 +222,52 @@ public class GroupController extends BaseController {
 
         Object res = frontInterfaceService.setConsensusStatus(consensusParam);
 
-        log.info("end setConsensusStatus useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(res));
+        log.info("end setConsensusStatus useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return res;
+    }
+
+    /**
+     * getSysConfigList.
+     * 
+     * @param chainId
+     * @param groupId
+     * @param pageSize
+     * @param pageNumber
+     * @return
+     */
+    @GetMapping("getSysConfigList/{chainId}/{groupId}")
+    public Object getSysConfigList(@PathVariable("chainId") Integer chainId,
+            @PathVariable("groupId") Integer groupId,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "1") int pageNumber) {
+
+        Instant startTime = Instant.now();
+        log.info("start getSysConfigList startTime:{}", startTime.toEpochMilli());
+
+        Object result =
+                frontInterfaceService.getSysConfigList(chainId, groupId, pageSize, pageNumber);
+
+        log.info("end getSysConfigList useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return result;
+    }
+
+    /**
+     * set system config by key.
+     */
+    @PostMapping(value = "setSysConfig")
+    public Object setSysConfigByKey(@RequestBody @Valid ReqSetSysConfig reqSetSysConfig,
+            BindingResult result) throws BaseException {
+        checkBindResult(result);
+        Instant startTime = Instant.now();
+        log.info("start setSysConfigByKey startTime:{} reqSetSysConfig:{}",
+                startTime.toEpochMilli(), JSON.toJSONString(reqSetSysConfig));
+
+        Object res = frontInterfaceService.setSysConfigByKey(reqSetSysConfig);
+
+        log.info("end setSysConfigByKey useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return res;
     }
 }

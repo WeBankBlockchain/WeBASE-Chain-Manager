@@ -74,7 +74,7 @@ public class ConstantCode {
 
     public static final RetCode GROUP_ID_EXISTS = RetCode.mark(205018, "group id already exists");
 
-    public static final RetCode NODE_NOT_EXISTS = RetCode.mark(205019, "node not exists");
+    public static final RetCode NODE_NOT_EXISTS = RetCode.mark(205019, "node front not exists");
 
     public static final RetCode ENCRYPT_TYPE_NOT_MATCH =
             RetCode.mark(205020, "front's encrypt type not match");

@@ -95,7 +95,7 @@ public class GroupService {
 
         TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
         if (tbFront == null) {
-            log.error("fail generateToSingleNode node not exists.");
+            log.error("fail generateToSingleNode node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
         // request front to generate
@@ -133,7 +133,7 @@ public class GroupService {
             // get front
             TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
             if (tbFront == null) {
-                log.error("fail generateGroup node not exists.");
+                log.error("fail generateGroup node front not exists.");
                 throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
             }
             // request front to generate
@@ -168,7 +168,7 @@ public class GroupService {
         // get front
         TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
         if (tbFront == null) {
-            log.error("fail startGroup node not exists.");
+            log.error("fail startGroup node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
         // request front to start

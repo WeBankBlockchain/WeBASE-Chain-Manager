@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import lombok.extern.log4j.Log4j2;
-import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -102,7 +101,7 @@ public class FrontService {
             log.error(
                     "fail newFront, frontIp:{},frontPort:{},front's encryptType:{},"
                             + "local encryptType not match:{}",
-                    frontIp, frontPort, encryptType, EncryptType.encryptType);
+                    frontIp, frontPort, encryptType, tbChain.getChainType());
             throw new BaseException(ConstantCode.ENCRYPT_TYPE_NOT_MATCH);
         }
         // query group list

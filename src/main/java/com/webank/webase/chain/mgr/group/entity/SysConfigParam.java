@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019  the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.chain.mgr.contract.entity;
+package com.webank.webase.chain.mgr.group.entity;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
 
-/**
- * receive contract info entity.
- */
 @Data
-public class CompileInputParam{
-    @NotNull
-    private Integer chainId;
-    @NotBlank
-    private String nodeId;
-    @NotBlank
-    private String contractZipBase64;
+public class SysConfigParam {
+    private int groupId;
+    private String fromAddress;
+    private String configKey;
+    private String configValue;
+    private Boolean useAes;
 }
-
