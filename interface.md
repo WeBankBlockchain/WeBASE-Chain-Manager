@@ -2787,7 +2787,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/deploy
 | 6    | funcName     | String         | 否     | 合约方法名                 |
 | 7    | contractAddress     | String         | 是     | 合约地址   |
 | 8   | funcParam    | List | 是     | 合约方法入参               |
-| 9 | contractAbi | String | 否 | 所调用合约方法的abi |
+| 9 | contractAbi | String | 否 | 所调用合约方法的abi，注意格式（传入所有abi可能导致合约重载方法出问题） |
 | 10 | nodeId | String | 否 | 节点编号，指定节点调用 |
 
 ***2）入参示例***
