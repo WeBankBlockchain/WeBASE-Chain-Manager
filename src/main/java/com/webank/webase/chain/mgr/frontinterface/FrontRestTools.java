@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019  the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -52,7 +52,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class FrontRestTools {
 
-    //public static final String FRONT_URL = "http://%1s:%2d/WeBASE-Front/%3s";
+    // public static final String FRONT_URL = "http://%1s:%2d/WeBASE-Front/%3s";
     public static final String URI_BLOCK_NUMBER = "web3/blockNumber";
     public static final String URI_BLOCK_BY_NUMBER = "web3/blockByNumber/%1d";
     public static final String URI_BLOCK_BY_HASH = "web3/blockByHash/%1s";
@@ -75,9 +75,8 @@ public class FrontRestTools {
     public static final String FRONT_PERFORMANCE_RATIO = "performance";
     public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
     public static final String URI_KEY_PAIR = "privateKey?useAes=%1s&type=2&userName=%2s";
-    public static final String URI_CONTRACT_COMPILE = "contract/contractCompile";
+    public static final String URI_MULTI_CONTRACT_COMPILE = "contract/multiContractCompile";
     public static final String URI_CONTRACT_DEPLOY = "contract/deploy";
-    public static final String URI_CONTRACT_SENDABI = "contract/abiInfo";
     public static final String URI_SEND_TRANSACTION = "trans/handle";
     public static final String URI_CHAIN = "chain";
     public static final String URI_CHECK_NODE_PROCESS = "chain/checkNodeProcess";
@@ -85,8 +84,8 @@ public class FrontRestTools {
 
     public static final String URI_PERMISSION = "permission";
     public static final String URI_PERMISSION_FULL_LIST = "permission/full";
-    public static final String URI_PERMISSION_SORTED_LIST= "permission/sorted";
-    public static final String URI_PERMISSION_SORTED_FULL_LIST= "permission/sorted/full";
+    public static final String URI_PERMISSION_SORTED_LIST = "permission/sorted";
+    public static final String URI_PERMISSION_SORTED_FULL_LIST = "permission/sorted/full";
     public static final String URI_SYS_CONFIG_LIST = "sys/config/list";
     public static final String URI_SYS_CONFIG = "sys/config";
     public static final String URI_CNS_LIST = "precompiled/cns/list";
@@ -97,12 +96,12 @@ public class FrontRestTools {
     public static final String URI_CERT = "cert";
     public static final String URI_ENCRYPT_TYPE = "encrypt";
 
-    //不需要在url中包含groupId的
-    private static final List<String> URI_NOT_CONTAIN_GROUP_ID = Arrays
-        .asList(URI_CONTRACT_COMPILE,URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION, URI_KEY_PAIR, URI_CONTRACT_SENDABI,
-                URI_PERMISSION, URI_PERMISSION_FULL_LIST, URI_CNS_LIST, URI_SYS_CONFIG_LIST,
-                URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS, URI_CRUD, URI_PERMISSION_SORTED_LIST,
-                URI_PERMISSION_SORTED_FULL_LIST, URI_CERT, URI_ENCRYPT_TYPE);
+    // 不需要在url中包含groupId的
+    private static final List<String> URI_NOT_CONTAIN_GROUP_ID = Arrays.asList(
+            URI_MULTI_CONTRACT_COMPILE, URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION, URI_KEY_PAIR,
+            URI_PERMISSION, URI_PERMISSION_FULL_LIST, URI_CNS_LIST, URI_SYS_CONFIG_LIST,
+            URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS, URI_CRUD, URI_PERMISSION_SORTED_LIST,
+            URI_PERMISSION_SORTED_FULL_LIST, URI_CERT, URI_ENCRYPT_TYPE);
 
 
     @Qualifier(value = "genericRestTemplate")
@@ -140,21 +139,21 @@ public class FrontRestTools {
      * check url status.
      */
     private boolean isServiceSleep(String url, String methType) {
-        //get failInfo
+        // get failInfo
         String key = buildKey(url, methType);
         FailInfo failInfo = failRequestMap.get(key);
 
-        //cehck server status
+        // cehck server status
         if (failInfo == null) {
             return false;
         }
         int failCount = failInfo.getFailCount();
         Long subTime = Duration.between(failInfo.getLatestTime(), Instant.now()).toMillis();
-        if (failCount > cproperties.getMaxRequestFail() && subTime < cproperties
-            .getSleepWhenHttpMaxFail()) {
+        if (failCount > cproperties.getMaxRequestFail()
+                && subTime < cproperties.getSleepWhenHttpMaxFail()) {
             return true;
         } else if (subTime > cproperties.getSleepWhenHttpMaxFail()) {
-            //service is sleep
+            // service is sleep
             deleteKeyOfMap(failRequestMap, key);
         }
         return false;
@@ -165,7 +164,7 @@ public class FrontRestTools {
      * set request fail times.
      */
     private void setFailCount(String url, String methodType) {
-        //get failInfo
+        // get failInfo
         String key = buildKey(url, methodType);
         FailInfo failInfo = failRequestMap.get(key);
         if (failInfo == null) {
@@ -173,7 +172,7 @@ public class FrontRestTools {
             failInfo.setFailUrl(url);
         }
 
-        //reset failInfo
+        // reset failInfo
         failInfo.setLatestTime(Instant.now());
         failInfo.setFailCount(failInfo.getFailCount() + 1);
         failRequestMap.put(key, failInfo);
@@ -206,21 +205,19 @@ public class FrontRestTools {
 
 
     /**
-     * build  url of front service.
+     * build url of front service.
      */
     private String buildFrontUrl(ArrayList<FrontGroup> list, String uri, HttpMethod httpMethod) {
-        Collections.shuffle(list);//random one
-        log.info("====================map list:{}",JSON.toJSONString(list));
+        Collections.shuffle(list);// random one
+        log.info("====================map list:{}", JSON.toJSONString(list));
         Iterator<FrontGroup> iterator = list.iterator();
         while (iterator.hasNext()) {
             FrontGroup frontGroup = iterator.next();
-            log.info("============frontGroup:{}",JSON.toJSONString(frontGroup));
+            log.info("============frontGroup:{}", JSON.toJSONString(frontGroup));
 
-            uri = uriAddGroupId(frontGroup.getGroupId(), uri);//append groupId to uri
-            String url = String
-                .format(cproperties.getFrontUrl(), frontGroup.getFrontIp(),
-                    frontGroup.getFrontPort(), uri)
-                .replaceAll(" ", "");
+            uri = uriAddGroupId(frontGroup.getGroupId(), uri);// append groupId to uri
+            String url = String.format(cproperties.getFrontUrl(), frontGroup.getFrontIp(),
+                    frontGroup.getFrontPort(), uri).replaceAll(" ", "");
             iterator.remove();
 
             if (isServiceSleep(url, httpMethod.toString())) {
@@ -250,11 +247,11 @@ public class FrontRestTools {
     /**
      * case restTemplate by uri.
      */
-    private RestTemplate caseRestemplate(String uri) {
+    public RestTemplate caseRestemplate(String uri) {
         if (StringUtils.isBlank(uri)) {
             return null;
         }
-        if (uri.contains(URI_CONTRACT_DEPLOY)) {
+        if (uri.contains(URI_CONTRACT_DEPLOY) || uri.contains(URI_MULTI_CONTRACT_COMPILE)) {
             return deployRestTemplate;
         }
         return genericRestTemplate;
@@ -271,22 +268,24 @@ public class FrontRestTools {
     /**
      * post from front for entity.
      */
-    public <T> T postForEntity(Integer chainId, Integer groupId, String uri, Object params, Class<T> clazz) {
+    public <T> T postForEntity(Integer chainId, Integer groupId, String uri, Object params,
+            Class<T> clazz) {
         return restTemplateExchange(chainId, groupId, uri, HttpMethod.POST, params, clazz);
     }
 
     /**
      * delete from front for entity.
      */
-    public <T> T deleteForEntity(Integer chainId, Integer groupId, String uri, Object params, Class<T> clazz) {
+    public <T> T deleteForEntity(Integer chainId, Integer groupId, String uri, Object params,
+            Class<T> clazz) {
         return restTemplateExchange(chainId, groupId, uri, HttpMethod.DELETE, params, clazz);
     }
 
     /**
      * restTemplate exchange.
      */
-    private <T> T restTemplateExchange(Integer chainId, Integer groupId, String uri, HttpMethod method,
-        Object param, Class<T> clazz) {
+    private <T> T restTemplateExchange(Integer chainId, Integer groupId, String uri,
+            HttpMethod method, Object param, Class<T> clazz) {
         List<FrontGroup> frontList = frontGroupMapCache.getMapListByChainId(chainId, groupId);
         if (frontList == null || frontList.size() == 0) {
             log.error("fail restTemplateExchange. frontList is empty");
@@ -296,11 +295,12 @@ public class FrontRestTools {
         RestTemplate restTemplate = caseRestemplate(uri);
 
         while (list != null && list.size() > 0) {
-            String url = buildFrontUrl(list, uri, method);//build url
+            String url = buildFrontUrl(list, uri, method);// build url
             try {
                 HttpEntity entity = buildHttpEntity(param);// build entity
                 if (null == restTemplate) {
-                    log.error("fail restTemplateExchange, rest is null. groupId:{} uri:{}", chainId,uri);
+                    log.error("fail restTemplateExchange, rest is null. groupId:{} uri:{}", chainId,
+                            uri);
                     throw new BaseException(ConstantCode.SYSTEM_EXCEPTION);
                 }
                 ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);
@@ -316,8 +316,7 @@ public class FrontRestTools {
             } catch (HttpStatusCodeException e) {
                 JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
                 log.error("http request fail. error:{}", JSON.toJSONString(error));
-                throw new BaseException(error.getInteger("code"),
-                    error.getString("errorMessage"));
+                throw new BaseException(error.getInteger("code"), error.getString("errorMessage"));
             }
         }
         return null;

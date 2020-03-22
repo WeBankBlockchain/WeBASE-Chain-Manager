@@ -19,5 +19,6 @@ import lombok.Data;
 public class RspContractCompile {
     private String contractName;
     private String contractAbi;
+    private String contractSource;
     private String bytecodeBin;
 }
