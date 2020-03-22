@@ -31,6 +31,8 @@ public class DeployInputParam{
     private Integer chainId;
     @NotNull
     private Integer groupId;
+    @NotBlank
+    private String nodeId;
     @NotNull
     private Integer contractId;
     @NotBlank

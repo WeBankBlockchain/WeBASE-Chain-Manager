@@ -1412,7 +1412,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/all/100001
 | 序号 | 输入参数   | 类型 | 可为空 | 备注         |
 | ---- | ---------- | ---- | ------ | ------------ |
 | 1    | chainId    | Int  | 否     | 链编号       |
-| 2    | groupId    | Int  | 否     | 群组id       |
+| 2    | groupId    | Int  | 否     | 群组编号     |
 | 3    | pageSize   | Int  | 是     | 条数，默认10 |
 | 4    | pageNumber | Int  | 是     | 页码，默认1  |
 
@@ -1487,7 +1487,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getConsensusList/1001/1?pageSiz
 | 序号 | 输入参数 | 类型   | 可为空 | 备注                                     |
 | ---- | -------- | ------ | ------ | ---------------------------------------- |
 | 1    | chainId  | Int    | 否     | 链编号                                   |
-| 2    | groupId  | Int    | 否     | 群组id                                   |
+| 2    | groupId  | Int    | 否     | 群组编号                                 |
 | 3    | address  | String | 否     | 私钥用户地址                             |
 | 4    | nodeId   | String | 否     | 节点id                                   |
 | 5    | nodeType | String | 否     | 要设置的节点类型：observer/sealer/remove |
@@ -1534,6 +1534,154 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setConsensusStatus
 {
     "code": -51000,
     "message": "nodeId already exist"
+}
+```
+
+### 3.10 获取系统配置列表
+
+​	获取系统配置列表，目前支持tx_count_limit、tx_gas_limit两个参数。
+
+#### 3.10.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/group/getSysConfigList/{chainId}/{groupId}&pageSize={pageSize}&pageNumber={pageNumber}**
+- 请求方式：GET
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 3.10.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数   | 类型 | 可为空 | 备注         |
+| ---- | ---------- | ---- | ------ | ------------ |
+| 1    | chainId    | Int  | 否     | 链编号       |
+| 2    | groupId    | Int  | 否     | 群组编号     |
+| 3    | pageSize   | Int  | 是     | 条数，默认10 |
+| 4    | pageNumber | Int  | 是     | 页码，默认1  |
+
+***2）入参示例***
+
+```
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getSysConfigList/1001/1?pageSize=10&pageNumber=1
+```
+
+#### 3.10.3 返回参数
+
+***1）出参表***
+
+| 序号  | 输出参数    | 类型   |      | 备注                                                 |
+| ----- | ----------- | ------ | ---- | ---------------------------------------------------- |
+| 1     | code        | Int    | 否   | 返回码，0：成功 其它：失败                           |
+| 2     | message     | String | 否   | 描述                                                 |
+| 3     | totalCount  | Int    | 否   | 总记录数                                             |
+| 4     | data        | List   | 否   | 配置列表                                             |
+| 4.1   |             | Object |      | 配置信息对象                                         |
+| 4.1.1 | groupId     | Int    | 否   | 节点编号                                             |
+| 4.1.2 | configKey   | String | 否   | 配置项，目前支持tx_count_limit、tx_gas_limit两个参数 |
+| 4.1.4 | configValue | String | 否   | 配置值                                               |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": [
+    {
+      "groupId": 1,
+      "configKey": "tx_count_limit",
+      "configValue": "1000"
+    },
+    {
+      "groupId": 1,
+      "configKey": "tx_gas_limit",
+      "configValue": "300000000"
+    }
+  ],
+  "totalCount": 2
+}
+```
+
+- 失败：
+
+```
+{
+  "code": 205002,
+  "message": "not fount any front",
+  "data": null
+}
+```
+
+### 3.11 设置系统配置值
+
+​	设置系统配置值，目前支持tx_count_limit、tx_gas_limit两个参数。
+
+#### 3.11.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/group/setSysConfig**
+- 请求方式：POST
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 3.11.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数    | 类型   | 可为空 | 备注                                                 |
+| ---- | ----------- | ------ | ------ | ---------------------------------------------------- |
+| 1    | chainId     | Int    | 否     | 链编号                                               |
+| 2    | groupId     | Int    | 否     | 群组编号                                             |
+| 3    | address     | String | 否     | 私钥用户地址                                         |
+| 4    | configKey   | String | 否     | 配置项，目前支持tx_count_limit、tx_gas_limit两个参数 |
+| 5    | configValue | String | 否     | 配置值                                               |
+
+***2）入参示例***
+
+```
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setSysConfig
+```
+
+```
+{
+  "address": "0x6404ecc50d278f2a588f943060143edb13379922",
+  "chainId": 1001,
+  "configKey": "tx_gas_limit",
+  "configValue": "300000000",
+  "groupId": 1
+}
+```
+
+#### 3.11.3 返回参数
+
+***1）出参表***
+
+| 序号 | 输出参数 | 类型   |      | 备注                       |
+| ---- | -------- | ------ | ---- | -------------------------- |
+| 1    | code     | Int    | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message  | String | 否   | 描述                       |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+  "code": 0,
+  "msg": "success"
+}
+```
+
+- 失败：
+
+```
+{
+  "code": 205002,
+  "message": "not fount any front",
+  "data": null
 }
 ```
 
@@ -1628,7 +1776,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/nodeList/100001/300001/1/10?node
 }
 ```
 
-### 4.2 查询节点信息
+### ~~4.2 查询节点信息~~（废弃，可通过4.1查询）
 
 ​	节点和前置一一对应，节点编号可以从前置列表获取。
 
@@ -1714,10 +1862,12 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/nodeInfo/100001/1/78e467957af3d0
 
 ### 4.3 获取区块高度
 
+​	指定节点获取区块高度。节点和前置一一对应，节点编号可以从前置列表获取。
+
 #### 4.3.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/node/getBlockNumber/{chainId}/{groupId}**
+- 请求地址：**/node/getBlockNumber/{chainId}/{groupId}/{nodeId}**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -1725,15 +1875,16 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/nodeInfo/100001/1/78e467957af3d0
 
 ***1）入参表***
 
-| 序号 | 输入参数 | 类型 | 可为空 | 备注   |
-| ---- | -------- | ---- | ------ | ------ |
-| 1    | chainId  | Int  | 否     | 链编号 |
-| 2    | groupId  | Int  | 否     | 群组id |
+| 序号 | 输入参数 | 类型   | 可为空 | 备注     |
+| ---- | -------- | ------ | ------ | -------- |
+| 1    | chainId  | Int    | 否     | 链编号   |
+| 2    | groupId  | Int    | 否     | 群组编号 |
+| 3    | nodeId   | String | 否     | 节点编号 |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getBlockNumber/1001/1
+http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getBlockNumber/1001/1/78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2
 ```
 
 #### 4.3.3 返回参数 
@@ -1770,10 +1921,12 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getBlockNumber/1001/1
 
 ### 4.4 根据区块高度获取区块信息
 
+​	指定节点根据区块高度获取区块信息。节点和前置一一对应，节点编号可以从前置列表获取。
+
 #### 4.4.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/node/getBlockByNumber/{chainId}/{groupId}/{blockNumber}**
+- 请求地址：**/node/getBlockByNumber/{chainId}/{groupId}/{nodeId}/{blockNumber}**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -1784,13 +1937,14 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getBlockNumber/1001/1
 | 序号 | 输入参数    | 类型       | 可为空 | 备注     |
 | ---- | ----------- | ---------- | ------ | -------- |
 | 1    | chainId     | Int        | 否     | 链编号   |
-| 2    | groupId     | Int        | 否     | 群组id   |
-| 3    | blockNumber | BigInteger | 否     | 区块高度 |
+| 2    | groupId     | Int        | 否     | 群组编号 |
+| 3    | nodeId      | String     | 否     | 节点编号 |
+| 4    | blockNumber | BigInteger | 否     | 区块高度 |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getBlockByNumber/1001/1/1
+http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getBlockByNumber/1001/1/78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2/1
 ```
 
 #### 4.4.3 返回参数 
@@ -1880,10 +2034,12 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getBlockByNumber/1001/1/1
 
 ### 4.5 获取群组交易总数信息
 
+​	指定节点获取群组交易总数信息。节点和前置一一对应，节点编号可以从前置列表获取。
+
 #### 4.5.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/getTotalTransactionCount/{chainId}/{groupId}**
+- 请求地址：**/getTotalTransactionCount/{chainId}/{nodeId}/{groupId}**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -1891,15 +2047,16 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getBlockByNumber/1001/1/1
 
 ***1）入参表***
 
-| 序号 | 输入参数 | 类型 | 可为空 | 备注   |
-| ---- | -------- | ---- | ------ | ------ |
-| 1    | chainId  | Int  | 否     | 链编号 |
-| 2    | groupId  | Int  | 否     | 群组id |
+| 序号 | 输入参数 | 类型   | 可为空 | 备注     |
+| ---- | -------- | ------ | ------ | -------- |
+| 1    | chainId  | Int    | 否     | 链编号   |
+| 2    | groupId  | Int    | 否     | 群组编号 |
+| 3    | nodeId   | String | 否     | 节点编号 |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTotalTransactionCount/1001/1
+http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTotalTransactionCount/1001/1/78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2
 ```
 
 #### 4.5.3 返回参数 
@@ -1941,10 +2098,12 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTotalTransactionCount/1001/1
 
 ### 4.6 根据交易hash获取交易信息
 
+​	指定节点根据交易hash获取交易信息。节点和前置一一对应，节点编号可以从前置列表获取。
+
 #### 4.6.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/node/getTransactionByHash/{chainId}/{groupId}/{transHash}**
+- 请求地址：**/node/getTransactionByHash/{chainId}/{groupId}/{nodeId}/{transHash}**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -1955,13 +2114,14 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTotalTransactionCount/1001/1
 | 序号 | 输入参数  | 类型   | 可为空 | 备注     |
 | ---- | --------- | ------ | ------ | -------- |
 | 1    | chainId   | Int    | 否     | 链编号   |
-| 2    | groupId   | Int    | 否     | 群组id   |
-| 3    | transHash | String | 否     | 交易hash |
+| 2    | groupId   | Int    | 否     | 群组编号 |
+| 3    | nodeId    | String | 否     | 节点编号 |
+| 4    | transHash | String | 否     | 交易hash |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTransactionByHash/1001/1/0x2bf33fff3b81d74548079a669333aef601d4d2acaf8d33a31687fac8d5d9c815
+http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTransactionByHash/1001/1/78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2/0x2bf33fff3b81d74548079a669333aef601d4d2acaf8d33a31687fac8d5d9c815
 ```
 
 #### 4.6.3 返回参数 
@@ -2022,10 +2182,12 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTransactionByHash/1001/1/0x2b
 
 ### 4.7 根据交易hash获取交易回执信息
 
+​	指定节点根据交易hash获取交易回执信息。节点和前置一一对应，节点编号可以从前置列表获取。
+
 #### 4.7.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/node/getTransactionReceipt/{chainId}/{groupId}/{transHash}**
+- 请求地址：**/node/getTransactionReceipt/{chainId}/{groupId}/{nodeId}/{transHash}**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -2036,13 +2198,14 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTransactionByHash/1001/1/0x2b
 | 序号 | 输入参数  | 类型   | 可为空 | 备注     |
 | ---- | --------- | ------ | ------ | -------- |
 | 1    | chainId   | Int    | 否     | 链编号   |
-| 2    | groupId   | Int    | 否     | 群组id   |
-| 3    | transHash | String | 否     | 交易hash |
+| 2    | groupId   | Int    | 否     | 群组编号 |
+| 3    | nodeId    | String | 否     | 节点编号 |
+| 4    | transHash | String | 否     | 交易hash |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTransactionReceipt/1001/1/0x2bf33fff3b81d74548079a669333aef601d4d2acaf8d33a31687fac8d5d9c815
+http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTransactionReceipt/1001/1/78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2/0x2bf33fff3b81d74548079a669333aef601d4d2acaf8d33a31687fac8d5d9c815
 ```
 
 #### 4.7.3 返回参数 
@@ -2115,9 +2278,11 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTransactionReceipt/1001/1/0x2
 
 ***1）入参表***
 
-| 序号 | 输入参数       | 类型   | 可为空 | 备注                                        |
-| ---- | -------------- | ------ | ------ | ------------------------------------------- |
-| 1    | contractSource | String | 是     | 合约源码（合约文件压缩成zip，并Base64编码） |
+| 序号 | 输入参数          | 类型   | 可为空 | 备注                                        |
+| ---- | ----------------- | ------ | ------ | ------------------------------------------- |
+| 1    | chainId           | Int    | 否     | 链编号                                      |
+| 2    | nodeId            | String | 否     | 节点编号                                    |
+| 3    | contractZipBase64 | String | 是     | 合约源码（合约文件压缩成zip，并Base64编码） |
 
 ***2）入参示例***
 
@@ -2127,7 +2292,9 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/compile
 
 ```
 {
-  "contractSource": "UEsDBBQACAgIACGIZVAAAAAAAAAAAAAAAAAOAAAASGVsbG9Xb3JsZC5zb2yFjjELwjAQhfdC/8ONzVIkuBV3JxcHNyGkZwkkF0muBZH+dxPaYpGqb7x373vvHlTnFERvTWv4Adddva9lUxbaEwelGY5orb/4YNtnWUBS5GCoA1IOm+mCAxLDGfmUbtXKF1sPcuvj1pNm4wk65Eqk8sgqRQJyHyjOCTEvyJqc9YrxgxQTaWlaJ9GZ91haBmRl2IG+4+RfnvwNHF9QSwcIuSZqBJwAAABvAQAAUEsBAhQAFAAICAgAIYhlULkmagScAAAAbwEAAA4AAAAAAAAAAAAAAAAAAAAAAEhlbGxvV29ybGQuc29sUEsFBgAAAAABAAEAPAAAANgAAAAAAA=="
+  "chainId": 1001,
+  "contractZipBase64": "UEsDBBQACAgIACGIZVAAAAAAAAAAAAAAAAAOAAAASGVsbG9Xb3JsZC5zb2yFjjELwjAQhfdC/8ONzVIkuBV3JxcHNyGkZwkkF0muBZH+dxPaYpGqb7x373vvHlTnFERvTWv4Adddva9lUxbaEwelGY5orb/4YNtnWUBS5GCoA1IOm+mCAxLDGfmUbtXKF1sPcuvj1pNm4wk65Eqk8sgqRQJyHyjOCTEvyJqc9YrxgxQTaWlaJ9GZ91haBmRl2IG+4+RfnvwNHF9QSwcIuSZqBJwAAABvAQAAUEsBAhQAFAAICAgAIYhlULkmagScAAAAbwEAAA4AAAAAAAAAAAAAAAAAAAAAAEhlbGxvV29ybGQuc29sUEsFBgAAAAABAAEAPAAAANgAAAAAAA==",
+  "nodeId": "cd3a0d965ca5e5de9edce69245db827a3a253e4868e074020c3f5fb83ca0ae884d5705940c1fc1de550874de0f02374e83eaeb5317b819e420a8ff2e07e4b84c"
 }
 ```
 
@@ -2135,15 +2302,16 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/compile
 
 ***1）出参表***
 
-| 序号  | 输出参数     | 类型   |      | 备注                              |
-| ----- | ------------ | ------ | ---- | --------------------------------- |
-| 1     | code         | Int    | 否   | 返回码，0：成功 其它：失败        |
-| 2     | message      | String | 否   | 描述                              |
-| 3     | data         | List   |      | 列表                              |
-| 3.1   |              | Object |      | 信息对象                          |
-| 3.1.1 | contractName | String | 否   | 合约名称                          |
-| 3.1.2 | contractAbi  | String | 是   | 编译合约生成的abi文件内容         |
-| 3.1.3 | bytecodeBin  | String | 是   | 合约bytecode binary，用于部署合约 |
+| 序号  | 输出参数       | 类型   | 可为空 | 备注                              |
+| ----- | -------------- | ------ | ------ | --------------------------------- |
+| 1     | code           | Int    | 否     | 返回码，0：成功 其它：失败        |
+| 2     | message        | String | 否     | 描述                              |
+| 3     | data           | List   |        | 列表                              |
+| 3.1   |                | Object |        | 信息对象                          |
+| 3.1.1 | contractName   | String | 否     | 合约名称                          |
+| 3.1.2 | contractAbi    | String | 否     | 编译合约生成的abi文件内容         |
+| 3.1.3 | bytecodeBin    | String | 否     | 合约bytecode binary，用于部署合约 |
+| 3.1.4 | contractSource | String | 否     | 单个合约内容Base64编码            |
 
 ***2）出参示例***
 
@@ -2157,7 +2325,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/compile
     {
       "contractName": "HelloWorld",
       "contractAbi": "[{\"constant\":false,\"inputs\":[{\"name\":\"n\",\"type\":\"string\"}],\"name\":\"set\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"get\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"n\",\"type\":\"string\"}],\"name\":\"set2\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"name\",\"type\":\"string\"}],\"name\":\"SetName\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"name\",\"type\":\"string\"}],\"name\":\"SetName2\",\"type\":\"event\"}]",
-      "bytecodeBin": "608060405234801561001057600080fd5b5061049d806100206000396000f300608060405260043610610057576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634ed3885e1461005c5780636d4ce63c146100c557806394ab626314610155575b600080fd5b34801561006857600080fd5b506100c3600480360381019080803590602001908201803590602001908080601f01602080910402602001604051908101604052809392919081815260200183838082843782019150505050505091929192905050506101be565b005b3480156100d157600080fd5b506100da610274565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561011a5780820151818401526020810190506100ff565b50505050905090810190601f1680156101475780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b34801561016157600080fd5b506101bc600480360381019080803590602001908201803590602001908080601f0160208091040260200160405190810160405280939291908181526020018383808284378201915050505050509192919290505050610316565b005b7f4df9dcd34ae35f40f2c756fd8ac83210ed0b76d065543ee73d868aec7c7fcf02816040518080602001828103825283818151815260200191508051906020019080838360005b83811015610220578082015181840152602081019050610205565b50505050905090810190601f16801561024d5780820380516001836020036101000a031916815260200191505b509250505060405180910390a180600090805190602001906102709291906103cc565b5050565b606060008054600181600116156101000203166002900480601f01602080910402602001604051908101604052809291908181526020018280546001816001161561010002031660029004801561030c5780601f106102e15761010080835404028352916020019161030c565b820191906000526020600020905b8154815290600101906020018083116102ef57829003601f168201915b5050505050905090565b7f5a10b7f1e7b0001e5072838ada067bb4410151e165607a3465bf0620c412e2a3816040518080602001828103825283818151815260200191508051906020019080838360005b8381101561037857808201518184015260208101905061035d565b50505050905090810190601f1680156103a55780820380516001836020036101000a031916815260200191505b509250505060405180910390a180600090805190602001906103c89291906103cc565b5050565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061040d57805160ff191683800117855561043b565b8280016001018555821561043b579182015b8281111561043a57825182559160200191906001019061041f565b5b509050610448919061044c565b5090565b61046e91905b8082111561046a576000816000905550600101610452565b5090565b905600a165627a7a72305820a29a15f3aad04ec24023c149e72a1c9690158e2b5835ce7b3054e0200947f1ea0029"
+      "contractSource": "cHJhZ21hIHNvbGlkaXR5IF4wLjQuMjsNCmNvbnRyYWN0IEhlbGxvV29ybGR7DQogICAgc3RyaW5nIG5hbWU7DQogICAgZXZlbnQgU2V0TmFtZShzdHJpbmcgbmFtZSk7DQogICAgZXZlbnQgU2V0TmFtZTIoc3RyaW5nIG5hbWUpOw0KICAgIGZ1bmN0aW9uIGdldCgpY29uc3RhbnQgcmV0dXJucyhzdHJpbmcpew0KICAgICAgICByZXR1cm4gbmFtZTsNCiAgICB9DQogICAgZnVuY3Rpb24gc2V0KHN0cmluZyBuKXsNCiAgICAgICAgZW1pdCBTZXROYW1lKG4pOw0KICAgICAgICBuYW1lPW47DQogICAgfQ0KICAgIGZ1bmN0aW9uIHNldDIoc3RyaW5nIG4pew0KICAgICAgICBlbWl0IFNldE5hbWUyKG4pOw0KICAgICAgICBuYW1lPW47DQogICAgfQ0KfQ==",
+      "bytecodeBin": "608060405234801561001057600080fd5b5061049d806100206000396000f300608060405260043610610057576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634ed3885e1461005c5780636d4ce63c146100c557806394ab626314610155575b600080fd5b34801561006857600080fd5b506100c3600480360381019080803590602001908201803590602001908080601f01602080910402602001604051908101604052809392919081815260200183838082843782019150505050505091929192905050506101be565b005b3480156100d157600080fd5b506100da610274565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561011a5780820151818401526020810190506100ff565b50505050905090810190601f1680156101475780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b34801561016157600080fd5b506101bc600480360381019080803590602001908201803590602001908080601f0160208091040260200160405190810160405280939291908181526020018383808284378201915050505050509192919290505050610316565b005b7f4df9dcd34ae35f40f2c756fd8ac83210ed0b76d065543ee73d868aec7c7fcf02816040518080602001828103825283818151815260200191508051906020019080838360005b83811015610220578082015181840152602081019050610205565b50505050905090810190601f16801561024d5780820380516001836020036101000a031916815260200191505b509250505060405180910390a180600090805190602001906102709291906103cc565b5050565b606060008054600181600116156101000203166002900480601f01602080910402602001604051908101604052809291908181526020018280546001816001161561010002031660029004801561030c5780601f106102e15761010080835404028352916020019161030c565b820191906000526020600020905b8154815290600101906020018083116102ef57829003601f168201915b5050505050905090565b7f5a10b7f1e7b0001e5072838ada067bb4410151e165607a3465bf0620c412e2a3816040518080602001828103825283818151815260200191508051906020019080838360005b8381101561037857808201518184015260208101905061035d565b50505050905090810190601f1680156103a55780820380516001836020036101000a031916815260200191505b509250505060405180910390a180600090805190602001906103c89291906103cc565b5050565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061040d57805160ff191683800117855561043b565b8280016001018555821561043b579182015b8281111561043a57825182559160200191906001019061041f565b5b509050610448919061044c565b5090565b61046e91905b8082111561046a576000816000905550600101610452565b5090565b905600a165627a7a723058207665e28fd12d838bd875853dc478d492a70285568077143f1fe56a6f931b8f9a0029"
     }
   ]
 }
@@ -2199,7 +2368,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/compile
 | 8    | contractId     | String | 是     | 合约编号（为空时表示新增，不为空表示更新） |
 | 9    | contractPath   | String | 否     | 合约所在目录                               |
 
-***2）入参示例***
+***nei参示例***
 
 ```
 http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/save
@@ -2498,10 +2667,11 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/2
 | 5    | contractAbi       | String         | 否     | 编译合约生成的abi文件内容  |
 | 6    | contractBin       | String         | 是    | 合约运行时binary，用于合约解析 |
 | 7    | bytecodeBin       | String         | 否     | 合约bytecode binary，用于部署合约 |
-| 8    | contractId      | String         | 否     | 合约名称               |
+| 8    | contractId      | String         | 否     | 合约编号             |
 | 9    | contractPath      | String         | 否     | 合约所在目录               |
 | 10   | user              | String         | 否     | 私钥用户地址             |
 | 11    | constructorParams | List | 是     | 构造函数入参               |
+| 12 | nodeId | String | 否 | 节点编号，指定节点调用 |
 
 
 ***2）入参示例***
@@ -2523,7 +2693,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/deploy
   "contractPath": "/",
   "contractSource": "cHJhZ21hIHNvbGlkaXR5IF4wLjQuMjsNCmNvbnRyYWN0IEhlbGxvV29ybGR7DQogICAgc3RyaW5nIG5hbWU7DQogICAgZXZlbnQgU2V0TmFtZShzdHJpbmcgbmFtZSk7DQogICAgZnVuY3Rpb24gZ2V0KCljb25zdGFudCByZXR1cm5zKHN0cmluZyl7DQogICAgICAgIHJldHVybiBuYW1lOw0KICAgIH0NCiAgICBmdW5jdGlvbiBzZXQoc3RyaW5nIG4pew0KICAgICAgICBlbWl0IFNldE5hbWUobik7DQogICAgICAgIG5hbWU9bjsNCiAgICB9DQp9",
   "groupId": 1,
-  "user": "0x58df289113863a9bff8fd24c984a4ad51d36cd2d"
+  "user": "0x58df289113863a9bff8fd24c984a4ad51d36cd2d",
+  "nodeId": "cd3a0d965ca5e5de9edce69245db827a3a253e4868e074020c3f5fb83ca0ae884d5705940c1fc1de550874de0f02374e83eaeb5317b819e420a8ff2e07e4b84
 }
 ```
 
@@ -2616,6 +2787,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/deploy
 | 6    | funcName     | String         | 否     | 合约方法名                 |
 | 7    | contractAddress     | String         | 是     | 合约地址   |
 | 8   | funcParam    | List | 是     | 合约方法入参               |
+| 9 | contractAbi | String | 否 | 所调用合约方法的abi，注意格式（传入所有abi可能导致合约重载方法出问题） |
+| 10 | nodeId | String | 否 | 节点编号，指定节点调用 |
 
 ***2）入参示例***
 
@@ -2626,14 +2799,15 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/transaction
 ```
 {
   "chainId": 1001,
-  "contractAddress": "0xd639179eaa10b59e44e9becd8cdbd340d33ae814",
-  "contractId": 2,
+  "contractAbi": "[{\"constant\":true,\"inputs\":[],\"name\":\"get\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]",
+  "contractAddress": "string",
+  "contractId": 400002,
   "contractName": "HelloWorld",
   "funcName": "get",
   "funcParam": [],
   "groupId": 1,
-  "useAes": true,
-  "user": "0x58df289113863a9bff8fd24c984a4ad51d36cd2d"
+  "nodeId": "cd3a0d965ca5e5de9edce69245db827a3a253e4868e074020c3f5fb83ca0ae884d5705940c1fc1de550874de0f02374e83eaeb5317b819e420a8ff2e07e4b84c",
+  "user": "0x6404ecc50d278f2a588f943060143edb13379922"
 }
 ```
 

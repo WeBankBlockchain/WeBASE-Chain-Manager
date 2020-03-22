@@ -89,6 +89,7 @@ configurations {
     all*.exclude group: 'jline', module: 'jline'
     all*.exclude group: 'com.google.protobuf', module: 'protobuf-java'
     all*.exclude group: 'javax.annotation', module: 'javax.annotation-api'
+    all*.exclude group: 'org.ethereum'
 }
 
 sourceSets {
