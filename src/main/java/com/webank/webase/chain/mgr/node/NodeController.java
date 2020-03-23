@@ -64,13 +64,12 @@ public class NodeController extends BaseController {
             @PathVariable("groupId") Integer groupId,
             @PathVariable("pageNumber") Integer pageNumber,
             @PathVariable("pageSize") Integer pageSize,
-            @RequestParam(value = "nodeName", required = false) String nodeName)
-            throws BaseException {
+            @RequestParam(value = "nodeId", required = false) String nodeId) throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info(
-                "start queryNodeList startTime:{} groupId:{}  pageNumber:{} pageSize:{} nodeName:{}",
-                startTime.toEpochMilli(), groupId, pageNumber, pageSize, nodeName);
+                "start queryNodeList startTime:{} groupId:{} pageNumber:{} pageSize:{} nodeName:{}",
+                startTime.toEpochMilli(), groupId, pageNumber, pageSize, nodeId);
 
         // check node status before query
         nodeService.checkAndUpdateNodeStatus(chainId, groupId);
@@ -79,7 +78,7 @@ public class NodeController extends BaseController {
         NodeParam queryParam = new NodeParam();
         queryParam.setChainId(chainId);
         queryParam.setGroupId(groupId);
-        queryParam.setNodeName(nodeName);
+        queryParam.setNodeId(nodeId);
         queryParam.setPageSize(pageSize);
         Integer count = nodeService.countOfNode(queryParam);
         if (count != null && count > 0) {

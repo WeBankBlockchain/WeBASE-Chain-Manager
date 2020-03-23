@@ -1703,15 +1703,15 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setSysConfig
 | 序号 | 输入参数   | 类型   | 可为空 | 备注       |
 | ---- | ---------- | ------ | ------ | ---------- |
 | 1    | chainId    | int    | 否     | 链编号     |
-| 2    | groupId    | int    | 否     | 群组id     |
+| 2    | groupId    | int    | 否     | 群组编号   |
 | 3    | pageSize   | Int    | 否     | 每页记录数 |
 | 4    | pageNumber | Int    | 否     | 当前页码   |
-| 5    | nodeName   | String | 是     | 节点名称   |
+| 5    | nodeId     | String | 是     | 节点Id     |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/node/nodeList/100001/300001/1/10?nodeName=
+http://127.0.0.1:5005/WeBASE-Chain-Manager/node/nodeList/100001/300001/1/10?nodeId=
 ```
 
 #### 4.1.3 返回参数 
@@ -2368,7 +2368,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/compile
 | 8    | contractId     | String | 是     | 合约编号（为空时表示新增，不为空表示更新） |
 | 9    | contractPath   | String | 否     | 合约所在目录                               |
 
-***nei参示例***
+***2）入参示例***
 
 ```
 http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/save
@@ -2573,7 +2573,6 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/contractList
 | 序号 | 输入参数    | 类型          | 可为空 | 备注                                       |
 |------|-------------|---------------|--------|-------------------------------|
 | 1    | contractId      | int           | 否     | 合约编号                                        |
-
 
 ***2）入参示例***
 

@@ -29,6 +29,5 @@ public class NodeParam extends BaseQueryParam {
     private Integer groupId;
     private String nodeId;
     private Integer p2pPort;
-    private String nodeName;
     private String nodeIp;
 }
