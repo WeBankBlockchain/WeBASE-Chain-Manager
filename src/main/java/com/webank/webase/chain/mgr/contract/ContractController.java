@@ -28,6 +28,7 @@ import com.webank.webase.chain.mgr.contract.entity.QueryContractParam;
 import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
 import com.webank.webase.chain.mgr.contract.entity.TbContract;
 import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
+import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -210,6 +211,23 @@ public class ContractController extends BaseController {
         log.info("end sendTransaction useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
 
+        return baseResponse;
+    }
+    
+    /**
+     * contract status manage.
+     */
+    @PostMapping(value = "/statusManage")
+    public BaseResponse statusManage(@RequestBody @Valid ContractManageParam param,
+            BindingResult result) throws BaseException {
+        checkBindResult(result);
+        Instant startTime = Instant.now();
+        log.info("start statusManage startTime:{} param:{}", startTime.toEpochMilli(),
+                JSON.toJSONString(param));
+        BaseResponse baseResponse = contractService.statusManage(param);
+        log.info("end statusManage useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        
         return baseResponse;
     }
 }

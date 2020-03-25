@@ -16,6 +16,7 @@ package com.webank.webase.chain.mgr.contract;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
@@ -27,9 +28,11 @@ import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
 import com.webank.webase.chain.mgr.contract.entity.TbContract;
 import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
 import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import com.webank.webase.chain.mgr.front.entity.TbFront;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
+import com.webank.webase.chain.mgr.frontinterface.entity.ContractStatusManageResult;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -333,6 +336,45 @@ public class ContractService {
                 params, Object.class);
         log.debug("end sendTransaction. frontRsp:{}", JSON.toJSONString(frontRsp));
         return frontRsp;
+    }
+
+    /**
+     * contract manage.
+     */
+    public BaseResponse statusManage(ContractManageParam inputParam) throws BaseException {
+        log.debug("start statusManage. param:{}", JSON.toJSONString(inputParam));
+        // check front
+        TbFront tbFront =
+                frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
+        if (tbFront == null) {
+            log.error("fail statusManage node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+
+        // transaction param
+        Map<String, Object> params = new HashMap<>();
+        params.put("groupId", inputParam.getGroupId());
+        params.put("contractAddress", inputParam.getContractAddress());
+        params.put("handleType", inputParam.getHandleType());
+        params.put("fromAddress", inputParam.getUser());
+        params.put("grantAddress", inputParam.getGrantAddress());
+        params.put("useAes", constants.getIsPrivateKeyEncrypt());
+
+        // send transaction
+        ContractStatusManageResult contractStatusManageResult = frontInterface.postToSpecificFront(inputParam.getGroupId(),
+                tbFront.getFrontIp(), tbFront.getFrontPort(),
+                FrontRestTools.URI_CONTRACT_STATUS_MANAGE, params, ContractStatusManageResult.class);
+        
+        if (contractStatusManageResult.getCode() != 0) {
+            log.error("fail statusManage message:{}.", contractStatusManageResult.getMsg());
+            throw new BaseException(contractStatusManageResult.getCode(),
+                    contractStatusManageResult.getMsg());
+        }
+        
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        baseResponse.setData(contractStatusManageResult.getData());
+        log.debug("end statusManage. baseResponse:{}", JSON.toJSONString(baseResponse));
+        return baseResponse;
     }
 
 
