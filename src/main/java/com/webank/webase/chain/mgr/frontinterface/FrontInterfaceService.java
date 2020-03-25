@@ -322,15 +322,62 @@ public class FrontInterfaceService {
         return groupHandleResult;
     }
 
-    public GroupHandleResult startGroup(String frontIp, Integer frontPort, Integer startGroupId) {
-        log.debug("start startGroup frontIp:{} frontPort:{} startGroupId:{}", frontIp, frontPort,
-                startGroupId);
-        Integer groupId = Integer.MAX_VALUE;
-        String uri = String.format(FrontRestTools.URI_START_GROUP, startGroupId);
+    public GroupHandleResult operateGroup(String frontIp, Integer frontPort, Integer groupId, String type) {
+        log.debug("start operateGroup frontIp:{} frontPort:{} groupId:{}", frontIp, frontPort,
+                groupId);
+        String uri = String.format(FrontRestTools.URI_OPERATE_GROUP, type);
         GroupHandleResult groupHandleResult =
                 getFromSpecificFront(groupId, frontIp, frontPort, uri, GroupHandleResult.class);
 
-        log.debug("end startGroup");
+        log.debug("end operateGroup");
+        return groupHandleResult;
+    }
+    
+    public GroupHandleResult stopGroup(String frontIp, Integer frontPort, Integer stopGroupId) {
+        log.debug("start stopGroup frontIp:{} frontPort:{} stopGroupId:{}", frontIp, frontPort,
+                stopGroupId);
+        Integer groupId = Integer.MAX_VALUE;
+        String uri = String.format(FrontRestTools.URI_STOP_GROUP, stopGroupId);
+        GroupHandleResult groupHandleResult =
+                getFromSpecificFront(groupId, frontIp, frontPort, uri, GroupHandleResult.class);
+        
+        log.debug("end stopGroup");
+        return groupHandleResult;
+    }
+    
+    public GroupHandleResult removeGroup(String frontIp, Integer frontPort, Integer removeGroupId) {
+        log.debug("start removeGroup frontIp:{} frontPort:{} removeGroupId:{}", frontIp, frontPort,
+                removeGroupId);
+        Integer groupId = Integer.MAX_VALUE;
+        String uri = String.format(FrontRestTools.URI_REMOVE_GROUP, removeGroupId);
+        GroupHandleResult groupHandleResult =
+                getFromSpecificFront(groupId, frontIp, frontPort, uri, GroupHandleResult.class);
+        
+        log.debug("end removeGroup");
+        return groupHandleResult;
+    }
+    
+    public GroupHandleResult recoverGroup(String frontIp, Integer frontPort, Integer recoverGroupId) {
+        log.debug("start recoverGroup frontIp:{} frontPort:{} recoverGroupId:{}", frontIp, frontPort,
+                recoverGroupId);
+        Integer groupId = Integer.MAX_VALUE;
+        String uri = String.format(FrontRestTools.URI_RECOVER_GROUP, recoverGroupId);
+        GroupHandleResult groupHandleResult =
+                getFromSpecificFront(groupId, frontIp, frontPort, uri, GroupHandleResult.class);
+        
+        log.debug("end recoverGroup");
+        return groupHandleResult;
+    }
+    
+    public GroupHandleResult queryGroupStatus(String frontIp, Integer frontPort, Integer queryGroupId) {
+        log.debug("start queryGroupStatus frontIp:{} frontPort:{} queryGroupId:{}", frontIp, frontPort,
+                queryGroupId);
+        Integer groupId = Integer.MAX_VALUE;
+        String uri = String.format(FrontRestTools.URI_QUERY_GROUP_STATUS, queryGroupId);
+        GroupHandleResult groupHandleResult =
+                getFromSpecificFront(groupId, frontIp, frontPort, uri, GroupHandleResult.class);
+        
+        log.debug("end queryGroupStatus");
         return groupHandleResult;
     }
 

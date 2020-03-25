@@ -95,18 +95,16 @@ public class GroupController extends BaseController {
     }
 
     /**
-     * start group.
+     * operate group.
      */
-    @GetMapping("/start/{chainId}/{startGroupId}/{nodeId}")
-    public BaseResponse startGroup(@PathVariable("chainId") Integer chainId,
-            @PathVariable("nodeId") String nodeId,
-            @PathVariable("startGroupId") Integer startGroupId) throws BaseException {
+    @GetMapping("/operate/{chainId}/{groupId}/{nodeId}/{type}")
+    public BaseResponse operateGroup(@PathVariable("chainId") Integer chainId,
+            @PathVariable("nodeId") String nodeId, @PathVariable("groupId") Integer groupId,
+            @PathVariable("type") String type) throws BaseException {
         Instant startTime = Instant.now();
-        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        log.info("start startGroup startTime:{} groupId:{}", startTime.toEpochMilli(),
-                startGroupId);
-        groupService.startGroup(chainId, nodeId, startGroupId);
-        log.info("end startGroup useTime:{} result:{}",
+        log.info("start operateGroup startTime:{} groupId:{}", startTime.toEpochMilli(), groupId);
+        BaseResponse baseResponse = groupService.operateGroup(chainId, nodeId, groupId, type);
+        log.info("end operateGroup useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(baseResponse));
         return baseResponse;
@@ -124,6 +122,75 @@ public class GroupController extends BaseController {
                 req.getGenerateGroupId());
         groupService.batchStartGroup(req);
         log.info("end batchStartGroup useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(baseResponse));
+        return baseResponse;
+    }
+
+    /**
+     * stop group.
+     */
+    @GetMapping("/stop/{chainId}/{groupId}/{nodeId}")
+    public BaseResponse stopGroup(@PathVariable("chainId") Integer chainId,
+            @PathVariable("nodeId") String nodeId, @PathVariable("groupId") Integer groupId)
+            throws BaseException {
+        Instant startTime = Instant.now();
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("start stopGroup startTime:{} groupId:{}", startTime.toEpochMilli(), groupId);
+        groupService.stopGroup(chainId, nodeId, groupId);
+        log.info("end stopGroup useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(baseResponse));
+        return baseResponse;
+    }
+
+    /**
+     * remove group.
+     */
+    @GetMapping("/remove/{chainId}/{groupId}/{nodeId}")
+    public BaseResponse removeGroup(@PathVariable("chainId") Integer chainId,
+            @PathVariable("nodeId") String nodeId, @PathVariable("groupId") Integer groupId)
+            throws BaseException {
+        Instant startTime = Instant.now();
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("start removetGroup startTime:{} groupId:{}", startTime.toEpochMilli(), groupId);
+        groupService.removeGroup(chainId, nodeId, groupId);
+        log.info("end removeGroup useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(baseResponse));
+        return baseResponse;
+    }
+
+    /**
+     * recover group.
+     */
+    @GetMapping("/recover/{chainId}/{groupId}/{nodeId}")
+    public BaseResponse recoverGroup(@PathVariable("chainId") Integer chainId,
+            @PathVariable("nodeId") String nodeId, @PathVariable("groupId") Integer groupId)
+            throws BaseException {
+        Instant startTime = Instant.now();
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("start recoverGroup startTime:{} groupId:{}", startTime.toEpochMilli(), groupId);
+        groupService.recoverGroup(chainId, nodeId, groupId);
+        log.info("end recoverGroup useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JSON.toJSONString(baseResponse));
+        return baseResponse;
+    }
+
+    /**
+     * queryGroupStatus.
+     */
+    @GetMapping("/queryGroupStatus/{chainId}/{groupId}/{nodeId}")
+    public BaseResponse queryGroupStatus(@PathVariable("chainId") Integer chainId,
+            @PathVariable("nodeId") String nodeId, @PathVariable("groupId") Integer groupId)
+            throws BaseException {
+        Instant startTime = Instant.now();
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("start queryGroupStatus startTime:{} groupId:{}", startTime.toEpochMilli(),
+                groupId);
+        groupService.queryGroupStatus(chainId, nodeId, groupId);
+        log.info("end queryGroupStatus useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(baseResponse));
         return baseResponse;

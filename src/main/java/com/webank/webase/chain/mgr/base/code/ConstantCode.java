@@ -102,7 +102,15 @@ public class ConstantCode {
     
     public static final RetCode GROUP_GENERATE_FAIL = RetCode.mark(205031, "group generate fail");
     
-    public static final RetCode GROUP_START_FAIL = RetCode.mark(205032, "group start fail");
+    public static final RetCode GROUP_OPERATE_FAIL = RetCode.mark(205032, "group operate fail");
+    
+    public static final RetCode GROUP_STOP_FAIL = RetCode.mark(205033, "group stop fail");
+    
+    public static final RetCode GROUP_REMOVE_FAIL = RetCode.mark(205034, "group remove fail");
+    
+    public static final RetCode GROUP_RECOVER_FAIL = RetCode.mark(205035, "group recover fail");
+    
+    public static final RetCode QUERY_GROUP_STATUS_FAIL = RetCode.mark(205036, "query group status fail");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");
