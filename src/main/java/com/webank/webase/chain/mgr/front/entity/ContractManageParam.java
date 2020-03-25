@@ -31,7 +31,7 @@ public class ContractManageParam {
     @NotBlank
     private String nodeId;
     @NotBlank
-    private String user;
+    private String signUserId;
     @NotBlank
     private String contractAddress;
     @NotBlank

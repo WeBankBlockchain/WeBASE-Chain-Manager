@@ -181,8 +181,6 @@ public class GroupService {
             throw new BaseException(ConstantCode.GROUP_OPERATE_FAIL.getCode(),
                     groupHandleResult.getMessage());
         }
-        // refresh front
-        frontInterface.refreshFront(tbFront.getFrontIp(), tbFront.getFrontPort());
         
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         baseResponse.setData(groupHandleResult.getStatus());
@@ -216,126 +214,9 @@ public class GroupService {
                 throw new BaseException(ConstantCode.GROUP_OPERATE_FAIL.getCode(),
                         groupHandleResult.getMessage());
             }
-            // refresh front
-            frontInterface.refreshFront(tbFront.getFrontIp(), tbFront.getFrontPort());
         }
     }
 
-    /**
-     * stop group.
-     * 
-     * @param chainId
-     * @param nodeId
-     * @param groupId
-     */
-    public void stopGroup(Integer chainId, String nodeId, Integer groupId) {
-        // get front
-        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
-        if (tbFront == null) {
-            log.error("fail stopGroup node front not exists.");
-            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
-        }
-        // request front to start
-        GroupHandleResult groupHandleResult =
-                frontInterface.stopGroup(tbFront.getFrontIp(), tbFront.getFrontPort(), groupId);
-        // check result
-        int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
-        if (code != 0) {
-            log.error("fail stopGroup nodeId:{} message:{}.", nodeId,
-                    groupHandleResult.getMessage());
-            throw new BaseException(ConstantCode.GROUP_STOP_FAIL.getCode(),
-                    groupHandleResult.getMessage());
-        }
-        // refresh front
-        frontInterface.refreshFront(tbFront.getFrontIp(), tbFront.getFrontPort());
-    }
-
-    /**
-     * remove group.
-     * 
-     * @param chainId
-     * @param nodeId
-     * @param groupId
-     */
-    public void removeGroup(Integer chainId, String nodeId, Integer groupId) {
-        // get front
-        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
-        if (tbFront == null) {
-            log.error("fail removeGroup node front not exists.");
-            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
-        }
-        // request front to start
-        GroupHandleResult groupHandleResult =
-                frontInterface.removeGroup(tbFront.getFrontIp(), tbFront.getFrontPort(), groupId);
-        // check result
-        int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
-        if (code != 0) {
-            log.error("fail removeGroup nodeId:{} message:{}.", nodeId,
-                    groupHandleResult.getMessage());
-            throw new BaseException(ConstantCode.GROUP_REMOVE_FAIL.getCode(),
-                    groupHandleResult.getMessage());
-        }
-        // refresh front
-        frontInterface.refreshFront(tbFront.getFrontIp(), tbFront.getFrontPort());
-    }
-
-    /**
-     * recover group.
-     * 
-     * @param chainId
-     * @param nodeId
-     * @param groupId
-     */
-    public void recoverGroup(Integer chainId, String nodeId, Integer groupId) {
-        // get front
-        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
-        if (tbFront == null) {
-            log.error("fail recoverGroup node front not exists.");
-            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
-        }
-        // request front to start
-        GroupHandleResult groupHandleResult =
-                frontInterface.recoverGroup(tbFront.getFrontIp(), tbFront.getFrontPort(), groupId);
-        // check result
-        int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
-        if (code != 0) {
-            log.error("fail recoverGroup nodeId:{} message:{}.", nodeId,
-                    groupHandleResult.getMessage());
-            throw new BaseException(ConstantCode.GROUP_RECOVER_FAIL.getCode(),
-                    groupHandleResult.getMessage());
-        }
-        // refresh front
-        frontInterface.refreshFront(tbFront.getFrontIp(), tbFront.getFrontPort());
-    }
-
-    /**
-     * query group status.
-     * 
-     * @param chainId
-     * @param nodeId
-     * @param groupId
-     */
-    public void queryGroupStatus(Integer chainId, String nodeId, Integer groupId) {
-        // get front
-        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
-        if (tbFront == null) {
-            log.error("fail queryGroupStatus node front not exists.");
-            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
-        }
-        // request front to start
-        GroupHandleResult groupHandleResult = frontInterface.queryGroupStatus(tbFront.getFrontIp(),
-                tbFront.getFrontPort(), groupId);
-        // check result
-        int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
-        if (code != 0) {
-            log.error("fail queryGroupStatus nodeId:{} message:{}.", nodeId,
-                    groupHandleResult.getMessage());
-            throw new BaseException(ConstantCode.QUERY_GROUP_STATUS_FAIL.getCode(),
-                    groupHandleResult.getMessage());
-        }
-        // refresh front
-        frontInterface.refreshFront(tbFront.getFrontIp(), tbFront.getFrontPort());
-    }
 
     /**
      * save group id

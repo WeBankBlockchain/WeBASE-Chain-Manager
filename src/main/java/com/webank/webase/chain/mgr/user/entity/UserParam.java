@@ -27,6 +27,6 @@ public class UserParam extends BaseQueryParam {
 
     private Integer groupId;
     private Integer userId;
-    private String userName;
+    private String signUserId;
     private String commParam;
 }
