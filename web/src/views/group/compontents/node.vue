@@ -4,9 +4,6 @@
         <div class="module-wrapper">
             <div class="search-part" style="padding-top: 20px;">
                 <div class="search-part-left">
-                    <el-input placeholder="请输入节点名称" v-model="nodeName" class="input-with-select">
-                        <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
-                    </el-input>
                     <div class="input-with-select">
                         <span>切换群组</span>
                         <el-select v-model="groupId" placeholder="请选择" @change='search'>
@@ -124,15 +121,26 @@ export default {
                 pageNumber: this.pageNumber,
                 pageSize: this.pageSize
             };
-            let query = {}
-            if(this.nodeName){
-                query.nodeName = this.nodeName
-            }
-            getNodes(data,query).then(res => {
+            // let query = {}
+            // if(this.nodeName){
+            //     query.nodeName = this.nodeName
+            // }
+            getNodes(data,{}).then(res => {
                 if(res.data.code === 0){
                     this.total = res.data.totalCount;
                     this.nodeData = res.data.data
+                }else{
+                    this.$message({
+                        type: "error",
+                        message: errCode.errCode[res.data.code].zh
+                    })
                 }
+            }).catch(err => {
+                this.$message({
+                    message: "系统错误！",
+                    type: "error",
+                    duration: 2000
+                });
             })
         },
         getGroupList: function (type) {
