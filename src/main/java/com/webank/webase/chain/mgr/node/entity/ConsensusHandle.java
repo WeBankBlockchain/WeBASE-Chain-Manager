@@ -22,7 +22,6 @@ import lombok.Data;
 public class ConsensusHandle {
     private Integer groupId;
     private String nodeType;
-    private String fromAddress;
+    private String signUserId;
     private String nodeId;
-    private Boolean useAes;
 }

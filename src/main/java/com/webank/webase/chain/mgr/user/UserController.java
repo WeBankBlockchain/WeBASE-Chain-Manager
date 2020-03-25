@@ -19,9 +19,7 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.user.entity.BindUserInputParam;
 import com.webank.webase.chain.mgr.user.entity.NewUserInputParam;
-import com.webank.webase.chain.mgr.user.entity.PrivateKeyInfo;
 import com.webank.webase.chain.mgr.user.entity.TbUser;
 import com.webank.webase.chain.mgr.user.entity.UpdateUserInputParam;
 import com.webank.webase.chain.mgr.user.entity.UserParam;
@@ -74,29 +72,6 @@ public class UserController extends BaseController {
     }
 
     /**
-     * bind user info.
-     */
-    @PostMapping(value = "/bind")
-    public BaseResponse bindUserInfo(@RequestBody @Valid BindUserInputParam user,
-            BindingResult result) throws BaseException {
-        checkBindResult(result);
-        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        Instant startTime = Instant.now();
-
-        // add user row
-        Integer userId = userService.bindUserInfo(user);
-
-        // query user row
-        TbUser userRow = userService.queryByUserId(userId);
-        baseResponse.setData(userRow);
-
-        log.info("end bindUserInfo useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
-        return baseResponse;
-    }
-
-    /**
      * update user info.
      */
     @PutMapping(value = "/userInfo")
@@ -118,25 +93,6 @@ public class UserController extends BaseController {
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(baseResponse));
         return baseResponse;
-    }
-
-    /**
-     * get private key by user id.
-     */
-    @GetMapping(value = "/privateKey/{address}")
-    public BaseResponse getPrivateKey(@PathVariable("address") String address)
-            throws BaseException {
-        BaseResponse pagesponse = new BaseResponse(ConstantCode.SUCCESS);
-        Instant startTime = Instant.now();
-        log.info("start getPrivateKey", startTime.toEpochMilli());
-
-        PrivateKeyInfo privateKeyInfo = userService.getPrivateKey(address);
-        pagesponse.setData(privateKeyInfo);
-
-        log.info("end getPrivateKey useTime:{} result:{}",
-                Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(pagesponse));
-        return pagesponse;
     }
 
     /**

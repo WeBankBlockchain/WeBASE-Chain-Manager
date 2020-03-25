@@ -20,16 +20,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class TbUser {
-
     private Integer userId;
-    private String userName;
     private Integer chainId;
     private Integer groupId;
+    private String signUserId;
+    private String appId;
     private String publicKey;
-    private Integer userStatus;
-    private Integer userType;
     private String address;
-    private Integer hasPk;
     private String description;
     private LocalDateTime createTime;
     private LocalDateTime modifyTime;
@@ -37,16 +34,15 @@ public class TbUser {
     /**
      * init TbUser.
      */
-    public TbUser(Integer hasPk, Integer userType, String userName, Integer chainId,
-            Integer groupId, String address, String publicKey, String description) {
+    public TbUser(Integer chainId, Integer groupId, String signUserId, String appId, String address,
+            String publicKey, String description) {
         super();
-        this.hasPk = hasPk;
-        this.userType = userType;
-        this.userName = userName;
         this.chainId = chainId;
         this.groupId = groupId;
+        this.signUserId = signUserId;
+        this.appId = appId;
         this.publicKey = publicKey;
-        this.description = description;
         this.address = address;
+        this.description = description;
     }
 }

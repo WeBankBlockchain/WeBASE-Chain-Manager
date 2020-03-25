@@ -13,9 +13,7 @@
  */
 package com.webank.webase.chain.mgr.user;
 
-import com.webank.webase.chain.mgr.user.entity.PrivateKeyInfo;
 import com.webank.webase.chain.mgr.user.entity.TbUser;
-import com.webank.webase.chain.mgr.user.entity.TbUserKeyMap;
 import com.webank.webase.chain.mgr.user.entity.UserParam;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
@@ -31,17 +29,12 @@ public interface UserMapper {
      * Add new user data.
      */
     Integer addUserRow(TbUser tbUser);
-    
-    /**
-     * add new user_key_map data.
-     */
-    Integer addUserKeyMapRow(TbUserKeyMap tbUserKeyMap);
-    
+
     /**
      * Query user list according to some conditions.
      */
     TbUser queryUser(@Param("userId") Integer userId, @Param("chainId") Integer chainId,
-            @Param("groupId") Integer groupId, @Param("userName") String userName,
+            @Param("groupId") Integer groupId, @Param("signUserId") String signUserId,
             @Param("address") String address);
 
     /**
@@ -60,27 +53,12 @@ public interface UserMapper {
     Integer updateUser(TbUser tbuser);
 
     /**
-     * query private key by userAddress.
-     */
-    PrivateKeyInfo queryPrivateKey(String userAddress);
-
-    /**
      * delete user by chain id.
      */
     void deleteUser(@Param("chainId") Integer chainId);
 
     /**
-     * delete user_key map by chain id.
-     */
-    void deleteUserKeyMap(@Param("chainId") Integer chainId);
-    
-    /**
      * delete user by group id.
      */
     void deleteUserByGroupId(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId);
-    
-    /**
-     * delete user_key map by group id.
-     */
-    void deleteUserKeyMapByGroupId(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId);
 }

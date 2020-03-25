@@ -19,7 +19,6 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
 import com.webank.webase.chain.mgr.contract.entity.Contract;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
@@ -58,8 +57,6 @@ public class ContractService {
     private FrontInterfaceService frontInterface;
     @Autowired
     private FrontService frontService;
-    @Autowired
-    private ConstantProperties constants;
 
     /**
      * compile contract.
@@ -271,12 +268,11 @@ public class ContractService {
         // deploy param
         Map<String, Object> params = new HashMap<>();
         params.put("groupId", groupId);
-        params.put("user", inputParam.getUser());
+        params.put("signUserId", inputParam.getSignUserId());
         params.put("contractName", contractName);
         params.put("abiInfo", JSONArray.parseArray(inputParam.getContractAbi()));
         params.put("bytecodeBin", inputParam.getBytecodeBin());
         params.put("funcParam", inputParam.getConstructorParams());
-        params.put("useAes", constants.getIsPrivateKeyEncrypt());
 
         // deploy
         String contractAddress = frontInterface.postToSpecificFront(groupId, tbFront.getFrontIp(),
@@ -322,13 +318,12 @@ public class ContractService {
         // transaction param
         Map<String, Object> params = new HashMap<>();
         params.put("groupId", inputParam.getGroupId());
-        params.put("user", inputParam.getUser());
+        params.put("signUserId", inputParam.getSignUserId());
         params.put("contractName", inputParam.getContractName());
         params.put("contractAddress", tbContract.getContractAddress());
         params.put("contractAbi", JSONArray.parseArray(inputParam.getContractAbi()));
         params.put("funcName", inputParam.getFuncName());
         params.put("funcParam", inputParam.getFuncParam());
-        params.put("useAes", constants.getIsPrivateKeyEncrypt());
 
         // send transaction
         Object frontRsp = frontInterface.postToSpecificFront(inputParam.getGroupId(),
@@ -356,21 +351,21 @@ public class ContractService {
         params.put("groupId", inputParam.getGroupId());
         params.put("contractAddress", inputParam.getContractAddress());
         params.put("handleType", inputParam.getHandleType());
-        params.put("fromAddress", inputParam.getUser());
+        params.put("signUserId", inputParam.getSignUserId());
         params.put("grantAddress", inputParam.getGrantAddress());
-        params.put("useAes", constants.getIsPrivateKeyEncrypt());
 
         // send transaction
-        ContractStatusManageResult contractStatusManageResult = frontInterface.postToSpecificFront(inputParam.getGroupId(),
-                tbFront.getFrontIp(), tbFront.getFrontPort(),
-                FrontRestTools.URI_CONTRACT_STATUS_MANAGE, params, ContractStatusManageResult.class);
-        
+        ContractStatusManageResult contractStatusManageResult =
+                frontInterface.postToSpecificFront(inputParam.getGroupId(), tbFront.getFrontIp(),
+                        tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_STATUS_MANAGE, params,
+                        ContractStatusManageResult.class);
+
         if (contractStatusManageResult.getCode() != 0) {
             log.error("fail statusManage message:{}.", contractStatusManageResult.getMsg());
             throw new BaseException(contractStatusManageResult.getCode(),
                     contractStatusManageResult.getMsg());
         }
-        
+
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         baseResponse.setData(contractStatusManageResult.getData());
         log.debug("end statusManage. baseResponse:{}", JSON.toJSONString(baseResponse));
