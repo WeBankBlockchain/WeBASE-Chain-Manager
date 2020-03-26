@@ -683,9 +683,9 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/ratio/200001?gap=1&beginDate=20
 }
 ```
 
-### 2.5 前置节点服务器配置信息 
+### 2.6 前置节点服务器配置信息 
 
-#### 2.5.1 传输协议规范
+#### 2.6.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
 - 请求地址：**/front/config/{frontId}** 
@@ -693,7 +693,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/ratio/200001?gap=1&beginDate=20
 - 请求方式：GET
 - 返回格式：JSON
 
-#### 2.5.2 请求参数
+#### 2.6.2 请求参数
 
 ***1）入参表***
 
@@ -707,7 +707,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/ratio/200001?gap=1&beginDate=20
 http://127.0.0.1:5005/WeBASE-Chain-Manager/front/config/200001
 ```
 
-#### 2.5.3 返回参数 
+#### 2.6.3 返回参数 
 
 ***1）出参表***
 
@@ -755,16 +755,16 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/config/200001
 }
 ```
 
-### 2.6 检查前置节点进程是否存活 
+### 2.7 检查前置节点进程是否存活 
 
-#### 2.6.1 传输协议规范
+#### 2.7.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
 - 请求地址：**/front/checkNodeProcess/{frontId}** 
 - 请求方式：GET
 - 返回格式：JSON
 
-#### 2.6.2 请求参数
+#### 2.7.2 请求参数
 
 ***1）入参表***
 
@@ -778,7 +778,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/config/200001
 http://127.0.0.1:5005/WeBASE-Chain-Manager/front/checkNodeProcess/200001
 ```
 
-#### 2.6.3 返回参数 
+#### 2.7.3 返回参数 
 
 ***1）出参表***
 
@@ -810,9 +810,9 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/checkNodeProcess/200001
 }
 ```
 
-### 2.7 获取前置节点所在群组物理大小信息 
+### 2.8 获取前置节点所在群组物理大小信息 
 
-#### 2.7.1 传输协议规范
+#### 2.8.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
 - 请求地址：**/front/getGroupSizeInfos/{frontId}**
@@ -820,7 +820,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/checkNodeProcess/200001
 - 请求方式：GET
 - 返回格式：JSON
 
-#### 2.7.2 请求参数
+#### 2.8.2 请求参数
 
 ***1）入参表***
 
@@ -834,7 +834,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/checkNodeProcess/200001
 http://127.0.0.1:5005/WeBASE-Chain-Manager/front/getGroupSizeInfos/200001
 ```
 
-#### 2.7.3 返回参数 
+#### 2.8.3 返回参数 
 
 ***1）出参表***
 
@@ -1076,14 +1076,16 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 }
 ```
 
-### 3.3 启动群组
+### 3.3 动态操作群组
 
-​	生成新群组后，新群组下每一个节点都要启动，节点和前置一一对应。适用于新群组下的节点属于不同链管理服务，每个节点都要请求一遍。
+​	可以对已存在的群组或新生成的群组进行动态操作，包括启动、停止、删除、恢复、状态查询。
+
+​	**说明：** 生成新群组时，新群组下每一个节点都要启动，节点和前置一一对应。适用于新群组下的节点属于不同链管理服务，每个节点都要请求一遍进行启动。
 
 #### 3.3.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/start/{chainId}/{startGroupId}/{nodeId}**
+- 请求地址：**/start/{chainId}/{groupId}/{nodeId}/{type}**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -1091,11 +1093,12 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 
 ***1）入参表***
 
-| 序号 | 输入参数     | 类型   | 可为空 | 备注         |
-| ---- | ------------ | ------ | ------ | ------------ |
-| 1    | chainId      | int    | 否     | 链编号       |
-| 2    | startGroupId | int    | 否     | 启动的群组id |
-| 3    | nodeId       | String | 否     | 启动的节点id |
+| 序号 | 输入参数 | 类型   | 可为空 | 备注                                                         |
+| ---- | -------- | ------ | ------ | ------------------------------------------------------------ |
+| 1    | chainId  | int    | 否     | 链编号                                                       |
+| 2    | groupId  | int    | 否     | 要操作的群组编号                                             |
+| 3    | nodeId   | String | 否     | 节点Id                                                       |
+| 4    | type     | String | 否     | 操作类型：start-启动；stop-停止；remove-删除；recover-恢复；getStatus-查询状态 |
 
 ***2）入参示例***
 
@@ -1129,9 +1132,9 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/start/100001/2/78e467957af3d0f7
 
 ```
 {
-    "code": 102000,
-    "message": "system exception",
-    "data": {}
+  "code": 205032,
+  "message": "Group 2 is already running",
+  "data": null
 }
 ```
 
@@ -1395,7 +1398,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/all/100001
 
 ### 3.8 获取群组下节点共识列表
 
-​	获取节点的共识列表，包含节点id，节点共识状态。返回所有的共识/观察节点（无论运行或停止），以及正在运行的游离节点。
+​	获取节点的共识列表，包含节点Id，节点共识状态。返回所有的共识/观察节点（无论运行或停止），以及正在运行的游离节点。
 
 #### 3.8.1 传输协议规范
 
@@ -1484,13 +1487,13 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getConsensusList/1001/1?pageSiz
 
 ***1）入参表***
 
-| 序号 | 输入参数 | 类型   | 可为空 | 备注                                     |
-| ---- | -------- | ------ | ------ | ---------------------------------------- |
-| 1    | chainId  | Int    | 否     | 链编号                                   |
-| 2    | groupId  | Int    | 否     | 群组编号                                 |
-| 3    | address  | String | 否     | 私钥用户地址                             |
-| 4    | nodeId   | String | 否     | 节点id                                   |
-| 5    | nodeType | String | 否     | 要设置的节点类型：observer/sealer/remove |
+| 序号 | 输入参数   | 类型   | 可为空 | 备注                                     |
+| ---- | ---------- | ------ | ------ | ---------------------------------------- |
+| 1    | chainId    | Int    | 否     | 链编号                                   |
+| 2    | groupId    | Int    | 否     | 群组编号                                 |
+| 3    | signUserId | String | 否     | 私钥用户地址                             |
+| 4    | nodeId     | String | 否     | 节点Id                                   |
+| 5    | nodeType   | String | 否     | 要设置的节点类型：observer/sealer/remove |
 
 ***2）入参示例***
 
@@ -1500,7 +1503,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setConsensusStatus
 
 ```
 {
-  "address": "0x7e1e86e06874f9276982c45de7d974cf2b87e130",
+  "signUserId": "user100001",
   "chainId": 1001,
   "groupId": 1,
   "nodeId": "626e1f1df03e217a7a25361444b857ec68003482aabfb24645a67111cbd96ceedc998975e158475605e38b899bc97be7283006a0171f4ec4796972ff6ad55b1a",
@@ -1635,7 +1638,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getSysConfigList/1001/1?pageSiz
 | ---- | ----------- | ------ | ------ | ---------------------------------------------------- |
 | 1    | chainId     | Int    | 否     | 链编号                                               |
 | 2    | groupId     | Int    | 否     | 群组编号                                             |
-| 3    | address     | String | 否     | 私钥用户地址                                         |
+| 3    | signUserId  | String | 否     | 签名用户编号                                         |
 | 4    | configKey   | String | 否     | 配置项，目前支持tx_count_limit、tx_gas_limit两个参数 |
 | 5    | configValue | String | 否     | 配置值                                               |
 
@@ -1647,7 +1650,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setSysConfig
 
 ```
 {
-  "address": "0x6404ecc50d278f2a588f943060143edb13379922",
+  "signUserId": "user100001",
   "chainId": 1001,
   "configKey": "tx_gas_limit",
   "configValue": "300000000",
@@ -2668,7 +2671,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/2
 | 7    | bytecodeBin       | String         | 否     | 合约bytecode binary，用于部署合约 |
 | 8    | contractId      | String         | 否     | 合约编号             |
 | 9    | contractPath      | String         | 否     | 合约所在目录               |
-| 10   | user              | String         | 否     | 私钥用户地址             |
+| 10   | signUserId    | String         | 否     | 签名用户编号         |
 | 11    | constructorParams | List | 是     | 构造函数入参               |
 | 12 | nodeId | String | 否 | 节点编号，指定节点调用 |
 
@@ -2692,7 +2695,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/deploy
   "contractPath": "/",
   "contractSource": "cHJhZ21hIHNvbGlkaXR5IF4wLjQuMjsNCmNvbnRyYWN0IEhlbGxvV29ybGR7DQogICAgc3RyaW5nIG5hbWU7DQogICAgZXZlbnQgU2V0TmFtZShzdHJpbmcgbmFtZSk7DQogICAgZnVuY3Rpb24gZ2V0KCljb25zdGFudCByZXR1cm5zKHN0cmluZyl7DQogICAgICAgIHJldHVybiBuYW1lOw0KICAgIH0NCiAgICBmdW5jdGlvbiBzZXQoc3RyaW5nIG4pew0KICAgICAgICBlbWl0IFNldE5hbWUobik7DQogICAgICAgIG5hbWU9bjsNCiAgICB9DQp9",
   "groupId": 1,
-  "user": "0x58df289113863a9bff8fd24c984a4ad51d36cd2d",
+  "signUserId": "user100001",
   "nodeId": "cd3a0d965ca5e5de9edce69245db827a3a253e4868e074020c3f5fb83ca0ae884d5705940c1fc1de550874de0f02374e83eaeb5317b819e420a8ff2e07e4b84
 }
 ```
@@ -2780,7 +2783,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/deploy
 |------|-------------|---------------|--------|-------------------------------|
 | 1 | chainId | int | 否 | 链编号 |
 | 2    | groupId      | Int            | 否     | 所属群组编号               |
-| 3    | user       | String  | 否     | 私钥用户地址           |
+| 3    | signUserId | String  | 否     | 签名用户编号     |
 | 4    | contractName | String         | 否     | 合约名称                   |
 | 5    | contractId      | Int      | 否     | 合约编号               |
 | 6    | funcName     | String         | 否     | 合约方法名                 |
@@ -2843,9 +2846,87 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/transaction
 }
 ```
 
+### 5.7 合约状态管理
+
+​	通过预编译合约管理合约状态，根据入参的操作类型进行调用，可以冻结、解冻合约和授权用户操作权限，还可以查询合约状态和合约用户权限列表。
+
+#### 5.7.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/contract/statusManage**
+- 请求方式：POST
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 5.7.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数        | 类型   | 可为空 | 备注                                                         |
+| ---- | --------------- | ------ | ------ | ------------------------------------------------------------ |
+| 1    | chainId         | Int    | 否     | 链编号                                                       |
+| 2    | groupId         | Int    | 否     | 群组编号                                                     |
+| 3    | nodeId          | String | 否     | 节点Id                                                       |
+| 4    | signUserId      | String | 否     | 签名用户编号                                                 |
+| 5    | contractAddress | String | 否     | 已部署的合约地址                                             |
+| 6    | handleType      | String | 否     | 操作类型：freeze-冻结；unfreeze-解冻；grantManager-授权；getStatus-查询合约状态；listManager-查询合约权限列表 |
+| 7    | grantAddress    | String | 是     | 授权用户地址，操作类型为grantManager时需传入                 |
+
+***2）入参示例***
+
+```
+http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/statusManage
+```
+
+```
+{
+  "chainId": 1001,
+  "contractAddress": "0x1d518bf3fb0edceb18519808edf7ad8adeeed792",
+  "grantAddress": "",
+  "groupId": 1,
+  "handleType": "freeze",
+  "nodeId": "413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1",
+  "signUserId": "user1001"
+}
+```
+
+#### 5.7.3 返回参数
+
+***1）出参表***
+
+| 序号 | 输出参数 | 类型   |      | 备注                       |
+| ---- | -------- | ------ | ---- | -------------------------- |
+| 1    | code     | Int    | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message  | String | 是   | 描述                       |
+| 3    | data     | String | 是   | 数据                       |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": null
+}
+```
+
+- 失败：
+
+```
+{
+  "code": 205002,
+  "message": "not fount any front",
+  "data": null
+}
+```
+
 ## 6 用户管理模块 
 
 ### 6.1 新增私钥用户
+
+​	通过WeBASE-Front调用WeBASE-Sign生成，signUserId和appId也会在WeBASE-Sign存储。
 
 #### 6.1.1 传输协议规范
 
@@ -2859,13 +2940,13 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/transaction
 
 ***1）入参表***
 
-| 序号 | 输入参数    | 类型   | 可为空 | 备注                                             |
-| ---- | ----------- | ------ | ------ | ------------------------------------------------ |
-| 1    | userName    | String | 否     | 用户名称                                         |
-| 2    | description | String | 是     | 备注                                             |
-| 3    | groupId     | Int    | 否     | 所属群组                                         |
-| 4    | chainId     | Int    | 否     | 所属链                                           |
-| 5    | userType    | Int    | 是     | 用户类型（1-普通用户 2-系统用户，默认1），暂未用 |
+| 序号 | 输入参数    | 类型   | 可为空 | 备注                                  |
+| ---- | ----------- | ------ | ------ | ------------------------------------- |
+| 1    | chainId     | Int    | 否     | 所属链                                |
+| 2    | groupId     | Int    | 否     | 所属群组                              |
+| 3    | signUserId  | String | 否     | 签名用户编号（也会在WeBASE-Sign存储） |
+| 4    | appId       | String | 否     | 应用编号（也会在WeBASE-Sign存储）     |
+| 5    | description | String | 是     | 备注                                  |
 
 ***2）入参示例***
 
@@ -2875,11 +2956,11 @@ http://127.0.0.1:5005//WeBASE-Chain-Manager/user/userInfo
 
 ```
 {
-  "chainId": 100001,
-  "description": "fdasf",
+  "appId": "appid100001",
+  "chainId": 1001,
+  "description": "test",
   "groupId": 1,
-  "userName": "zhangsan",
-  "userType": 1
+  "signUserId": "user100001"
 }
 ```
 
@@ -2887,119 +2968,21 @@ http://127.0.0.1:5005//WeBASE-Chain-Manager/user/userInfo
 
 ***1）出参表***
 
-| 序号 | 输出参数    | 类型          |      | 备注                                     |
-| ---- | ----------- | ------------- | ---- | ---------------------------------------- |
-| 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败               |
-| 2    | message     | String        | 否   | 描述                                     |
-| 3    | data        | object        | 是   | 返回信息实体（成功时不为空）             |
-| 3.1  | userId      | Int           | 否   | 用户编号                                 |
-| 3.2  | userName    | String        | 否   | 用户名称                                 |
-| 3.3  | chainId     | Int           | 否   | 所属链                                   |
-| 3.4  | groupId     | Int           | 否   | 所属群组编号                             |
-| 3.5  | description | String        | 是   | 备注                                     |
-| 3.6  | userStatus  | Int           | 否   | 状态（1-正常 2-停用， 默认1）            |
-| 3.7  | userType    | Int           | 否   | 用户类型（1-普通用户 2-系统用户，默认1） |
-| 3.8  | publicKey   | String        | 否   | 公钥信息                                 |
-| 3.9  | address     | String        | 是   | 用户地址（在链上位置的hash）             |
-| 3.10 | hasPk       | Int           | 否   | 是否拥有私钥信息(1-拥有，2-不拥有)       |
-| 3.11 | createTime  | LocalDateTime | 否   | 创建时间                                 |
-| 3.12 | modifyTime  | LocalDateTime | 否   | 修改时间                                 |
-
-***2）出参示例***
-
-- 成功：
-
-```
-{
-  "code": 0,
-  "message": "success",
-  "data": {
-    "userId": 700001,
-    "userName": "zhangsan",
-    "chainId": 100001,
-    "groupId": 1,
-    "publicKey": "0xe8a76f9a01557496d24f9dd167dffd4a3ea71b7b928f74a833d32c5a417b48ad5bda92bbe45e465b3a5ca81a3b0d8a47d7283e1f4742f86ea22c5bc0476fb64e",
-    "userStatus": 1,
-    "userType": 1,
-    "address": "0xffe021fcf6e08be18104e3b82886159fb4f17386",
-    "hasPk": 1,
-    "description": "fdasf",
-    "createTime": "2019-12-31 15:12:16",
-    "modifyTime": "2019-12-31 15:12:16"
-  }
-}
-```
-
-- 失败：
-
-```
-{
-    "code": 102000,
-    "message": "system exception",
-    "data": {}
-}
-```
-
-### 6.2 绑定公钥用户
-
-#### 6.2.1 传输协议规范
-
-- 网络传输协议：使用HTTP协议
-- 请求地址：**/user/bind**
-- 请求方式：POST
-- 请求头：Content-type: application/json
-- 返回格式：JSON
-
-#### 6.2.2 请求参数
-
-***1）入参表***
-
-| 序号 | 输入参数    | 类型   | 可为空 | 备注                                             |
-| ---- | ----------- | ------ | ------ | ------------------------------------------------ |
-| 1    | userName    | String | 否     | 用户名称                                         |
-| 2    | description | String | 是     | 备注                                             |
-| 3    | groupId     | Int    | 否     | 所属群组                                         |
-| 4    | chainId     | Int    | 否     | 所属链                                           |
-| 5    | userType    | Int    | 是     | 用户类型（1-普通用户 2-系统用户，默认1），暂未用 |
-
-***2）入参示例***
-
-```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/user/bind
-```
-
-```
-{
-  "chainId": 100001,
-  "description": "test",
-  "groupId": 1,
-  "publicKey": "0xa5e3298e8052fc419658b796755d65c6c86bdb9a051d9cbd7ab0ec67ea97bf008d18d58b812f6fd24e3c4841f96ef8d5d13b55a761e1086815b2b7a2c9f7b33a",
-  "userName": "lisi",
-  "userType": 1
-}
-```
-
-#### 6.2.3 返回参数 
-
-***1）出参表***
-
-| 序号 | 输出参数    | 类型          |      | 备注                                     |
-| ---- | ----------- | ------------- | ---- | ---------------------------------------- |
-| 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败               |
-| 2    | message     | String        | 否   | 描述                                     |
-| 3    | data        | object        | 是   | 返回信息实体（成功时不为空）             |
-| 3.1  | userId      | Int           | 否   | 用户编号                                 |
-| 3.2  | userName    | String        | 否   | 用户名称                                 |
-| 3.3  | chainId     | Int           | 否   | 所属链                                   |
-| 3.4  | groupId     | Int           | 否   | 所属群组编号                             |
-| 3.5  | description | String        | 是   | 备注                                     |
-| 3.6  | userStatus  | Int           | 否   | 状态（1-正常 2-停用，默认1）             |
-| 3.7  | userType    | Int           | 否   | 用户类型（1-普通用户 2-系统用户，默认1） |
-| 3.8  | publicKey   | String        | 否   | 公钥信息                                 |
-| 3.9  | address     | String        | 是   | 用户地址（在链上位置的hash）             |
-| 3.10 | hasPk       | Int           | 否   | 是否拥有私钥信息(1-拥有，2-不拥有)       |
-| 3.11 | createTime  | LocalDateTime | 否   | 创建时间                                 |
-| 3.12 | modifyTime  | LocalDateTime | 否   | 修改时间                                 |
+| 序号 | 输出参数    | 类型          |      | 备注                         |
+| ---- | ----------- | ------------- | ---- | ---------------------------- |
+| 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败   |
+| 2    | message     | String        | 否   | 描述                         |
+| 3    | data        | object        | 是   | 返回信息实体（成功时不为空） |
+| 3.1  | userId      | Int           | 否   | 用户编号                     |
+| 3.2  | chainId     | Int           | 否   | 所属链                       |
+| 3.3  | groupId     | Int           | 否   | 所属群组编号                 |
+| 3.4  | signUserId  | String        | 否   | 签名用户编号                 |
+| 3.5  | appId       | String        | 否   | 应用编号                     |
+| 3.6  | description | String        | 是   | 备注                         |
+| 3.7  | publicKey   | String        | 否   | 公钥信息                     |
+| 3.8  | address     | String        | 是   | 用户私钥地址                 |
+| 3.9  | createTime  | LocalDateTime | 否   | 创建时间                     |
+| 3.10 | modifyTime  | LocalDateTime | 否   | 修改时间                     |
 
 ***2）出参示例***
 
@@ -3011,17 +2994,15 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/bind
   "message": "success",
   "data": {
     "userId": 700002,
-    "userName": "lisi",
-    "chainId": 100001,
+    "chainId": 1001,
     "groupId": 1,
-    "publicKey": "0xa5e3298e8052fc419658b796755d65c6c86bdb9a051d9cbd7ab0ec67ea97bf008d18d58b812f6fd24e3c4841f96ef8d5d13b55a761e1086815b2b7a2c9f7b33a",
-    "userStatus": 1,
-    "userType": 1,
-    "address": "0x3107000a54392e13bccab685b1c3b74151720b7a",
-    "hasPk": 2,
+    "signUserId": "user100001",
+    "appId": "appid100001",
+    "publicKey": "0xf09dcc633b4bb7163ce2a3d9e9808b6dc6f3af4bfbba1973c8581f6e360cf12826045cf5804eaeb3059df4ed065a607dc38e8d4146a50b2de6c9c60476368c4b",
+    "address": "0x225653ed83715a437d02c3b4b8e6c952f65165b9",
     "description": "test",
-    "createTime": "2019-12-31 15:16:56",
-    "modifyTime": "2019-12-31 15:16:56"
+    "createTime": "2020-03-26 10:07:52",
+    "modifyTime": "2020-03-26 10:07:52"
   }
 }
 ```
@@ -3036,9 +3017,9 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/bind
 }
 ```
 
-### 6.3 修改用户备注
+### 6.2 修改用户备注
 
-#### 6.3.1 传输协议规范
+#### 6.2.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
 - 请求地址：**/user/userInfo**
@@ -3046,7 +3027,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/bind
 - 请求头：Content-type: application/json
 - 返回格式：JSON
 
-#### 6.3.2 请求参数
+#### 6.2.2 请求参数
 
 ***1）入参表***
 
@@ -3064,33 +3045,29 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/userInfo
 ```
 {
     "userId": 700002,
-    "description": "newDescription"
+    "description": "update"
 }
 ```
 
-#### 6.3.3 返回参数 
+#### 6.2.3 返回参数 
 
 ***1）出参表***
 
-***
-
-| 序号 | 输出参数    | 类型          |      | 备注                                     |
-| ---- | ----------- | ------------- | ---- | ---------------------------------------- |
-| 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败               |
-| 2    | message     | String        | 否   | 描述                                     |
-| 3    | data        | object        | 是   | 返回信息实体（成功时不为空）             |
-| 3.1  | userId      | Int           | 否   | 用户编号                                 |
-| 3.2  | userName    | String        | 否   | 用户名称                                 |
-| 3.3  | chainId     | Int           | 否   | 所属链                                   |
-| 3.4  | groupId     | Int           | 否   | 所属群组编号                             |
-| 3.5  | description | String        | 是   | 备注                                     |
-| 3.6  | userStatus  | Int           | 否   | 状态（1-正常 2-停用，默认1）             |
-| 3.7  | userType    | Int           | 否   | 用户类型（1-普通用户 2-系统用户，默认1） |
-| 3.8  | publicKey   | String        | 否   | 公钥信息                                 |
-| 3.9  | address     | String        | 是   | 用户地址（在链上位置的hash）             |
-| 3.10 | hasPk       | Int           | 否   | 是否拥有私钥信息(1-拥有，2-不拥有)       |
-| 3.11 | createTime  | LocalDateTime | 否   | 创建时间                                 |
-| 3.12 | modifyTime  | LocalDateTime | 否   | 修改时间                                 |
+| 序号 | 输出参数    | 类型          |      | 备注                         |
+| ---- | ----------- | ------------- | ---- | ---------------------------- |
+| 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败   |
+| 2    | message     | String        | 否   | 描述                         |
+| 3    | data        | object        | 是   | 返回信息实体（成功时不为空） |
+| 3.1  | userId      | Int           | 否   | 用户编号                     |
+| 3.2  | chainId     | Int           | 否   | 所属链                       |
+| 3.3  | groupId     | Int           | 否   | 所属群组编号                 |
+| 3.4  | signUserId  | String        | 否   | 签名用户编号                 |
+| 3.5  | appId       | String        | 否   | 应用编号                     |
+| 3.6  | description | String        | 是   | 备注                         |
+| 3.7  | publicKey   | String        | 否   | 公钥信息                     |
+| 3.8  | address     | String        | 是   | 用户私钥地址                 |
+| 3.9  | createTime  | LocalDateTime | 否   | 创建时间                     |
+| 3.10 | modifyTime  | LocalDateTime | 否   | 修改时间                     |
 
 ***2）出参示例***
 
@@ -3102,17 +3079,15 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/userInfo
   "message": "success",
   "data": {
     "userId": 700002,
-    "userName": "lisi",
-    "chainId": 100001,
+    "chainId": 1001,
     "groupId": 1,
-    "publicKey": "0xa5e3298e8052fc419658b796755d65c6c86bdb9a051d9cbd7ab0ec67ea97bf008d18d58b812f6fd24e3c4841f96ef8d5d13b55a761e1086815b2b7a2c9f7b33a",
-    "userStatus": 1,
-    "userType": 1,
-    "address": "0x3107000a54392e13bccab685b1c3b74151720b7a",
-    "hasPk": 2,
-    "description": "newDescription",
-    "createTime": "2019-12-31 15:16:56",
-    "modifyTime": "2019-12-31 15:16:56"
+    "signUserId": "user100001",
+    "appId": "appid100001",
+    "publicKey": "0xf09dcc633b4bb7163ce2a3d9e9808b6dc6f3af4bfbba1973c8581f6e360cf12826045cf5804eaeb3059df4ed065a607dc38e8d4146a50b2de6c9c60476368c4b",
+    "address": "0x225653ed83715a437d02c3b4b8e6c952f65165b9",
+    "description": "update",
+    "createTime": "2020-03-26 10:07:52",
+    "modifyTime": "2020-03-26 10:20:51"
   }
 }
 ```
@@ -3127,116 +3102,54 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/userInfo
 }
 ```
 
-### 6.4 查询私钥
+### 6.3 查询用户列表
 
-#### 6.4.1 传输协议规范
-
-- 网络传输协议：使用HTTP协议
-- 请求地址：**/user/privateKey/{address}**
-- 请求方式：GET
-- 返回格式：json
-
-#### 6.4.2 请求参数
-
-***1）入参表***
-
-| 序号 | 输入参数 | 类型   | 可为空 | 备注                         |
-| ---- | -------- | ------ | ------ | ---------------------------- |
-| 1    | address  | String | 否     | 用户地址（在链上位置的hash） |
-
-***2）入参示例***
-
-```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/user/privateKey/0xffe021fcf6e08be18104e3b82886159fb4f17386
-```
-
-#### 6.4.3 返回参数 
-
-***1）出参表***
-
-| 序号 | 输出参数   | 类型   |      | 备注                         |
-| ---- | ---------- | ------ | ---- | ---------------------------- |
-| 1    | code       | Int    | 否   | 返回码，0：成功 其它：失败   |
-| 2    | message    | String | 否   | 描述                         |
-| 3    | data       | Object | 否   | 返回私钥信息实体             |
-| 3.1  | privateKey | String | 否   | 私钥（加密的）               |
-| 3.2  | address    | String | 否   | 用户地址（在链上位置的hash） |
-
-***2）出参示例***
-
-- 成功：
-
-```
-{
-  "code": 0,
-  "message": "success",
-  "data": {
-    "privateKey": "xzN5aJkq1f1v7kxQlPBKUEal9YwDgFC/0teltOPvW1W0aOeR0jZwpxWNmGSKP9G82tzYcTH8GBShwTeB+jh+QmbLMjuEpi2borChOV8nLUg=",
-    "address": "0xffe021fcf6e08be18104e3b82886159fb4f17386"
-  }
-}
-```
-
-- 失败：
-
-```
-{
-    "code": 102000,
-    "message": "system exception",
-    "data": {}
-}
-```
-
-### 6.5 查询用户列表
-
-#### 6.5.1 传输协议规范
+#### 6.3.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
 - 请求地址：**/user/userList/{chainId}/{groupId}/{pageNumber}/{pageSize}?userParam={userName}**
 - 请求方式：GET
 - 返回格式：JSON
 
-#### 6.5.2 请求参数
+#### 6.3.2 请求参数
 
 ***1）入参表***
 
-| 序号 | 输入参数   | 类型   | 可为空 | 备注                         |
-| ---- | ---------- | ------ | ------ | ---------------------------- |
-| 1    | chainId    | Int    | 否     | 所属链编号                   |
-| 2    | groupId    | Int    | 否     | 所属群组编号                 |
-| 3    | pageSize   | Int    | 否     | 每页记录数                   |
-| 4    | pageNumber | Int    | 否     | 当前页码                     |
-| 5    | userParam  | String | 是     | 查询参数（用户名或用户地址） |
+| 序号 | 输入参数   | 类型   | 可为空 | 备注                               |
+| ---- | ---------- | ------ | ------ | ---------------------------------- |
+| 1    | chainId    | Int    | 否     | 所属链编号                         |
+| 2    | groupId    | Int    | 否     | 所属群组编号                       |
+| 3    | pageSize   | Int    | 否     | 每页记录数                         |
+| 4    | pageNumber | Int    | 否     | 当前页码                           |
+| 5    | userParam  | String | 是     | 查询参数（签名用户编号或用户地址） |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/user/userList/100001/1/1/10?userParam=0x3107000a54392e13bccab685b1c3b74151720b7a
+http://127.0.0.1:5005/WeBASE-Chain-Manager/user/userList/100001/1/1/10?userParam=0x225653ed83715a437d02c3b4b8e6c952f65165b9
 ```
 
-#### 6.5.3 返回参数 
+#### 6.3.3 返回参数 
 
 ***1）出参表***
 
-| 序号   | 输出参数    | 类型          |      | 备注                                     |
-| ------ | ----------- | ------------- | ---- | ---------------------------------------- |
-| 1      | code        | Int           | 否   | 返回码，0：成功 其它：失败               |
-| 2      | message     | String        | 否   | 描述                                     |
-| 3      | totalCount  | Int           | 否   | 总记录数                                 |
-| 4      | data        | List          | 是   | 用户列表                                 |
-| 4.1    |             | Object        |      | 用户信息对象                             |
-| 4.1.1  | userId      | Int           | 否   | 用户编号                                 |
-| 4.1.2  | userName    | String        | 否   | 用户名称                                 |
-| 4.1.3  | chainId     | Int           | 否   | 所属链编号                               |
-| 4.1.4  | groupId     | Int           | 否   | 所属群组编号                             |
-| 4.1.5  | description | String        | 是   | 备注                                     |
-| 4.1.6  | userStatus  | Int           | 否   | 状态（1-正常 2-停用，默认1）             |
-| 4.1.7  | userType    | Int           | 否   | 用户类型（1-普通用户 2-系统用户，默认1） |
-| 4.1.8  | publicKey   | String        | 否   | 公钥信息                                 |
-| 4.1.9  | address     | String        | 是   | 用户地址（在链上位置的hash）             |
-| 4.1.10 | hasPk       | Int           | 否   | 是否拥有私钥信息(1-拥有，2-不拥有)       |
-| 4.1.11 | createTime  | LocalDateTime | 否   | 创建时间                                 |
-| 4.1.12 | modifyTime  | LocalDateTime | 否   | 修改时间                                 |
+| 序号   | 输出参数    | 类型          |      | 备注                       |
+| ------ | ----------- | ------------- | ---- | -------------------------- |
+| 1      | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2      | message     | String        | 否   | 描述                       |
+| 3      | totalCount  | Int           | 否   | 总记录数                   |
+| 4      | data        | List          | 是   | 用户列表                   |
+| 4.1    |             | Object        |      | 用户信息对象               |
+| 4.1.1  | userId      | Int           | 否   | 用户编号                   |
+| 4.1.2  | chainId     | Int           | 否   | 所属链                     |
+| 4.1.3  | groupId     | Int           | 否   | 所属群组编号               |
+| 4.1.4  | signUserId  | String        | 否   | 签名用户编号               |
+| 4.1.5  | appId       | String        | 否   | 应用编号                   |
+| 4.1.6  | description | String        | 是   | 备注                       |
+| 4.1.7  | publicKey   | String        | 否   | 公钥信息                   |
+| 4.1.8  | address     | String        | 是   | 用户私钥地址               |
+| 4.1.9  | createTime  | LocalDateTime | 否   | 创建时间                   |
+| 4.1.10 | modifyTime  | LocalDateTime | 否   | 修改时间                   |
 
 ***2）出参示例***
 
@@ -3249,17 +3162,15 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/userList/100001/1/1/10?userParam
   "data": [
     {
       "userId": 700002,
-      "userName": "lisi",
-      "chainId": 100001,
+      "chainId": 1001,
       "groupId": 1,
-      "publicKey": "0xa5e3298e8052fc419658b796755d65c6c86bdb9a051d9cbd7ab0ec67ea97bf008d18d58b812f6fd24e3c4841f96ef8d5d13b55a761e1086815b2b7a2c9f7b33a",
-      "userStatus": 1,
-      "userType": 1,
-      "address": "0x3107000a54392e13bccab685b1c3b74151720b7a",
-      "hasPk": 2,
-      "description": "test",
-      "createTime": "2019-12-31 15:16:56",
-      "modifyTime": "2019-12-31 15:16:56"
+      "signUserId": "user100001",
+      "appId": "appid100001",
+      "publicKey": "0xf09dcc633b4bb7163ce2a3d9e9808b6dc6f3af4bfbba1973c8581f6e360cf12826045cf5804eaeb3059df4ed065a607dc38e8d4146a50b2de6c9c60476368c4b",
+      "address": "0x225653ed83715a437d02c3b4b8e6c952f65165b9",
+      "description": "update",
+      "createTime": "2020-03-26 10:07:52",
+      "modifyTime": "2020-03-26 10:20:51"
     }
   ],
   "totalCount": 1
@@ -3316,5 +3227,5 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/userList/100001/1/1/10?userParam
 | 205029 | chain id already exists                          | 链编号已存在       |
 | 205030 | contract compile error                           | 合约编译错误       |
 | 205031 | group generate fail                              | 群组创建失败       |
-| 205032 | group start fail                                 | 群组启动失败       |
+| 205032 | group operate fail                               | 群组操作失败       |
 | 305000 | param exception                                  | 参数异常           |

@@ -20,8 +20,7 @@ import lombok.Data;
 @Data
 public class SysConfigParam {
     private int groupId;
-    private String fromAddress;
+    private String signUserId;
     private String configKey;
     private String configValue;
-    private Boolean useAes;
 }
