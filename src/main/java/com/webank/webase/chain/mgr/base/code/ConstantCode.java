@@ -28,6 +28,7 @@ public class ConstantCode {
 
     /* system exception */
     public static final RetCode SYSTEM_EXCEPTION = RetCode.mark(105000, "system exception");
+    public static final RetCode SYSTEM_EXCEPTION_GET_PRIVATE_KEY_FAIL = RetCode.mark(105001, "system exception: please check front");
 
     /* Business exception */
     public static final RetCode INVALID_FRONT_ID = RetCode.mark(205000, "invalid front id");
@@ -102,7 +103,7 @@ public class ConstantCode {
     
     public static final RetCode GROUP_GENERATE_FAIL = RetCode.mark(205031, "group generate fail");
     
-    public static final RetCode GROUP_START_FAIL = RetCode.mark(205032, "group start fail");
+    public static final RetCode GROUP_OPERATE_FAIL = RetCode.mark(205032, "group operate fail");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");

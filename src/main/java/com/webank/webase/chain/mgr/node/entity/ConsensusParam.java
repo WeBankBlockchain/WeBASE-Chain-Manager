@@ -31,7 +31,7 @@ public class ConsensusParam {
     @NotBlank
     private String nodeType;
     @NotBlank
-    private String address;
+    private String signUserId;
     @NotBlank
     private String nodeId;
 }

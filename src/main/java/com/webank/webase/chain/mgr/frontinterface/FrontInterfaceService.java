@@ -322,24 +322,15 @@ public class FrontInterfaceService {
         return groupHandleResult;
     }
 
-    public GroupHandleResult startGroup(String frontIp, Integer frontPort, Integer startGroupId) {
-        log.debug("start startGroup frontIp:{} frontPort:{} startGroupId:{}", frontIp, frontPort,
-                startGroupId);
-        Integer groupId = Integer.MAX_VALUE;
-        String uri = String.format(FrontRestTools.URI_START_GROUP, startGroupId);
+    public GroupHandleResult operateGroup(String frontIp, Integer frontPort, Integer groupId, String type) {
+        log.debug("start operateGroup frontIp:{} frontPort:{} groupId:{}", frontIp, frontPort,
+                groupId);
+        String uri = String.format(FrontRestTools.URI_OPERATE_GROUP, type);
         GroupHandleResult groupHandleResult =
                 getFromSpecificFront(groupId, frontIp, frontPort, uri, GroupHandleResult.class);
 
-        log.debug("end startGroup");
+        log.debug("end operateGroup");
         return groupHandleResult;
-    }
-
-    public void refreshFront(String frontIp, Integer frontPort) {
-        log.debug("start refreshFront groupId:{} frontIp:{} frontPort:{} ", frontIp, frontPort);
-        Integer groupId = Integer.MAX_VALUE;
-        getFromSpecificFront(groupId, frontIp, frontPort, FrontRestTools.URI_REFRESH_FRONT,
-                Object.class);
-        log.debug("end refreshFront");
     }
 
     public Object getConsensusList(Integer chainId, Integer groupId, Integer pageSize,
@@ -364,8 +355,6 @@ public class FrontInterfaceService {
         }
         ConsensusHandle consensusHandle = new ConsensusHandle();
         BeanUtils.copyProperties(consensusParam, consensusHandle);
-        consensusHandle.setFromAddress(consensusParam.getAddress());
-        consensusHandle.setUseAes(cproperties.getIsPrivateKeyEncrypt());
 
         Object response = frontRestTools.postForEntity(consensusParam.getChainId(),
                 consensusParam.getGroupId(), FrontRestTools.URI_CONSENSUS, consensusHandle,
@@ -399,8 +388,6 @@ public class FrontInterfaceService {
 
         SysConfigParam sysConfigParam = new SysConfigParam();
         BeanUtils.copyProperties(reqSetSysConfig, sysConfigParam);
-        sysConfigParam.setFromAddress(reqSetSysConfig.getAddress());
-        sysConfigParam.setUseAes(cproperties.getIsPrivateKeyEncrypt());
         
         Object frontRsp = frontRestTools.postForEntity(reqSetSysConfig.getChainId(),
                 reqSetSysConfig.getGroupId(), FrontRestTools.URI_SYS_CONFIG, sysConfigParam,

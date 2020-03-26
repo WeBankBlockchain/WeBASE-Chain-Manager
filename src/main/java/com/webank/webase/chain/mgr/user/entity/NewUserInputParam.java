@@ -16,7 +16,6 @@
 package com.webank.webase.chain.mgr.user.entity;
 
 
-import com.webank.webase.chain.mgr.base.enums.UserType;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
@@ -28,12 +27,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class NewUserInputParam {
-    @NotBlank
-    private String userName;
-    @NotNull
     private Integer chainId;
     @NotNull
     private Integer groupId;
+    @NotBlank
+    private String signUserId;
+    @NotBlank
+    private String appId;
+    @NotNull
     private String description;
-    private Integer userType = UserType.GENERALUSER.getValue();
 }

@@ -95,18 +95,16 @@ public class GroupController extends BaseController {
     }
 
     /**
-     * start group.
+     * operate group.
      */
-    @GetMapping("/start/{chainId}/{startGroupId}/{nodeId}")
-    public BaseResponse startGroup(@PathVariable("chainId") Integer chainId,
-            @PathVariable("nodeId") String nodeId,
-            @PathVariable("startGroupId") Integer startGroupId) throws BaseException {
+    @GetMapping("/operate/{chainId}/{groupId}/{nodeId}/{type}")
+    public BaseResponse operateGroup(@PathVariable("chainId") Integer chainId,
+            @PathVariable("nodeId") String nodeId, @PathVariable("groupId") Integer groupId,
+            @PathVariable("type") String type) throws BaseException {
         Instant startTime = Instant.now();
-        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        log.info("start startGroup startTime:{} groupId:{}", startTime.toEpochMilli(),
-                startGroupId);
-        groupService.startGroup(chainId, nodeId, startGroupId);
-        log.info("end startGroup useTime:{} result:{}",
+        log.info("start operateGroup startTime:{} groupId:{}", startTime.toEpochMilli(), groupId);
+        BaseResponse baseResponse = groupService.operateGroup(chainId, nodeId, groupId, type);
+        log.info("end operateGroup useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JSON.toJSONString(baseResponse));
         return baseResponse;
