@@ -1403,7 +1403,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/all/100001
 #### 3.8.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址： **/group/getConsensusList/{chainId}/{groupId}**
+- 请求地址： **/group/getConsensusList/{chainId}/{groupId}/{nodeId}**
 - 请求方式：GET
 - 请求头：Content-type: application/json
 - 返回格式：JSON
@@ -1412,17 +1412,18 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/all/100001
 
 ***1）入参表***
 
-| 序号 | 输入参数   | 类型 | 可为空 | 备注         |
-| ---- | ---------- | ---- | ------ | ------------ |
-| 1    | chainId    | Int  | 否     | 链编号       |
-| 2    | groupId    | Int  | 否     | 群组编号     |
-| 3    | pageSize   | Int  | 是     | 条数，默认10 |
-| 4    | pageNumber | Int  | 是     | 页码，默认1  |
+| 序号 | 输入参数   | 类型   | 可为空 | 备注                 |
+| ---- | ---------- | ------ | ------ | -------------------- |
+| 1    | chainId    | Int    | 否     | 链编号               |
+| 2    | groupId    | Int    | 否     | 群组编号             |
+| 3    | nodeId     | String | 否     | 节点Id，指定节点调用 |
+| 4    | pageSize   | Int    | 是     | 条数，默认10         |
+| 5    | pageNumber | Int    | 是     | 页码，默认1          |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getConsensusList/1001/1?pageSize=10&pageNumber=1
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getConsensusList/1001/1/413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1?pageSize=10&pageNumber=1
 ```
 
 #### 3.8.3 返回参数
@@ -1492,8 +1493,9 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getConsensusList/1001/1?pageSiz
 | 1    | chainId    | Int    | 否     | 链编号                                   |
 | 2    | groupId    | Int    | 否     | 群组编号                                 |
 | 3    | signUserId | String | 否     | 私钥用户地址                             |
-| 4    | nodeId     | String | 否     | 节点Id                                   |
+| 4    | nodeId     | String | 否     | 要切换状态节点Id                         |
 | 5    | nodeType   | String | 否     | 要设置的节点类型：observer/sealer/remove |
+| 6    | reqNodeId  | String | 否     | 调用前置对应的节点Id                     |
 
 ***2）入参示例***
 
@@ -1507,7 +1509,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setConsensusStatus
   "chainId": 1001,
   "groupId": 1,
   "nodeId": "626e1f1df03e217a7a25361444b857ec68003482aabfb24645a67111cbd96ceedc998975e158475605e38b899bc97be7283006a0171f4ec4796972ff6ad55b1a",
-  "nodeType": "remove"
+  "nodeType": "remove",
+  "reqNodeId": "413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1"
 }
 ```
 
@@ -1547,7 +1550,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setConsensusStatus
 #### 3.10.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址： **/group/getSysConfigList/{chainId}/{groupId}&pageSize={pageSize}&pageNumber={pageNumber}**
+- 请求地址： **/group/getSysConfigList/{chainId}/{groupId}/{nodeId}&pageSize={pageSize}&pageNumber={pageNumber}**
 - 请求方式：GET
 - 请求头：Content-type: application/json
 - 返回格式：JSON
@@ -1556,17 +1559,18 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setConsensusStatus
 
 ***1）入参表***
 
-| 序号 | 输入参数   | 类型 | 可为空 | 备注         |
-| ---- | ---------- | ---- | ------ | ------------ |
-| 1    | chainId    | Int  | 否     | 链编号       |
-| 2    | groupId    | Int  | 否     | 群组编号     |
-| 3    | pageSize   | Int  | 是     | 条数，默认10 |
-| 4    | pageNumber | Int  | 是     | 页码，默认1  |
+| 序号 | 输入参数   | 类型   | 可为空 | 备注                 |
+| ---- | ---------- | ------ | ------ | -------------------- |
+| 1    | chainId    | Int    | 否     | 链编号               |
+| 2    | groupId    | Int    | 否     | 群组编号             |
+| 3    | nodeId     | String | 否     | 节点Id，指定节点调用 |
+| 4    | pageSize   | Int    | 是     | 条数，默认10         |
+| 5    | pageNumber | Int    | 是     | 页码，默认1          |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getSysConfigList/1001/1?pageSize=10&pageNumber=1
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getSysConfigList/1001/1/413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1?pageSize=10&pageNumber=1
 ```
 
 #### 3.10.3 返回参数
@@ -1580,7 +1584,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getSysConfigList/1001/1?pageSiz
 | 3     | totalCount  | Int    | 否   | 总记录数                                             |
 | 4     | data        | List   | 否   | 配置列表                                             |
 | 4.1   |             | Object |      | 配置信息对象                                         |
-| 4.1.1 | groupId     | Int    | 否   | 节点编号                                             |
+| 4.1.1 | groupId     | Int    | 否   | 群组编号                                             |
 | 4.1.2 | configKey   | String | 否   | 配置项，目前支持tx_count_limit、tx_gas_limit两个参数 |
 | 4.1.4 | configValue | String | 否   | 配置值                                               |
 
@@ -1638,9 +1642,10 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getSysConfigList/1001/1?pageSiz
 | ---- | ----------- | ------ | ------ | ---------------------------------------------------- |
 | 1    | chainId     | Int    | 否     | 链编号                                               |
 | 2    | groupId     | Int    | 否     | 群组编号                                             |
-| 3    | signUserId  | String | 否     | 签名用户编号                                         |
-| 4    | configKey   | String | 否     | 配置项，目前支持tx_count_limit、tx_gas_limit两个参数 |
-| 5    | configValue | String | 否     | 配置值                                               |
+| 3    | nodeId      | String | 否     | 节点Id，指定节点调用                                 |
+| 4    | signUserId  | String | 否     | 签名用户编号                                         |
+| 5    | configKey   | String | 否     | 配置项，目前支持tx_count_limit、tx_gas_limit两个参数 |
+| 6    | configValue | String | 否     | 配置值                                               |
 
 ***2）入参示例***
 
@@ -1654,7 +1659,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setSysConfig
   "chainId": 1001,
   "configKey": "tx_gas_limit",
   "configValue": "300000000",
-  "groupId": 1
+  "groupId": 1,
+  "nodeId": "413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1"
 }
 ```
 
@@ -1685,6 +1691,249 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setSysConfig
   "code": 205002,
   "message": "not fount any front",
   "data": null
+}
+```
+
+### 3.12 获取网络统计日志数据
+
+#### 3.12.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： 
+
+```
+/group//charging/getNetWorkData/{chainId}/{groupId}/{nodeId}&pageSize={pageSize}&pageNumber={pageNumber}&beginDate={beginDate}&endDate={endDate}
+```
+
+- 请求方式：GET
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 3.12.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数   | 类型          | 可为空 | 备注                                                      |
+| ---- | ---------- | ------------- | ------ | --------------------------------------------------------- |
+| 1    | chainId    | Int           | 否     | 链编号                                                    |
+| 2    | groupId    | Int           | 否     | 群组编号                                                  |
+| 3    | nodeId     | String        | 否     | 节点Id，指定节点调用                                      |
+| 4    | pageSize   | Int           | 是     | 条数，默认10                                              |
+| 5    | pageNumber | Int           | 是     | 页码，默认1                                               |
+| 6    | beginDate  | LocalDateTime | 是     | 开始时间（yyyy-MM-dd'T'HH:mm:ss.SSS 2019-03-13T00:00:00） |
+| 7    | endDate    | LocalDateTime | 是     | 结束时间                                                  |
+
+***2）入参示例***
+
+```
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/group/charging/getNetWorkData/1001/1/413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1?pageSize=2&pageNumber=1&beginDate=2020-03-27T10:30:04&endDate=2020-03-27T17:30:04
+```
+
+#### 3.12.3 返回参数
+
+***1）出参表***
+
+| 序号  | 输出参数   | 类型   |      | 备注                                    |
+| ----- | ---------- | ------ | ---- | --------------------------------------- |
+| 1     | code       | Int    | 否   | 返回码，0：成功 其它：失败              |
+| 2     | message    | String | 否   | 描述                                    |
+| 3     | totalCount | Int    | 否   | 总记录数                                |
+| 4     | data       | List   | 否   | 列表                                    |
+| 4.1   |            | Object |      | 信息对象                                |
+| 4.1.1 | id         | Long   | 否   | 主键                                    |
+| 4.1.2 | groupId    | Int    | 否   | 群组编号                                |
+| 4.1.3 | totalIn    | Long   | 否   | 总入流量（P2P_InBytes + SDK_InBytes）   |
+| 4.1.4 | totalOut   | Long   | 否   | 总出流量（P2P_OutBytes + SDK_OutBytes） |
+| 4.1.5 | timestamp  | Long   | 否   | 统计时间                                |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": [
+    {
+      "id": 583,
+      "totalIn": 53837,
+      "totalOut": 54753,
+      "groupId": 1,
+      "timestamp": 1585277486000
+    },
+    {
+      "id": 581,
+      "totalIn": 55128,
+      "totalOut": 55092,
+      "groupId": 1,
+      "timestamp": 1585277426000
+    }
+  ],
+  "totalCount": 22
+}
+```
+
+- 失败：
+
+```
+{
+  "code": 205002,
+  "message": "not fount any front",
+  "data": null
+}
+```
+
+### 3.13 获取交易Gas统计日志数据
+
+#### 3.13.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： 
+
+```
+/group//charging/getTxGasData/{chainId}/{groupId}/{nodeId}&pageSize={pageSize}&pageNumber={pageNumber}&beginDate={beginDate}&endDate={endDate}&transHash={transHash}
+```
+
+- 请求方式：GET
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 3.13.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数   | 类型          | 可为空 | 备注                                                      |
+| ---- | ---------- | ------------- | ------ | --------------------------------------------------------- |
+| 1    | chainId    | Int           | 否     | 链编号                                                    |
+| 2    | groupId    | Int           | 否     | 群组编号                                                  |
+| 3    | nodeId     | String        | 否     | 节点Id，指定节点调用                                      |
+| 4    | pageSize   | Int           | 是     | 条数，默认10                                              |
+| 5    | pageNumber | Int           | 是     | 页码，默认1                                               |
+| 6    | beginDate  | LocalDateTime | 是     | 开始时间（yyyy-MM-dd'T'HH:mm:ss.SSS 2019-03-13T00:00:00） |
+| 7    | endDate    | LocalDateTime | 是     | 结束时间                                                  |
+| 8    | transHash  | String        | 是     | 交易hash，不为空时查询指定hash                            |
+
+***2）入参示例***
+
+```
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/group/charging/getNetWorkData/1001/1/413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1?pageSize=2&pageNumber=1&beginDate=2020-03-27T10:30:04&endDate=2020-03-27T17:30:04
+```
+
+#### 3.13.3 返回参数
+
+***1）出参表***
+
+| 序号  | 输出参数   | 类型   |      | 备注                       |
+| ----- | ---------- | ------ | ---- | -------------------------- |
+| 1     | code       | Int    | 否   | 返回码，0：成功 其它：失败 |
+| 2     | message    | String | 否   | 描述                       |
+| 3     | totalCount | Int    | 否   | 总记录数                   |
+| 4     | data       | List   | 否   | 列表                       |
+| 4.1   |            | Object |      | 信息对象                   |
+| 4.1.1 | id         | Long   | 否   | 主键                       |
+| 4.1.2 | groupId    | Int    | 否   | 群组编号                   |
+| 4.1.3 | transHash  | Long   | 否   | 交易hash                   |
+| 4.1.4 | gasUsed    | Long   | 否   | 交易消耗的gas              |
+| 4.1.5 | timestamp  | Long   | 否   | 统计时间                   |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": [
+    {
+      "id": 5,
+      "transHash": "c5e208ec70b899529e11311f1147b1ee24ab8f02301e6cdbe8252c77a89a0d4c",
+      "gasUsed": 34949,
+      "groupId": 1,
+      "timestamp": 1585277499000
+    },
+    {
+      "id": 4,
+      "transHash": "d9d7800554b68c84a53e54eef8adceecca891dd0dd7e0069a3474a81d4eac440",
+      "gasUsed": 44892,
+      "groupId": 1,
+      "timestamp": 1585277489000
+    }
+  ],
+  "totalCount": 5
+}
+```
+
+- 失败：
+
+```
+{
+  "code": 205002,
+  "message": "not fount any front",
+  "data": null
+}
+```
+
+### 3.14 删除前置统计日志数据
+
+​	删除群组下统计日志数据。
+
+#### 3.14.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址：**/group/charging/deleteData/{chainId}/{groupId}/{nodeId}**
+- 请求方式：DELETE
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 3.14.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数   | 类型          | 可为空 | 备注                                                         |
+| ---- | ---------- | ------------- | ------ | ------------------------------------------------------------ |
+| 1    | chainId    | Int           | 否     | 链编号                                                       |
+| 2    | groupId    | Int           | 否     | 群组编号                                                     |
+| 3    | nodeId     | String        | 否     | 节点Id，指定节点调用                                         |
+| 4    | type       | Int           | 否     | 删除数据类型（1-网络统计数据；2-交易gas数据）                |
+| 5    | keepEndDat | LocalDateTime | 否     | 保留截止时间时间（yyyy-MM-dd'T'HH:mm:ss.SSS 2019-03-13T00:00:00） |
+
+***2）入参示例***
+
+```
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1?type=2&keepEndDat=2020-01-27T17%3A30%3A04
+```
+
+#### 3.14.3 返回参数 
+
+***1）出参表***
+
+| 序号 | 输出参数 | 类型   |      | 备注                       |
+| ---- | -------- | ------ | ---- | -------------------------- |
+| 1    | code     | Int    | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message  | String | 否   | 描述                       |
+| 3    | data     | object | 否   | 处理条数                   |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": 5
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 102000,
+    "message": "system exception",
+    "data": {}
 }
 ```
 

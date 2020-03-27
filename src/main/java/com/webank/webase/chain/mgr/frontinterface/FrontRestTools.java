@@ -80,6 +80,9 @@ public class FrontRestTools {
     public static final String URI_CHAIN = "chain";
     public static final String URI_CHECK_NODE_PROCESS = "chain/checkNodeProcess";
     public static final String URI_GET_GROUP_SIZE_INFOS = "chain/getGroupSizeInfos";
+    public static final String URI_CHARGING_GET_NETWORK_DATA = "charging/getNetWorkData";
+    public static final String URI_CHARGING_GET_TXGASDATA = "charging/getTxGasData";
+    public static final String URI_CHARGING_DELETE_DATA = "charging/deleteData";
 
     public static final String URI_PERMISSION = "permission";
     public static final String URI_PERMISSION_FULL_LIST = "permission/full";
@@ -97,12 +100,12 @@ public class FrontRestTools {
     public static final String URI_ENCRYPT_TYPE = "encrypt";
 
     // 不需要在url中包含groupId的
-    private static final List<String> URI_NOT_CONTAIN_GROUP_ID =
-            Arrays.asList(URI_MULTI_CONTRACT_COMPILE, URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION,
-                    URI_KEY_PAIR, URI_PERMISSION, URI_PERMISSION_FULL_LIST, URI_CNS_LIST,
-                    URI_SYS_CONFIG_LIST, URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS,
-                    URI_CRUD, URI_CONTRACT_STATUS_MANAGE, URI_PERMISSION_SORTED_LIST,
-                    URI_PERMISSION_SORTED_FULL_LIST, URI_CERT, URI_ENCRYPT_TYPE);
+    private static final List<String> URI_NOT_CONTAIN_GROUP_ID = Arrays.asList(
+            URI_MULTI_CONTRACT_COMPILE, URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION, URI_KEY_PAIR,
+            URI_PERMISSION, URI_PERMISSION_FULL_LIST, URI_CNS_LIST, URI_SYS_CONFIG_LIST,
+            URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS, URI_CRUD, URI_CONTRACT_STATUS_MANAGE,
+            URI_PERMISSION_SORTED_LIST, URI_PERMISSION_SORTED_FULL_LIST, URI_CERT, URI_ENCRYPT_TYPE,
+            URI_CHARGING_GET_NETWORK_DATA, URI_CHARGING_GET_TXGASDATA, URI_CHARGING_DELETE_DATA);
 
 
     @Qualifier(value = "genericRestTemplate")
