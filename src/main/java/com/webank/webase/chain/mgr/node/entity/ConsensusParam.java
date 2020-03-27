@@ -29,6 +29,8 @@ public class ConsensusParam {
     @NotNull
     private Integer groupId;
     @NotBlank
+    private String reqNodeId;
+    @NotBlank
     private String nodeType;
     @NotBlank
     private String signUserId;
