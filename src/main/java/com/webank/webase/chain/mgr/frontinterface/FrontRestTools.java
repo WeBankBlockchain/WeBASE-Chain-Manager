@@ -70,17 +70,19 @@ public class FrontRestTools {
     public static final String URI_CSYNC_STATUS = "web3/syncStatus";
     public static final String URI_SYSTEMCONFIG_BY_KEY = "web3/systemConfigByKey/%1s";
     public static final String URI_GENERATE_GROUP = "web3/generateGroup";
-    public static final String URI_START_GROUP = "web3/startGroup/%1s";
-    public static final String URI_REFRESH_FRONT = "web3/refresh";
+    public static final String URI_OPERATE_GROUP = "web3/operateGroup/%1s";
     public static final String FRONT_PERFORMANCE_RATIO = "performance";
     public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
-    public static final String URI_KEY_PAIR = "privateKey?useAes=%1s&type=2&userName=%2s";
+    public static final String URI_KEY_PAIR = "privateKey?type=2&signUserId=%s&appId=%s&userName=";
     public static final String URI_MULTI_CONTRACT_COMPILE = "contract/multiContractCompile";
-    public static final String URI_CONTRACT_DEPLOY = "contract/deploy";
-    public static final String URI_SEND_TRANSACTION = "trans/handle";
+    public static final String URI_CONTRACT_DEPLOY = "contract/deployWithSign";
+    public static final String URI_SEND_TRANSACTION = "trans/handleWithSign";
     public static final String URI_CHAIN = "chain";
     public static final String URI_CHECK_NODE_PROCESS = "chain/checkNodeProcess";
     public static final String URI_GET_GROUP_SIZE_INFOS = "chain/getGroupSizeInfos";
+    public static final String URI_CHARGING_GET_NETWORK_DATA = "charging/getNetWorkData";
+    public static final String URI_CHARGING_GET_TXGASDATA = "charging/getTxGasData";
+    public static final String URI_CHARGING_DELETE_DATA = "charging/deleteData";
 
     public static final String URI_PERMISSION = "permission";
     public static final String URI_PERMISSION_FULL_LIST = "permission/full";
@@ -92,6 +94,7 @@ public class FrontRestTools {
     public static final String URI_CONSENSUS_LIST = "precompiled/consensus/list";
     public static final String URI_CONSENSUS = "precompiled/consensus";
     public static final String URI_CRUD = "precompiled/crud";
+    public static final String URI_CONTRACT_STATUS_MANAGE = "precompiled/contractStatusManage";
 
     public static final String URI_CERT = "cert";
     public static final String URI_ENCRYPT_TYPE = "encrypt";
@@ -100,8 +103,9 @@ public class FrontRestTools {
     private static final List<String> URI_NOT_CONTAIN_GROUP_ID = Arrays.asList(
             URI_MULTI_CONTRACT_COMPILE, URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION, URI_KEY_PAIR,
             URI_PERMISSION, URI_PERMISSION_FULL_LIST, URI_CNS_LIST, URI_SYS_CONFIG_LIST,
-            URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS, URI_CRUD, URI_PERMISSION_SORTED_LIST,
-            URI_PERMISSION_SORTED_FULL_LIST, URI_CERT, URI_ENCRYPT_TYPE);
+            URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS, URI_CRUD, URI_CONTRACT_STATUS_MANAGE,
+            URI_PERMISSION_SORTED_LIST, URI_PERMISSION_SORTED_FULL_LIST, URI_CERT, URI_ENCRYPT_TYPE,
+            URI_CHARGING_GET_NETWORK_DATA, URI_CHARGING_GET_TXGASDATA, URI_CHARGING_DELETE_DATA);
 
 
     @Qualifier(value = "genericRestTemplate")
