@@ -30,7 +30,7 @@ package com.webank.webase.chain.mgr.base.enums;
  * Enumeration of group type.
  */
 public enum GenerateNormalStatus {
-    SUCCESS(0), GROUP_EXISTS(1), GENESIS_EXISTS(2), CONFIG_EXISTS(3);
+    SUCCESS(0), GROUP_EXISTS(2), GENESIS_EXISTS(9), CONFIG_EXISTS(10);
 
     private int value;
 

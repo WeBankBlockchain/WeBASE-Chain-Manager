@@ -11,38 +11,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.user.entity;
+package com.webank.webase.chain.mgr.front.entity;
 
-import java.time.LocalDateTime;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * param of contract manage.
+ */
 @Data
 @NoArgsConstructor
-public class TbUser {
-    private Integer userId;
+public class ContractManageParam {
+    @NotNull
     private Integer chainId;
+    @NotNull
     private Integer groupId;
+    @NotBlank
+    private String nodeId;
+    @NotBlank
     private String signUserId;
-    private String appId;
-    private String publicKey;
-    private String address;
-    private String description;
-    private LocalDateTime createTime;
-    private LocalDateTime modifyTime;
-
-    /**
-     * init TbUser.
-     */
-    public TbUser(Integer chainId, Integer groupId, String signUserId, String appId, String address,
-            String publicKey, String description) {
-        super();
-        this.chainId = chainId;
-        this.groupId = groupId;
-        this.signUserId = signUserId;
-        this.appId = appId;
-        this.publicKey = publicKey;
-        this.address = address;
-        this.description = description;
-    }
+    @NotBlank
+    private String contractAddress;
+    @NotBlank
+    private String handleType;
+    private String grantAddress;
 }

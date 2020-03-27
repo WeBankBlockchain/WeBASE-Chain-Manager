@@ -16,8 +16,8 @@ package com.webank.webase.chain.mgr.frontinterface.entity;
 import lombok.Data;
 
 @Data
-public class GroupHandleResult {
-    private String code;
-    private String message;
-    private String status;
+public class ContractStatusManageResult {
+    private int code;
+    private String msg;
+    private String data;
 }
