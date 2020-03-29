@@ -469,8 +469,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/200001
 | 3    | endDate           | LocalDateTime | 是     | 显示时间（结束）                                             |
 | 4    | contrastBeginDate | LocalDateTime | 是     | 对比时间（开始）                                             |
 | 5    | contrastEndDate   | LocalDateTime | 是     | 对比时间（结束）                                             |
-| 6    | gap               | Int           | 是     | 数据粒度                                                     |
-| 7    | groupId           | int           | 否     | 群组编号                                                     |
+| 6    | gap               | Int           | 是     | 数据粒度，默认1                                              |
+| 7    | groupId           | int           | 否     | 群组编号，默认1                                              |
 
 ***2）入参示例***
 
@@ -589,7 +589,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/mointorInfo/200001?beginDate=20
 | 3    | endDate           | LocalDateTime | 是     | 显示时间（结束）                                             |
 | 4    | contrastBeginDate | LocalDateTime | 是     | 对比时间（开始）                                             |
 | 5    | contrastEndDate   | LocalDateTime | 是     | 对比时间（结束）                                             |
-| 6    | gap               | Int           | 是     | 数据粒度                                                     |
+| 6    | gap               | Int           | 是     | 数据粒度，默认1                                              |
 
 ***2）入参示例***
 
@@ -900,7 +900,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/getGroupSizeInfos/200001
 
 ### 3.1 生成新群组
 
-​	向单个节点请求生成新群组配置信息，节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于不同链管理服务，每个节点都要请求一遍。
+​	向单个节点请求生成新群组配置信息，节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于不同链管理服务，每个节点都要请求一遍。**群组生成后，需对应调用3.3的启动和3.4的更新。** 
 
 #### 3.1.1 传输协议规范
 
@@ -1140,7 +1140,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/start/100001/2/78e467957af3d0f7
 
 ### 3.4 批量启动群组
 
-​	节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于同一个链管理服务。
+​	节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于同一个链管理服务。**群组生成后，需对应调用3.4的批量启动和3.5的更新。** 
 
 #### 3.4.1 传输协议规范
 

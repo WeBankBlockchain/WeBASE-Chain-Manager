@@ -53,6 +53,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -84,6 +85,9 @@ public class FrontInterfaceService {
             HttpEntity entity = FrontRestTools.buildHttpEntity(param);// build entity
             ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);
             return response.getBody();
+        } catch (ResourceAccessException e) {
+            log.error("requestSpecificFront. ResourceAccessException:{}", e);
+            throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
         } catch (HttpStatusCodeException e) {
             JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
             throw new BaseException(error.getInteger("code"), error.getString("errorMessage"));
@@ -465,5 +469,37 @@ public class FrontInterfaceService {
                 deleteToSpecificFront(groupId, frontIp, frontPort, uri, null, Object.class);
         log.debug("end deleteLogData. frontRsp:{}", JSON.toJSONString(frontRsp));
         return frontRsp;
+    }
+
+    public Object getNodeMonitorInfo(String frontIp, Integer frontPort, Integer groupId,
+            Map<String, String> map) {
+        String uri = HttpRequestTools.getQueryUri(FrontRestTools.URI_CHAIN, map);
+        Object frontRsp = getFromSpecificFront(groupId, frontIp, frontPort, uri, Object.class);
+        return frontRsp;
+    }
+
+    public Object getPerformanceRatio(String frontIp, Integer frontPort, Map<String, String> map) {
+        String uri = HttpRequestTools.getQueryUri(FrontRestTools.URI_CHAIN, map);
+        Object frontRsp =
+                getFromSpecificFront(Integer.MAX_VALUE, frontIp, frontPort, uri, Object.class);
+        return frontRsp;
+    }
+
+    public Object getPerformanceConfig(String frontIp, Integer frontPort) {
+        Integer groupId = Integer.MAX_VALUE;
+        return getFromSpecificFront(groupId, frontIp, frontPort,
+                FrontRestTools.FRONT_PERFORMANCE_CONFIG, Object.class);
+    }
+    
+    public Object checkNodeProcess(String frontIp, Integer frontPort) {
+        Integer groupId = Integer.MAX_VALUE;
+        return getFromSpecificFront(groupId, frontIp, frontPort,
+                FrontRestTools.URI_CHECK_NODE_PROCESS, Object.class);
+    }
+    
+    public Object getGroupSizeInfos(String frontIp, Integer frontPort) {
+        Integer groupId = Integer.MAX_VALUE;
+        return getFromSpecificFront(groupId, frontIp, frontPort,
+                FrontRestTools.URI_GET_GROUP_SIZE_INFOS, Object.class);
     }
 }
