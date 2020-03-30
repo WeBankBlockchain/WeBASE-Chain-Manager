@@ -989,7 +989,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate/78e467957af3d0f77e19b9
 
 ### 3.2 批量生成新群组
 
-​	向新群组下所有节点请求生成新群组配置信息，节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于同一个链管理服务。**群组生成后，需对应调用3.4的批量启动** 
+​	向新群组下所有节点请求生成新群组配置信息，节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于同一个链管理服务（节点对应前置都要添加到链管理服务）。**群组生成后，需对应调用3.4的批量启动。** 
 
 #### 3.2.1 传输协议规范
 
@@ -1085,7 +1085,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 #### 3.3.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/start/{chainId}/{groupId}/{nodeId}/{type}**
+- 请求地址：**/operate/{chainId}/{groupId}/{nodeId}/{type}**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -1103,7 +1103,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/group/start/100001/2/78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/operate/100001/2/78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2/start
 ```
 
 #### 3.3.3 返回参数 
@@ -1140,7 +1140,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/start/100001/2/78e467957af3d0f7
 
 ### 3.4 批量启动群组
 
-​	节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于同一个链管理服务。
+​	节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于同一个链管理服务（节点对应前置都要添加到链管理服务）。
 
 #### 3.4.1 传输协议规范
 
@@ -1509,7 +1509,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setConsensusStatus
   "chainId": 1001,
   "groupId": 1,
   "nodeId": "626e1f1df03e217a7a25361444b857ec68003482aabfb24645a67111cbd96ceedc998975e158475605e38b899bc97be7283006a0171f4ec4796972ff6ad55b1a",
-  "nodeType": "remove",
+  "nodeType": "sealer",
   "reqNodeId": "413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1"
 }
 ```
