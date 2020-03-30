@@ -45,7 +45,7 @@ public class ConstantCode {
 
     public static final RetCode SAVE_FRONT_FAIL = RetCode.mark(205006, "save front fail");
 
-    public static final RetCode REQUEST_FRONT_FAIL = RetCode.mark(205007, "request front fail");
+    public static final RetCode REQUEST_FRONT_FAIL = RetCode.mark(205007, "request front fail, please check front");
 
     public static final RetCode CONTRACT_ABI_EMPTY =
             RetCode.mark(205008, "abiInfo cannot be empty");

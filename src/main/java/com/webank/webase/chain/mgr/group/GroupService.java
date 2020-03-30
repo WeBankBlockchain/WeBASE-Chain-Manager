@@ -182,6 +182,9 @@ public class GroupService {
                     groupHandleResult.getMessage());
         }
         
+        // refresh
+        resetGroupList();
+        
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         baseResponse.setData(groupHandleResult.getStatus());
         return baseResponse;
@@ -215,6 +218,8 @@ public class GroupService {
                         groupHandleResult.getMessage());
             }
         }
+        // refresh
+        resetGroupList();
     }
 
 
