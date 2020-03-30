@@ -469,8 +469,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/200001
 | 3    | endDate           | LocalDateTime | 是     | 显示时间（结束）                                             |
 | 4    | contrastBeginDate | LocalDateTime | 是     | 对比时间（开始）                                             |
 | 5    | contrastEndDate   | LocalDateTime | 是     | 对比时间（结束）                                             |
-| 6    | gap               | Int           | 是     | 数据粒度                                                     |
-| 7    | groupId           | int           | 否     | 群组编号                                                     |
+| 6    | gap               | Int           | 是     | 数据粒度，默认1                                              |
+| 7    | groupId           | int           | 否     | 群组编号，默认1                                              |
 
 ***2）入参示例***
 
@@ -589,7 +589,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/mointorInfo/200001?beginDate=20
 | 3    | endDate           | LocalDateTime | 是     | 显示时间（结束）                                             |
 | 4    | contrastBeginDate | LocalDateTime | 是     | 对比时间（开始）                                             |
 | 5    | contrastEndDate   | LocalDateTime | 是     | 对比时间（结束）                                             |
-| 6    | gap               | Int           | 是     | 数据粒度                                                     |
+| 6    | gap               | Int           | 是     | 数据粒度，默认1                                              |
 
 ***2）入参示例***
 
@@ -900,7 +900,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/getGroupSizeInfos/200001
 
 ### 3.1 生成新群组
 
-​	向单个节点请求生成新群组配置信息，节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于不同链管理服务，每个节点都要请求一遍。
+​	向单个节点请求生成新群组配置信息，节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于不同链管理服务，每个节点都要请求一遍。**群组生成后，需对应调用3.3的启动。** 
 
 #### 3.1.1 传输协议规范
 
@@ -989,7 +989,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate/78e467957af3d0f77e19b9
 
 ### 3.2 批量生成新群组
 
-​	向新群组下所有节点请求生成新群组配置信息，节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于同一个链管理服务。
+​	向新群组下所有节点请求生成新群组配置信息，节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于同一个链管理服务。**群组生成后，需对应调用3.4的批量启动** 
 
 #### 3.2.1 传输协议规范
 
@@ -1208,7 +1208,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 }
 ```
 
-### 3.5 更新群组
+### 3.5 更新群组（废弃，启动或停止后自动更新）
 
 ​	生成新群组并启动新群组的每一个节点后，调用此接口更新群组相关信息。
 
@@ -3451,7 +3451,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/userList/100001/1/1/10?userParam
 | 205004 | group id cannot be empty                         | 群组编号不能为空   |
 | 205005 | invalid group id                                 | 无效的群组编号     |
 | 205006 | save front fail                                  | 保存前置失败       |
-| 205007 | request front fail                               | 请求前置失败       |
+| 205007 | request front fail, please check front           | 请求前置失败       |
 | 205008 | abiInfo cannot be empty                          | abi信息不能为空    |
 | 205009 | contract already exists                          | 合约已存在         |
 | 205010 | invalid contract id                              | 无效的合约编号     |

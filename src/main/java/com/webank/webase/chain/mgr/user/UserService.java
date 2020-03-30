@@ -71,7 +71,7 @@ public class UserService {
         String address = Optional.ofNullable(keyPair).map(k -> k.getAddress()).orElse(null);
 
         if (StringUtils.isAnyBlank(publicKey, address)) {
-            log.warn("get key pair fail. publicKey:{} address:{}", publicKey, address);
+            log.error("get key pair fail. publicKey:{} address:{}", publicKey, address);
             throw new BaseException(ConstantCode.SYSTEM_EXCEPTION_GET_PRIVATE_KEY_FAIL);
         }
 

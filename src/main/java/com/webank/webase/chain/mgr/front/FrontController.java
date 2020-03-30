@@ -135,8 +135,7 @@ public class FrontController extends BaseController {
             @RequestParam(required = false) @DateTimeFormat(
                     iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
             @RequestParam(required = false, defaultValue = "1") int gap,
-            @RequestParam(required = false, defaultValue = "1") int groupId)
-            throws BaseException {
+            @RequestParam(required = false, defaultValue = "1") int groupId) throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info(
@@ -159,11 +158,13 @@ public class FrontController extends BaseController {
      */
     @GetMapping(value = "/ratio/{frontId}")
     public BaseResponse getPerformanceRatio(@PathVariable("frontId") Integer frontId,
-            @RequestParam("beginDate") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime beginDate,
-            @RequestParam("endDate") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(value = "contrastBeginDate", required = false) @DateTimeFormat(
+            @RequestParam(required = false) @DateTimeFormat(
+                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
+            @RequestParam(required = false) @DateTimeFormat(
+                    iso = ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) @DateTimeFormat(
                     iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
-            @RequestParam(value = "contrastEndDate", required = false) @DateTimeFormat(
+            @RequestParam(required = false) @DateTimeFormat(
                     iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
             @RequestParam(value = "gap", required = false, defaultValue = "1") int gap)
             throws BaseException {
