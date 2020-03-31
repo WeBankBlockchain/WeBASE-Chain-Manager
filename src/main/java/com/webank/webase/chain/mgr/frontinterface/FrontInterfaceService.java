@@ -479,7 +479,7 @@ public class FrontInterfaceService {
     }
 
     public Object getPerformanceRatio(String frontIp, Integer frontPort, Map<String, String> map) {
-        String uri = HttpRequestTools.getQueryUri(FrontRestTools.URI_CHAIN, map);
+        String uri = HttpRequestTools.getQueryUri(FrontRestTools.FRONT_PERFORMANCE_RATIO, map);
         Object frontRsp =
                 getFromSpecificFront(Integer.MAX_VALUE, frontIp, frontPort, uri, Object.class);
         return frontRsp;
