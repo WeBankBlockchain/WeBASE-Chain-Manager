@@ -3477,4 +3477,5 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/user/userList/100001/1/1/10?userParam
 | 205030 | contract compile error                           | 合约编译错误       |
 | 205031 | group generate fail                              | 群组创建失败       |
 | 205032 | group operate fail                               | 群组操作失败       |
+| 205033 | request node exception                           | 请求节点异常       |
 | 305000 | param exception                                  | 参数异常           |
