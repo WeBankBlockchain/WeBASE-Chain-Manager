@@ -64,8 +64,8 @@ export default {
                         trigger: "blur"
                     },
                     {
-                        pattren: /^[0-9]*$/,
-                        message: "区块链编号仅允许数字和英文",
+                        pattern: /^\d{0,11}$/,
+                        message: "区块链编号仅允许数字,长度不超过11位",
                         trigger: "blur"
                     }
                 ],
