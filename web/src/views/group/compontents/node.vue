@@ -88,6 +88,7 @@
 <script>
 import contentHead from "@/components/contentHead";
 import { getNodes,getGroups } from "@/api/api"
+import errCode from "@/util/errCode"
 export default {
     name: "node",
     data() {
@@ -151,6 +152,10 @@ export default {
                     } 
                 } else {
                     this.groupList = [];
+                    this.$message({
+                        type: "error",
+                        message: errCode.errCode[res.data.code].zh
+                    })
                 }
             }).catch(err => {
                 this.groupList = [];
