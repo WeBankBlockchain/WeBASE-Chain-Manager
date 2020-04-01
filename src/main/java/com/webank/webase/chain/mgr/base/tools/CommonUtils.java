@@ -274,13 +274,13 @@ public class CommonUtils {
         LocalDateTime now = LocalDateTime.now();
         switch (lifeUnit) {
             case "y":
-                return dateTime.getYear() - now.getYear() < lifeValue;
+                return now.getYear() - dateTime.getYear() < lifeValue;
             case "M":
-                return dateTime.getMonthValue() - now.getMonthValue() < lifeValue;
+                return now.getMonthValue() - dateTime.getMonthValue() < lifeValue;
             case "d":
-                return dateTime.getDayOfMonth() - now.getDayOfMonth() < lifeValue;
+                return now.getDayOfMonth() - dateTime.getDayOfMonth() < lifeValue;
             case "m":
-                return dateTime.getMinute() - now.getMinute() < lifeValue;
+                return now.getMinute() - dateTime.getMinute() < lifeValue;
             default:
                 log.warn("fail isDateTimeInValid lifeUnit:{}", lifeUnit);
                 return false;
