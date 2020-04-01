@@ -181,10 +181,10 @@ public class GroupService {
             throw new BaseException(ConstantCode.GROUP_OPERATE_FAIL.getCode(),
                     groupHandleResult.getMessage());
         }
-        
+
         // refresh
         resetGroupList();
-        
+
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         baseResponse.setData(groupHandleResult.getStatus());
         return baseResponse;
@@ -355,9 +355,9 @@ public class GroupService {
 
             // check group status
             checkGroupStatusAndRemoveInvalidGroup(chainId, allGroupSet);
+            // clear cache
+            frontGroupMapCache.clearMapList(chainId);
         }
-        // clear cache
-        frontGroupMapCache.clearMapList();
 
         log.info("end resetGroupList. useTime:{} ",
                 Duration.between(startTime, Instant.now()).toMillis());
