@@ -104,6 +104,8 @@ public class ConstantCode {
     public static final RetCode GROUP_GENERATE_FAIL = RetCode.mark(205031, "group generate fail");
     
     public static final RetCode GROUP_OPERATE_FAIL = RetCode.mark(205032, "group operate fail");
+    
+    public static final RetCode REQUEST_NODE_EXCEPTION = RetCode.mark(205033, "request node exception");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");

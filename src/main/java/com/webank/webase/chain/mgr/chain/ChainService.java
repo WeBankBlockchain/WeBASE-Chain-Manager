@@ -147,6 +147,6 @@ public class ChainService {
         // reset group list
         resetGroupListTask.asyncResetGroupList();
         // clear cache
-        frontGroupMapCache.clearMapList();
+        frontGroupMapCache.clearMapList(chainId);
     }
 }
