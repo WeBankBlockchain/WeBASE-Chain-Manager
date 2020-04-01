@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
+import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
@@ -90,7 +91,18 @@ public class FrontInterfaceService {
             throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
         } catch (HttpStatusCodeException e) {
             JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
-            throw new BaseException(error.getInteger("code"), error.getString("errorMessage"));
+            log.error("requestSpecificFront. error:{}", JSON.toJSONString(error));
+            String errorMessage = error.getString("errorMessage");
+            if (StringUtils.isBlank(errorMessage)) {
+                throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
+            }
+            if (errorMessage.contains("code")) {
+                JSONObject errorInside = JSONObject.parseObject(
+                        JSONObject.parseObject(error.getString("errorMessage")).getString("error"));
+                throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
+                        errorInside.getString("message"));
+            }
+            throw new BaseException(error.getInteger("code"), errorMessage);
         }
     }
 
@@ -490,13 +502,13 @@ public class FrontInterfaceService {
         return getFromSpecificFront(groupId, frontIp, frontPort,
                 FrontRestTools.FRONT_PERFORMANCE_CONFIG, Object.class);
     }
-    
+
     public Object checkNodeProcess(String frontIp, Integer frontPort) {
         Integer groupId = Integer.MAX_VALUE;
         return getFromSpecificFront(groupId, frontIp, frontPort,
                 FrontRestTools.URI_CHECK_NODE_PROCESS, Object.class);
     }
-    
+
     public Object getGroupSizeInfos(String frontIp, Integer frontPort) {
         Integer groupId = Integer.MAX_VALUE;
         return getFromSpecificFront(groupId, frontIp, frontPort,

@@ -182,27 +182,26 @@ GRANT ALL PRIVILEGES ON *.* TO 'TestUser'@'%' IDENTIFIED BY '此处为TestUser�
 
 ## 3. application.yml配置项说明
 
-| 参数                                      | 默认值                                         | 描述                                                         |
-| ----------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------ |
-| server.port                               | 5005                                           | 当前服务端口                                                 |
-| server.servlet.context-path               | /WeBASE-Chain-Manager                          | 当前服务访问目录                                             |
-| mybatis.typeAliasesPackage                | com.webank.webase.chain.mgr                    | mapper类扫描路径                                             |
-| mybatis.mapperLocations                   | classpath:mapper/*.xml                         | mybatis的xml路径                                             |
-| spring.datasource.driver-class-name       | com.mysql.cj.jdbc.Driver                       | mysql驱动                                                    |
-| spring.datasource.url                     | jdbc:mysql://127.0.0.1:3306/webasechainmanager | mysql连接地址                                                |
-| spring.datasource.username                | defaultAccount                                 | mysql账号                                                    |
-| spring.datasource.password                | defaultPassword                                | mysql密码                                                    |
-| logging.config                            | classpath:log/log4j2.xml                       | 日志配置文件目录                                             |
-| logging.level                             | com.webank.webase.chain.mgr: info              | 日志扫描目录和级别                                           |
-| constant.resetGroupListCycle              | 600000                                         | 刷新群组列表任务执行完后，下一个开始间隔（毫秒）             |
-| constant.groupInvalidGrayscaleValue       | 1M                                             |  群组失效灰度期长度，灰度期过后，如果还没查到失效状态的群组，就删除（y:年, M:月, d:天, h:小时, m:分钟, n:永远有效）  |
-| constant.frontUrl                         | http://%1s:%2d/WeBASE-Front/%3s                | 前置服务的请求路径                                           |
-| constant.httpTimeOut                      | 5000                                           | http请求超时时间（毫秒）                                     |
-| constant.contractDeployTimeOut            | 30000                                          | 合约部署超时时间（毫秒）                                     |
-| constant.isPrivateKeyEncrypt              | true                                           | 前置私钥接口返回的私钥是否需要加密，true-加密，false-不加密  |
-| constant.maxRequestFail                   | 3                                              | 请求前置（frot）被允许失败次数，达到配置值后，将会停止往该路径发送请求 |
-| constant.sleepWhenHttpMaxFail             | 60000                                          | 请求失败次数过多，熔断时间长度（毫秒）                       |
-| executor.corePoolSize                     | 3                                              | 线程池大小   |
-| executor.maxPoolSize                      | 10                                             | 线程池最大线程数   |
-| executor.queueSize                        | 50                                             | 线程池队列大小   |
-| executor.threadNamePrefix                 | "chain-mgr-async-"                             | 线程名前缀  |
+| 参数                                | 默认值                                         | 描述                                                         |
+| ----------------------------------- | ---------------------------------------------- | ------------------------------------------------------------ |
+| server.port                         | 5005                                           | 当前服务端口                                                 |
+| server.servlet.context-path         | /WeBASE-Chain-Manager                          | 当前服务访问目录                                             |
+| mybatis.typeAliasesPackage          | com.webank.webase.chain.mgr                    | mapper类扫描路径                                             |
+| mybatis.mapperLocations             | classpath:mapper/*.xml                         | mybatis的xml路径                                             |
+| spring.datasource.driver-class-name | com.mysql.cj.jdbc.Driver                       | mysql驱动                                                    |
+| spring.datasource.url               | jdbc:mysql://127.0.0.1:3306/webasechainmanager | mysql连接地址                                                |
+| spring.datasource.username          | defaultAccount                                 | mysql账号                                                    |
+| spring.datasource.password          | defaultPassword                                | mysql密码                                                    |
+| logging.config                      | classpath:log/log4j2.xml                       | 日志配置文件目录                                             |
+| logging.level                       | com.webank.webase.chain.mgr: info              | 日志扫描目录和级别                                           |
+| constant.resetGroupListCycle        | 600000                                         | 刷新群组列表任务执行完后，下一个开始间隔（毫秒）             |
+| constant.groupInvalidGrayscaleValue | 1M                                             | 群组失效灰度期长度，灰度期过后，如果还没查到失效状态的群组，就删除（y:年, M:月, d:天, h:小时, m:分钟, n:永远有效） |
+| constant.frontUrl                   | http://%1s:%2d/WeBASE-Front/%3s                | 前置服务的请求路径                                           |
+| constant.httpTimeOut                | 5000                                           | http请求超时时间（毫秒）                                     |
+| constant.contractDeployTimeOut      | 30000                                          | 合约部署超时时间（毫秒）                                     |
+| constant.maxRequestFail             | 3                                              | 请求前置（frot）被允许失败次数，达到配置值后，将会停止往该路径发送请求 |
+| constant.sleepWhenHttpMaxFail       | 60000                                          | 请求失败次数过多，熔断时间长度（毫秒）                       |
+| executor.corePoolSize               | 3                                              | 线程池大小                                                   |
+| executor.maxPoolSize                | 10                                             | 线程池最大线程数                                             |
+| executor.queueSize                  | 50                                             | 线程池队列大小                                               |
+| executor.threadNamePrefix           | "chain-mgr-async-"                             | 线程名前缀                                                   |

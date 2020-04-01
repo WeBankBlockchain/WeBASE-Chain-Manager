@@ -153,7 +153,7 @@ public class FrontService {
         }
 
         // clear cache
-        frontGroupMapCache.clearMapList();
+        frontGroupMapCache.clearMapList(chainId);
         return tbFront;
     }
 
@@ -361,10 +361,8 @@ public class FrontService {
      */
     public void removeByFrontId(int frontId) {
         // check frontId
-        FrontParam param = new FrontParam();
-        param.setFrontId(frontId);
-        int count = getFrontCount(param);
-        if (count == 0) {
+        TbFront tbFront = getById(frontId);
+        if (tbFront == null) {
             throw new BaseException(ConstantCode.INVALID_FRONT_ID);
         }
 
@@ -375,7 +373,7 @@ public class FrontService {
         // reset group list
         resetGroupListTask.asyncResetGroupList();
         // clear cache
-        frontGroupMapCache.clearMapList();
+        frontGroupMapCache.clearMapList(tbFront.getChainId());
     }
 
     /**
