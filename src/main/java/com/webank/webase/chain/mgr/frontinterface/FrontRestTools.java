@@ -215,11 +215,11 @@ public class FrontRestTools {
      */
     private String buildFrontUrl(ArrayList<FrontGroup> list, String uri, HttpMethod httpMethod) {
         Collections.shuffle(list);// random one
-        log.info("====================map list:{}", JSON.toJSONString(list));
+        log.debug("====================map list:{}", JSON.toJSONString(list));
         Iterator<FrontGroup> iterator = list.iterator();
         while (iterator.hasNext()) {
             FrontGroup frontGroup = iterator.next();
-            log.info("============frontGroup:{}", JSON.toJSONString(frontGroup));
+            log.info("============frontGroup:{} uri:{}", JSON.toJSONString(frontGroup), uri);
 
             uri = uriAddGroupId(frontGroup.getGroupId(), uri);// append groupId to uri
             String url = String.format(cproperties.getFrontUrl(), frontGroup.getFrontIp(),
@@ -322,7 +322,17 @@ public class FrontRestTools {
             } catch (HttpStatusCodeException e) {
                 JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
                 log.error("http request fail. error:{}", JSON.toJSONString(error));
-                throw new BaseException(error.getInteger("code"), error.getString("errorMessage"));
+                String errorMessage = error.getString("errorMessage");
+                if (StringUtils.isBlank(errorMessage)) {
+                    throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
+                }
+                if (errorMessage.contains("code")) {
+                    JSONObject errorInside = JSONObject.parseObject(JSONObject
+                            .parseObject(error.getString("errorMessage")).getString("error"));
+                    throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
+                            errorInside.getString("message"));
+                }
+                throw new BaseException(error.getInteger("code"), errorMessage);
             }
         }
         return null;
