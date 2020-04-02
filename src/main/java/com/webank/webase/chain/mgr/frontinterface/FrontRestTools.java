@@ -73,7 +73,6 @@ public class FrontRestTools {
     public static final String URI_OPERATE_GROUP = "web3/operateGroup/%1s";
     public static final String FRONT_PERFORMANCE_RATIO = "performance";
     public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
-    public static final String URI_KEY_PAIR = "privateKey?type=2&signUserId=%s&appId=%s&userName=";
     public static final String URI_MULTI_CONTRACT_COMPILE = "contract/multiContractCompile";
     public static final String URI_CONTRACT_DEPLOY = "contract/deployWithSign";
     public static final String URI_SEND_TRANSACTION = "trans/handleWithSign";
@@ -84,30 +83,23 @@ public class FrontRestTools {
     public static final String URI_CHARGING_GET_TXGASDATA = "charging/getTxGasData";
     public static final String URI_CHARGING_DELETE_DATA = "charging/deleteData";
 
-    public static final String URI_PERMISSION = "permission";
-    public static final String URI_PERMISSION_FULL_LIST = "permission/full";
-    public static final String URI_PERMISSION_SORTED_LIST = "permission/sorted";
-    public static final String URI_PERMISSION_SORTED_FULL_LIST = "permission/sorted/full";
     public static final String URI_SYS_CONFIG_LIST = "sys/config/list";
     public static final String URI_SYS_CONFIG = "sys/config";
-    public static final String URI_CNS_LIST = "precompiled/cns/list";
     public static final String URI_CONSENSUS_LIST = "precompiled/consensus/list";
     public static final String URI_CONSENSUS = "precompiled/consensus";
-    public static final String URI_CRUD = "precompiled/crud";
     public static final String URI_CONTRACT_STATUS_MANAGE = "precompiled/contractStatusManage";
 
     public static final String URI_CERT = "cert";
     public static final String URI_ENCRYPT_TYPE = "encrypt";
 
     // 不需要在url中包含groupId的
-    private static final List<String> URI_NOT_CONTAIN_GROUP_ID = Arrays.asList(
-            URI_MULTI_CONTRACT_COMPILE, URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION, URI_KEY_PAIR,
-            URI_PERMISSION, URI_PERMISSION_FULL_LIST, URI_CNS_LIST, URI_SYS_CONFIG_LIST,
-            URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS, URI_CRUD, URI_CONTRACT_STATUS_MANAGE,
-            URI_PERMISSION_SORTED_LIST, URI_PERMISSION_SORTED_FULL_LIST, URI_CERT, URI_ENCRYPT_TYPE,
-            URI_CHARGING_GET_NETWORK_DATA, URI_CHARGING_GET_TXGASDATA, URI_CHARGING_DELETE_DATA,
-            URI_CHAIN, FRONT_PERFORMANCE_RATIO, FRONT_PERFORMANCE_CONFIG, URI_CHECK_NODE_PROCESS,
-            URI_GET_GROUP_SIZE_INFOS);
+    private static final List<String> URI_NOT_CONTAIN_GROUP_ID =
+            Arrays.asList(URI_MULTI_CONTRACT_COMPILE, URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION,
+                    URI_SYS_CONFIG_LIST, URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS,
+                    URI_CONTRACT_STATUS_MANAGE, URI_CERT, URI_ENCRYPT_TYPE,
+                    URI_CHARGING_GET_NETWORK_DATA, URI_CHARGING_GET_TXGASDATA,
+                    URI_CHARGING_DELETE_DATA, URI_CHAIN, FRONT_PERFORMANCE_RATIO,
+                    FRONT_PERFORMANCE_CONFIG, URI_CHECK_NODE_PROCESS, URI_GET_GROUP_SIZE_INFOS);
 
 
     @Qualifier(value = "genericRestTemplate")
@@ -257,7 +249,8 @@ public class FrontRestTools {
         if (StringUtils.isBlank(uri)) {
             return null;
         }
-        if (uri.contains(URI_CONTRACT_DEPLOY) || uri.contains(URI_MULTI_CONTRACT_COMPILE)) {
+        if (uri.contains(URI_CONTRACT_DEPLOY) || uri.contains(URI_MULTI_CONTRACT_COMPILE)
+                || uri.contains(URI_CHARGING_GET_TXGASDATA)) {
             return deployRestTemplate;
         }
         return genericRestTemplate;
@@ -332,7 +325,7 @@ public class FrontRestTools {
                     throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
                             errorInside.getString("message"));
                 }
-                throw new BaseException(error.getInteger("code"), errorMessage);
+                throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
             }
         }
         return null;

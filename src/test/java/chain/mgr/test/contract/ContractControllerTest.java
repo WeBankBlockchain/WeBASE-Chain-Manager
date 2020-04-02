@@ -49,7 +49,8 @@ import org.springframework.web.context.WebApplicationContext;
 public class ContractControllerTest {
 
     private MockMvc mockMvc;
-    private Integer chainId = 100002;
+    private Integer chainId = 1001;
+    private String nodeId = "339c933afc0987227da8bca3ec432656d1f966e3ed7c1508f4b19c8919df221ba33b1e14852f6180892eea021c4505b3b587febbbf3f76d958386e656bbb6683";
     private Integer groupId = 1;
 
     @Autowired
@@ -180,9 +181,12 @@ public class ContractControllerTest {
         fileList.add(new File("D:\\project\\sol\\Evidence.sol"));
         fileList.add(new File("D:\\project\\sol\\EvidenceFactory.sol"));
         String base64 = CommonUtils.fileToZipBase64(fileList);
+        System.out.println("base64" + base64);
         
-        Map<String, String> param = new HashMap<>();
-        param.put("contractSource", base64);
+        Map<String, Object> param = new HashMap<>();
+        param.put("chainId", chainId);
+        param.put("nodeId", nodeId);
+        param.put("contractZipBase64", base64);
         
         ResultActions resultActions =
                 mockMvc.perform(MockMvcRequestBuilders.post("/contract/compile")
@@ -195,11 +199,14 @@ public class ContractControllerTest {
     
     @Test
     public void testCompileContract2() throws Exception {
-        String filePath = "D:\\project\\sol\\sol.zip";
+        String filePath = "D:\\project\\sol\\HelloWorld.zip";
         String base64 = CommonUtils.fileToBase64(filePath);
+        System.out.println("base64：" + base64);
         
-        Map<String, String> param = new HashMap<>();
-        param.put("contractSource", base64);
+        Map<String, Object> param = new HashMap<>();
+        param.put("chainId", chainId);
+        param.put("nodeId", nodeId);
+        param.put("contractZipBase64", base64);
         
         ResultActions resultActions =
                 mockMvc.perform(MockMvcRequestBuilders.post("/contract/compile")
