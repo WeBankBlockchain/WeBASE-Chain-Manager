@@ -336,7 +336,7 @@ public class ContractService {
     /**
      * contract manage.
      */
-    public BaseResponse statusManage(ContractManageParam inputParam) throws BaseException {
+    public Object statusManage(ContractManageParam inputParam) throws BaseException {
         log.debug("start statusManage. param:{}", JSON.toJSONString(inputParam));
         // check front
         TbFront tbFront =
@@ -355,21 +355,14 @@ public class ContractService {
         params.put("grantAddress", inputParam.getGrantAddress());
 
         // send transaction
-        ContractStatusManageResult contractStatusManageResult =
+        Object contractStatusManageResult =
                 frontInterface.postToSpecificFront(inputParam.getGroupId(), tbFront.getFrontIp(),
                         tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_STATUS_MANAGE, params,
-                        ContractStatusManageResult.class);
+                        Object.class);
 
-        if (contractStatusManageResult.getCode() != 0) {
-            log.error("fail statusManage message:{}.", contractStatusManageResult.getMsg());
-            throw new BaseException(contractStatusManageResult.getCode(),
-                    contractStatusManageResult.getMsg());
-        }
-
-        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        baseResponse.setData(contractStatusManageResult.getData());
-        log.debug("end statusManage. baseResponse:{}", JSON.toJSONString(baseResponse));
-        return baseResponse;
+        log.debug("end statusManage. contractStatusManageResult:{}",
+                JSON.toJSONString(contractStatusManageResult));
+        return contractStatusManageResult;
     }
 
 
