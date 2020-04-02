@@ -43,8 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
-import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
@@ -102,7 +102,7 @@ public class FrontInterfaceService {
                 throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
                         errorInside.getString("message"));
             }
-            throw new BaseException(error.getInteger("code"), errorMessage);
+            throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
         }
     }
 
@@ -333,26 +333,25 @@ public class FrontInterfaceService {
         return getSealerList;
     }
 
-    public GroupHandleResult generateGroup(String frontIp, Integer frontPort,
+    public Object generateGroup(String frontIp, Integer frontPort,
             GenerateGroupInfo param) {
         log.debug("start generateGroup groupId:{} frontIp:{} frontPort:{} param:{}",
                 param.getGenerateGroupId(), frontIp, frontPort, JSON.toJSONString(param));
         Integer groupId = Integer.MAX_VALUE;
-        GroupHandleResult groupHandleResult = requestSpecificFront(groupId, frontIp, frontPort,
-                HttpMethod.POST, FrontRestTools.URI_GENERATE_GROUP, param, GroupHandleResult.class);
+        Object groupHandleResult = requestSpecificFront(groupId, frontIp, frontPort,
+                HttpMethod.POST, FrontRestTools.URI_GENERATE_GROUP, param, Object.class);
 
         log.debug("end generateGroup groupId:{} param:{}", param.getGenerateGroupId(),
                 JSON.toJSONString(param));
         return groupHandleResult;
     }
 
-    public GroupHandleResult operateGroup(String frontIp, Integer frontPort, Integer groupId,
-            String type) {
+    public Object operateGroup(String frontIp, Integer frontPort, Integer groupId, String type) {
         log.debug("start operateGroup frontIp:{} frontPort:{} groupId:{}", frontIp, frontPort,
                 groupId);
         String uri = String.format(FrontRestTools.URI_OPERATE_GROUP, type);
-        GroupHandleResult groupHandleResult =
-                getFromSpecificFront(groupId, frontIp, frontPort, uri, GroupHandleResult.class);
+        Object groupHandleResult =
+                getFromSpecificFront(groupId, frontIp, frontPort, uri, Object.class);
 
         log.debug("end operateGroup");
         return groupHandleResult;
