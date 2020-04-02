@@ -15,11 +15,8 @@ package com.webank.webase.chain.mgr.group;
 
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
-import com.webank.webase.chain.mgr.base.enums.GenerateNormalStatus;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
-import com.webank.webase.chain.mgr.base.enums.StartNormalStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
@@ -33,7 +30,6 @@ import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.GenerateGroupInfo;
-import com.webank.webase.chain.mgr.frontinterface.entity.GroupHandleResult;
 import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
 import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
 import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
@@ -41,7 +37,6 @@ import com.webank.webase.chain.mgr.group.entity.TbGroup;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.node.entity.TbNode;
-import com.webank.webase.chain.mgr.user.UserService;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -79,8 +74,6 @@ public class GroupService {
     @Autowired
     private ContractService contractService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private ConstantProperties constants;
 
     /**
@@ -102,16 +95,8 @@ public class GroupService {
         // request front to generate
         GenerateGroupInfo generateGroupInfo = new GenerateGroupInfo();
         BeanUtils.copyProperties(req, generateGroupInfo);
-        GroupHandleResult groupHandleResult = frontInterface.generateGroup(tbFront.getFrontIp(),
-                tbFront.getFrontPort(), generateGroupInfo);
-        int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
-        // check result
-        if (code != 0) {
-            log.error("fail generateToSingleNode nodeId:{} message:{}.", nodeId,
-                    groupHandleResult.getMessage());
-            throw new BaseException(ConstantCode.GROUP_GENERATE_FAIL.getCode(),
-                    groupHandleResult.getMessage());
-        }
+        frontInterface.generateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(),
+                generateGroupInfo);
         // save group
         TbGroup tbGroup = saveGroup(generateGroupId, chainId, req.getNodeList().size(),
                 req.getDescription(), GroupType.MANUAL.getValue());
@@ -140,16 +125,8 @@ public class GroupService {
             // request front to generate
             GenerateGroupInfo generateGroupInfo = new GenerateGroupInfo();
             BeanUtils.copyProperties(req, generateGroupInfo);
-            GroupHandleResult groupHandleResult = frontInterface.generateGroup(tbFront.getFrontIp(),
-                    tbFront.getFrontPort(), generateGroupInfo);
-            int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
-            // check result
-            if (!GenerateNormalStatus.isInclude(code)) {
-                log.error("fail generateGroup nodeId:{} message:{}.", nodeId,
-                        groupHandleResult.getMessage());
-                throw new BaseException(ConstantCode.GROUP_GENERATE_FAIL.getCode(),
-                        groupHandleResult.getMessage());
-            }
+            frontInterface.generateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(),
+                    generateGroupInfo);
         }
         // save group
         TbGroup tbGroup = saveGroup(generateGroupId, chainId, req.getNodeList().size(),
@@ -158,36 +135,30 @@ public class GroupService {
     }
 
     /**
-     * start group.
+     * operate group.
      * 
+     * @param chainId
      * @param nodeId
-     * @param startGroupId
+     * @param groupId
+     * @param type
+     * @return
      */
-    public BaseResponse operateGroup(Integer chainId, String nodeId, Integer groupId, String type) {
+    public Object operateGroup(Integer chainId, String nodeId, Integer groupId, String type) {
         // get front
         TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
         if (tbFront == null) {
             log.error("fail operateGroup node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
-        // request front to start
-        GroupHandleResult groupHandleResult = frontInterface.operateGroup(tbFront.getFrontIp(),
+        // request front to operate
+        Object groupHandleResult = frontInterface.operateGroup(tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, type);
-        // check result
-        int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
-        if (code != 0) {
-            log.error("fail operateGroup nodeId:{} message:{}.", nodeId,
-                    groupHandleResult.getMessage());
-            throw new BaseException(ConstantCode.GROUP_OPERATE_FAIL.getCode(),
-                    groupHandleResult.getMessage());
-        }
 
         // refresh
         resetGroupList();
 
-        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        baseResponse.setData(groupHandleResult.getStatus());
-        return baseResponse;
+        // return
+        return groupHandleResult;
     }
 
     /**
@@ -207,16 +178,8 @@ public class GroupService {
                 throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
             }
             // request front to start
-            GroupHandleResult groupHandleResult = frontInterface.operateGroup(tbFront.getFrontIp(),
-                    tbFront.getFrontPort(), groupId, "start");
-            // check result
-            int code = CommonUtils.parseHexStr2Int(groupHandleResult.getCode());
-            if (!StartNormalStatus.isInclude(code)) {
-                log.error("fail batchStartGroup nodeId:{} message:{}.", nodeId,
-                        groupHandleResult.getMessage());
-                throw new BaseException(ConstantCode.GROUP_OPERATE_FAIL.getCode(),
-                        groupHandleResult.getMessage());
-            }
+            frontInterface.operateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(), groupId,
+                    "start");
         }
         // refresh
         resetGroupList();
@@ -536,8 +499,6 @@ public class GroupService {
         nodeService.deleteByGroupId(chainId, groupId);
         // remove contract
         contractService.deleteByGroupId(chainId, groupId);
-        // remove user and key
-        userService.deleteByGroupId(chainId, groupId);
     }
 
     /**
