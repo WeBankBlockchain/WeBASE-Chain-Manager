@@ -379,7 +379,7 @@ public class GroupController extends BaseController {
     public Object deleteData(@PathVariable("chainId") Integer chainId,
             @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
             @RequestParam(required = true) int type, @RequestParam(required = true) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime keepEndDat) {
+                    iso = ISO.DATE_TIME) LocalDateTime keepEndDate) {
 
         Instant startTime = Instant.now();
         log.info("start deleteData startTime:{}", startTime.toEpochMilli());
@@ -392,7 +392,7 @@ public class GroupController extends BaseController {
         }
 
         Object result = frontInterfaceService.deleteLogData(tbFront.getFrontIp(),
-                tbFront.getFrontPort(), groupId, type, keepEndDat);
+                tbFront.getFrontPort(), groupId, type, keepEndDate);
 
         log.info("end deleteData useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());

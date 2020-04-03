@@ -1895,18 +1895,18 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/group/charging/getNetWorkData/1
 
 ***1）入参表***
 
-| 序号 | 输入参数   | 类型          | 可为空 | 备注                                                         |
-| ---- | ---------- | ------------- | ------ | ------------------------------------------------------------ |
-| 1    | chainId    | Int           | 否     | 链编号                                                       |
-| 2    | groupId    | Int           | 否     | 群组编号                                                     |
-| 3    | nodeId     | String        | 否     | 节点Id，指定节点调用                                         |
-| 4    | type       | Int           | 否     | 删除数据类型（1-网络统计数据；2-交易gas数据）                |
-| 5    | keepEndDat | LocalDateTime | 否     | 保留截止时间（yyyy-MM-dd'T'HH:mm:ss.SSS 2019-03-13T00:00:00） |
+| 序号 | 输入参数    | 类型          | 可为空 | 备注                                                         |
+| ---- | ----------- | ------------- | ------ | ------------------------------------------------------------ |
+| 1    | chainId     | Int           | 否     | 链编号                                                       |
+| 2    | groupId     | Int           | 否     | 群组编号                                                     |
+| 3    | nodeId      | String        | 否     | 节点Id，指定节点调用                                         |
+| 4    | type        | Int           | 否     | 删除数据类型（1-网络统计数据；2-交易gas数据）                |
+| 5    | keepEndDate | LocalDateTime | 否     | 保留截止时间（yyyy-MM-dd'T'HH:mm:ss.SSS 2019-03-13T00:00:00） |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1?type=2&keepEndDat=2020-01-27T17%3A30%3A04
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1?type=2&keepEndDate=2020-01-27T17%3A30%3A04
 ```
 
 #### 3.14.3 返回参数 
