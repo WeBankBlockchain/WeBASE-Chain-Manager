@@ -6,8 +6,9 @@
 | ---- | ------------------- |
 | 1    | FISCO-BCOS release-2.3.0-bsn    |
 | 2    | WeBASE-Front bsn |
-| 3    | MySQL5.6或以上版本  |
-| 4    | Java8或以上版本     |
+| 3 | WeBASE-Sign bsn |
+| 4    | MySQL5.6或以上版本  |
+| 5    | Java8或以上版本     |
 
 
 ## 2. 注意事项
