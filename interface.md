@@ -1492,7 +1492,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getConsensusList/1001/1/413c788
 | ---- | ---------- | ------ | ------ | ---------------------------------------- |
 | 1    | chainId    | Int    | 否     | 链编号                                   |
 | 2    | groupId    | Int    | 否     | 群组编号                                 |
-| 3    | signUserId | String | 否     | 私钥用户地址                             |
+| 3    | signUserId | String | 否     | WeBASE-Sign签名用户编号                  |
 | 4    | nodeId     | String | 否     | 要切换状态节点Id                         |
 | 5    | nodeType   | String | 否     | 要设置的节点类型：observer/sealer/remove |
 | 6    | reqNodeId  | String | 否     | 调用前置对应的节点Id                     |
@@ -1643,7 +1643,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getSysConfigList/1001/1/413c788
 | 1    | chainId     | Int    | 否     | 链编号                                               |
 | 2    | groupId     | Int    | 否     | 群组编号                                             |
 | 3    | nodeId      | String | 否     | 节点Id，指定节点调用                                 |
-| 4    | signUserId  | String | 否     | 签名用户编号                                         |
+| 4    | signUserId  | String | 否     | WeBASE-Sign签名用户编号                              |
 | 5    | configKey   | String | 否     | 配置项，目前支持tx_count_limit、tx_gas_limit两个参数 |
 | 6    | configValue | String | 否     | 配置值                                               |
 
@@ -1695,6 +1695,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setSysConfig
 ```
 
 ### 3.12 获取网络统计日志数据
+
+​	统计日志数据存储在前置H2数据库，前置默认存储一万条，超过将不会从节点日志文件拉取新的数据。此时，获取完现有数据，可以调用**3.14 删除前置统计日志数据**进行删除，数据量少于一万条时，前置自动从节点日志文件拉取新的数据。
 
 #### 3.12.1 传输协议规范
 
@@ -1785,6 +1787,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/group/charging/getNetWorkData/1
 ```
 
 ### 3.13 获取交易Gas统计日志数据
+
+​	统计日志数据存储在前置H2数据库，前置默认存储一万条，超过将不会从节点日志文件拉取新的数据。此时，获取完现有数据，可以调用**3.14 删除前置统计日志数据**进行删除，数据量少于一万条时，前置自动从节点日志文件拉取新的数据。
 
 #### 3.13.1 传输协议规范
 
@@ -1891,18 +1895,18 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/group/charging/getNetWorkData/1
 
 ***1）入参表***
 
-| 序号 | 输入参数   | 类型          | 可为空 | 备注                                                         |
-| ---- | ---------- | ------------- | ------ | ------------------------------------------------------------ |
-| 1    | chainId    | Int           | 否     | 链编号                                                       |
-| 2    | groupId    | Int           | 否     | 群组编号                                                     |
-| 3    | nodeId     | String        | 否     | 节点Id，指定节点调用                                         |
-| 4    | type       | Int           | 否     | 删除数据类型（1-网络统计数据；2-交易gas数据）                |
-| 5    | keepEndDat | LocalDateTime | 否     | 保留截止时间时间（yyyy-MM-dd'T'HH:mm:ss.SSS 2019-03-13T00:00:00） |
+| 序号 | 输入参数    | 类型          | 可为空 | 备注                                                         |
+| ---- | ----------- | ------------- | ------ | ------------------------------------------------------------ |
+| 1    | chainId     | Int           | 否     | 链编号                                                       |
+| 2    | groupId     | Int           | 否     | 群组编号                                                     |
+| 3    | nodeId      | String        | 否     | 节点Id，指定节点调用                                         |
+| 4    | type        | Int           | 否     | 删除数据类型（1-网络统计数据；2-交易gas数据）                |
+| 5    | keepEndDate | LocalDateTime | 否     | 保留截止时间（yyyy-MM-dd'T'HH:mm:ss.SSS 2019-03-13T00:00:00） |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1?type=2&keepEndDat=2020-01-27T17%3A30%3A04
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1?type=2&keepEndDate=2020-01-27T17%3A30%3A04
 ```
 
 #### 3.14.3 返回参数 
@@ -2920,7 +2924,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/400003
 | 7    | bytecodeBin       | String         | 否     | 合约bytecode binary，用于部署合约 |
 | 8    | contractId      | String         | 否     | 合约编号             |
 | 9    | contractPath      | String         | 否     | 合约所在目录               |
-| 10   | signUserId    | String         | 否     | 签名用户编号         |
+| 10   | signUserId    | String         | 否     | WeBASE-Sign签名用户编号 |
 | 11    | constructorParams | List | 是     | 构造函数入参               |
 | 12 | nodeId | String | 否 | 节点编号，指定节点调用 |
 
@@ -3032,7 +3036,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/deploy
 |------|-------------|---------------|--------|-------------------------------|
 | 1 | chainId | int | 否 | 链编号 |
 | 2    | groupId      | Int            | 否     | 所属群组编号               |
-| 3    | signUserId | String  | 否     | 签名用户编号     |
+| 3    | signUserId | String  | 否     | WeBASE-Sign签名用户编号 |
 | 4    | contractName | String         | 否     | 合约名称                   |
 | 5    | contractId      | Int      | 否     | 合约编号               |
 | 6    | funcName     | String         | 否     | 合约方法名                 |
@@ -3163,7 +3167,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/transaction
 | 1    | chainId         | Int    | 否     | 链编号                                                       |
 | 2    | groupId         | Int    | 否     | 群组编号                                                     |
 | 3    | nodeId          | String | 否     | 节点Id                                                       |
-| 4    | signUserId      | String | 否     | 签名用户编号                                                 |
+| 4    | signUserId      | String | 否     | WeBASE-Sign签名用户编号                                      |
 | 5    | contractAddress | String | 否     | 已部署的合约地址                                             |
 | 6    | handleType      | String | 否     | 操作类型：freeze-冻结；unfreeze-解冻；grantManager-授权；getStatus-查询合约状态；listManager-查询合约权限列表 |
 | 7    | grantAddress    | String | 是     | 授权用户地址，操作类型为grantManager时需传入                 |
