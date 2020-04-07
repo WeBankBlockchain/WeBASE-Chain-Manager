@@ -1208,7 +1208,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 }
 ```
 
-### 3.5 更新群组（废弃，启动或停止后自动更新）
+### ~~3.5 更新群组~~（废弃，启动或停止后自动更新）
 
 ​	生成新群组并启动新群组的每一个节点后，调用此接口更新群组相关信息。
 
@@ -1550,7 +1550,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setConsensusStatus
 #### 3.10.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址： **/group/getSysConfigList/{chainId}/{groupId}/{nodeId}&pageSize={pageSize}&pageNumber={pageNumber}**
+- 请求地址： **/group/getSysConfigList/{chainId}/{groupId}/{nodeId}?pageSize={pageSize}&pageNumber={pageNumber}**
 - 请求方式：GET
 - 请求头：Content-type: application/json
 - 返回格式：JSON
@@ -1948,7 +1948,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c
 #### 4.1.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/node/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}?nodeName={nodeName}**
+- 请求地址：**/node/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}?nodeId={nodeId}**
 - 请求方式：GET
 - 返回格式：JSON
 
