@@ -1208,7 +1208,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 }
 ```
 
-### 3.5 更新群组（废弃，启动或停止后自动更新）
+### ~~3.5 更新群组~~（废弃，启动或停止后自动更新）
 
 ​	生成新群组并启动新群组的每一个节点后，调用此接口更新群组相关信息。
 
@@ -1550,7 +1550,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setConsensusStatus
 #### 3.10.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址： **/group/getSysConfigList/{chainId}/{groupId}/{nodeId}&pageSize={pageSize}&pageNumber={pageNumber}**
+- 请求地址： **/group/getSysConfigList/{chainId}/{groupId}/{nodeId}?pageSize={pageSize}&pageNumber={pageNumber}**
 - 请求方式：GET
 - 请求头：Content-type: application/json
 - 返回格式：JSON
@@ -1704,7 +1704,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/setSysConfig
 - 请求地址： 
 
 ```
-/group//charging/getNetWorkData/{chainId}/{groupId}/{nodeId}&pageSize={pageSize}&pageNumber={pageNumber}&beginDate={beginDate}&endDate={endDate}
+/group/charging/getNetWorkData/{chainId}/{groupId}/{nodeId}?pageSize={pageSize}&pageNumber={pageNumber}&beginDate={beginDate}&endDate={endDate}
 ```
 
 - 请求方式：GET
@@ -1796,7 +1796,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/group/charging/getNetWorkData/1
 - 请求地址： 
 
 ```
-/group//charging/getTxGasData/{chainId}/{groupId}/{nodeId}&pageSize={pageSize}&pageNumber={pageNumber}&beginDate={beginDate}&endDate={endDate}&transHash={transHash}
+/group/charging/getTxGasData/{chainId}/{groupId}/{nodeId}?pageSize={pageSize}&pageNumber={pageNumber}&beginDate={beginDate}&endDate={endDate}&transHash={transHash}
 ```
 
 - 请求方式：GET
@@ -1821,7 +1821,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/group/charging/getNetWorkData/1
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/group/group/charging/getNetWorkData/1001/1/413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1?pageSize=2&pageNumber=1&beginDate=2020-03-27T10:30:04&endDate=2020-03-27T17:30:04
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/group/charging/getTxGasData/1001/1/413c788ec4b55e8170815e1c61977bac8c38f2df8670d09868a6099a044c0bff7884b9c30f3fa9c331358fcbded28f8d0211e2ffc48019c9796fa05274ed89b1?pageSize=2&pageNumber=1&beginDate=2020-03-27T10:30:04&endDate=2020-03-27T17:30:04
 ```
 
 #### 3.13.3 返回参数
@@ -1948,7 +1948,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c
 #### 4.1.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/node/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}?nodeName={nodeName}**
+- 请求地址：**/node/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}?nodeId={nodeId}**
 - 请求方式：GET
 - 返回格式：JSON
 
