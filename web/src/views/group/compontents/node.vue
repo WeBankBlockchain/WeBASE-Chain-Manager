@@ -88,6 +88,7 @@
 <script>
 import contentHead from "@/components/contentHead";
 import { getNodes,getGroups } from "@/api/api"
+import errCode from "@/util/errCode"
 export default {
     name: "node",
     data() {
@@ -106,12 +107,12 @@ export default {
         "v-content-head": contentHead,
     },
     mounted: function(){
-        this.getNodeList();
         this.getGroupList();
+        // this.getNodeList();
     },
     methods: {
         changGroup: function(){
-            this.getNodeList();
+            // this.getNodeList();
             this.getGroupList();
         },
         getNodeList: function(){
@@ -121,10 +122,6 @@ export default {
                 pageNumber: this.pageNumber,
                 pageSize: this.pageSize
             };
-            // let query = {}
-            // if(this.nodeName){
-            //     query.nodeName = this.nodeName
-            // }
             getNodes(data,{}).then(res => {
                 if(res.data.code === 0){
                     this.total = res.data.totalCount;
@@ -147,10 +144,26 @@ export default {
             getGroups(localStorage.getItem('chainId')).then(res => {
                 if (res.data.code === 0) {
                     if (res.data.data && res.data.data.length) {
-                        this.groupList = res.data.data || []
+                        let num = 0;
+                        this.groupList = res.data.data || [];
+                        for(let i = 0; i < this.groupList.length; i++){
+                            if(this.groupList[i].groupId == this.groupId){
+                                num++
+                            }
+                        }
+                        if(num > 0){
+                            this.getNodeList()
+                        }else{
+                            this.groupId = this.groupList[0].groupId;
+                            this.getNodeList()
+                        }
                     } 
                 } else {
                     this.groupList = [];
+                    this.$message({
+                        type: "error",
+                        message: errCode.errCode[res.data.code].zh
+                    })
                 }
             }).catch(err => {
                 this.groupList = [];

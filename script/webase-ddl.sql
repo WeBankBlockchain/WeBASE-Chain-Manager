@@ -106,22 +106,3 @@ CREATE TABLE IF NOT EXISTS tb_contract (
     PRIMARY KEY (contract_id),
     UNIQUE KEY uk_group_path_name (chain_id,group_id,contract_path,contract_name)
 ) ENGINE=InnoDB AUTO_INCREMENT=400001 DEFAULT CHARSET=utf8 COMMENT='合约表';
-
-
--- ----------------------------
--- Table structure for tb_user
--- ----------------------------
-CREATE TABLE IF NOT EXISTS tb_user (
-    user_id int(11) NOT NULL AUTO_INCREMENT COMMENT '用户编号',
-    chain_id int(11) NOT NULL COMMENT '所属区块链编号',
-    group_id int(11) NOT NULL COMMENT '所属群组编号',
-    sign_user_id varchar(64) NOT NULL COMMENT '签名服务中的user的业务id',
-    app_id varchar(64) DEFAULT NULL COMMENT '区块链应用的编号',
-    public_key varchar(250) NOT NULL COMMENT '公钥',
-    address varchar(64) DEFAULT NULL COMMENT '链上地址',
-    description varchar(250) DEFAULT NULL COMMENT '备注',
-    create_time datetime DEFAULT NULL COMMENT '创建时间',
-    modify_time datetime DEFAULT NULL COMMENT '修改时间',
-    PRIMARY KEY (user_id),
-    UNIQUE KEY unique_name (chain_id,group_id,sign_user_id)
-) ENGINE=InnoDB AUTO_INCREMENT=700001 DEFAULT CHARSET=utf8 COMMENT='用户信息表';

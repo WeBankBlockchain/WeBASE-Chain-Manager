@@ -26,7 +26,6 @@ import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
-import com.webank.webase.chain.mgr.user.UserService;
 import java.util.List;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
@@ -55,8 +54,6 @@ public class ChainService {
     @Autowired
     private ContractService contractService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private FrontGroupMapCache frontGroupMapCache;
     @Autowired
     @Lazy
@@ -67,13 +64,13 @@ public class ChainService {
      */
     public TbChain newChain(ChainInfo chainInfo) {
         log.debug("start newChain chainInfo:{}", chainInfo);
-        
+
         // check id
         TbChain tbChainInfo = getChainById(chainInfo.getChainId());
         if (tbChainInfo != null) {
             throw new BaseException(ConstantCode.CHAIN_ID_EXISTS);
         }
-        
+
         // check name
         ChainParam param = new ChainParam();
         param.setChainName(chainInfo.getChainName());
@@ -81,11 +78,11 @@ public class ChainService {
         if (nameCount > 0) {
             throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS);
         }
-        
+
         // copy attribute
         TbChain tbChain = new TbChain();
         BeanUtils.copyProperties(chainInfo, tbChain);
-        
+
         // save chain info
         int result = chainMapper.add(tbChain);
         if (result == 0) {
@@ -109,14 +106,14 @@ public class ChainService {
     public List<TbChain> getChainList(ChainParam param) {
         return chainMapper.getList(param);
     }
-    
+
     /**
      * get chain info
      */
     public TbChain getChainById(Integer chainId) {
         return chainMapper.getChainById(chainId);
     }
-    
+
     /**
      * remove chain
      */
@@ -142,11 +139,9 @@ public class ChainService {
         nodeService.deleteByChainId(chainId);
         // remove contract
         contractService.deleteContractByChainId(chainId);
-        // remove user and key
-        userService.deleteByChainId(chainId);
         // reset group list
         resetGroupListTask.asyncResetGroupList();
         // clear cache
-        frontGroupMapCache.clearMapList();
+        frontGroupMapCache.clearMapList(chainId);
     }
 }
