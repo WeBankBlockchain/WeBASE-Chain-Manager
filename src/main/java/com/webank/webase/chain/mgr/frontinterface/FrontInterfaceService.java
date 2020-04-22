@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -53,6 +54,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -84,9 +86,23 @@ public class FrontInterfaceService {
             HttpEntity entity = FrontRestTools.buildHttpEntity(param);// build entity
             ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);
             return response.getBody();
+        } catch (ResourceAccessException e) {
+            log.error("requestSpecificFront. ResourceAccessException:{}", e);
+            throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
         } catch (HttpStatusCodeException e) {
             JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
-            throw new BaseException(error.getInteger("code"), error.getString("errorMessage"));
+            log.error("requestSpecificFront. error:{}", JSON.toJSONString(error));
+            String errorMessage = error.getString("errorMessage");
+            if (StringUtils.isBlank(errorMessage)) {
+                throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
+            }
+            if (errorMessage.contains("code")) {
+                JSONObject errorInside = JSONObject.parseObject(
+                        JSONObject.parseObject(error.getString("errorMessage")).getString("error"));
+                throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
+                        errorInside.getString("message"));
+            }
+            throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
         }
     }
 
@@ -317,26 +333,25 @@ public class FrontInterfaceService {
         return getSealerList;
     }
 
-    public GroupHandleResult generateGroup(String frontIp, Integer frontPort,
+    public Object generateGroup(String frontIp, Integer frontPort,
             GenerateGroupInfo param) {
         log.debug("start generateGroup groupId:{} frontIp:{} frontPort:{} param:{}",
                 param.getGenerateGroupId(), frontIp, frontPort, JSON.toJSONString(param));
         Integer groupId = Integer.MAX_VALUE;
-        GroupHandleResult groupHandleResult = requestSpecificFront(groupId, frontIp, frontPort,
-                HttpMethod.POST, FrontRestTools.URI_GENERATE_GROUP, param, GroupHandleResult.class);
+        Object groupHandleResult = requestSpecificFront(groupId, frontIp, frontPort,
+                HttpMethod.POST, FrontRestTools.URI_GENERATE_GROUP, param, Object.class);
 
         log.debug("end generateGroup groupId:{} param:{}", param.getGenerateGroupId(),
                 JSON.toJSONString(param));
         return groupHandleResult;
     }
 
-    public GroupHandleResult operateGroup(String frontIp, Integer frontPort, Integer groupId,
-            String type) {
+    public Object operateGroup(String frontIp, Integer frontPort, Integer groupId, String type) {
         log.debug("start operateGroup frontIp:{} frontPort:{} groupId:{}", frontIp, frontPort,
                 groupId);
         String uri = String.format(FrontRestTools.URI_OPERATE_GROUP, type);
-        GroupHandleResult groupHandleResult =
-                getFromSpecificFront(groupId, frontIp, frontPort, uri, GroupHandleResult.class);
+        Object groupHandleResult =
+                getFromSpecificFront(groupId, frontIp, frontPort, uri, Object.class);
 
         log.debug("end operateGroup");
         return groupHandleResult;
@@ -465,5 +480,37 @@ public class FrontInterfaceService {
                 deleteToSpecificFront(groupId, frontIp, frontPort, uri, null, Object.class);
         log.debug("end deleteLogData. frontRsp:{}", JSON.toJSONString(frontRsp));
         return frontRsp;
+    }
+
+    public Object getNodeMonitorInfo(String frontIp, Integer frontPort, Integer groupId,
+            Map<String, String> map) {
+        String uri = HttpRequestTools.getQueryUri(FrontRestTools.URI_CHAIN, map);
+        Object frontRsp = getFromSpecificFront(groupId, frontIp, frontPort, uri, Object.class);
+        return frontRsp;
+    }
+
+    public Object getPerformanceRatio(String frontIp, Integer frontPort, Map<String, String> map) {
+        String uri = HttpRequestTools.getQueryUri(FrontRestTools.FRONT_PERFORMANCE_RATIO, map);
+        Object frontRsp =
+                getFromSpecificFront(Integer.MAX_VALUE, frontIp, frontPort, uri, Object.class);
+        return frontRsp;
+    }
+
+    public Object getPerformanceConfig(String frontIp, Integer frontPort) {
+        Integer groupId = Integer.MAX_VALUE;
+        return getFromSpecificFront(groupId, frontIp, frontPort,
+                FrontRestTools.FRONT_PERFORMANCE_CONFIG, Object.class);
+    }
+
+    public Object checkNodeProcess(String frontIp, Integer frontPort) {
+        Integer groupId = Integer.MAX_VALUE;
+        return getFromSpecificFront(groupId, frontIp, frontPort,
+                FrontRestTools.URI_CHECK_NODE_PROCESS, Object.class);
+    }
+
+    public Object getGroupSizeInfos(String frontIp, Integer frontPort) {
+        Integer groupId = Integer.MAX_VALUE;
+        return getFromSpecificFront(groupId, frontIp, frontPort,
+                FrontRestTools.URI_GET_GROUP_SIZE_INFOS, Object.class);
     }
 }

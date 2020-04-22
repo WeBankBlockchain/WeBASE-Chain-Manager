@@ -16,6 +16,7 @@ targetCompatibility = 1.8
 repositories {
     maven {url "http://maven.aliyun.com/nexus/content/groups/public/"}
     
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     maven { url 'https://dl.bintray.com/ethereum/maven/' }
     mavenLocal()
     mavenCentral()
@@ -29,7 +30,7 @@ List springboot = [
 ]
 
 List web3jsdk = [
-    "org.fisco-bcos:web3sdk:2.2.0"
+    "org.fisco-bcos:web3sdk:bsn-0402-SNAPSHOT"
 ]
 
 List jaxb = [
@@ -73,7 +74,7 @@ dependencies {
     compile springboot,web3jsdk,jaxb,jwt,swagger,jackson,mysql
     
     compile "org.apache.commons:commons-lang3:3.8.1"
-    compile "com.alibaba:fastjson:1.2.60"
+    compile "com.alibaba:fastjson:1.2.67"
 
     compile lombok
     annotationProcessor lombok
