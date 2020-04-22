@@ -45,7 +45,7 @@ public class ConstantCode {
 
     public static final RetCode SAVE_FRONT_FAIL = RetCode.mark(205006, "save front fail");
 
-    public static final RetCode REQUEST_FRONT_FAIL = RetCode.mark(205007, "request front fail");
+    public static final RetCode REQUEST_FRONT_FAIL = RetCode.mark(205007, "request front fail, please check front");
 
     public static final RetCode CONTRACT_ABI_EMPTY =
             RetCode.mark(205008, "abiInfo cannot be empty");
@@ -104,6 +104,8 @@ public class ConstantCode {
     public static final RetCode GROUP_GENERATE_FAIL = RetCode.mark(205031, "group generate fail");
     
     public static final RetCode GROUP_OPERATE_FAIL = RetCode.mark(205032, "group operate fail");
+    
+    public static final RetCode REQUEST_NODE_EXCEPTION = RetCode.mark(205033, "request node exception");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");
