@@ -481,53 +481,6 @@ public class CommonUtils {
     }
 
     /**
-     * zip Base64 解密 解压缩.
-     * 
-     * @param base64 base64加密字符
-     * @param path 解压文件夹路径
-     */
-    public static void zipBase64ToFile(String base64, String path) {
-        ByteArrayInputStream bais = null;
-        ZipInputStream zis = null;
-        try {
-            File file = new File(path);
-            if (!file.exists() && !file.isDirectory()) {
-                file.mkdirs();
-            }
-
-            byte[] byteBase64 = Base64.getDecoder().decode(base64);
-            bais = new ByteArrayInputStream(byteBase64);
-            zis = new ZipInputStream(bais);
-            ZipEntry entry = zis.getNextEntry();
-            File fout = null;
-            while (entry != null && !entry.isDirectory()) {
-                log.info("zipBase64ToFile file name:[{}]", entry.getName());
-                fout = new File(path, entry.getName());
-                BufferedOutputStream bos = null;
-                try {
-                    bos = new BufferedOutputStream(new FileOutputStream(fout));
-                    int offo = -1;
-                    byte[] buffer = new byte[1024];
-                    while ((offo = zis.read(buffer)) != -1) {
-                        bos.write(buffer, 0, offo);
-                    }
-                } catch (IOException e) {
-                    log.error("base64ToFile IOException:[{}]", e.toString());
-                } finally {
-                    close(bos);
-                }
-                // next
-                entry = zis.getNextEntry();
-            }
-        } catch (IOException e) {
-            log.error("base64ToFile IOException:[{}]", e.toString());
-        } finally {
-            close(zis);
-            close(bais);
-        }
-    }
-
-    /**
      * close Closeable.
      * 
      * @param closeable object
