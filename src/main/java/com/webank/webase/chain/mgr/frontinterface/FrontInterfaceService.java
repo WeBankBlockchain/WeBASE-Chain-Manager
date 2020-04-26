@@ -29,7 +29,6 @@ import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.HttpRequestTools;
 import com.webank.webase.chain.mgr.front.entity.TransactionCount;
 import com.webank.webase.chain.mgr.frontinterface.entity.GenerateGroupInfo;
-import com.webank.webase.chain.mgr.frontinterface.entity.GroupHandleResult;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
 import com.webank.webase.chain.mgr.group.entity.ReqSetSysConfig;
 import com.webank.webase.chain.mgr.group.entity.SysConfigParam;
@@ -43,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -90,20 +88,9 @@ public class FrontInterfaceService {
             log.error("requestSpecificFront. ResourceAccessException:{}", e);
             throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
         } catch (HttpStatusCodeException e) {
-            JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
-            log.error("requestSpecificFront. error:{}", JSON.toJSONString(error));
-            String errorMessage = error.getString("errorMessage");
-            if (StringUtils.isBlank(errorMessage)) {
-                throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
-            }
-            if (errorMessage.contains("code")) {
-                JSONObject errorInside = JSONObject.parseObject(
-                        JSONObject.parseObject(error.getString("errorMessage")).getString("error"));
-                throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
-                        errorInside.getString("message"));
-            }
-            throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
+            FrontRestTools.errorFormat(JSONObject.parseObject(e.getResponseBodyAsString()));
         }
+        return null;
     }
 
     /**
@@ -333,8 +320,7 @@ public class FrontInterfaceService {
         return getSealerList;
     }
 
-    public Object generateGroup(String frontIp, Integer frontPort,
-            GenerateGroupInfo param) {
+    public Object generateGroup(String frontIp, Integer frontPort, GenerateGroupInfo param) {
         log.debug("start generateGroup groupId:{} frontIp:{} frontPort:{} param:{}",
                 param.getGenerateGroupId(), frontIp, frontPort, JSON.toJSONString(param));
         Integer groupId = Integer.MAX_VALUE;
