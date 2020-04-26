@@ -313,21 +313,29 @@ public class FrontRestTools {
                 log.info("continue next front", ex);
                 continue;
             } catch (HttpStatusCodeException e) {
-                JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
-                log.error("http request fail. error:{}", JSON.toJSONString(error));
-                String errorMessage = error.getString("errorMessage");
-                if (StringUtils.isBlank(errorMessage)) {
-                    throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
-                }
-                if (errorMessage.contains("code")) {
-                    JSONObject errorInside = JSONObject.parseObject(JSONObject
-                            .parseObject(error.getString("errorMessage")).getString("error"));
-                    throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
-                            errorInside.getString("message"));
-                }
-                throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
+                errorFormat(JSONObject.parseObject(e.getResponseBodyAsString()));
             }
         }
         return null;
+    }
+
+    /**
+     * front error format
+     * 
+     * @param error
+     */
+    public static void errorFormat(JSONObject error) {
+        log.error("http request fail. error:{}", JSON.toJSONString(error));
+        String errorMessage = error.getString("errorMessage");
+        if (StringUtils.isBlank(errorMessage)) {
+            throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
+        }
+        if (errorMessage.contains("code")) {
+            JSONObject errorInside = JSONObject.parseObject(
+                    JSONObject.parseObject(error.getString("errorMessage")).getString("error"));
+            throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
+                    errorInside.getString("message"));
+        }
+        throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
     }
 }
