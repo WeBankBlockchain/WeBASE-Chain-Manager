@@ -14,7 +14,7 @@
 package com.webank.webase.chain.mgr.chain;
 
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
@@ -55,13 +55,13 @@ public class ChainController extends BaseController {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start newChain startTime:{} chainInfo:{}", startTime.toEpochMilli(),
-                JSON.toJSONString(chainInfo));
+                JsonTools.toJSONString(chainInfo));
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         TbChain tbChain = chainService.newChain(chainInfo);
         baseResponse.setData(tbChain);
         log.info("end newChain useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -85,7 +85,7 @@ public class ChainController extends BaseController {
 
         log.info("end queryChainList useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(pagesponse));
+                JsonTools.toJSONString(pagesponse));
         return pagesponse;
     }
 
@@ -103,7 +103,7 @@ public class ChainController extends BaseController {
 
         log.info("end removeChain useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 }
