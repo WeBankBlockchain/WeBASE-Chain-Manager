@@ -13,7 +13,7 @@
  */
 package com.webank.webase.chain.mgr.front;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
@@ -123,7 +123,7 @@ public class FrontService {
         // save front info
         frontMapper.add(tbFront);
         if (tbFront.getFrontId() == null || tbFront.getFrontId() == 0) {
-            log.warn("fail newFront, after save, tbFront:{}", JSON.toJSONString(tbFront));
+            log.warn("fail newFront, after save, tbFront:{}", JsonTools.toJSONString(tbFront));
             throw new BaseException(ConstantCode.SAVE_FRONT_FAIL);
         }
         for (String groupId : groupIdList) {
@@ -225,7 +225,7 @@ public class FrontService {
 
         Object rspObj = frontInterface.getNodeMonitorInfo(tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, map);
-        log.debug("end getNodeMonitorInfo. rspObj:{}", JSON.toJSONString(rspObj));
+        log.debug("end getNodeMonitorInfo. rspObj:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
     }
 
@@ -263,7 +263,7 @@ public class FrontService {
 
         Object rspObj = frontInterface.getPerformanceRatio(tbFront.getFrontIp(),
                 tbFront.getFrontPort(), map);
-        log.debug("end getPerformanceRatio. rspObj:{}", JSON.toJSONString(rspObj));
+        log.debug("end getPerformanceRatio. rspObj:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
     }
 
@@ -281,7 +281,7 @@ public class FrontService {
 
         Object rspObj =
                 frontInterface.getPerformanceConfig(tbFront.getFrontIp(), tbFront.getFrontPort());
-        log.debug("end getPerformanceConfig. frontRsp:{}", JSON.toJSONString(rspObj));
+        log.debug("end getPerformanceConfig. frontRsp:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
     }
 
@@ -299,7 +299,7 @@ public class FrontService {
 
         Object rspObj =
                 frontInterface.checkNodeProcess(tbFront.getFrontIp(), tbFront.getFrontPort());
-        log.debug("end checkNodeProcess. response:{}", JSON.toJSONString(rspObj));
+        log.debug("end checkNodeProcess. response:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
     }
 
@@ -317,7 +317,7 @@ public class FrontService {
 
         Object rspObj =
                 frontInterface.getGroupSizeInfos(tbFront.getFrontIp(), tbFront.getFrontPort());
-        log.debug("end getGroupSizeInfos. response:{}", JSON.toJSONString(rspObj));
+        log.debug("end getGroupSizeInfos. response:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
     }
 
