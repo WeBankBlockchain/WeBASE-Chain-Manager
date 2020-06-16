@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,11 +13,11 @@
  */
 package com.webank.webase.chain.mgr.frontgroupmap.entity;
 
+
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +29,7 @@ public class FrontGroupMapCache {
 
     private static Map<Integer, List<FrontGroup>> mapList = new ConcurrentHashMap<>();
 
+
     /**
      * clear mapList.
      */
@@ -39,9 +40,10 @@ public class FrontGroupMapCache {
     /**
      * reset mapList.
      */
-    public Map<Integer, List<FrontGroup>> resetMapList(int chainId) {
+    public Map<Integer, List<FrontGroup>> resetMapList(int chainId, int groupId) {
         MapListParam param = new MapListParam();
         param.setChainId(chainId);
+        param.setGroupId(groupId);
         mapList.put(chainId, mapService.getList(param));
         return mapList;
     }
@@ -50,21 +52,19 @@ public class FrontGroupMapCache {
      * get mapList.
      */
     public List<FrontGroup> getMapListByChainId(int chainId, int groupId) {
-        List<FrontGroup> list = getAllMap(chainId);
+        List<FrontGroup> list = getAllMap(chainId, groupId);
         if (list == null) {
             return null;
         }
-        List<FrontGroup> map =
-                list.stream().filter(m -> groupId == m.getGroupId()).collect(Collectors.toList());
-        return map;
+        return list;
     }
 
     /**
      * get all mapList.
      */
-    public List<FrontGroup> getAllMap(int chainId) {
+    public List<FrontGroup> getAllMap(int chainId, int groupId) {
         if (mapList == null || mapList.get(chainId) == null) {
-            mapList = resetMapList(chainId);
+            mapList = resetMapList(chainId, groupId);
         }
         return mapList.get(chainId);
     }
