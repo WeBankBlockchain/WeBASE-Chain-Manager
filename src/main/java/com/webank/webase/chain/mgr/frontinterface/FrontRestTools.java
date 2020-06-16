@@ -13,8 +13,8 @@
  */
 package com.webank.webase.chain.mgr.frontinterface;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
@@ -174,7 +174,7 @@ public class FrontRestTools {
         failInfo.setLatestTime(Instant.now());
         failInfo.setFailCount(failInfo.getFailCount() + 1);
         failRequestMap.put(key, failInfo);
-        log.info("the latest failInfo:{}", JSON.toJSONString(failRequestMap));
+        log.info("the latest failInfo:{}", JsonTools.toJSONString(failRequestMap));
     }
 
 
@@ -190,7 +190,7 @@ public class FrontRestTools {
      * delete key of map
      */
     private static void deleteKeyOfMap(Map<String, FailInfo> map, String rkey) {
-        log.info("start deleteKeyOfMap. rkey:{} map:{}", rkey, JSON.toJSONString(map));
+        log.info("start deleteKeyOfMap. rkey:{} map:{}", rkey, JsonTools.toJSONString(map));
         Iterator<String> iter = map.keySet().iterator();
         while (iter.hasNext()) {
             String key = iter.next();
@@ -198,7 +198,7 @@ public class FrontRestTools {
                 iter.remove();
             }
         }
-        log.info("end deleteKeyOfMap. rkey:{} map:{}", rkey, JSON.toJSONString(map));
+        log.info("end deleteKeyOfMap. rkey:{} map:{}", rkey, JsonTools.toJSONString(map));
     }
 
 
@@ -207,11 +207,11 @@ public class FrontRestTools {
      */
     private String buildFrontUrl(ArrayList<FrontGroup> list, String uri, HttpMethod httpMethod) {
         Collections.shuffle(list);// random one
-        log.debug("====================map list:{}", JSON.toJSONString(list));
+        log.debug("====================map list:{}", JsonTools.toJSONString(list));
         Iterator<FrontGroup> iterator = list.iterator();
         while (iterator.hasNext()) {
             FrontGroup frontGroup = iterator.next();
-            log.info("============frontGroup:{} uri:{}", JSON.toJSONString(frontGroup), uri);
+            log.info("============frontGroup:{} uri:{}", JsonTools.toJSONString(frontGroup), uri);
 
             uri = uriAddGroupId(frontGroup.getGroupId(), uri);// append groupId to uri
             String url = String.format(cproperties.getFrontUrl(), frontGroup.getFrontIp(),
@@ -236,7 +236,7 @@ public class FrontRestTools {
         headers.setContentType(MediaType.APPLICATION_JSON);
         String paramStr = null;
         if (Objects.nonNull(param)) {
-            paramStr = JSON.toJSONString(param);
+            paramStr = JsonTools.toJSONString(param);
         }
         HttpEntity requestEntity = new HttpEntity(paramStr, headers);
         return requestEntity;
@@ -313,7 +313,7 @@ public class FrontRestTools {
                 log.info("continue next front", ex);
                 continue;
             } catch (HttpStatusCodeException e) {
-                errorFormat(JSONObject.parseObject(e.getResponseBodyAsString()));
+                errorFormat(JsonTools.stringToJsonNode(e.getResponseBodyAsString()));
             }
         }
         return null;
@@ -324,17 +324,16 @@ public class FrontRestTools {
      * 
      * @param error
      */
-    public static void errorFormat(JSONObject error) {
-        log.error("http request fail. error:{}", JSON.toJSONString(error));
-        String errorMessage = error.getString("errorMessage");
+    public static void errorFormat(JsonNode error) {
+        log.error("http request fail. error:{}", JsonTools.toJSONString(error));
+        String errorMessage = error.get("errorMessage").asText();
         if (StringUtils.isBlank(errorMessage)) {
             throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
         }
         if (errorMessage.contains("code")) {
-            JSONObject errorInside = JSONObject.parseObject(
-                    JSONObject.parseObject(error.getString("errorMessage")).getString("error"));
+            JsonNode errorInside = JsonTools.stringToJsonNode(errorMessage).get("error");
             throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
-                    errorInside.getString("message"));
+                    errorInside.get("message").asText());
         }
         throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
     }
