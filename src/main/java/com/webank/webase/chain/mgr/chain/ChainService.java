@@ -13,7 +13,7 @@
  */
 package com.webank.webase.chain.mgr.chain;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
@@ -86,7 +86,7 @@ public class ChainService {
         // save chain info
         int result = chainMapper.add(tbChain);
         if (result == 0) {
-            log.warn("fail newChain, after save, tbChain:{}", JSON.toJSONString(tbChain));
+            log.warn("fail newChain, after save, tbChain:{}", JsonTools.toJSONString(tbChain));
             throw new BaseException(ConstantCode.SAVE_CHAIN_FAIL);
         }
         return getChainById(chainInfo.getChainId());

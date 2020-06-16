@@ -13,7 +13,7 @@
  */
 package com.webank.webase.chain.mgr.node;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
@@ -93,7 +93,7 @@ public class NodeController extends BaseController {
 
         log.info("end queryNodeList useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(pagesponse));
+                JsonTools.toJSONString(pagesponse));
         return pagesponse;
     }
 
@@ -122,7 +122,7 @@ public class NodeController extends BaseController {
 
         log.info("end getBlockNumber useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -151,7 +151,7 @@ public class NodeController extends BaseController {
 
         log.info("end getBlockByNumber useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -181,7 +181,7 @@ public class NodeController extends BaseController {
 
         log.info("end getTotalTransactionCount useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -210,7 +210,7 @@ public class NodeController extends BaseController {
 
         log.info("end getTransactionByHash useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -240,7 +240,7 @@ public class NodeController extends BaseController {
 
         log.info("end getTransactionReceipt useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 }

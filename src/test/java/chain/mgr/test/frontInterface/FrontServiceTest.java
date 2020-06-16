@@ -13,7 +13,7 @@
  */
 package chain.mgr.test.frontInterface;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.Application;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
@@ -50,28 +50,28 @@ public class FrontServiceTest {
     public void getGroupPeersTest() {
         List<String> list = frontInterface.getGroupPeers(chainId, groupId);
         assert (list != null && list.size() > 0);
-        System.out.println(JSON.toJSONString(list));
+        System.out.println(JsonTools.toJSONString(list));
     }
 
     @Test
     public void getGroupListTest() {
         List<String> list = frontInterface.getGroupListFromSpecificFront(frontIp, frontPort);
         assert (list != null && list.size() > 0);
-        System.out.println("=====================list:" + JSON.toJSONString(list));
+        System.out.println("=====================list:" + JsonTools.toJSONString(list));
     }
     
     @Test
     public void getObserverList() {
         List<String> list = frontInterface.getObserverList(chainId, groupId);
         assert (list != null && list.size() > 0);
-        System.out.println("=====================list:" + JSON.toJSONString(list));
+        System.out.println("=====================list:" + JsonTools.toJSONString(list));
     }
 
     @Test
     public void getPeersTest() {
         PeerInfo[] list = frontInterface.getPeers(chainId, groupId);
         assert (list != null && list.length > 0);
-        System.out.println("=====================list:" + JSON.toJSONString(list));
+        System.out.println("=====================list:" + JsonTools.toJSONString(list));
     }
 
     @Test
@@ -85,6 +85,6 @@ public class FrontServiceTest {
     public void syncStatusTest() {
         SyncStatus status = frontInterface.getSyncStatus(chainId, groupId);
         assert (status != null);
-        System.out.println("=====================status:" + JSON.toJSONString(status));
+        System.out.println("=====================status:" + JsonTools.toJSONString(status));
     }
 }

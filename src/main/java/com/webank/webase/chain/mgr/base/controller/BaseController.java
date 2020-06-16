@@ -13,7 +13,7 @@
  */
 package com.webank.webase.chain.mgr.base.controller;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.ParamException;
 import java.util.stream.Collectors;
@@ -33,8 +33,9 @@ public class BaseController {
     protected void checkBindResult(BindingResult result) {
         if (result.hasErrors()) {
             String errFieldStr = result.getAllErrors().stream()
-                    .map(obj -> JSON.parseObject(JSON.toJSONString(obj)))
-                    .map(err -> err.getString("field")).collect(Collectors.joining(","));
+                .map(obj -> JsonTools.stringToJsonNode(JsonTools.toJSONString(obj)))
+                .map(err -> err.get("field").asText())
+                .collect(Collectors.joining(","));
             StringUtils.removeEnd(errFieldStr, ",");
             String message = "these fields can not be empty:" + errFieldStr;
             throw new ParamException(ConstantCode.PARAM_EXCEPTION.getCode(), message);
