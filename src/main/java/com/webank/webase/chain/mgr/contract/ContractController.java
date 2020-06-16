@@ -13,7 +13,7 @@
  */
 package com.webank.webase.chain.mgr.contract;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
@@ -65,7 +65,7 @@ public class ContractController extends BaseController {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start compileContract startTime:{} compileInputParam:{}",
-                startTime.toEpochMilli(), JSON.toJSONString(compileInputParam));
+                startTime.toEpochMilli(), JsonTools.toJSONString(compileInputParam));
 
         List<RspContractCompile> rspContractCompile =
                 contractService.compileContract(compileInputParam);
@@ -87,7 +87,7 @@ public class ContractController extends BaseController {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start saveContract startTime:{} contract:{}", startTime.toEpochMilli(),
-                JSON.toJSONString(contract));
+                JsonTools.toJSONString(contract));
 
         // add contract row
         TbContract tbContract = contractService.saveContract(contract);
@@ -130,7 +130,7 @@ public class ContractController extends BaseController {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start contractList. startTime:{} inputParam:{}", startTime.toEpochMilli(),
-                JSON.toJSONString(inputParam));
+                JsonTools.toJSONString(inputParam));
 
         // param
         ContractParam queryParam = new ContractParam();
@@ -184,7 +184,7 @@ public class ContractController extends BaseController {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start queryContract startTime:{} deployInputParam:{}", startTime.toEpochMilli(),
-                JSON.toJSONString(deployInputParam));
+                JsonTools.toJSONString(deployInputParam));
 
         TbContract tbContract = contractService.deployContract(deployInputParam);
         baseResponse.setData(tbContract);
@@ -204,7 +204,7 @@ public class ContractController extends BaseController {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start sendTransaction startTime:{} param:{}", startTime.toEpochMilli(),
-                JSON.toJSONString(param));
+                JsonTools.toJSONString(param));
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Object transRsp = contractService.sendTransaction(param);
         baseResponse.setData(transRsp);
@@ -223,7 +223,7 @@ public class ContractController extends BaseController {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start statusManage startTime:{} param:{}", startTime.toEpochMilli(),
-                JSON.toJSONString(param));
+                JsonTools.toJSONString(param));
 
         Object contractStatusManageResult = contractService.statusManage(param);
 
