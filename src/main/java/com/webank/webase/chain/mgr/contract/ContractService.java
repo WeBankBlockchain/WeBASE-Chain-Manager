@@ -13,10 +13,8 @@
  */
 package com.webank.webase.chain.mgr.contract;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
@@ -31,7 +29,6 @@ import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import com.webank.webase.chain.mgr.front.entity.TbFront;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
-import com.webank.webase.chain.mgr.frontinterface.entity.ContractStatusManageResult;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -40,6 +37,7 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -88,7 +86,7 @@ public class ContractService {
      * add new contract data.
      */
     public TbContract saveContract(Contract contract) throws BaseException {
-        log.debug("start addContractInfo Contract:{}", JSON.toJSONString(contract));
+        log.debug("start addContractInfo Contract:{}", JsonTools.toJSONString(contract));
         TbContract tbContract;
         if (contract.getContractId() == null) {
             tbContract = newContract(contract);// new
@@ -169,12 +167,12 @@ public class ContractService {
      * query contract list.
      */
     public List<TbContract> qureyContractList(ContractParam param) throws BaseException {
-        log.debug("start qureyContractList ContractListParam:{}", JSON.toJSONString(param));
+        log.debug("start qureyContractList ContractListParam:{}", JsonTools.toJSONString(param));
 
         // query contract list
         List<TbContract> listOfContract = contractMapper.listOfContract(param);
 
-        log.debug("end qureyContractList listOfContract:{}", JSON.toJSONString(listOfContract));
+        log.debug("end qureyContractList listOfContract:{}", JsonTools.toJSONString(listOfContract));
         return listOfContract;
     }
 
@@ -183,7 +181,7 @@ public class ContractService {
      * query count of contract.
      */
     public int countOfContract(ContractParam param) throws BaseException {
-        log.debug("start countOfContract ContractListParam:{}", JSON.toJSONString(param));
+        log.debug("start countOfContract ContractListParam:{}", JsonTools.toJSONString(param));
         try {
             return contractMapper.countOfContract(param);
         } catch (RuntimeException ex) {
@@ -200,7 +198,7 @@ public class ContractService {
         try {
             TbContract contractRow = contractMapper.queryByContractId(contractId);
             log.debug("start queryContract contractId:{} contractRow:{}", contractId,
-                    JSON.toJSONString(contractRow));
+                    JsonTools.toJSONString(contractRow));
             return contractRow;
         } catch (RuntimeException ex) {
             log.error("fail countOfContract", ex);
@@ -219,7 +217,7 @@ public class ContractService {
                 return null;
             }
             List<TbContract> contractRow = contractMapper.queryContractByBin(groupId, contractBin);
-            log.debug("start queryContractByBin:{}", contractBin, JSON.toJSONString(contractRow));
+            log.debug("start queryContractByBin:{}", contractBin, JsonTools.toJSONString(contractRow));
             return contractRow;
         } catch (RuntimeException ex) {
             log.error("fail queryContractByBin", ex);
@@ -231,10 +229,10 @@ public class ContractService {
      * query contract info.
      */
     public TbContract queryContract(ContractParam queryParam) {
-        log.debug("start queryContract. queryParam:{}", JSON.toJSONString(queryParam));
+        log.debug("start queryContract. queryParam:{}", JsonTools.toJSONString(queryParam));
         TbContract tbContract = contractMapper.queryContract(queryParam);
-        log.debug("end queryContract. queryParam:{} tbContract:{}", JSON.toJSONString(queryParam),
-                JSON.toJSONString(tbContract));
+        log.debug("end queryContract. queryParam:{} tbContract:{}", JsonTools.toJSONString(queryParam),
+                JsonTools.toJSONString(tbContract));
         return tbContract;
     }
 
@@ -242,7 +240,7 @@ public class ContractService {
      * deploy contract.
      */
     public TbContract deployContract(DeployInputParam inputParam) throws BaseException {
-        log.info("start deployContract. inputParam:{}", JSON.toJSONString(inputParam));
+        log.info("start deployContract. inputParam:{}", JsonTools.toJSONString(inputParam));
         int groupId = inputParam.getGroupId();
         String contractName = inputParam.getContractName();
         // check contract
@@ -259,7 +257,7 @@ public class ContractService {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        JSONArray abiArray = JSONArray.parseArray(inputParam.getContractAbi());
+        List<AbiDefinition> abiArray = JsonTools.toJavaObjectList(inputParam.getContractAbi(), AbiDefinition.class);
         if (abiArray == null || abiArray.isEmpty()) {
             log.info("fail deployContract. abi is empty");
             throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
@@ -270,7 +268,7 @@ public class ContractService {
         params.put("groupId", groupId);
         params.put("signUserId", inputParam.getSignUserId());
         params.put("contractName", contractName);
-        params.put("abiInfo", JSONArray.parseArray(inputParam.getContractAbi()));
+        params.put("abiInfo", abiArray);
         params.put("bytecodeBin", inputParam.getBytecodeBin());
         params.put("funcParam", inputParam.getConstructorParams());
 
@@ -299,7 +297,7 @@ public class ContractService {
      * send transaction.
      */
     public Object sendTransaction(TransactionInputParam inputParam) throws BaseException {
-        log.debug("start sendTransaction. param:{}", JSON.toJSONString(inputParam));
+        log.debug("start sendTransaction. param:{}", JsonTools.toJSONString(inputParam));
         if (Objects.isNull(inputParam)) {
             log.info("fail sendTransaction. request param is null");
             throw new BaseException(ConstantCode.INVALID_PARAM_INFO);
@@ -321,7 +319,7 @@ public class ContractService {
         params.put("signUserId", inputParam.getSignUserId());
         params.put("contractName", inputParam.getContractName());
         params.put("contractAddress", tbContract.getContractAddress());
-        params.put("contractAbi", JSONArray.parseArray(inputParam.getContractAbi()));
+        params.put("contractAbi", JsonTools.toJavaObjectList(inputParam.getContractAbi(), Object.class));
         params.put("funcName", inputParam.getFuncName());
         params.put("funcParam", inputParam.getFuncParam());
 
@@ -329,7 +327,7 @@ public class ContractService {
         Object frontRsp = frontInterface.postToSpecificFront(inputParam.getGroupId(),
                 tbFront.getFrontIp(), tbFront.getFrontPort(), FrontRestTools.URI_SEND_TRANSACTION,
                 params, Object.class);
-        log.debug("end sendTransaction. frontRsp:{}", JSON.toJSONString(frontRsp));
+        log.debug("end sendTransaction. frontRsp:{}", JsonTools.toJSONString(frontRsp));
         return frontRsp;
     }
 
@@ -337,7 +335,7 @@ public class ContractService {
      * contract manage.
      */
     public Object statusManage(ContractManageParam inputParam) throws BaseException {
-        log.debug("start statusManage. param:{}", JSON.toJSONString(inputParam));
+        log.debug("start statusManage. param:{}", JsonTools.toJSONString(inputParam));
         // check front
         TbFront tbFront =
                 frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
@@ -361,7 +359,7 @@ public class ContractService {
                         Object.class);
 
         log.debug("end statusManage. contractStatusManageResult:{}",
-                JSON.toJSONString(contractStatusManageResult));
+                JsonTools.toJSONString(contractStatusManageResult));
         return contractStatusManageResult;
     }
 
