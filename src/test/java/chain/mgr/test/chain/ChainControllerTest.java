@@ -13,7 +13,7 @@
  */
 package chain.mgr.test.chain;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.Application;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import org.junit.Before;
@@ -52,12 +52,13 @@ public class ChainControllerTest {
     @Test
     public void testNewChain() throws Exception {
         ChainInfo param = new ChainInfo();
+        param.setChainId(1001);
         param.setChainName("aaa");
         param.setChainType(0);
         param.setDescription("test");
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post( "/chain/new").
-            content(JSON.toJSONString(param)).
+            content(JsonTools.toJSONString(param)).
             contentType(MediaType.APPLICATION_JSON)
         );
         resultActions.

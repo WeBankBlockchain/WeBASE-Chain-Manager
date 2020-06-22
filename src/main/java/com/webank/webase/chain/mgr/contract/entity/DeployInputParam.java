@@ -25,23 +25,23 @@ import lombok.Data;
  */
 @Data
 public class DeployInputParam{
-    @NotBlank
-    private String user;
     @NotNull
     private Integer chainId;
     @NotNull
     private Integer groupId;
+    @NotBlank
+    private String signUserId;
+    @NotBlank
+    private String nodeId;
     @NotNull
     private Integer contractId;
     @NotBlank
     private String contractName;
     @NotBlank
     private String contractPath;
-    @NotBlank
     private String contractSource;
     @NotBlank
     private String contractAbi;
-    @NotBlank
     private String contractBin;
     @NotBlank
     private String bytecodeBin;

@@ -13,13 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.chain.mgr.user.entity;
+package com.webank.webase.chain.mgr.contract.entity;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 
+/**
+ * receive contract info entity.
+ */
 @Data
-public class PrivateKeyInfo {
-
-    private String privateKey;
-    private String address;
+public class CompileInputParam{
+    @NotNull
+    private Integer chainId;
+    @NotBlank
+    private String nodeId;
+    @NotBlank
+    private String contractZipBase64;
 }
+

@@ -13,9 +13,9 @@
  */
 package com.webank.webase.chain.mgr.chain;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.chain.entity.ChainParam;
 import com.webank.webase.chain.mgr.chain.entity.TbChain;
@@ -26,7 +26,6 @@ import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
-import com.webank.webase.chain.mgr.user.UserService;
 import java.util.List;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
@@ -55,8 +54,6 @@ public class ChainService {
     @Autowired
     private ContractService contractService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private FrontGroupMapCache frontGroupMapCache;
     @Autowired
     @Lazy
@@ -67,25 +64,32 @@ public class ChainService {
      */
     public TbChain newChain(ChainInfo chainInfo) {
         log.debug("start newChain chainInfo:{}", chainInfo);
-        
+
+        // check id
+        TbChain tbChainInfo = getChainById(chainInfo.getChainId());
+        if (tbChainInfo != null) {
+            throw new BaseException(ConstantCode.CHAIN_ID_EXISTS);
+        }
+
+        // check name
         ChainParam param = new ChainParam();
         param.setChainName(chainInfo.getChainName());
-        int count = getChainCount(param);
-        if (count > 0) {
-            throw new NodeMgrException(ConstantCode.CHAIN_EXISTS);
+        int nameCount = getChainCount(param);
+        if (nameCount > 0) {
+            throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS);
         }
-        
+
         // copy attribute
         TbChain tbChain = new TbChain();
         BeanUtils.copyProperties(chainInfo, tbChain);
-        
+
         // save chain info
-        chainMapper.add(tbChain);
-        if (tbChain.getChainId() == null || tbChain.getChainId() == 0) {
-            log.warn("fail newChain, after save, tbChain:{}", JSON.toJSONString(tbChain));
-            throw new NodeMgrException(ConstantCode.SAVE_CHAIN_FAIL);
+        int result = chainMapper.add(tbChain);
+        if (result == 0) {
+            log.warn("fail newChain, after save, tbChain:{}", JsonTools.toJSONString(tbChain));
+            throw new BaseException(ConstantCode.SAVE_CHAIN_FAIL);
         }
-        return tbChain;
+        return getChainById(chainInfo.getChainId());
     }
 
     /**
@@ -102,14 +106,14 @@ public class ChainService {
     public List<TbChain> getChainList(ChainParam param) {
         return chainMapper.getList(param);
     }
-    
+
     /**
      * get chain info
      */
     public TbChain getChainById(Integer chainId) {
         return chainMapper.getChainById(chainId);
     }
-    
+
     /**
      * remove chain
      */
@@ -120,7 +124,7 @@ public class ChainService {
         param.setChainId(chainId);
         int count = getChainCount(param);
         if (count == 0) {
-            throw new NodeMgrException(ConstantCode.INVALID_CHAIN_ID);
+            throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
         }
 
         // remove chain
@@ -135,11 +139,9 @@ public class ChainService {
         nodeService.deleteByChainId(chainId);
         // remove contract
         contractService.deleteContractByChainId(chainId);
-        // remove user and key
-        userService.deleteByChainId(chainId);
         // reset group list
         resetGroupListTask.asyncResetGroupList();
         // clear cache
-        frontGroupMapCache.clearMapList();
+        frontGroupMapCache.clearMapList(chainId);
     }
 }

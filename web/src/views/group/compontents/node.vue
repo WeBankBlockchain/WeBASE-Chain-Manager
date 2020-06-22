@@ -4,9 +4,6 @@
         <div class="module-wrapper">
             <div class="search-part" style="padding-top: 20px;">
                 <div class="search-part-left">
-                    <el-input placeholder="请输入节点名称" v-model="nodeName" class="input-with-select">
-                        <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
-                    </el-input>
                     <div class="input-with-select">
                         <span>切换群组</span>
                         <el-select v-model="groupId" placeholder="请选择" @change='search'>
@@ -91,6 +88,7 @@
 <script>
 import contentHead from "@/components/contentHead";
 import { getNodes,getGroups } from "@/api/api"
+import errCode from "@/util/errCode"
 export default {
     name: "node",
     data() {
@@ -109,12 +107,12 @@ export default {
         "v-content-head": contentHead,
     },
     mounted: function(){
-        this.getNodeList();
         this.getGroupList();
+        // this.getNodeList();
     },
     methods: {
         changGroup: function(){
-            this.getNodeList();
+            // this.getNodeList();
             this.getGroupList();
         },
         getNodeList: function(){
@@ -124,25 +122,48 @@ export default {
                 pageNumber: this.pageNumber,
                 pageSize: this.pageSize
             };
-            let query = {}
-            if(this.nodeName){
-                query.nodeName = this.nodeName
-            }
-            getNodes(data,query).then(res => {
+            getNodes(data,{}).then(res => {
                 if(res.data.code === 0){
                     this.total = res.data.totalCount;
                     this.nodeData = res.data.data
+                }else{
+                    this.$message({
+                        type: "error",
+                        message: errCode.errCode[res.data.code].zh
+                    })
                 }
+            }).catch(err => {
+                this.$message({
+                    message: "系统错误！",
+                    type: "error",
+                    duration: 2000
+                });
             })
         },
         getGroupList: function (type) {
             getGroups(localStorage.getItem('chainId')).then(res => {
                 if (res.data.code === 0) {
                     if (res.data.data && res.data.data.length) {
-                        this.groupList = res.data.data || []
+                        let num = 0;
+                        this.groupList = res.data.data || [];
+                        for(let i = 0; i < this.groupList.length; i++){
+                            if(this.groupList[i].groupId == this.groupId){
+                                num++
+                            }
+                        }
+                        if(num > 0){
+                            this.getNodeList()
+                        }else{
+                            this.groupId = this.groupList[0].groupId;
+                            this.getNodeList()
+                        }
                     } 
                 } else {
                     this.groupList = [];
+                    this.$message({
+                        type: "error",
+                        message: errCode.errCode[res.data.code].zh
+                    })
                 }
             }).catch(err => {
                 this.groupList = [];

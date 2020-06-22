@@ -24,7 +24,7 @@
       property="contractAbi"/>
     <result column="contract_bin" javaType="java.lang.String" jdbcType="VARCHAR"
       property="contractBin"/>
-    <result column="bytecodeBin" javaType="java.lang.String" jdbcType="VARCHAR"
+    <result column="bytecode_bin" javaType="java.lang.String" jdbcType="VARCHAR"
       property="bytecodeBin"/>
     <result column="contract_address" javaType="java.lang.String" jdbcType="VARCHAR"
       property="contractAddress"/>
@@ -40,7 +40,7 @@
 
   <insert id="add" parameterType="com.webank.webase.chain.mgr.contract.entity.TbContract">
     insert into
-    tb_contract(chain_id,group_id,contract_path,contract_name,contract_source,contract_abi,contract_bin,bytecodeBin,contract_address,description,deploy_time,create_time,modify_time)
+    tb_contract(chain_id,group_id,contract_path,contract_name,contract_source,contract_abi,contract_bin,bytecode_bin,contract_address,description,deploy_time,create_time,modify_time)
     values(#{chainId},#{groupId},#{contractPath},#{contractName},#{contractSource},#{contractAbi},#{contractBin},#{bytecodeBin},#{contractAddress},#{description},#{deployTime},NOW(),NOW())
     <selectKey keyProperty="contractId" order="AFTER" resultType="java.lang.Integer">
       SELECT LAST_INSERT_ID()
@@ -74,7 +74,7 @@
       ,contract_bin = #{contractBin}
     </if>
     <if test="bytecodeBin != null and bytecodeBin != ''">
-      ,bytecodeBin = #{bytecodeBin}
+      ,bytecode_bin = #{bytecodeBin}
     </if>
     <if test="contractAddress != null and contractAddress != ''">
       ,contract_address = #{contractAddress}
@@ -195,7 +195,7 @@
       and contract_path = #{contractPath}
     </if>
     <if test="partOfBytecodeBin != null and partOfBytecodeBin != ''">
-      and locate(bytecodeBin,#{partOfBytecodeBin})
+      and locate(bytecode_bin,#{partOfBytecodeBin})
     </if>
     limit 1
   </select>

@@ -13,15 +13,13 @@
  */
 package com.webank.webase.chain.mgr.group;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
-import com.webank.webase.chain.mgr.base.enums.GenerateNormalStatus;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
-import com.webank.webase.chain.mgr.base.enums.StartNormalStatus;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.base.tools.NodeMgrTools;
+import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.chain.entity.TbChain;
 import com.webank.webase.chain.mgr.contract.ContractService;
@@ -32,7 +30,6 @@ import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.GenerateGroupInfo;
-import com.webank.webase.chain.mgr.frontinterface.entity.GroupHandleResult;
 import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
 import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
 import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
@@ -40,7 +37,6 @@ import com.webank.webase.chain.mgr.group.entity.TbGroup;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.node.entity.TbNode;
-import com.webank.webase.chain.mgr.user.UserService;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -78,9 +74,34 @@ public class GroupService {
     @Autowired
     private ContractService contractService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private ConstantProperties constants;
+
+    /**
+     * generate group to single node.
+     * 
+     * @param req info
+     * @return
+     */
+    public TbGroup generateToSingleNode(String nodeId, ReqGenerateGroup req) {
+        // check id
+        Integer chainId = req.getChainId();
+        Integer generateGroupId = req.getGenerateGroupId();
+
+        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
+        if (tbFront == null) {
+            log.error("fail generateToSingleNode node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+        // request front to generate
+        GenerateGroupInfo generateGroupInfo = new GenerateGroupInfo();
+        BeanUtils.copyProperties(req, generateGroupInfo);
+        frontInterface.generateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(),
+                generateGroupInfo);
+        // save group
+        TbGroup tbGroup = saveGroup(generateGroupId, chainId, req.getNodeList().size(),
+                req.getDescription(), GroupType.MANUAL.getValue());
+        return tbGroup;
+    }
 
     /**
      * generate group.
@@ -96,22 +117,16 @@ public class GroupService {
 
         for (String nodeId : req.getNodeList()) {
             // get front
-            TbFront tbFront = frontService.getByNodeId(nodeId);
+            TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
             if (tbFront == null) {
-                log.error("fail generateGroup node not exists.");
-                throw new NodeMgrException(ConstantCode.NODE_NOT_EXISTS);
+                log.error("fail generateGroup node front not exists.");
+                throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
             }
             // request front to generate
             GenerateGroupInfo generateGroupInfo = new GenerateGroupInfo();
             BeanUtils.copyProperties(req, generateGroupInfo);
-            GroupHandleResult groupHandleResult = frontInterface.generateGroup(tbFront.getFrontIp(),
-                    tbFront.getFrontPort(), generateGroupInfo);
-            int code = NodeMgrTools.parseHexStr2Int(groupHandleResult.getCode());
-            // check result
-            if (!GenerateNormalStatus.isInclude(code)) {
-                log.error("fail generateGroup nodeId:{} code:{}.", nodeId, code);
-                throw new NodeMgrException(code, groupHandleResult.getMessage());
-            }
+            frontInterface.generateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(),
+                    generateGroupInfo);
         }
         // save group
         TbGroup tbGroup = saveGroup(generateGroupId, chainId, req.getNodeList().size(),
@@ -120,31 +135,30 @@ public class GroupService {
     }
 
     /**
-     * start group.
+     * operate group.
      * 
+     * @param chainId
      * @param nodeId
-     * @param startGroupId
+     * @param groupId
+     * @param type
+     * @return
      */
-    public void startGroup(Integer chainId, String nodeId, Integer startGroupId) {
-        // check id
-        checkGroupIdValid(chainId, startGroupId);
+    public Object operateGroup(Integer chainId, String nodeId, Integer groupId, String type) {
         // get front
-        TbFront tbFront = frontService.getByNodeId(nodeId);
+        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
         if (tbFront == null) {
-            log.error("fail startGroup node not exists.");
-            throw new NodeMgrException(ConstantCode.NODE_NOT_EXISTS);
+            log.error("fail operateGroup node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
-        // request front to start
-        GroupHandleResult groupHandleResult = frontInterface.startGroup(tbFront.getFrontIp(),
-                tbFront.getFrontPort(), startGroupId);
-        // check result
-        int code = NodeMgrTools.parseHexStr2Int(groupHandleResult.getCode());
-        if (!StartNormalStatus.isInclude(code)) {
-            log.error("fail startGroup nodeId:{} code:{}.", nodeId, code);
-            throw new NodeMgrException(code, groupHandleResult.getMessage());
-        }
-        // refresh front
-        frontInterface.refreshFront(tbFront.getFrontIp(), tbFront.getFrontPort());
+        // request front to operate
+        Object groupHandleResult = frontInterface.operateGroup(tbFront.getFrontIp(),
+                tbFront.getFrontPort(), groupId, type);
+
+        // refresh
+        resetGroupList();
+
+        // return
+        return groupHandleResult;
     }
 
     /**
@@ -153,29 +167,24 @@ public class GroupService {
      * @param req
      */
     public void batchStartGroup(ReqStartGroup req) {
-        Integer startGroupId = req.getGenerateGroupId();
+        Integer groupId = req.getGenerateGroupId();
         // check id
-        checkGroupIdValid(req.getChainId(), startGroupId);
+        checkGroupIdValid(req.getChainId(), groupId);
         for (String nodeId : req.getNodeList()) {
             // get front
-            TbFront tbFront = frontService.getByNodeId(nodeId);
+            TbFront tbFront = frontService.getByChainIdAndNodeId(req.getChainId(), nodeId);
             if (tbFront == null) {
-                log.error("fail startGroup node not exists.");
-                throw new NodeMgrException(ConstantCode.NODE_NOT_EXISTS);
+                log.error("fail batchStartGroup node not exists.");
+                throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
             }
             // request front to start
-            GroupHandleResult groupHandleResult = frontInterface.startGroup(tbFront.getFrontIp(),
-                    tbFront.getFrontPort(), startGroupId);
-            // check result
-            int code = NodeMgrTools.parseHexStr2Int(groupHandleResult.getCode());
-            if (!StartNormalStatus.isInclude(code)) {
-                log.error("fail startGroup nodeId:{} code:{}.", nodeId, code);
-                throw new NodeMgrException(code, groupHandleResult.getMessage());
-            }
-            // refresh front
-            frontInterface.refreshFront(tbFront.getFrontIp(), tbFront.getFrontPort());
+            frontInterface.operateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(), groupId,
+                    "start");
         }
+        // refresh
+        resetGroupList();
     }
+
 
     /**
      * save group id
@@ -197,7 +206,7 @@ public class GroupService {
      * query count of group.
      */
     public Integer countOfGroup(Integer chainId, Integer groupId, Integer groupStatus)
-            throws NodeMgrException {
+            throws BaseException {
         log.debug("start countOfGroup groupId:{}", groupId);
         try {
             Integer count = groupMapper.getCount(chainId, groupId, groupStatus);
@@ -205,24 +214,23 @@ public class GroupService {
             return count;
         } catch (RuntimeException ex) {
             log.error("fail countOfGroup", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
     }
 
     /**
      * query all group info.
      */
-    public List<TbGroup> getGroupList(Integer chainId, Integer groupStatus)
-            throws NodeMgrException {
+    public List<TbGroup> getGroupList(Integer chainId, Integer groupStatus) throws BaseException {
         log.debug("start getGroupList");
         try {
             List<TbGroup> groupList = groupMapper.getList(chainId, groupStatus);
 
-            log.debug("end getGroupList groupList:{}", JSON.toJSONString(groupList));
+            log.debug("end getGroupList groupList:{}", JsonTools.toJSONString(groupList));
             return groupList;
         } catch (RuntimeException ex) {
             log.error("fail getGroupList", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
     }
 
@@ -239,7 +247,7 @@ public class GroupService {
     /**
      * query group overview information.
      */
-    public GroupGeneral queryGroupGeneral(int chainId, int groupId) throws NodeMgrException {
+    public GroupGeneral queryGroupGeneral(int chainId, int groupId) throws BaseException {
         log.debug("start queryGroupGeneral groupId:{}", groupId);
         GroupGeneral generalInfo = groupMapper.getGeneral(chainId, groupId);
         return generalInfo;
@@ -310,9 +318,9 @@ public class GroupService {
 
             // check group status
             checkGroupStatusAndRemoveInvalidGroup(chainId, allGroupSet);
+            // clear cache
+            frontGroupMapCache.clearMapList(chainId);
         }
-        // clear cache
-        frontGroupMapCache.clearMapList();
 
         log.info("end resetGroupList. useTime:{} ",
                 Duration.between(startTime, Instant.now()).toMillis());
@@ -321,18 +329,18 @@ public class GroupService {
     /**
      * Check the validity of the groupId.
      */
-    public void checkGroupIdExisted(Integer chainId, Integer groupId) throws NodeMgrException {
+    public void checkGroupIdExisted(Integer chainId, Integer groupId) throws BaseException {
         log.debug("start checkGroupIdExisted groupId:{}", groupId);
 
         if (groupId == null) {
             log.error("fail checkGroupIdExisted groupId is null");
-            throw new NodeMgrException(ConstantCode.GROUP_ID_NULL);
+            throw new BaseException(ConstantCode.GROUP_ID_NULL);
         }
 
         Integer groupCount = countOfGroup(chainId, groupId, null);
         log.debug("checkGroupIdExisted groupId:{} groupCount:{}", groupId, groupCount);
         if (groupCount != null && groupCount > 0) {
-            throw new NodeMgrException(ConstantCode.GROUP_ID_EXISTS);
+            throw new BaseException(ConstantCode.GROUP_ID_EXISTS);
         }
         log.debug("end checkGroupIdExisted");
     }
@@ -340,18 +348,18 @@ public class GroupService {
     /**
      * Check the validity of the groupId.
      */
-    public void checkGroupIdValid(Integer chainId, Integer groupId) throws NodeMgrException {
+    public void checkGroupIdValid(Integer chainId, Integer groupId) throws BaseException {
         log.debug("start checkGroupIdValid groupId:{}", groupId);
 
         if (groupId == null) {
             log.error("fail checkGroupIdValid groupId is null");
-            throw new NodeMgrException(ConstantCode.GROUP_ID_NULL);
+            throw new BaseException(ConstantCode.GROUP_ID_NULL);
         }
 
         Integer groupCount = countOfGroup(chainId, groupId, null);
         log.debug("checkGroupIdValid groupId:{} groupCount:{}", groupId, groupCount);
         if (groupCount == null || groupCount == 0) {
-            throw new NodeMgrException(ConstantCode.INVALID_GROUP_ID);
+            throw new BaseException(ConstantCode.INVALID_GROUP_ID);
         }
         log.debug("end checkGroupIdValid");
     }
@@ -451,10 +459,10 @@ public class GroupService {
                     continue;
                 }
 
-                if (!NodeMgrTools.isDateTimeInValid(localGroup.getModifyTime(),
+                if (!CommonUtils.isDateTimeInValid(localGroup.getModifyTime(),
                         constants.getGroupInvalidGrayscaleValue())) {
                     log.warn("remove group, chainId:{} localGroup:{}", chainId,
-                            JSON.toJSONString(localGroup));
+                            JsonTools.toJSONString(localGroup));
                     // remove group
                     removeByGroupId(chainId, localGroupId);
                     continue;
@@ -469,7 +477,7 @@ public class GroupService {
 
             } catch (Exception ex) {
                 log.info("fail check group. chainId:{} localGroup:{}", chainId,
-                        JSON.toJSONString(localGroup));
+                        JsonTools.toJSONString(localGroup));
                 continue;
             }
 
@@ -491,8 +499,6 @@ public class GroupService {
         nodeService.deleteByGroupId(chainId, groupId);
         // remove contract
         contractService.deleteByGroupId(chainId, groupId);
-        //remove user and key
-        userService.deleteByGroupId(chainId, groupId);
     }
 
     /**

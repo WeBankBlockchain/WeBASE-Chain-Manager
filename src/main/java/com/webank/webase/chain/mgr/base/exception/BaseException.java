@@ -11,20 +11,29 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.contract.entity;
+package com.webank.webase.chain.mgr.base.exception;
 
-import javax.validation.constraints.NotNull;
-import lombok.Data;
+import com.webank.webase.chain.mgr.base.code.RetCode;
 
-@Data
-public class QueryContractParam {
-    @NotNull
-    private Integer chainId;
-    @NotNull
-    private Integer groupId;
-    private String contractName;
-    private String contractAddress;
-    private Integer contractStatus;
-    private Integer pageNumber;
-    private Integer pageSize;
+/**
+ * base business exception.
+ */
+public class BaseException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+    private RetCode retCode;
+
+    public BaseException(RetCode retCode) {
+        super(retCode.getMessage());
+        this.retCode = retCode;
+    }
+
+    public BaseException(int code, String msg) {
+        super(msg);
+        this.retCode = new RetCode(code, msg);
+    }
+
+    public RetCode getRetCode() {
+        return retCode;
+    }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
@@ -11,29 +11,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.base.exception;
+package com.webank.webase.chain.mgr.contract.entity;
 
-import com.webank.webase.chain.mgr.base.code.RetCode;
+import lombok.Data;
 
-/**
- * business exception.
- */
-public class NodeMgrException extends RuntimeException {
-
-    private static final long serialVersionUID = 1L;
-    private RetCode retCode;
-
-    public NodeMgrException(RetCode retCode) {
-        super(retCode.getMessage());
-        this.retCode = retCode;
-    }
-
-    public NodeMgrException(int code, String msg) {
-        super(msg);
-        this.retCode = new RetCode(code, msg);
-    }
-
-    public RetCode getRetCode() {
-        return retCode;
-    }
+@Data
+public class RspContractCompile {
+    private String contractName;
+    private String contractAbi;
+    private String contractSource;
+    private String bytecodeBin;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019  the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.chain.mgr.node.entity;
+package com.webank.webase.chain.mgr.group.entity;
 
-import com.webank.webase.chain.mgr.base.entity.BaseQueryParam;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Data
-@NoArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-public class NodeParam extends BaseQueryParam {
-    private Integer groupId;
-    private String nodeId;
-    private Integer p2pPort;
-    private String nodeIp;
+public class SysConfigParam {
+    private int groupId;
+    private String signUserId;
+    private String configKey;
+    private String configValue;
 }

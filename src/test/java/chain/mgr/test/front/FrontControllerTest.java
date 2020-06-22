@@ -13,7 +13,7 @@
  */
 package chain.mgr.test.front;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.Application;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import org.junit.Before;
@@ -58,7 +58,7 @@ public class FrontControllerTest {
         param.setDescription("test");
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post( "/front/new").
-            content(JSON.toJSONString(param)).
+            content(JsonTools.toJSONString(param)).
             contentType(MediaType.APPLICATION_JSON)
         );
         resultActions.

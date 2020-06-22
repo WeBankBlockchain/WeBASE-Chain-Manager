@@ -28,6 +28,7 @@ public class ConstantCode {
 
     /* system exception */
     public static final RetCode SYSTEM_EXCEPTION = RetCode.mark(105000, "system exception");
+    public static final RetCode SYSTEM_EXCEPTION_GET_PRIVATE_KEY_FAIL = RetCode.mark(105001, "system exception: please check front");
 
     /* Business exception */
     public static final RetCode INVALID_FRONT_ID = RetCode.mark(205000, "invalid front id");
@@ -44,7 +45,7 @@ public class ConstantCode {
 
     public static final RetCode SAVE_FRONT_FAIL = RetCode.mark(205006, "save front fail");
 
-    public static final RetCode REQUEST_FRONT_FAIL = RetCode.mark(205007, "request front fail");
+    public static final RetCode REQUEST_FRONT_FAIL = RetCode.mark(205007, "request front fail, please check front");
 
     public static final RetCode CONTRACT_ABI_EMPTY =
             RetCode.mark(205008, "abiInfo cannot be empty");
@@ -74,12 +75,12 @@ public class ConstantCode {
 
     public static final RetCode GROUP_ID_EXISTS = RetCode.mark(205018, "group id already exists");
 
-    public static final RetCode NODE_NOT_EXISTS = RetCode.mark(205019, "node not exists");
+    public static final RetCode NODE_NOT_EXISTS = RetCode.mark(205019, "node front not exists");
 
     public static final RetCode ENCRYPT_TYPE_NOT_MATCH =
             RetCode.mark(205020, "front's encrypt type not match");
     
-    public static final RetCode CHAIN_EXISTS = RetCode.mark(205021, "chain name already exists");
+    public static final RetCode CHAIN_NAME_EXISTS = RetCode.mark(205021, "chain name already exists");
     
     public static final RetCode SAVE_CHAIN_FAIL = RetCode.mark(205022, "save chain fail");
     
@@ -95,6 +96,18 @@ public class ConstantCode {
     public static final RetCode USER_ID_NULL = RetCode.mark(205027, "user id cannot be empty");
 
     public static final RetCode INVALID_USER = RetCode.mark(205028, "invalid user");
+    
+    public static final RetCode CHAIN_ID_EXISTS = RetCode.mark(205029, "chain id already exists");
+    
+    public static final RetCode CONTRACT_COMPILE_ERROR = RetCode.mark(205030, "contract compile error");
+    
+    public static final RetCode GROUP_GENERATE_FAIL = RetCode.mark(205031, "group generate fail");
+    
+    public static final RetCode GROUP_OPERATE_FAIL = RetCode.mark(205032, "group operate fail");
+    
+    public static final RetCode REQUEST_NODE_EXCEPTION = RetCode.mark(205033, "request node exception");
+    // JSON PARSE
+    public static final RetCode FAIL_PARSE_JSON = RetCode.mark(205034, "Fail to parse json");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");

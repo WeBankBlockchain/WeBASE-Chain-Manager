@@ -137,7 +137,7 @@ export default {
                 }else {
                     this.$message({
                         type: "error",
-                        message: errCode.errCode[res.data.code].zh || "新建群组失败"
+                        message: errCode.errCode[res.data.code].zh
                     })
                 }
             }).catch(err => {

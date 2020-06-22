@@ -13,21 +13,23 @@
  */
 package com.webank.webase.chain.mgr.contract;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
-import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
 import com.webank.webase.chain.mgr.contract.entity.Contract;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
+import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
 import com.webank.webase.chain.mgr.contract.entity.TbContract;
 import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
-import com.webank.webase.chain.mgr.front.entity.TransactionParam;
+import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
+import com.webank.webase.chain.mgr.front.entity.TbFront;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
-import com.webank.webase.chain.mgr.frontinterface.entity.PostAbiInfo;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -50,18 +52,41 @@ public class ContractService {
     @Autowired
     private ContractMapper contractMapper;
     @Autowired
-    private FrontRestTools frontRestTools;
-    @Autowired
     private FrontInterfaceService frontInterface;
     @Autowired
-    private ConstantProperties constants;
-    private static final int CONTRACT_ADDRESS_LENGTH = 42;
+    private FrontService frontService;
+
+    /**
+     * compile contract.
+     * 
+     */
+    @SuppressWarnings("unchecked")
+    public List<RspContractCompile> compileContract(CompileInputParam inputParam)
+            throws BaseException, IOException {
+
+        // check front
+        TbFront tbFront =
+                frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
+        if (tbFront == null) {
+            log.error("fail deployContract node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("contractZipBase64", inputParam.getContractZipBase64());
+        List<RspContractCompile> compileInfos = frontInterface.postToSpecificFront(
+                Integer.MIN_VALUE, tbFront.getFrontIp(), tbFront.getFrontPort(),
+                FrontRestTools.URI_MULTI_CONTRACT_COMPILE, params, List.class);
+
+        log.debug("end compileContract.");
+        return compileInfos;
+    }
 
     /**
      * add new contract data.
      */
-    public TbContract saveContract(Contract contract) throws NodeMgrException {
-        log.debug("start addContractInfo Contract:{}", JSON.toJSONString(contract));
+    public TbContract saveContract(Contract contract) throws BaseException {
+        log.debug("start addContractInfo Contract:{}", JsonTools.toJSONString(contract));
         TbContract tbContract;
         if (contract.getContractId() == null) {
             tbContract = newContract(contract);// new
@@ -84,7 +109,7 @@ public class ContractService {
         TbContract tbContract = new TbContract();
         BeanUtils.copyProperties(contract, tbContract);
         contractMapper.add(tbContract);
-        return tbContract;
+        return queryByContractId(tbContract.getContractId());
     }
 
 
@@ -100,13 +125,13 @@ public class ContractService {
                 contract.getContractPath(), contract.getContractName(), contract.getContractId());
         BeanUtils.copyProperties(contract, tbContract);
         contractMapper.update(tbContract);
-        return tbContract;
+        return queryByContractId(tbContract.getContractId());
     }
 
     /**
      * delete contract by contractId.
      */
-    public void deleteContract(int chainId, int contractId, int groupId) throws NodeMgrException {
+    public void deleteContract(int chainId, int contractId, int groupId) throws BaseException {
         log.debug("start deleteContract contractId:{} groupId:{}", contractId, groupId);
         // check contract id
         verifyContractNotDeploy(chainId, contractId, groupId);
@@ -118,7 +143,7 @@ public class ContractService {
     /**
      * delete contract by chainId.
      */
-    public void deleteContractByChainId(int chainId) throws NodeMgrException {
+    public void deleteContractByChainId(int chainId) throws BaseException {
         log.debug("start deleteContractByChainId chainId:{}", chainId);
         if (chainId == 0) {
             return;
@@ -129,15 +154,25 @@ public class ContractService {
     }
 
     /**
+     * delete by groupId
+     */
+    public void deleteByGroupId(int chainId, int groupId) {
+        if (chainId == 0 || groupId == 0) {
+            return;
+        }
+        contractMapper.removeByGroupId(chainId, groupId);
+    }
+
+    /**
      * query contract list.
      */
-    public List<TbContract> qureyContractList(ContractParam param) throws NodeMgrException {
-        log.debug("start qureyContractList ContractListParam:{}", JSON.toJSONString(param));
+    public List<TbContract> qureyContractList(ContractParam param) throws BaseException {
+        log.debug("start qureyContractList ContractListParam:{}", JsonTools.toJSONString(param));
 
         // query contract list
         List<TbContract> listOfContract = contractMapper.listOfContract(param);
 
-        log.debug("end qureyContractList listOfContract:{}", JSON.toJSONString(listOfContract));
+        log.debug("end qureyContractList listOfContract:{}", JsonTools.toJSONString(listOfContract));
         return listOfContract;
     }
 
@@ -145,57 +180,67 @@ public class ContractService {
     /**
      * query count of contract.
      */
-    public int countOfContract(ContractParam param) throws NodeMgrException {
-        log.debug("start countOfContract ContractListParam:{}", JSON.toJSONString(param));
+    public int countOfContract(ContractParam param) throws BaseException {
+        log.debug("start countOfContract ContractListParam:{}", JsonTools.toJSONString(param));
         try {
             return contractMapper.countOfContract(param);
         } catch (RuntimeException ex) {
             log.error("fail countOfContract", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
     }
 
     /**
      * query contract by contract id.
      */
-    public TbContract queryByContractId(Integer contractId) throws NodeMgrException {
+    public TbContract queryByContractId(Integer contractId) throws BaseException {
         log.debug("start queryContract contractId:{}", contractId);
         try {
             TbContract contractRow = contractMapper.queryByContractId(contractId);
             log.debug("start queryContract contractId:{} contractRow:{}", contractId,
-                    JSON.toJSONString(contractRow));
+                    JsonTools.toJSONString(contractRow));
             return contractRow;
         } catch (RuntimeException ex) {
             log.error("fail countOfContract", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
 
     }
-
 
     /**
      * query DeployInputParam By Address.
      */
     public List<TbContract> queryContractByBin(Integer groupId, String contractBin)
-            throws NodeMgrException {
+            throws BaseException {
         try {
             if (StringUtils.isEmpty(contractBin)) {
                 return null;
             }
             List<TbContract> contractRow = contractMapper.queryContractByBin(groupId, contractBin);
-            log.debug("start queryContractByBin:{}", contractBin, JSON.toJSONString(contractRow));
+            log.debug("start queryContractByBin:{}", contractBin, JsonTools.toJSONString(contractRow));
             return contractRow;
         } catch (RuntimeException ex) {
             log.error("fail queryContractByBin", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
+    }
+
+    /**
+     * query contract info.
+     */
+    public TbContract queryContract(ContractParam queryParam) {
+        log.debug("start queryContract. queryParam:{}", JsonTools.toJSONString(queryParam));
+        TbContract tbContract = contractMapper.queryContract(queryParam);
+        log.debug("end queryContract. queryParam:{} tbContract:{}", JsonTools.toJSONString(queryParam),
+                JsonTools.toJSONString(tbContract));
+        return tbContract;
     }
 
     /**
      * deploy contract.
      */
-    public TbContract deployContract(DeployInputParam inputParam) throws NodeMgrException {
-        log.info("start deployContract. inputParam:{}", JSON.toJSONString(inputParam));
+    public TbContract deployContract(DeployInputParam inputParam) throws BaseException {
+        log.info("start deployContract. inputParam:{}", JsonTools.toJSONString(inputParam));
         int groupId = inputParam.getGroupId();
         String contractName = inputParam.getContractName();
         // check contract
@@ -203,31 +248,36 @@ public class ContractService {
                 inputParam.getGroupId());
         // check contractName
         verifyContractNameNotExist(inputParam.getChainId(), inputParam.getGroupId(),
-                inputParam.getContractPath(), inputParam.getContractName(),
-                inputParam.getContractId());
+                inputParam.getContractPath(), contractName, inputParam.getContractId());
+        // check front
+        TbFront tbFront =
+                frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
+        if (tbFront == null) {
+            log.error("fail deployContract node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
 
-        JSONArray abiArray = JSONArray.parseArray(inputParam.getContractAbi());
+        List<AbiDefinition> abiArray = JsonTools.toJavaObjectList(inputParam.getContractAbi(), AbiDefinition.class);
         if (abiArray == null || abiArray.isEmpty()) {
             log.info("fail deployContract. abi is empty");
-            throw new NodeMgrException(ConstantCode.CONTRACT_ABI_EMPTY);
+            throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
         }
 
         // deploy param
         Map<String, Object> params = new HashMap<>();
         params.put("groupId", groupId);
-        params.put("user", inputParam.getUser());
+        params.put("signUserId", inputParam.getSignUserId());
         params.put("contractName", contractName);
-        params.put("abiInfo", JSONArray.parseArray(inputParam.getContractAbi()));
+        params.put("abiInfo", abiArray);
         params.put("bytecodeBin", inputParam.getBytecodeBin());
         params.put("funcParam", inputParam.getConstructorParams());
-        params.put("useAes", constants.getIsPrivateKeyEncrypt());
 
         // deploy
-        String contractAddress = frontRestTools.postForEntity(inputParam.getChainId(), groupId,
-                FrontRestTools.URI_CONTRACT_DEPLOY, params, String.class);
+        String contractAddress = frontInterface.postToSpecificFront(groupId, tbFront.getFrontIp(),
+                tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_DEPLOY, params, String.class);
         if (StringUtils.isBlank(contractAddress)) {
             log.error("fail deploy, contractAddress is empty");
-            throw new NodeMgrException(ConstantCode.CONTRACT_DEPLOY_FAIL);
+            throw new BaseException(ConstantCode.CONTRACT_DEPLOY_FAIL);
         }
 
         // save contract
@@ -240,49 +290,77 @@ public class ContractService {
 
         log.debug("end deployContract. contractId:{} groupId:{} contractAddress:{}",
                 tbContract.getContractId(), groupId, contractAddress);
-        return tbContract;
+        return queryByContractId(tbContract.getContractId());
     }
-
-    /**
-     * query contract info.
-     */
-    public TbContract queryContract(ContractParam queryParam) {
-        log.debug("start queryContract. queryParam:{}", JSON.toJSONString(queryParam));
-        TbContract tbContract = contractMapper.queryContract(queryParam);
-        log.debug("end queryContract. queryParam:{} tbContract:{}", JSON.toJSONString(queryParam),
-                JSON.toJSONString(tbContract));
-        return tbContract;
-    }
-
 
     /**
      * send transaction.
      */
-    public Object sendTransaction(TransactionInputParam param) throws NodeMgrException {
-        log.debug("start sendTransaction. param:{}", JSON.toJSONString(param));
-
-        if (Objects.isNull(param)) {
+    public Object sendTransaction(TransactionInputParam inputParam) throws BaseException {
+        log.debug("start sendTransaction. param:{}", JsonTools.toJSONString(inputParam));
+        if (Objects.isNull(inputParam)) {
             log.info("fail sendTransaction. request param is null");
-            throw new NodeMgrException(ConstantCode.INVALID_PARAM_INFO);
+            throw new BaseException(ConstantCode.INVALID_PARAM_INFO);
         }
-
-        // check contractId
-        verifyContractIdExist(param.getChainId(), param.getContractId(), param.getGroupId());
-        // send abi
-        sendAbi(param.getChainId(), param.getGroupId(), param.getContractId(),
-                param.getContractAddress());
+        // check front
+        TbFront tbFront =
+                frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
+        if (tbFront == null) {
+            log.error("fail sendTransaction node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
         // check contract deploy
-        verifyContractDeploy(param.getChainId(), param.getContractId(), param.getGroupId());
+        TbContract tbContract = verifyContractDeploy(inputParam.getChainId(),
+                inputParam.getContractId(), inputParam.getGroupId());
+
+        // transaction param
+        Map<String, Object> params = new HashMap<>();
+        params.put("groupId", inputParam.getGroupId());
+        params.put("signUserId", inputParam.getSignUserId());
+        params.put("contractName", inputParam.getContractName());
+        params.put("contractAddress", tbContract.getContractAddress());
+        params.put("contractAbi", JsonTools.toJavaObjectList(inputParam.getContractAbi(), Object.class));
+        params.put("funcName", inputParam.getFuncName());
+        params.put("funcParam", inputParam.getFuncParam());
 
         // send transaction
-        TransactionParam transParam = new TransactionParam();
-        BeanUtils.copyProperties(param, transParam);
-        transParam.setUseAes(constants.getIsPrivateKeyEncrypt());
-
-        Object frontRsp = frontRestTools.postForEntity(param.getChainId(), param.getGroupId(),
-                FrontRestTools.URI_SEND_TRANSACTION, transParam, Object.class);
-        log.debug("end sendTransaction. frontRsp:{}", JSON.toJSONString(frontRsp));
+        Object frontRsp = frontInterface.postToSpecificFront(inputParam.getGroupId(),
+                tbFront.getFrontIp(), tbFront.getFrontPort(), FrontRestTools.URI_SEND_TRANSACTION,
+                params, Object.class);
+        log.debug("end sendTransaction. frontRsp:{}", JsonTools.toJSONString(frontRsp));
         return frontRsp;
+    }
+
+    /**
+     * contract manage.
+     */
+    public Object statusManage(ContractManageParam inputParam) throws BaseException {
+        log.debug("start statusManage. param:{}", JsonTools.toJSONString(inputParam));
+        // check front
+        TbFront tbFront =
+                frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
+        if (tbFront == null) {
+            log.error("fail statusManage node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+
+        // transaction param
+        Map<String, Object> params = new HashMap<>();
+        params.put("groupId", inputParam.getGroupId());
+        params.put("contractAddress", inputParam.getContractAddress());
+        params.put("handleType", inputParam.getHandleType());
+        params.put("signUserId", inputParam.getSignUserId());
+        params.put("grantAddress", inputParam.getGrantAddress());
+
+        // send transaction
+        Object contractStatusManageResult =
+                frontInterface.postToSpecificFront(inputParam.getGroupId(), tbFront.getFrontIp(),
+                        tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_STATUS_MANAGE, params,
+                        Object.class);
+
+        log.debug("end statusManage. contractStatusManageResult:{}",
+                JsonTools.toJSONString(contractStatusManageResult));
+        return contractStatusManageResult;
     }
 
 
@@ -294,7 +372,7 @@ public class ContractService {
         TbContract contract = queryContract(param);
         if (Objects.nonNull(contract)) {
             log.warn("contract is exist. groupId:{} name:{} path:{}", groupId, name, path);
-            throw new NodeMgrException(ConstantCode.CONTRACT_EXISTS);
+            throw new BaseException(ConstantCode.CONTRACT_EXISTS);
         }
     }
 
@@ -305,7 +383,7 @@ public class ContractService {
         TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
         if (ContractStatus.DEPLOYED.getValue() == contract.getContractStatus()) {
             log.info("contract had bean deployed contractId:{}", contractId);
-            throw new NodeMgrException(ConstantCode.CONTRACT_HAS_BEAN_DEPLOYED);
+            throw new BaseException(ConstantCode.CONTRACT_HAS_BEAN_DEPLOYED);
         }
         return contract;
     }
@@ -317,7 +395,7 @@ public class ContractService {
         TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
         if (ContractStatus.DEPLOYED.getValue() != contract.getContractStatus()) {
             log.info("contract had bean deployed contractId:{}", contractId);
-            throw new NodeMgrException(ConstantCode.CONTRACT_NOT_DEPLOY);
+            throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOY);
         }
         return contract;
     }
@@ -330,7 +408,7 @@ public class ContractService {
         TbContract contract = queryContract(param);
         if (Objects.isNull(contract)) {
             log.info("contractId is invalid. contractId:{}", contractId);
-            throw new NodeMgrException(ConstantCode.INVALID_CONTRACT_ID);
+            throw new BaseException(ConstantCode.INVALID_CONTRACT_ID);
         }
         return contract;
     }
@@ -346,64 +424,7 @@ public class ContractService {
             return;
         }
         if (contractId != localContract.getContractId()) {
-            throw new NodeMgrException(ConstantCode.CONTRACT_NAME_REPEAT);
+            throw new BaseException(ConstantCode.CONTRACT_NAME_REPEAT);
         }
-    }
-
-    /**
-     * delete by groupId
-     */
-    public void deleteByGroupId(int chainId, int groupId) {
-        if (chainId == 0 || groupId == 0) {
-            return;
-        }
-        contractMapper.removeByGroupId(chainId, groupId);
-    }
-
-
-    /**
-     * send abi.
-     */
-    public void sendAbi(int chainId, int groupId, int contractId, String address) {
-        log.info("start sendAbi, groupId:{} contractId:{} address:{}", groupId, contractId,
-                address);
-        TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
-        String localAddress = contract.getContractAddress();
-        String abiInfo = contract.getContractAbi();
-        if (StringUtils.isBlank(address)) {
-            log.warn("ignore sendAbi. inputAddress is empty");
-            return;
-        }
-        if (StringUtils.isBlank(abiInfo)) {
-            log.warn("ignore sendAbi. abiInfo is empty");
-            return;
-        }
-        if (address.equals(localAddress)) {
-            log.info("ignore sendAbi. inputAddress:{} localAddress:{}", address, localAddress);
-            return;
-        }
-        if (address.length() != CONTRACT_ADDRESS_LENGTH) {
-            log.warn("fail sendAbi. inputAddress:{}", address);
-            throw new NodeMgrException(ConstantCode.CONTRACT_ADDRESS_INVALID);
-        }
-        // send abi
-        PostAbiInfo param = new PostAbiInfo();
-        param.setGroupId(groupId);
-        param.setContractName(contract.getContractName());
-        param.setAddress(address);
-        param.setAbiInfo(JSONArray.parseArray(abiInfo, AbiDefinition.class));
-        param.setContractBin(contract.getContractBin());
-
-        frontInterface.sendAbi(chainId, groupId, param);
-
-        // save address
-        if (StringUtils.isBlank(contract.getContractAddress())) {
-            contract.setContractAddress(address);
-            contract.setContractStatus(ContractStatus.DEPLOYED.getValue());
-        }
-
-        contract.setDeployTime(LocalDateTime.now());
-        contract.setDescription("address add by sendAbi");
-        contractMapper.update(contract);
     }
 }
