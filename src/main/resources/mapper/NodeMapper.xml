@@ -67,9 +67,6 @@
     <if test="p2pPort != null">
       and a.p2p_port = #{p2pPort}
     </if>
-    <if test="nodeName != null and nodeName != ''">
-      and a.node_name = #{nodeName}
-    </if>
     <if test="nodeIp != null and nodeIp != ''">
       and a.node_ip = #{nodeIp}
     </if>

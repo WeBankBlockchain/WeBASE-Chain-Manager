@@ -13,25 +13,26 @@
  */
 package com.webank.webase.chain.mgr.base.tools;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.code.RetCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.pagetools.entity.MapHandle;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.security.MessageDigest;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -39,44 +40,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.crypto.EncryptType;
-import org.fisco.bcos.web3j.crypto.Hash;
 
 /**
  * common method.
  */
 @Log4j2
-public class NodeMgrTools {
+public class CommonUtils {
 
     public static final String DEFAULT_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     public static final String DATE_TIME_FORMAT_NO_SPACE = "yyyyMMddHHmmss";
-    private static final char[] CHARS = {'2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
-            'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
-            'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P',
-            'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-
-
-    /**
-     * 获取指定位数的数字和字母组合的字符串
-     *
-     * @param length 字符串长度
-     */
-    public static String randomString(int length) {
-        if (length > CHARS.length) {
-            return null;
-        }
-        StringBuffer sb = new StringBuffer();
-        Random random = new Random();
-        for (int i = 0; i < length; i++) {
-            sb.append(CHARS[random.nextInt(CHARS.length)]);
-        }
-        return sb.toString();
-    }
-
 
     /**
      * convert hex to localDateTime.
@@ -143,96 +120,12 @@ public class NodeMgrTools {
             log.warn("object2JavaBean. obj or clazz null");
             return null;
         }
-        String jsonStr = JSON.toJSONString(obj);
+        String jsonStr = JsonTools.toJSONString(obj);
 
-        return JSON.parseObject(jsonStr, clazz);
+        return JsonTools.toJavaObject(jsonStr, clazz);
     }
 
 
-    public static JSONObject Object2JSONObject(Object obj) {
-        if (obj == null) {
-            log.warn("obj is null");
-            return null;
-        }
-        String objJson = JSON.toJSONString(obj);
-        return JSONObject.parseObject(objJson);
-    }
-
-    /**
-     * encode list by sha.
-     */
-    public static String shaList(List<String> values) {
-        log.info("shaList start. values:{}", JSON.toJSONString(values));
-        // list按字段排序，并转换成字符串
-        String list2SortString = list2SortString(values);
-        // SHA加密字符串
-        String shaStr = shaEncode(list2SortString);
-        log.info("shaList end. ShaStr:{}", shaStr);
-        return shaStr;
-    }
-
-    /**
-     * encode String by sha.
-     */
-    public static String shaEncode(String inStr) {
-
-        byte[] byteArray = new byte[0];
-        try {
-            byteArray = inStr.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            log.warn("shaEncode fail:", e);
-            return null;
-        }
-        byte[] hashValue = getHashValue(byteArray);
-        StringBuffer hexValue = new StringBuffer();
-        for (int i = 0; i < hashValue.length; i++) {
-            int val = ((int) hashValue[i]) & 0xff;
-            if (val < 16) {
-                hexValue.append("0");
-            }
-            hexValue.append(Integer.toHexString(val));
-        }
-        return hexValue.toString();
-    }
-
-    /**
-     * get hash value type: sha256 or sm3
-     */
-    public static byte[] getHashValue(byte[] byteArray) {
-        byte[] hashResult;
-        if (EncryptType.encryptType == 1) {
-            hashResult = Hash.sha3(byteArray);
-            return hashResult;
-        } else {
-            MessageDigest sha = null;
-            try {
-                sha = MessageDigest.getInstance("SHA-256");
-                hashResult = sha.digest(byteArray);
-                return hashResult;
-            } catch (Exception e) {
-                log.error("shaEncode getHashValue fail:", e);
-                return null;
-            }
-        }
-    }
-
-    /**
-     * sort list and convert to String.
-     */
-    private static String list2SortString(List<String> values) {
-        if (values == null) {
-            throw new NullPointerException("values is null");
-        }
-
-        values.removeAll(Collections.singleton(null));// remove null
-        Collections.sort(values);
-
-        StringBuilder sb = new StringBuilder();
-        for (String s : values) {
-            sb.append(s);
-        }
-        return sb.toString();
-    }
 
     /**
      * convert list to url param.
@@ -285,12 +178,12 @@ public class NodeMgrTools {
             state = address.isReachable(500);
         } catch (Exception ex) {
             log.error("fail checkServerHostConnect", ex);
-            throw new NodeMgrException(ConstantCode.SERVER_CONNECT_FAIL);
+            throw new BaseException(ConstantCode.SERVER_CONNECT_FAIL);
         }
 
         if (!state) {
             log.info("host connect state:{}", state);
-            throw new NodeMgrException(ConstantCode.SERVER_CONNECT_FAIL);
+            throw new BaseException(ConstantCode.SERVER_CONNECT_FAIL);
         }
     }
 
@@ -312,7 +205,7 @@ public class NodeMgrTools {
             socket.connect(address, 1000);
         } catch (Exception ex) {
             log.error("fail checkServerConnect", ex);
-            throw new NodeMgrException(ConstantCode.SERVER_CONNECT_FAIL);
+            throw new BaseException(ConstantCode.SERVER_CONNECT_FAIL);
         } finally {
             if (Objects.nonNull(socket)) {
                 try {
@@ -331,7 +224,7 @@ public class NodeMgrTools {
     public static void responseRetCodeException(HttpServletResponse response, RetCode retCode) {
         BaseResponse baseResponse = new BaseResponse(retCode);
         try {
-            response.getWriter().write(JSON.toJSONString(baseResponse));
+            response.getWriter().write(JsonTools.toJSONString(baseResponse));
         } catch (IOException e) {
             log.error("fail responseRetCodeException", e);
         }
@@ -366,31 +259,17 @@ public class NodeMgrTools {
         LocalDateTime now = LocalDateTime.now();
         switch (lifeUnit) {
             case "y":
-                return dateTime.getYear() - now.getYear() < lifeValue;
+                return now.getYear() - dateTime.getYear() < lifeValue;
             case "M":
-                return dateTime.getMonthValue() - now.getMonthValue() < lifeValue;
+                return now.getMonthValue() - dateTime.getMonthValue() < lifeValue;
             case "d":
-                return dateTime.getDayOfMonth() - now.getDayOfMonth() < lifeValue;
+                return now.getDayOfMonth() - dateTime.getDayOfMonth() < lifeValue;
             case "m":
-                return dateTime.getMinute() - now.getMinute() < lifeValue;
+                return now.getMinute() - dateTime.getMinute() < lifeValue;
             default:
                 log.warn("fail isDateTimeInValid lifeUnit:{}", lifeUnit);
                 return false;
         }
-    }
-
-    /**
-     * is json.
-     */
-    public static boolean isJSON(String str) {
-        boolean result;
-        try {
-            JSON.parse(str);
-            result = true;
-        } catch (Exception e) {
-            result = false;
-        }
-        return result;
     }
 
     /**
@@ -403,12 +282,12 @@ public class NodeMgrTools {
         }
 
         RetCode retCode;
-        if (isJSON(str) && (retCode = JSONObject.parseObject(str, RetCode.class)) != null) {
+        if (JsonTools.isJson(str) && (retCode = JsonTools.toJavaObject(str, RetCode.class)) != null) {
             baseResponse = new BaseResponse(retCode);
         }
 
         try {
-            response.getWriter().write(JSON.toJSONString(baseResponse));
+            response.getWriter().write(JsonTools.toJSONString(baseResponse));
         } catch (IOException e) {
             log.error("fail responseRetCodeException", e);
         }
@@ -436,7 +315,7 @@ public class NodeMgrTools {
         });
         return list;
     }
-    
+
     /**
      * parseHexStr2Int.
      * 
@@ -448,5 +327,142 @@ public class NodeMgrTools {
             return 0;
         }
         return Integer.parseInt(str.substring(2), 16);
+    }
+
+    /**
+     * delete Files.
+     * 
+     * @param path path
+     * @return
+     */
+    public static boolean deleteFiles(String path) {
+        if (!path.endsWith(File.separator)) {
+            path = path + File.separator;
+        }
+        File dirFile = new File(path);
+        if (!dirFile.exists() || !dirFile.isDirectory()) {
+            return false;
+        }
+        boolean flag = true;
+        File[] files = dirFile.listFiles();
+        if (files == null) {
+            return false;
+        }
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isFile()) {
+                flag = deleteFile(files[i].getAbsolutePath());
+                if (!flag) {
+                    break;
+                }
+            } else {
+                flag = deleteFiles(files[i].getAbsolutePath());
+                if (!flag) {
+                    break;
+                }
+            }
+        }
+        if (!flag) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * delete single File.
+     * 
+     * @param filePath filePath
+     * @return
+     */
+    public static boolean deleteFile(String filePath) {
+        boolean flag = false;
+        File file = new File(filePath);
+        if (file.isFile() && file.exists()) {
+            file.delete();
+            flag = true;
+        }
+        return flag;
+    }
+
+    /**
+     * 文件转Base64
+     * 
+     * @param filePath 文件路径
+     * @return
+     */
+    public static String fileToBase64(String filePath) {
+        if (filePath == null) {
+            return null;
+        }
+        FileInputStream inputFile = null;
+        try {
+            File file = new File(filePath);
+            inputFile = new FileInputStream(file);
+            byte[] buffer = new byte[(int) file.length()];
+            inputFile.read(buffer);
+            return Base64.getEncoder().encodeToString(buffer);
+        } catch (IOException e) {
+            log.error("base64ToFile IOException:[{}]", e.toString());
+        } finally {
+            close(inputFile);
+        }
+        return null;
+    }
+
+    /**
+     * 文件压缩并Base64加密
+     * 
+     * @param srcFiles
+     * @return
+     */
+    public static String fileToZipBase64(List<File> srcFiles) {
+        long start = System.currentTimeMillis();
+        String toZipBase64 = "";
+        ZipOutputStream zos = null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            zos = new ZipOutputStream(baos);
+            for (File srcFile : srcFiles) {
+                byte[] buf = new byte[1024];
+                log.info("fileToZipBase64 fileName: [{}] size: [{}] ", srcFile.getName(),
+                        srcFile.length());
+                zos.putNextEntry(new ZipEntry(srcFile.getName()));
+                int len;
+                FileInputStream in = new FileInputStream(srcFile);
+                while ((len = in.read(buf)) != -1) {
+                    zos.write(buf, 0, len);
+                }
+                zos.closeEntry();
+                in.close();
+            }
+            long end = System.currentTimeMillis();
+            log.info("fileToZipBase64 cost time：[{}] ms", (end - start));
+        } catch (IOException e) {
+            log.error("fileToZipBase64 IOException:[{}]", e.toString());
+        } finally {
+            close(zos);
+        }
+
+        byte[] refereeFileBase64Bytes = Base64.getEncoder().encode(baos.toByteArray());
+        try {
+            toZipBase64 = new String(refereeFileBase64Bytes, "UTF-8");
+        } catch (IOException e) {
+            log.error("fileToZipBase64 IOException:[{}]", e.toString());
+        }
+        return toZipBase64;
+    }
+
+    /**
+     * close Closeable.
+     * 
+     * @param closeable object
+     */
+    private static void close(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                log.error("closeable IOException:[{}]", e.toString());
+            }
+        }
     }
 }

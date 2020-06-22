@@ -27,12 +27,13 @@ import lombok.NoArgsConstructor;
 public class TransactionParam {
     @NotNull
     private Integer groupId;
-    private String user;
+    private String signUserId;
     @NotBlank
     private String contractName;
     @NotBlank
     private String funcName;
     private String contractAddress;
-    private Boolean useAes;
+    @NotBlank
+    private String contractAbi;
     private List<Object> funcParam;
 }

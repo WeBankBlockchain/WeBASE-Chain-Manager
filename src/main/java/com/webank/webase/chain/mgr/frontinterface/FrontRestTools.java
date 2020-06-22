@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019  the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,10 +13,10 @@
  */
 package com.webank.webase.chain.mgr.frontinterface;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
@@ -52,54 +52,54 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class FrontRestTools {
 
-    //public static final String FRONT_URL = "http://%1s:%2d/WeBASE-Front/%3s";
-    public static final String FRONT_TRANS_RECEIPT_BY_HASH_URI = "web3/transactionReceipt/%1s";
+    // public static final String FRONT_URL = "http://%1s:%2d/WeBASE-Front/%3s";
+    public static final String URI_BLOCK_NUMBER = "web3/blockNumber";
     public static final String URI_BLOCK_BY_NUMBER = "web3/blockByNumber/%1d";
     public static final String URI_BLOCK_BY_HASH = "web3/blockByHash/%1s";
     public static final String URI_TRANS_TOTAL = "web3/transaction-total";
     public static final String URI_TRANS_BY_HASH = "web3/transaction/%1s";
-    public static final String URI_GROUP_PEERS = "web3/groupPeers";
-    public static final String URI_NODEID_LIST = "web3/nodeIdList";
+    public static final String URI_TRANS_RECEIPT = "web3/transactionReceipt/%1s";
+    public static final String URI_CODE = "web3/code/%1s/%2s";
     public static final String URI_GROUP_PLIST = "web3/groupList";
+    public static final String URI_NODEID_LIST = "web3/nodeIdList";
+    public static final String URI_GET_SEALER_LIST = "web3/sealerList";
+    public static final String URI_GET_OBSERVER_LIST = "web3/observerList";
+    public static final String URI_GROUP_PEERS = "web3/groupPeers";
     public static final String URI_PEERS = "web3/peers";
     public static final String URI_CONSENSUS_STATUS = "web3/consensusStatus";
     public static final String URI_CSYNC_STATUS = "web3/syncStatus";
     public static final String URI_SYSTEMCONFIG_BY_KEY = "web3/systemConfigByKey/%1s";
-    public static final String URI_CODE = "web3/code/%1s/%2s";
-    public static final String URI_BLOCK_NUMBER = "web3/blockNumber";
-    public static final String URI_GET_SEALER_LIST = "web3/sealerList";
-    public static final String URI_GET_OBSERVER_LIST = "web3/observerList";
     public static final String URI_GENERATE_GROUP = "web3/generateGroup";
-    public static final String URI_START_GROUP = "web3/startGroup/%1s";
-    public static final String URI_REFRESH_FRONT = "web3/refresh";
+    public static final String URI_OPERATE_GROUP = "web3/operateGroup/%1s";
     public static final String FRONT_PERFORMANCE_RATIO = "performance";
     public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
-    public static final String URI_KEY_PAIR = "privateKey?useAes=%1b";
-    public static final String URI_CONTRACT_DEPLOY = "contract/deploy";
-    public static final String URI_CONTRACT_SENDABI = "contract/abiInfo";
-    public static final String URI_SEND_TRANSACTION = "trans/handle";
+    public static final String URI_MULTI_CONTRACT_COMPILE = "contract/multiContractCompile";
+    public static final String URI_CONTRACT_DEPLOY = "contract/deployWithSign";
+    public static final String URI_SEND_TRANSACTION = "trans/handleWithSign";
     public static final String URI_CHAIN = "chain";
+    public static final String URI_CHECK_NODE_PROCESS = "chain/checkNodeProcess";
+    public static final String URI_GET_GROUP_SIZE_INFOS = "chain/getGroupSizeInfos";
+    public static final String URI_CHARGING_GET_NETWORK_DATA = "charging/getNetWorkData";
+    public static final String URI_CHARGING_GET_TXGASDATA = "charging/getTxGasData";
+    public static final String URI_CHARGING_DELETE_DATA = "charging/deleteData";
 
-    public static final String URI_PERMISSION = "permission";
-    public static final String URI_PERMISSION_FULL_LIST = "permission/full";
-    public static final String URI_PERMISSION_SORTED_LIST= "permission/sorted";
-    public static final String URI_PERMISSION_SORTED_FULL_LIST= "permission/sorted/full";
     public static final String URI_SYS_CONFIG_LIST = "sys/config/list";
     public static final String URI_SYS_CONFIG = "sys/config";
-    public static final String URI_CNS_LIST = "precompiled/cns/list";
     public static final String URI_CONSENSUS_LIST = "precompiled/consensus/list";
     public static final String URI_CONSENSUS = "precompiled/consensus";
-    public static final String URI_CRUD = "precompiled/crud";
+    public static final String URI_CONTRACT_STATUS_MANAGE = "precompiled/contractStatusManage";
 
     public static final String URI_CERT = "cert";
     public static final String URI_ENCRYPT_TYPE = "encrypt";
 
-    //不需要在url中包含groupId的
-    private static final List<String> URI_NOT_CONTAIN_GROUP_ID = Arrays
-        .asList(URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION, URI_KEY_PAIR, URI_CONTRACT_SENDABI,
-                URI_PERMISSION, URI_PERMISSION_FULL_LIST, URI_CNS_LIST, URI_SYS_CONFIG_LIST,
-                URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS, URI_CRUD, URI_PERMISSION_SORTED_LIST,
-                URI_PERMISSION_SORTED_FULL_LIST, URI_CERT, URI_ENCRYPT_TYPE);
+    // 不需要在url中包含groupId的
+    private static final List<String> URI_NOT_CONTAIN_GROUP_ID =
+            Arrays.asList(URI_MULTI_CONTRACT_COMPILE, URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION,
+                    URI_SYS_CONFIG_LIST, URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS,
+                    URI_CONTRACT_STATUS_MANAGE, URI_CERT, URI_ENCRYPT_TYPE,
+                    URI_CHARGING_GET_NETWORK_DATA, URI_CHARGING_GET_TXGASDATA,
+                    URI_CHARGING_DELETE_DATA, URI_CHAIN, FRONT_PERFORMANCE_RATIO,
+                    FRONT_PERFORMANCE_CONFIG, URI_CHECK_NODE_PROCESS, URI_GET_GROUP_SIZE_INFOS);
 
 
     @Qualifier(value = "genericRestTemplate")
@@ -137,21 +137,21 @@ public class FrontRestTools {
      * check url status.
      */
     private boolean isServiceSleep(String url, String methType) {
-        //get failInfo
+        // get failInfo
         String key = buildKey(url, methType);
         FailInfo failInfo = failRequestMap.get(key);
 
-        //cehck server status
+        // cehck server status
         if (failInfo == null) {
             return false;
         }
         int failCount = failInfo.getFailCount();
         Long subTime = Duration.between(failInfo.getLatestTime(), Instant.now()).toMillis();
-        if (failCount > cproperties.getMaxRequestFail() && subTime < cproperties
-            .getSleepWhenHttpMaxFail()) {
+        if (failCount > cproperties.getMaxRequestFail()
+                && subTime < cproperties.getSleepWhenHttpMaxFail()) {
             return true;
         } else if (subTime > cproperties.getSleepWhenHttpMaxFail()) {
-            //service is sleep
+            // service is sleep
             deleteKeyOfMap(failRequestMap, key);
         }
         return false;
@@ -162,7 +162,7 @@ public class FrontRestTools {
      * set request fail times.
      */
     private void setFailCount(String url, String methodType) {
-        //get failInfo
+        // get failInfo
         String key = buildKey(url, methodType);
         FailInfo failInfo = failRequestMap.get(key);
         if (failInfo == null) {
@@ -170,11 +170,11 @@ public class FrontRestTools {
             failInfo.setFailUrl(url);
         }
 
-        //reset failInfo
+        // reset failInfo
         failInfo.setLatestTime(Instant.now());
         failInfo.setFailCount(failInfo.getFailCount() + 1);
         failRequestMap.put(key, failInfo);
-        log.info("the latest failInfo:{}", JSON.toJSONString(failRequestMap));
+        log.info("the latest failInfo:{}", JsonTools.toJSONString(failRequestMap));
     }
 
 
@@ -190,7 +190,7 @@ public class FrontRestTools {
      * delete key of map
      */
     private static void deleteKeyOfMap(Map<String, FailInfo> map, String rkey) {
-        log.info("start deleteKeyOfMap. rkey:{} map:{}", rkey, JSON.toJSONString(map));
+        log.info("start deleteKeyOfMap. rkey:{} map:{}", rkey, JsonTools.toJSONString(map));
         Iterator<String> iter = map.keySet().iterator();
         while (iter.hasNext()) {
             String key = iter.next();
@@ -198,26 +198,24 @@ public class FrontRestTools {
                 iter.remove();
             }
         }
-        log.info("end deleteKeyOfMap. rkey:{} map:{}", rkey, JSON.toJSONString(map));
+        log.info("end deleteKeyOfMap. rkey:{} map:{}", rkey, JsonTools.toJSONString(map));
     }
 
 
     /**
-     * build  url of front service.
+     * build url of front service.
      */
     private String buildFrontUrl(ArrayList<FrontGroup> list, String uri, HttpMethod httpMethod) {
-        Collections.shuffle(list);//random one
-        log.info("====================map list:{}",JSON.toJSONString(list));
+        Collections.shuffle(list);// random one
+        log.debug("====================map list:{}", JsonTools.toJSONString(list));
         Iterator<FrontGroup> iterator = list.iterator();
         while (iterator.hasNext()) {
             FrontGroup frontGroup = iterator.next();
-            log.info("============frontGroup:{}",JSON.toJSONString(frontGroup));
+            log.info("============frontGroup:{} uri:{}", JsonTools.toJSONString(frontGroup), uri);
 
-            uri = uriAddGroupId(frontGroup.getGroupId(), uri);//append groupId to uri
-            String url = String
-                .format(cproperties.getFrontUrl(), frontGroup.getFrontIp(),
-                    frontGroup.getFrontPort(), uri)
-                .replaceAll(" ", "");
+            uri = uriAddGroupId(frontGroup.getGroupId(), uri);// append groupId to uri
+            String url = String.format(cproperties.getFrontUrl(), frontGroup.getFrontIp(),
+                    frontGroup.getFrontPort(), uri).replaceAll(" ", "");
             iterator.remove();
 
             if (isServiceSleep(url, httpMethod.toString())) {
@@ -238,7 +236,7 @@ public class FrontRestTools {
         headers.setContentType(MediaType.APPLICATION_JSON);
         String paramStr = null;
         if (Objects.nonNull(param)) {
-            paramStr = JSON.toJSONString(param);
+            paramStr = JsonTools.toJSONString(param);
         }
         HttpEntity requestEntity = new HttpEntity(paramStr, headers);
         return requestEntity;
@@ -247,11 +245,12 @@ public class FrontRestTools {
     /**
      * case restTemplate by uri.
      */
-    private RestTemplate caseRestemplate(String uri) {
+    public RestTemplate caseRestemplate(String uri) {
         if (StringUtils.isBlank(uri)) {
             return null;
         }
-        if (uri.contains(URI_CONTRACT_DEPLOY)) {
+        if (uri.contains(URI_CONTRACT_DEPLOY) || uri.contains(URI_MULTI_CONTRACT_COMPILE)
+                || uri.contains(URI_CHARGING_GET_TXGASDATA)) {
             return deployRestTemplate;
         }
         return genericRestTemplate;
@@ -268,37 +267,40 @@ public class FrontRestTools {
     /**
      * post from front for entity.
      */
-    public <T> T postForEntity(Integer chainId, Integer groupId, String uri, Object params, Class<T> clazz) {
+    public <T> T postForEntity(Integer chainId, Integer groupId, String uri, Object params,
+            Class<T> clazz) {
         return restTemplateExchange(chainId, groupId, uri, HttpMethod.POST, params, clazz);
     }
 
     /**
      * delete from front for entity.
      */
-    public <T> T deleteForEntity(Integer chainId, Integer groupId, String uri, Object params, Class<T> clazz) {
+    public <T> T deleteForEntity(Integer chainId, Integer groupId, String uri, Object params,
+            Class<T> clazz) {
         return restTemplateExchange(chainId, groupId, uri, HttpMethod.DELETE, params, clazz);
     }
 
     /**
      * restTemplate exchange.
      */
-    private <T> T restTemplateExchange(Integer chainId, Integer groupId, String uri, HttpMethod method,
-        Object param, Class<T> clazz) {
+    private <T> T restTemplateExchange(Integer chainId, Integer groupId, String uri,
+            HttpMethod method, Object param, Class<T> clazz) {
         List<FrontGroup> frontList = frontGroupMapCache.getMapListByChainId(chainId, groupId);
         if (frontList == null || frontList.size() == 0) {
             log.error("fail restTemplateExchange. frontList is empty");
-            throw new NodeMgrException(ConstantCode.FRONT_LIST_NOT_FOUNT);
+            throw new BaseException(ConstantCode.FRONT_LIST_NOT_FOUNT);
         }
         ArrayList<FrontGroup> list = new ArrayList<>(frontList);
         RestTemplate restTemplate = caseRestemplate(uri);
 
         while (list != null && list.size() > 0) {
-            String url = buildFrontUrl(list, uri, method);//build url
+            String url = buildFrontUrl(list, uri, method);// build url
             try {
                 HttpEntity entity = buildHttpEntity(param);// build entity
                 if (null == restTemplate) {
-                    log.error("fail restTemplateExchange, rest is null. groupId:{} uri:{}", chainId,uri);
-                    throw new NodeMgrException(ConstantCode.SYSTEM_EXCEPTION);
+                    log.error("fail restTemplateExchange, rest is null. groupId:{} uri:{}", chainId,
+                            uri);
+                    throw new BaseException(ConstantCode.SYSTEM_EXCEPTION);
                 }
                 ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);
                 return response.getBody();
@@ -311,12 +313,28 @@ public class FrontRestTools {
                 log.info("continue next front", ex);
                 continue;
             } catch (HttpStatusCodeException e) {
-                JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
-                log.error("http request fail. error:{}", JSON.toJSONString(error));
-                throw new NodeMgrException(error.getInteger("code"),
-                    error.getString("errorMessage"));
+                errorFormat(JsonTools.stringToJsonNode(e.getResponseBodyAsString()));
             }
         }
         return null;
+    }
+
+    /**
+     * front error format
+     * 
+     * @param error
+     */
+    public static void errorFormat(JsonNode error) {
+        log.error("http request fail. error:{}", JsonTools.toJSONString(error));
+        String errorMessage = error.get("errorMessage").asText();
+        if (StringUtils.isBlank(errorMessage)) {
+            throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
+        }
+        if (errorMessage.contains("code")) {
+            JsonNode errorInside = JsonTools.stringToJsonNode(errorMessage).get("error");
+            throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
+                    errorInside.get("message").asText());
+        }
+        throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
     }
 }

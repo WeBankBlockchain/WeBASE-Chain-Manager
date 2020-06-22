@@ -119,6 +119,14 @@ let errCode = {
         en: "invalid user",
         zh: "无效用户"
     },
+    "205029": {
+        en: "chain id is already exists",
+        zh: "链编号已存在"
+    },
+    "205033": {
+        en: "request node exception",
+        zh: "请求节点异常"
+    },
     "305000": {
         en: "param exception",
         zh: "参数异常"

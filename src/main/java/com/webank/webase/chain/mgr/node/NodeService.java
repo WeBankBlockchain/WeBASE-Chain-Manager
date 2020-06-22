@@ -13,12 +13,11 @@
  */
 package com.webank.webase.chain.mgr.node;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
-import com.webank.webase.chain.mgr.base.tools.NodeMgrTools;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfConsensusStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfSyncStatus;
@@ -56,7 +55,7 @@ public class NodeService {
      * add new node data.
      */
     public void addNodeInfo(Integer chainId, Integer groupId, PeerInfo peerInfo)
-            throws NodeMgrException {
+            throws BaseException {
         String nodeIp = null;
         Integer nodeP2PPort = null;
 
@@ -81,29 +80,29 @@ public class NodeService {
     /**
      * query count of node.
      */
-    public Integer countOfNode(NodeParam queryParam) throws NodeMgrException {
-        log.debug("start countOfNode queryParam:{}", JSON.toJSONString(queryParam));
+    public Integer countOfNode(NodeParam queryParam) throws BaseException {
+        log.debug("start countOfNode queryParam:{}", JsonTools.toJSONString(queryParam));
         try {
             Integer nodeCount = nodeMapper.getCount(queryParam);
             log.debug("end countOfNode nodeCount:{} queryParam:{}", nodeCount,
-                    JSON.toJSONString(queryParam));
+                    JsonTools.toJSONString(queryParam));
             return nodeCount;
         } catch (RuntimeException ex) {
             log.error("fail countOfNode . queryParam:{}", queryParam, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
     }
 
     /**
      * query node list by page.
      */
-    public List<TbNode> qureyNodeList(NodeParam queryParam) throws NodeMgrException {
-        log.debug("start qureyNodeList queryParam:{}", JSON.toJSONString(queryParam));
+    public List<TbNode> qureyNodeList(NodeParam queryParam) throws BaseException {
+        log.debug("start qureyNodeList queryParam:{}", JsonTools.toJSONString(queryParam));
 
         // query node list
         List<TbNode> listOfNode = nodeMapper.getList(queryParam);
 
-        log.debug("end qureyNodeList listOfNode:{}", JSON.toJSONString(listOfNode));
+        log.debug("end qureyNodeList listOfNode:{}", JsonTools.toJSONString(listOfNode));
         return listOfNode;
     }
 
@@ -127,15 +126,15 @@ public class NodeService {
     /**
      * query node info.
      */
-    public TbNode queryByNodeId(String nodeId) throws NodeMgrException {
+    public TbNode queryByNodeId(String nodeId) throws BaseException {
         log.debug("start queryNode nodeId:{}", nodeId);
         try {
             TbNode nodeRow = nodeMapper.queryByNodeId(nodeId);
-            log.debug("end queryNode nodeId:{} TbNode:{}", nodeId, JSON.toJSONString(nodeRow));
+            log.debug("end queryNode nodeId:{} TbNode:{}", nodeId, JsonTools.toJSONString(nodeRow));
             return nodeRow;
         } catch (RuntimeException ex) {
             log.error("fail queryNode . nodeId:{}", nodeId, ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
     }
 
@@ -143,20 +142,20 @@ public class NodeService {
     /**
      * update node info.
      */
-    public void updateNode(TbNode tbNode) throws NodeMgrException {
-        log.debug("start updateNodeInfo  param:{}", JSON.toJSONString(tbNode));
+    public void updateNode(TbNode tbNode) throws BaseException {
+        log.debug("start updateNodeInfo  param:{}", JsonTools.toJSONString(tbNode));
         Integer affectRow = 0;
         try {
 
             affectRow = nodeMapper.update(tbNode);
         } catch (RuntimeException ex) {
             log.error("updateNodeInfo exception", ex);
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
 
         if (affectRow == 0) {
             log.warn("affect 0 rows of tb_node");
-            throw new NodeMgrException(ConstantCode.DB_EXCEPTION);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
         }
         log.debug("end updateNodeInfo");
     }
@@ -165,7 +164,7 @@ public class NodeService {
      * query node info.
      */
     public TbNode queryNodeInfo(NodeParam nodeParam) {
-        log.debug("start queryNodeInfo nodeParam:{}", JSON.toJSONString(nodeParam));
+        log.debug("start queryNodeInfo nodeParam:{}", JsonTools.toJSONString(nodeParam));
         TbNode tbNode = nodeMapper.queryNodeInfo(nodeParam);
         log.debug("end queryNodeInfo result:{}", tbNode);
         return tbNode;
@@ -174,7 +173,7 @@ public class NodeService {
     /**
      * delete by node and group.
      */
-    public void deleteByNodeAndGroupId(String nodeId, int groupId) throws NodeMgrException {
+    public void deleteByNodeAndGroupId(String nodeId, int groupId) throws BaseException {
         log.debug("start deleteByNodeAndGroupId nodeId:{} groupId:{}", nodeId, groupId);
         nodeMapper.deleteByNodeAndGroup(nodeId, groupId);
         log.debug("end deleteByNodeAndGroupId");
@@ -295,19 +294,24 @@ public class NodeService {
         if (StringUtils.isBlank(consensusStatusJson)) {
             return null;
         }
-        JSONArray jsonArr = JSONArray.parseArray(consensusStatusJson);
-        List<Object> dataIsList =
-                jsonArr.stream().filter(jsonObj -> jsonObj instanceof List).map(arr -> {
-                    Object obj = JSONArray.parseArray(JSON.toJSONString(arr)).get(0);
-                    try {
-                        NodeMgrTools.object2JavaBean(obj, PeerOfConsensusStatus.class);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                    return arr;
-                }).collect(Collectors.toList());
-        return JSONArray.parseArray(JSON.toJSONString(dataIsList.get(0)),
-                PeerOfConsensusStatus.class);
+        List jsonArr = JsonTools.toJavaObject(consensusStatusJson, List.class);
+        if (jsonArr == null) {
+            log.error("getPeerOfConsensusStatus error");
+            throw new BaseException(ConstantCode.FAIL_PARSE_JSON);
+        }
+        List<PeerOfConsensusStatus> dataIsList = new ArrayList<>();
+        for (int i = 0; i < jsonArr.size(); i++ ) {
+            if (jsonArr.get(i) instanceof List) {
+                List<PeerOfConsensusStatus> tempList = JsonTools.toJavaObjectList(
+                    JsonTools.toJSONString(jsonArr.get(i)), PeerOfConsensusStatus.class);
+                if (tempList != null) {
+                    dataIsList.addAll(tempList);
+                } else {
+                    throw new BaseException(ConstantCode.FAIL_PARSE_JSON);
+                }
+            }
+        }
+        return dataIsList;
     }
 
     /**

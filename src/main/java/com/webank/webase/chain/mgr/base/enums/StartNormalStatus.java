@@ -30,7 +30,7 @@ package com.webank.webase.chain.mgr.base.enums;
  * Enumeration of group type.
  */
 public enum StartNormalStatus {
-    SUCCESS(0), GROUP_STARTED(1);
+    SUCCESS(0), RUNNING(3);
 
     private int value;
 
