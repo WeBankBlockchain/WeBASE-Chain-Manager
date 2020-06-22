@@ -106,6 +106,8 @@ public class ConstantCode {
     public static final RetCode GROUP_OPERATE_FAIL = RetCode.mark(205032, "group operate fail");
     
     public static final RetCode REQUEST_NODE_EXCEPTION = RetCode.mark(205033, "request node exception");
+    // JSON PARSE
+    public static final RetCode FAIL_PARSE_JSON = RetCode.mark(205034, "Fail to parse json");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");

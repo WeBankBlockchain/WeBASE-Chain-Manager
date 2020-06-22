@@ -13,7 +13,7 @@
  */
 package com.webank.webase.chain.mgr.base.exception;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.code.RetCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
@@ -45,7 +45,7 @@ public class ExceptionsHandler {
             .orElse(ConstantCode.SYSTEM_EXCEPTION);
 
         BaseResponse bre = new BaseResponse(retCode);
-        log.warn("business exception return:{}", JSON.toJSONString(bre));
+        log.warn("business exception return:{}", JsonTools.toJSONString(bre));
         return bre;
     }
 
@@ -61,7 +61,7 @@ public class ExceptionsHandler {
             .orElse(ConstantCode.SYSTEM_EXCEPTION);
 
         BaseResponse bre = new BaseResponse(retCode);
-        log.warn("param exception return:{}", JSON.toJSONString(bre));
+        log.warn("param exception return:{}", JsonTools.toJSONString(bre));
         return bre;
     }
 
@@ -76,7 +76,7 @@ public class ExceptionsHandler {
 
         RetCode retCode = new RetCode(ConstantCode.PARAM_EXCEPTION.getCode(), ex.getMessage());
         BaseResponse bre = new BaseResponse(retCode);
-        log.warn("typeMismatchException return:{}", JSON.toJSONString(bre));
+        log.warn("typeMismatchException return:{}", JsonTools.toJSONString(bre));
         return bre;
     }
 
@@ -92,7 +92,7 @@ public class ExceptionsHandler {
         RetCode retCode = ConstantCode.SYSTEM_EXCEPTION;
 
         BaseResponse bre = new BaseResponse(retCode);
-        log.warn("system RuntimeException return:{}", JSON.toJSONString(bre));
+        log.warn("system RuntimeException return:{}", JsonTools.toJSONString(bre));
         return bre;
     }
 }
