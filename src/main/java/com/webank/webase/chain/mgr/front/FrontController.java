@@ -14,12 +14,12 @@
 package com.webank.webase.chain.mgr.front;
 
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.exception.NodeMgrException;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.front.entity.TbFront;
@@ -61,13 +61,13 @@ public class FrontController extends BaseController {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start newFront startTime:{} frontInfo:{}", startTime.toEpochMilli(),
-                JSON.toJSONString(frontInfo));
+                JsonTools.toJSONString(frontInfo));
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         TbFront tbFront = frontService.newFront(frontInfo);
         baseResponse.setData(tbFront);
         log.info("end newFront useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -80,7 +80,7 @@ public class FrontController extends BaseController {
             @RequestParam(value = "chainId", required = false) Integer chainId,
             @RequestParam(value = "frontId", required = false) Integer frontId,
             @RequestParam(value = "groupId", required = false) Integer groupId)
-            throws NodeMgrException {
+            throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start queryFrontList startTime:{} frontId:{} groupId:{}",
@@ -102,7 +102,7 @@ public class FrontController extends BaseController {
 
         log.info("end queryFrontList useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(pagesponse));
+                JsonTools.toJSONString(pagesponse));
         return pagesponse;
     }
 
@@ -120,7 +120,7 @@ public class FrontController extends BaseController {
 
         log.info("end removeFront useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -135,8 +135,7 @@ public class FrontController extends BaseController {
             @RequestParam(required = false) @DateTimeFormat(
                     iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
             @RequestParam(required = false, defaultValue = "1") int gap,
-            @RequestParam(required = false, defaultValue = "1") int groupId)
-            throws NodeMgrException {
+            @RequestParam(required = false, defaultValue = "1") int groupId) throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info(
@@ -149,7 +148,7 @@ public class FrontController extends BaseController {
 
         response.setData(rspObj);
         log.info("end getChainInfo. endTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
 
         return response;
     }
@@ -159,14 +158,16 @@ public class FrontController extends BaseController {
      */
     @GetMapping(value = "/ratio/{frontId}")
     public BaseResponse getPerformanceRatio(@PathVariable("frontId") Integer frontId,
-            @RequestParam("beginDate") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime beginDate,
-            @RequestParam("endDate") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(value = "contrastBeginDate", required = false) @DateTimeFormat(
+            @RequestParam(required = false) @DateTimeFormat(
+                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
+            @RequestParam(required = false) @DateTimeFormat(
+                    iso = ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) @DateTimeFormat(
                     iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
-            @RequestParam(value = "contrastEndDate", required = false) @DateTimeFormat(
+            @RequestParam(required = false) @DateTimeFormat(
                     iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
             @RequestParam(value = "gap", required = false, defaultValue = "1") int gap)
-            throws NodeMgrException {
+            throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info(
@@ -179,7 +180,7 @@ public class FrontController extends BaseController {
                 contrastBeginDate, contrastEndDate, gap);
         response.setData(rspObj);
         log.info("end getPerformanceRatio. useTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
 
         return response;
     }
@@ -189,7 +190,7 @@ public class FrontController extends BaseController {
      */
     @GetMapping(value = "/config/{frontId}")
     public BaseResponse getPerformanceConfig(@PathVariable("frontId") Integer frontId)
-            throws NodeMgrException {
+            throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start getPerformanceConfig. startTime:{} frontId:{}", startTime.toEpochMilli(),
@@ -197,7 +198,41 @@ public class FrontController extends BaseController {
         Object frontRsp = frontService.getPerformanceConfig(frontId);
         response.setData(frontRsp);
         log.info("end getPerformanceConfig. useTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
+        return response;
+    }
+
+    /**
+     * check node process.
+     */
+    @GetMapping(value = "/checkNodeProcess/{frontId}")
+    public BaseResponse checkNodeProcess(@PathVariable("frontId") Integer frontId)
+            throws BaseException {
+        Instant startTime = Instant.now();
+        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("start checkNodeProcess. startTime:{} frontId:{}", startTime.toEpochMilli(),
+                frontId);
+        Object frontRsp = frontService.checkNodeProcess(frontId);
+        response.setData(frontRsp);
+        log.info("end checkNodeProcess. useTime:{} response:{}",
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
+        return response;
+    }
+
+    /**
+     * get group size infos.
+     */
+    @GetMapping(value = "/getGroupSizeInfos/{frontId}")
+    public BaseResponse getGroupSizeInfos(@PathVariable("frontId") Integer frontId)
+            throws BaseException {
+        Instant startTime = Instant.now();
+        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("start getGroupSizeInfos. startTime:{} frontId:{}", startTime.toEpochMilli(),
+                frontId);
+        Object frontRsp = frontService.getGroupSizeInfos(frontId);
+        response.setData(frontRsp);
+        log.info("end getGroupSizeInfos. useTime:{} response:{}",
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
         return response;
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019  the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.chain.mgr.user.entity;
+
+package com.webank.webase.chain.mgr.node.entity;
 
 import lombok.Data;
 
 @Data
-public class KeyPair {
-
-    private String privateKey;
-    private String publicKey;
-    private String address;
+public class ConsensusHandle {
+    private Integer groupId;
+    private String nodeType;
+    private String signUserId;
+    private String nodeId;
 }

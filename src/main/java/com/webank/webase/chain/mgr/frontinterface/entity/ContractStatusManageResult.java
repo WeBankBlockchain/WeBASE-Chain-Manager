@@ -11,22 +11,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.user.entity;
+package com.webank.webase.chain.mgr.frontinterface.entity;
 
-import com.webank.webase.chain.mgr.base.entity.BaseQueryParam;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Data
-@NoArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-public class UserParam extends BaseQueryParam {
-
-    private Integer groupId;
-    private Integer userId;
-    private String userName;
-    private String commParam;
+public class ContractStatusManageResult {
+    private int code;
+    private String msg;
+    private String data;
 }

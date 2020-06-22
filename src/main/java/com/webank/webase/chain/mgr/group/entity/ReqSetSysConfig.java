@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019  the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.chain.mgr.user.entity;
+package com.webank.webase.chain.mgr.group.entity;
 
-import com.webank.webase.chain.mgr.base.enums.UserType;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-public class BindUserInputParam {
-    @NotBlank
-    private String userName;
-    @NotBlank
-    private String publicKey;
-    @NotNull
+public class ReqSetSysConfig {
     private Integer chainId;
-    @NotNull
     private Integer groupId;
-    private String description;
-    private Integer userType = UserType.GENERALUSER.getValue();
+    private String nodeId;
+    private String signUserId;
+    private String configKey;
+    private String configValue;
 }

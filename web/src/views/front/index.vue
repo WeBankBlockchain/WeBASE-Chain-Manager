@@ -47,12 +47,12 @@
                     <el-table-column
                         prop="frontPort"
                         label="前置端口"
-                        width="180">
+                        >
                     </el-table-column>
                     <el-table-column
                         prop="agency"
                         label="所属机构"
-                        width="180">
+                        >
                     </el-table-column>
                     <el-table-column
                         prop="description"

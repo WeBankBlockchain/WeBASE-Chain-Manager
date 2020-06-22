@@ -19,4 +19,5 @@ import lombok.Data;
 public class GroupHandleResult {
     private String code;
     private String message;
+    private String status;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019  the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,19 +11,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.user.entity;
+package com.webank.webase.chain.mgr.front.entity;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * param of contract manage.
+ */
 @Data
 @NoArgsConstructor
-public class UpdateUserInputParam {
-
+public class ContractManageParam {
     @NotNull
-    public Integer userId;
+    private Integer chainId;
+    @NotNull
+    private Integer groupId;
     @NotBlank
-    public String description;
+    private String nodeId;
+    @NotBlank
+    private String signUserId;
+    @NotBlank
+    private String contractAddress;
+    @NotBlank
+    private String handleType;
+    private String grantAddress;
 }
