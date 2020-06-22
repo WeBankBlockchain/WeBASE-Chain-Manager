@@ -13,20 +13,15 @@
  */
 package com.webank.webase.chain.mgr.base.tools;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.code.RetCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.pagetools.entity.MapHandle;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -46,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
@@ -126,20 +120,11 @@ public class CommonUtils {
             log.warn("object2JavaBean. obj or clazz null");
             return null;
         }
-        String jsonStr = JSON.toJSONString(obj);
+        String jsonStr = JsonTools.toJSONString(obj);
 
-        return JSON.parseObject(jsonStr, clazz);
+        return JsonTools.toJavaObject(jsonStr, clazz);
     }
 
-
-    public static JSONObject Object2JSONObject(Object obj) {
-        if (obj == null) {
-            log.warn("obj is null");
-            return null;
-        }
-        String objJson = JSON.toJSONString(obj);
-        return JSONObject.parseObject(objJson);
-    }
 
 
     /**
@@ -239,7 +224,7 @@ public class CommonUtils {
     public static void responseRetCodeException(HttpServletResponse response, RetCode retCode) {
         BaseResponse baseResponse = new BaseResponse(retCode);
         try {
-            response.getWriter().write(JSON.toJSONString(baseResponse));
+            response.getWriter().write(JsonTools.toJSONString(baseResponse));
         } catch (IOException e) {
             log.error("fail responseRetCodeException", e);
         }
@@ -288,20 +273,6 @@ public class CommonUtils {
     }
 
     /**
-     * is json.
-     */
-    public static boolean isJSON(String str) {
-        boolean result;
-        try {
-            JSON.parse(str);
-            result = true;
-        } catch (Exception e) {
-            result = false;
-        }
-        return result;
-    }
-
-    /**
      * response string.
      */
     public static void responseString(HttpServletResponse response, String str) {
@@ -311,12 +282,12 @@ public class CommonUtils {
         }
 
         RetCode retCode;
-        if (isJSON(str) && (retCode = JSONObject.parseObject(str, RetCode.class)) != null) {
+        if (JsonTools.isJson(str) && (retCode = JsonTools.toJavaObject(str, RetCode.class)) != null) {
             baseResponse = new BaseResponse(retCode);
         }
 
         try {
-            response.getWriter().write(JSON.toJSONString(baseResponse));
+            response.getWriter().write(JsonTools.toJSONString(baseResponse));
         } catch (IOException e) {
             log.error("fail responseRetCodeException", e);
         }
