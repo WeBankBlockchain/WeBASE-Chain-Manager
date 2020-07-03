@@ -13,7 +13,7 @@
  */
 package com.webank.webase.chain.mgr.group;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
@@ -226,7 +226,7 @@ public class GroupService {
         try {
             List<TbGroup> groupList = groupMapper.getList(chainId, groupStatus);
 
-            log.debug("end getGroupList groupList:{}", JSON.toJSONString(groupList));
+            log.debug("end getGroupList groupList:{}", JsonTools.toJSONString(groupList));
             return groupList;
         } catch (RuntimeException ex) {
             log.error("fail getGroupList", ex);
@@ -462,7 +462,7 @@ public class GroupService {
                 if (!CommonUtils.isDateTimeInValid(localGroup.getModifyTime(),
                         constants.getGroupInvalidGrayscaleValue())) {
                     log.warn("remove group, chainId:{} localGroup:{}", chainId,
-                            JSON.toJSONString(localGroup));
+                            JsonTools.toJSONString(localGroup));
                     // remove group
                     removeByGroupId(chainId, localGroupId);
                     continue;
@@ -477,7 +477,7 @@ public class GroupService {
 
             } catch (Exception ex) {
                 log.info("fail check group. chainId:{} localGroup:{}", chainId,
-                        JSON.toJSONString(localGroup));
+                        JsonTools.toJSONString(localGroup));
                 continue;
             }
 

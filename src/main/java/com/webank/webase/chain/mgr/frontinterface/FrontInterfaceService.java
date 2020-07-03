@@ -21,15 +21,13 @@ import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_GROU
 import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_GROUP_PLIST;
 import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_NODEID_LIST;
 import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_PEERS;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.HttpRequestTools;
 import com.webank.webase.chain.mgr.front.entity.TransactionCount;
 import com.webank.webase.chain.mgr.frontinterface.entity.GenerateGroupInfo;
-import com.webank.webase.chain.mgr.frontinterface.entity.GroupHandleResult;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
 import com.webank.webase.chain.mgr.group.entity.ReqSetSysConfig;
 import com.webank.webase.chain.mgr.group.entity.SysConfigParam;
@@ -43,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -90,20 +87,9 @@ public class FrontInterfaceService {
             log.error("requestSpecificFront. ResourceAccessException:{}", e);
             throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
         } catch (HttpStatusCodeException e) {
-            JSONObject error = JSONObject.parseObject(e.getResponseBodyAsString());
-            log.error("requestSpecificFront. error:{}", JSON.toJSONString(error));
-            String errorMessage = error.getString("errorMessage");
-            if (StringUtils.isBlank(errorMessage)) {
-                throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
-            }
-            if (errorMessage.contains("code")) {
-                JSONObject errorInside = JSONObject.parseObject(
-                        JSONObject.parseObject(error.getString("errorMessage")).getString("error"));
-                throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
-                        errorInside.getString("message"));
-            }
-            throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
+            FrontRestTools.errorFormat(JsonTools.stringToJsonNode(e.getResponseBodyAsString()));
         }
+        return null;
     }
 
     /**
@@ -277,7 +263,7 @@ public class FrontInterfaceService {
         log.debug("start getGroupPeers. groupId:{}", groupId);
         List<String> groupPeers =
                 frontRestTools.getForEntity(chainId, groupId, URI_GROUP_PEERS, List.class);
-        log.debug("end getGroupPeers. groupPeers:{}", JSON.toJSONString(groupPeers));
+        log.debug("end getGroupPeers. groupPeers:{}", JsonTools.toJSONString(groupPeers));
         return groupPeers;
     }
 
@@ -288,7 +274,7 @@ public class FrontInterfaceService {
         log.debug("start getObserverList. groupId:{}", groupId);
         List<String> observers =
                 frontRestTools.getForEntity(chainId, groupId, URI_GET_OBSERVER_LIST, List.class);
-        log.info("end getObserverList. observers:{}", JSON.toJSONString(observers));
+        log.info("end getObserverList. observers:{}", JsonTools.toJSONString(observers));
         return observers;
     }
 
@@ -310,7 +296,7 @@ public class FrontInterfaceService {
         log.debug("start getSyncStatus. groupId:{}", groupId);
         SyncStatus ststus = frontRestTools.getForEntity(chainId, groupId,
                 FrontRestTools.URI_CSYNC_STATUS, SyncStatus.class);
-        log.debug("end getSyncStatus. ststus:{}", JSON.toJSONString(ststus));
+        log.debug("end getSyncStatus. ststus:{}", JsonTools.toJSONString(ststus));
         return ststus;
     }
 
@@ -329,20 +315,19 @@ public class FrontInterfaceService {
         log.debug("start getSealerList. groupId:{}", groupId);
         List getSealerList = frontRestTools.getForEntity(chainId, groupId,
                 FrontRestTools.URI_GET_SEALER_LIST, List.class);
-        log.debug("end getSealerList. getSealerList:{}", JSON.toJSONString(getSealerList));
+        log.debug("end getSealerList. getSealerList:{}", JsonTools.toJSONString(getSealerList));
         return getSealerList;
     }
 
-    public Object generateGroup(String frontIp, Integer frontPort,
-            GenerateGroupInfo param) {
+    public Object generateGroup(String frontIp, Integer frontPort, GenerateGroupInfo param) {
         log.debug("start generateGroup groupId:{} frontIp:{} frontPort:{} param:{}",
-                param.getGenerateGroupId(), frontIp, frontPort, JSON.toJSONString(param));
+                param.getGenerateGroupId(), frontIp, frontPort, JsonTools.toJSONString(param));
         Integer groupId = Integer.MAX_VALUE;
         Object groupHandleResult = requestSpecificFront(groupId, frontIp, frontPort,
                 HttpMethod.POST, FrontRestTools.URI_GENERATE_GROUP, param, Object.class);
 
         log.debug("end generateGroup groupId:{} param:{}", param.getGenerateGroupId(),
-                JSON.toJSONString(param));
+                JsonTools.toJSONString(param));
         return groupHandleResult;
     }
 
@@ -367,13 +352,13 @@ public class FrontInterfaceService {
 
         String uri = HttpRequestTools.getQueryUri(FrontRestTools.URI_CONSENSUS_LIST, map);
         Object response = getFromSpecificFront(groupId, frontIp, frontPort, uri, Object.class);
-        log.debug("end getConsensusList. response:{}", JSON.toJSONString(response));
+        log.debug("end getConsensusList. response:{}", JsonTools.toJSONString(response));
         return response;
     }
 
     public Object setConsensusStatus(String frontIp, Integer frontPort,
             ConsensusParam consensusParam) {
-        log.debug("start setConsensusStatus. consensusParam:{}", JSON.toJSONString(consensusParam));
+        log.debug("start setConsensusStatus. consensusParam:{}", JsonTools.toJSONString(consensusParam));
         if (Objects.isNull(consensusParam)) {
             log.error("fail setConsensusStatus. request param is null");
             throw new BaseException(ConstantCode.INVALID_PARAM_INFO);
@@ -383,7 +368,7 @@ public class FrontInterfaceService {
 
         Object response = postToSpecificFront(consensusParam.getGroupId(), frontIp, frontPort,
                 FrontRestTools.URI_CONSENSUS, consensusHandle, Object.class);
-        log.debug("end setConsensusStatus. response:{}", JSON.toJSONString(response));
+        log.debug("end setConsensusStatus. response:{}", JsonTools.toJSONString(response));
         return response;
     }
 
@@ -398,14 +383,14 @@ public class FrontInterfaceService {
         String uri = HttpRequestTools.getQueryUri(FrontRestTools.URI_SYS_CONFIG_LIST, map);
 
         Object frontRsp = getFromSpecificFront(groupId, frontIp, frontPort, uri, Object.class);
-        log.debug("end getSysConfigListService. frontRsp:{}", JSON.toJSONString(frontRsp));
+        log.debug("end getSysConfigListService. frontRsp:{}", JsonTools.toJSONString(frontRsp));
         return frontRsp;
     }
 
     public Object setSysConfigByKey(String frontIp, Integer frontPort,
             ReqSetSysConfig reqSetSysConfig) {
         log.debug("start setSysConfigByKey. reqSetSysConfig:{}",
-                JSON.toJSONString(reqSetSysConfig));
+                JsonTools.toJSONString(reqSetSysConfig));
         if (Objects.isNull(reqSetSysConfig)) {
             log.error("fail setSysConfigByKey. request param is null");
             throw new BaseException(ConstantCode.INVALID_PARAM_INFO);
@@ -416,7 +401,7 @@ public class FrontInterfaceService {
 
         Object frontRsp = postToSpecificFront(reqSetSysConfig.getGroupId(), frontIp, frontPort,
                 FrontRestTools.URI_SYS_CONFIG, sysConfigParam, Object.class);
-        log.debug("end setSysConfigByKey. frontRsp:{}", JSON.toJSONString(frontRsp));
+        log.debug("end setSysConfigByKey. frontRsp:{}", JsonTools.toJSONString(frontRsp));
         return frontRsp;
     }
 
@@ -438,7 +423,7 @@ public class FrontInterfaceService {
                 HttpRequestTools.getQueryUri(FrontRestTools.URI_CHARGING_GET_NETWORK_DATA, map);
 
         Object frontRsp = getFromSpecificFront(groupId, frontIp, frontPort, uri, Object.class);
-        log.debug("end getNetWorkData. frontRsp:{}", JSON.toJSONString(frontRsp));
+        log.debug("end getNetWorkData. frontRsp:{}", JsonTools.toJSONString(frontRsp));
         return frontRsp;
     }
 
@@ -462,7 +447,7 @@ public class FrontInterfaceService {
         String uri = HttpRequestTools.getQueryUri(FrontRestTools.URI_CHARGING_GET_TXGASDATA, map);
 
         Object frontRsp = getFromSpecificFront(groupId, frontIp, frontPort, uri, Object.class);
-        log.debug("end getTxGasData. frontRsp:{}", JSON.toJSONString(frontRsp));
+        log.debug("end getTxGasData. frontRsp:{}", JsonTools.toJSONString(frontRsp));
         return frontRsp;
     }
 
@@ -478,7 +463,7 @@ public class FrontInterfaceService {
 
         Object frontRsp =
                 deleteToSpecificFront(groupId, frontIp, frontPort, uri, null, Object.class);
-        log.debug("end deleteLogData. frontRsp:{}", JSON.toJSONString(frontRsp));
+        log.debug("end deleteLogData. frontRsp:{}", JsonTools.toJSONString(frontRsp));
         return frontRsp;
     }
 
