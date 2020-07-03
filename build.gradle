@@ -30,7 +30,7 @@ List springboot = [
 ]
 
 List web3jsdk = [
-    "org.fisco-bcos:web3sdk:bsn-0402-SNAPSHOT"
+    "org.fisco-bcos:web3sdk:2.4.2"
 ]
 
 List jaxb = [
