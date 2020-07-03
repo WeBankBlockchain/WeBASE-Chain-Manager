@@ -14,7 +14,7 @@
 package com.webank.webase.chain.mgr.front;
 
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
@@ -61,13 +61,13 @@ public class FrontController extends BaseController {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start newFront startTime:{} frontInfo:{}", startTime.toEpochMilli(),
-                JSON.toJSONString(frontInfo));
+                JsonTools.toJSONString(frontInfo));
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         TbFront tbFront = frontService.newFront(frontInfo);
         baseResponse.setData(tbFront);
         log.info("end newFront useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -102,7 +102,7 @@ public class FrontController extends BaseController {
 
         log.info("end queryFrontList useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(pagesponse));
+                JsonTools.toJSONString(pagesponse));
         return pagesponse;
     }
 
@@ -120,7 +120,7 @@ public class FrontController extends BaseController {
 
         log.info("end removeFront useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -148,7 +148,7 @@ public class FrontController extends BaseController {
 
         response.setData(rspObj);
         log.info("end getChainInfo. endTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
 
         return response;
     }
@@ -180,7 +180,7 @@ public class FrontController extends BaseController {
                 contrastBeginDate, contrastEndDate, gap);
         response.setData(rspObj);
         log.info("end getPerformanceRatio. useTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
 
         return response;
     }
@@ -198,7 +198,7 @@ public class FrontController extends BaseController {
         Object frontRsp = frontService.getPerformanceConfig(frontId);
         response.setData(frontRsp);
         log.info("end getPerformanceConfig. useTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
         return response;
     }
 
@@ -215,7 +215,7 @@ public class FrontController extends BaseController {
         Object frontRsp = frontService.checkNodeProcess(frontId);
         response.setData(frontRsp);
         log.info("end checkNodeProcess. useTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
         return response;
     }
 
@@ -232,7 +232,7 @@ public class FrontController extends BaseController {
         Object frontRsp = frontService.getGroupSizeInfos(frontId);
         response.setData(frontRsp);
         log.info("end getGroupSizeInfos. useTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JSON.toJSONString(response));
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
         return response;
     }
 }

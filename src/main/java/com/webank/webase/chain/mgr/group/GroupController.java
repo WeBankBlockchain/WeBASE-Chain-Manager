@@ -13,7 +13,7 @@
  */
 package com.webank.webase.chain.mgr.group;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
@@ -115,7 +115,7 @@ public class GroupController extends BaseController {
         Object groupHandleResult = groupService.operateGroup(chainId, nodeId, groupId, type);
         log.info("end operateGroup useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(groupHandleResult));
+                JsonTools.toJSONString(groupHandleResult));
         return groupHandleResult;
     }
 
@@ -132,7 +132,7 @@ public class GroupController extends BaseController {
         groupService.batchStartGroup(req);
         log.info("end batchStartGroup useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -147,7 +147,7 @@ public class GroupController extends BaseController {
         groupService.resetGroupList();
         log.info("end updateGroup useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -165,7 +165,7 @@ public class GroupController extends BaseController {
         baseResponse.setData(groupGeneral);
         log.info("end getGroupGeneral useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JSON.toJSONString(baseResponse));
+                JsonTools.toJSONString(baseResponse));
         return baseResponse;
     }
 
@@ -232,7 +232,7 @@ public class GroupController extends BaseController {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start setConsensusStatus startTime:{} consensusParam:{}",
-                startTime.toEpochMilli(), JSON.toJSONString(consensusParam));
+                startTime.toEpochMilli(), JsonTools.toJSONString(consensusParam));
 
         // get front
         TbFront tbFront = frontService.getByChainIdAndNodeId(consensusParam.getChainId(),
@@ -287,7 +287,7 @@ public class GroupController extends BaseController {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start setSysConfigByKey startTime:{} reqSetSysConfig:{}",
-                startTime.toEpochMilli(), JSON.toJSONString(reqSetSysConfig));
+                startTime.toEpochMilli(), JsonTools.toJSONString(reqSetSysConfig));
 
         // get front
         TbFront tbFront = frontService.getByChainIdAndNodeId(reqSetSysConfig.getChainId(),

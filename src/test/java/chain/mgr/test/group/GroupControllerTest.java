@@ -15,7 +15,7 @@
  */
 package chain.mgr.test.group;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.Application;
 import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
 import java.math.BigInteger;
@@ -68,7 +68,7 @@ public class GroupControllerTest {
         param.setDescription("test");
         
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/group/generate/6d8d03b04da71c48273a19a24a34d9fe7b48155d3450e697f6a7c6012d0b22a82b53c25ecbe455c8fa439ceb556dd8c885c3d82309d375d355d6ae662f00a2ac").
-                content(JSON.toJSONString(param)).
+                content(JsonTools.toJSONString(param)).
                 contentType(MediaType.APPLICATION_JSON)
                 );
         resultActions.
@@ -90,7 +90,7 @@ public class GroupControllerTest {
         param.setDescription("test");
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post( "/group/generate").
-            content(JSON.toJSONString(param)).
+            content(JsonTools.toJSONString(param)).
             contentType(MediaType.APPLICATION_JSON)
         );
         resultActions.
