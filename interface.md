@@ -2897,6 +2897,16 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/400003
 
 ### 5.5 部署合约
 
+调用此接口进行合约部署。
+
+构造方法参数（funcParam）为JSON数组，多个参数以逗号分隔（参数为数组时同理），示例：
+
+```
+constructor(string s) -> ["aa,bb\"cc"]	// 双引号要转义
+constructor(uint n,bool b) -> [1,true]
+constructor(bytes b,address[] a) -> ["0x1a",["0x7939E26070BE44E6c4Fc759Ce55C6C8b166d94BE","0xce867fD9afa64175bb50A4Aa0c17fC7C4A3C67D9"]]
+```
+
 
 #### 5.5.1 传输协议规范
 * 网络传输协议：使用HTTP协议
@@ -2921,7 +2931,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/400003
 | 8    | contractId      | String         | 否     | 合约编号             |
 | 9    | contractPath      | String         | 否     | 合约所在目录               |
 | 10   | signUserId    | String         | 否     | WeBASE-Sign签名用户编号 |
-| 11    | constructorParams | List | 是     | 构造函数入参               |
+| 11    | constructorParams | List | 是     | 构造函数入参，JSON数组，多个参数以逗号分隔（参数为数组时同理），如：["str1",["arr1","arr2"]] |
 | 12 | nodeId | String | 否 | 节点编号，指定节点调用 |
 
 
@@ -3012,8 +3022,17 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/deploy
 }
 ```
 
-
 ### 5.6 发送交易
+
+调用此接口发送交易请求，数据上链或查询结果。
+
+方法入参（funcParam）为JSON数组，多个参数以逗号分隔（参数为数组时同理），示例：
+
+```
+function set(string s) -> ["aa,bb\"cc"]	// 双引号要转义
+function set(uint n,bool b) -> [1,true]
+function set(bytes b,address[] a) -> ["0x1a",["0x7939E26070BE44E6c4Fc759Ce55C6C8b166d94BE","0xce867fD9afa64175bb50A4Aa0c17fC7C4A3C67D9"]]
+```
 
 
 #### 5.6.1 传输协议规范
@@ -3037,7 +3056,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/deploy
 | 5    | contractId      | Int      | 否     | 合约编号               |
 | 6    | funcName     | String         | 否     | 合约方法名                 |
 | 7    | contractAddress     | String         | 是     | 合约地址   |
-| 8   | funcParam    | List | 是     | 合约方法入参               |
+| 8   | funcParam    | List | 是     | 合约方法入参，JSON数组，多个参数以逗号分隔（参数为数组时同理），如：["str1",["arr1","arr2"]] |
 | 9 | contractAbi | String | 否 | 所调用合约方法的abi，注意格式（传入所有abi可能导致合约重载方法出问题） |
 | 10 | nodeId | String | 否 | 节点编号，指定节点调用 |
 
