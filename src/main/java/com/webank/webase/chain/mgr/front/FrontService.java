@@ -13,16 +13,27 @@
  */
 package com.webank.webase.chain.mgr.front;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainService;
-import com.webank.webase.chain.mgr.chain.entity.TbChain;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
-import com.webank.webase.chain.mgr.front.entity.FrontParam;
-import com.webank.webase.chain.mgr.front.entity.TbFront;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
@@ -31,19 +42,13 @@ import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
+import com.webank.webase.chain.mgr.repository.bean.TbChain;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * service of web3.
@@ -52,12 +57,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class FrontService {
 
+    @Autowired private TbChainMapper tbChainMapper;
+    @Autowired private TbFrontMapper tbFrontMapper;
     @Autowired
     private ChainService chainService;
     @Autowired
     private GroupService groupService;
-    @Autowired
-    private FrontMapper frontMapper;
     @Autowired
     private NodeService nodeService;
     @Autowired
@@ -80,7 +85,7 @@ public class FrontService {
         log.debug("start newFront frontInfo:{}", frontInfo);
         // check chainId
         Integer chainId = frontInfo.getChainId();
-        TbChain tbChain = chainService.getChainById(chainId);
+        TbChain tbChain = tbChainMapper.selectByPrimaryKey(chainId);
         if (tbChain == null) {
             throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
         }
@@ -110,18 +115,18 @@ public class FrontService {
         // check front not exist
         SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontIp, frontPort,
                 Integer.valueOf(groupIdList.get(0)));
-        FrontParam param = new FrontParam();
-        param.setChainId(chainId);
-        param.setNodeId(syncStatus.getNodeId());
-        int count = getFrontCount(param);
+        int count = this.tbFrontMapper.countByChainIdAndNodeId(chainId,syncStatus.getNodeId());
         if (count > 0) {
             throw new BaseException(ConstantCode.FRONT_EXISTS);
         }
         // copy attribute
         BeanUtils.copyProperties(frontInfo, tbFront);
         tbFront.setNodeId(syncStatus.getNodeId());
+        Date now = new Date();
+        tbFront.setCreateTime(now);
+        tbFront.setModifyTime(now);
         // save front info
-        frontMapper.add(tbFront);
+        this.tbFrontMapper.insertSelective(tbFront);
         if (tbFront.getFrontId() == null || tbFront.getFrontId() == 0) {
             log.warn("fail newFront, after save, tbFront:{}", JsonTools.toJSONString(tbFront));
             throw new BaseException(ConstantCode.SAVE_FRONT_FAIL);
@@ -321,20 +326,7 @@ public class FrontService {
         return rspObj;
     }
 
-    /**
-     * get front count
-     */
-    public int getFrontCount(FrontParam param) {
-        Integer count = frontMapper.getCount(param);
-        return count == null ? 0 : count;
-    }
 
-    /**
-     * get front list
-     */
-    public List<TbFront> getFrontList(FrontParam param) {
-        return frontMapper.getList(param);
-    }
 
     /**
      * query front by frontId.
@@ -343,7 +335,7 @@ public class FrontService {
         if (frontId == 0) {
             return null;
         }
-        return frontMapper.getById(frontId);
+        return this.tbFrontMapper.selectByPrimaryKey(frontId);
     }
 
     /**
@@ -353,7 +345,7 @@ public class FrontService {
         if (chainId == null || nodeId == null) {
             return null;
         }
-        return frontMapper.getByChainIdAndNodeId(chainId, nodeId);
+        return this.tbFrontMapper.getByChainIdAndNodeId(chainId, nodeId);
     }
 
     /**
@@ -367,7 +359,7 @@ public class FrontService {
         }
 
         // remove front
-        frontMapper.removeById(frontId);
+        this.tbFrontMapper.deleteByPrimaryKey(frontId);
         // remove map
         frontGroupMapService.removeByFrontId(frontId);
         // reset group list
@@ -385,6 +377,6 @@ public class FrontService {
         }
 
         // remove front
-        frontMapper.removeByChainId(chainId);
+        this.tbFrontMapper.deleteByChainId(chainId);
     }
 }

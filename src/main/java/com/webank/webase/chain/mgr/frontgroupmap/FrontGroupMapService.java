@@ -13,19 +13,22 @@
  */
 package com.webank.webase.chain.mgr.frontgroupmap;
 
-import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
-import com.webank.webase.chain.mgr.frontgroupmap.entity.MapListParam;
-import com.webank.webase.chain.mgr.frontgroupmap.entity.TbFrontGroupMap;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
+import com.webank.webase.chain.mgr.frontgroupmap.entity.MapListParam;
+import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMap;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 
 
 @Service
 public class FrontGroupMapService {
 
     @Autowired
-    private FrontGroupMapMapper frontGroupMapMapper;
+    private TbFrontGroupMapMapper tbFrontGroupMapMapper;
 
     /**
      * add new mapping
@@ -34,7 +37,7 @@ public class FrontGroupMapService {
         TbFrontGroupMap tbFrontGroupMap = new TbFrontGroupMap(chainId, frontId, groupId);
 
         //add db
-        frontGroupMapMapper.add(tbFrontGroupMap);
+        this.tbFrontGroupMapMapper.insertSelective(tbFrontGroupMap);
         return tbFrontGroupMap;
     }
 
@@ -42,7 +45,7 @@ public class FrontGroupMapService {
      * get map count
      */
     public int getCount(MapListParam param) {
-        return frontGroupMapMapper.getCount(param);
+        return this.tbFrontGroupMapMapper.countByParam(param);
     }
 
     /**
@@ -53,7 +56,7 @@ public class FrontGroupMapService {
             return;
         }
         //remove by chainId
-        frontGroupMapMapper.removeByChainId(chainId);
+        this.tbFrontGroupMapMapper.deleteByChainId(chainId);
     }
     
     /**
@@ -64,7 +67,7 @@ public class FrontGroupMapService {
             return;
         }
         //remove by groupId
-        frontGroupMapMapper.removeByGroupId(chainId, groupId);
+        this.tbFrontGroupMapMapper.deleteByGroupId(chainId,groupId);
     }
 
     /**
@@ -75,7 +78,7 @@ public class FrontGroupMapService {
             return;
         }
         //remove by frontId
-        frontGroupMapMapper.removeByFrontId(frontId);
+        this.tbFrontGroupMapMapper.deleteByFrontId(frontId);
     }
 
     /**
@@ -85,15 +88,6 @@ public class FrontGroupMapService {
         if (groupId == 0) {
             return null;
         }
-        MapListParam param = new MapListParam();
-        param.setGroupId(groupId);
-        return getList(param);
-    }
-
-    /**
-     * get map list
-     */
-    public List<FrontGroup> getList(MapListParam mapListParam) {
-        return frontGroupMapMapper.getList(mapListParam);
+        return this.tbFrontGroupMapMapper.selectByGroupId(groupId);
     }
 }

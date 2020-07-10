@@ -13,29 +13,13 @@
  */
 package com.webank.webase.chain.mgr.group;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.controller.BaseController;
-import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.enums.DataStatus;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.front.FrontService;
-import com.webank.webase.chain.mgr.front.entity.TbFront;
-import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
-import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
-import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
-import com.webank.webase.chain.mgr.group.entity.ReqSetSysConfig;
-import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
-import com.webank.webase.chain.mgr.group.entity.TbGroup;
-import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
-import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+
 import javax.validation.Valid;
-import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -49,6 +33,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.controller.BaseController;
+import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.enums.DataStatus;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
+import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
+import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
+import com.webank.webase.chain.mgr.group.entity.ReqSetSysConfig;
+import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
+import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.TbGroup;
+import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
+import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
+
+import lombok.extern.log4j.Log4j2;
+
 /**
  * Controller for processing group information.
  */
@@ -57,6 +62,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("group")
 public class GroupController extends BaseController {
 
+    @Autowired
+    private TbGroupMapper tbGroupMapper;
     @Autowired
     private GroupService groupService;
     @Autowired
@@ -180,8 +187,8 @@ public class GroupController extends BaseController {
         log.info("start getAllGroup startTime:{}", startTime.toEpochMilli());
 
         // get group list
-        Integer count = groupService.countOfGroup(chainId, null, DataStatus.NORMAL.getValue());
-        if (count != null && count > 0) {
+        int count = this.tbGroupMapper.countByChainIdAndGroupStatus(chainId, DataStatus.NORMAL.getValue());
+        if (count > 0) {
             List<TbGroup> groupList =
                     groupService.getGroupList(chainId, DataStatus.NORMAL.getValue());
             pagesponse.setTotalCount(count);

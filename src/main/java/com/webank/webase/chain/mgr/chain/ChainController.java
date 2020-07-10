@@ -14,18 +14,12 @@
 package com.webank.webase.chain.mgr.chain;
 
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.controller.BaseController;
-import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
-import com.webank.webase.chain.mgr.chain.entity.TbChain;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+
 import javax.validation.Valid;
-import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,6 +30,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.controller.BaseController;
+import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
+import com.webank.webase.chain.mgr.repository.bean.TbChain;
+import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
+
+import lombok.extern.log4j.Log4j2;
+
 /**
  * chain controller
  */
@@ -44,6 +49,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("chain")
 public class ChainController extends BaseController {
 
+    @Autowired
+    private TbChainMapper tbChainMapper;
     @Autowired
     private ChainService chainService;
 
@@ -76,10 +83,10 @@ public class ChainController extends BaseController {
         log.info("start queryChainList startTime:{}", startTime.toEpochMilli());
 
         // query chain info
-        int count = chainService.getChainCount(null);
+        int count = tbChainMapper.countAll();
         pagesponse.setTotalCount(count);
         if (count > 0) {
-            List<TbChain> list = chainService.getChainList(null);
+            List<TbChain> list = tbChainMapper.selectAll();
             pagesponse.setData(list);
         }
 

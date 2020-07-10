@@ -13,26 +13,29 @@
  */
 package com.webank.webase.chain.mgr.chain;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import java.util.Date;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
-import com.webank.webase.chain.mgr.chain.entity.ChainParam;
-import com.webank.webase.chain.mgr.chain.entity.TbChain;
 import com.webank.webase.chain.mgr.contract.ContractService;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
+import com.webank.webase.chain.mgr.repository.bean.TbChain;
+import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
-import java.util.List;
+
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * service of chain.
@@ -42,7 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChainService {
 
     @Autowired
-    private ChainMapper chainMapper;
+    private TbChainMapper tbChainMapper;
     @Autowired
     private GroupService groupService;
     @Autowired
@@ -66,15 +69,13 @@ public class ChainService {
         log.debug("start newChain chainInfo:{}", chainInfo);
 
         // check id
-        TbChain tbChainInfo = getChainById(chainInfo.getChainId());
+        TbChain tbChainInfo = tbChainMapper.selectByPrimaryKey(chainInfo.getChainId());
         if (tbChainInfo != null) {
             throw new BaseException(ConstantCode.CHAIN_ID_EXISTS);
         }
 
         // check name
-        ChainParam param = new ChainParam();
-        param.setChainName(chainInfo.getChainName());
-        int nameCount = getChainCount(param);
+        int nameCount = tbChainMapper.countByName(chainInfo.getChainName());
         if (nameCount > 0) {
             throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS);
         }
@@ -82,36 +83,17 @@ public class ChainService {
         // copy attribute
         TbChain tbChain = new TbChain();
         BeanUtils.copyProperties(chainInfo, tbChain);
+        Date now = new Date();
+        tbChain.setCreateTime(now);
+        tbChain.setModifyTime(now);
 
         // save chain info
-        int result = chainMapper.add(tbChain);
+        int result = tbChainMapper.insertSelective(tbChain);
         if (result == 0) {
             log.warn("fail newChain, after save, tbChain:{}", JsonTools.toJSONString(tbChain));
             throw new BaseException(ConstantCode.SAVE_CHAIN_FAIL);
         }
-        return getChainById(chainInfo.getChainId());
-    }
-
-    /**
-     * get chain count
-     */
-    public int getChainCount(ChainParam param) {
-        Integer count = chainMapper.getCount(param);
-        return count == null ? 0 : count;
-    }
-
-    /**
-     * get chain list
-     */
-    public List<TbChain> getChainList(ChainParam param) {
-        return chainMapper.getList(param);
-    }
-
-    /**
-     * get chain info
-     */
-    public TbChain getChainById(Integer chainId) {
-        return chainMapper.getChainById(chainId);
+        return tbChainMapper.selectByPrimaryKey(tbChain.getChainId());
     }
 
     /**
@@ -120,15 +102,13 @@ public class ChainService {
     @Transactional
     public void removeChain(Integer chainId) {
         // check chainId
-        ChainParam param = new ChainParam();
-        param.setChainId(chainId);
-        int count = getChainCount(param);
+        int count = tbChainMapper.countByChainId(chainId);
         if (count == 0) {
             throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
         }
 
         // remove chain
-        chainMapper.remove(chainId);
+        tbChainMapper.deleteByPrimaryKey(chainId);
         // remove group
         groupService.removeByChainId(chainId);
         // remove front

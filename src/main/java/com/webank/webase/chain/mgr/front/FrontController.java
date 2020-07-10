@@ -14,21 +14,13 @@
 package com.webank.webase.chain.mgr.front;
 
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.controller.BaseController;
-import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.front.entity.FrontInfo;
-import com.webank.webase.chain.mgr.front.entity.FrontParam;
-import com.webank.webase.chain.mgr.front.entity.TbFront;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+
 import javax.validation.Valid;
-import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -42,6 +34,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.controller.BaseController;
+import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.front.entity.FrontInfo;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
+
+import lombok.extern.log4j.Log4j2;
+
 /**
  * front controller
  */
@@ -52,6 +56,8 @@ public class FrontController extends BaseController {
 
     @Autowired
     private FrontService frontService;
+    @Autowired
+    private TbFrontMapper tbFrontMapper;
 
     /**
      * add new front
@@ -86,17 +92,11 @@ public class FrontController extends BaseController {
         log.info("start queryFrontList startTime:{} frontId:{} groupId:{}",
                 startTime.toEpochMilli(), frontId, groupId);
 
-        // param
-        FrontParam param = new FrontParam();
-        param.setChainId(chainId);
-        param.setFrontId(frontId);
-        param.setGroupId(groupId);
-
         // query front info
-        int count = frontService.getFrontCount(param);
+        int count = this.tbFrontMapper.countByChainIdAndFrontIdAndGroupId(chainId,frontId,groupId);
         pagesponse.setTotalCount(count);
         if (count > 0) {
-            List<TbFront> list = frontService.getFrontList(param);
+            List<TbFront> list = tbFrontMapper.selectByChainIdAndFrontIdAndGroupId(chainId,frontId,groupId);
             pagesponse.setData(list);
         }
 

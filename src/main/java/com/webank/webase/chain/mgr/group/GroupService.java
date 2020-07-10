@@ -13,19 +13,30 @@
  */
 package com.webank.webase.chain.mgr.group;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainService;
-import com.webank.webase.chain.mgr.chain.entity.TbChain;
 import com.webank.webase.chain.mgr.contract.ContractService;
 import com.webank.webase.chain.mgr.front.FrontService;
-import com.webank.webase.chain.mgr.front.entity.FrontParam;
-import com.webank.webase.chain.mgr.front.entity.TbFront;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
@@ -33,22 +44,17 @@ import com.webank.webase.chain.mgr.frontinterface.entity.GenerateGroupInfo;
 import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
 import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
 import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
-import com.webank.webase.chain.mgr.group.entity.TbGroup;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
-import com.webank.webase.chain.mgr.node.entity.TbNode;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.webank.webase.chain.mgr.repository.bean.TbChain;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.TbGroup;
+import com.webank.webase.chain.mgr.repository.bean.TbNode;
+import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
+
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 /**
  * services for group data.
@@ -58,7 +64,11 @@ import org.springframework.util.CollectionUtils;
 public class GroupService {
 
     @Autowired
-    private GroupMapper groupMapper;
+    private TbChainMapper tbChainMapper;
+    @Autowired
+    private TbFrontMapper tbFrontMapper;
+    @Autowired
+    private TbGroupMapper tbGroupMapper;
     @Autowired
     private FrontInterfaceService frontInterface;
     @Autowired
@@ -198,33 +208,17 @@ public class GroupService {
         String groupName = "group" + groupId;
         TbGroup tbGroup =
                 new TbGroup(groupId, chainId, groupName, nodeCount, description, groupType);
-        groupMapper.save(tbGroup);
+        this.tbGroupMapper.insertSelective(tbGroup);
         return tbGroup;
-    }
-
-    /**
-     * query count of group.
-     */
-    public Integer countOfGroup(Integer chainId, Integer groupId, Integer groupStatus)
-            throws BaseException {
-        log.debug("start countOfGroup groupId:{}", groupId);
-        try {
-            Integer count = groupMapper.getCount(chainId, groupId, groupStatus);
-            log.debug("end countOfGroup groupId:{} count:{}", groupId, count);
-            return count;
-        } catch (RuntimeException ex) {
-            log.error("fail countOfGroup", ex);
-            throw new BaseException(ConstantCode.DB_EXCEPTION);
-        }
     }
 
     /**
      * query all group info.
      */
-    public List<TbGroup> getGroupList(Integer chainId, Integer groupStatus) throws BaseException {
+    public List<TbGroup> getGroupList(Integer chainId, Byte groupStatus) throws BaseException {
         log.debug("start getGroupList");
         try {
-            List<TbGroup> groupList = groupMapper.getList(chainId, groupStatus);
+            List<TbGroup> groupList = this.tbGroupMapper.selectByChainIdAndGroupStatus(chainId, groupStatus);
 
             log.debug("end getGroupList groupList:{}", JsonTools.toJSONString(groupList));
             return groupList;
@@ -240,7 +234,7 @@ public class GroupService {
      */
     public void updateGroupStatus(int chainId, int groupId, int groupStatus) {
         log.debug("start updateGroupStatus groupId:{} groupStatus:{}", groupId, groupStatus);
-        groupMapper.updateStatus(chainId, groupId, groupStatus);
+        this.tbGroupMapper.updateStatus(chainId, groupId, groupStatus);
         log.debug("end updateGroupStatus groupId:{} groupStatus:{}", groupId, groupStatus);
     }
 
@@ -249,7 +243,7 @@ public class GroupService {
      */
     public GroupGeneral queryGroupGeneral(int chainId, int groupId) throws BaseException {
         log.debug("start queryGroupGeneral groupId:{}", groupId);
-        GroupGeneral generalInfo = groupMapper.getGeneral(chainId, groupId);
+        GroupGeneral generalInfo = this.tbGroupMapper.getGeneral(chainId, groupId);
         return generalInfo;
     }
 
@@ -262,7 +256,7 @@ public class GroupService {
         Instant startTime = Instant.now();
         log.info("start resetGroupList. startTime:{}", startTime.toEpochMilli());
 
-        List<TbChain> chainList = chainService.getChainList(null);
+        List<TbChain> chainList = tbChainMapper.selectAll();
         if (chainList == null || chainList.size() == 0) {
             log.info("not fount any chain.");
             return;
@@ -274,9 +268,7 @@ public class GroupService {
             Set<Integer> allGroupSet = new HashSet<>();
 
             // get all front
-            FrontParam frontParam = new FrontParam();
-            frontParam.setChainId(chainId);
-            List<TbFront> frontList = frontService.getFrontList(frontParam);
+            List<TbFront> frontList = tbFrontMapper.selectByChainId(chainId);
             if (frontList == null || frontList.size() == 0) {
                 log.info("chain {} not fount any front.", chainId);
                 // remove all group
@@ -292,8 +284,7 @@ public class GroupService {
                 try {
                     groupIdList = frontInterface.getGroupListFromSpecificFront(frontIp, frontPort);
                 } catch (Exception ex) {
-                    log.error("fail getGroupListFromSpecificFront frontId:{}.", front.getFrontId(),
-                            ex);
+                    log.error("fail getGroupListFromSpecificFront frontId:{}.", front.getFrontId(), ex);
                     continue;
                 }
                 for (String groupId : groupIdList) {
@@ -337,9 +328,9 @@ public class GroupService {
             throw new BaseException(ConstantCode.GROUP_ID_NULL);
         }
 
-        Integer groupCount = countOfGroup(chainId, groupId, null);
+        int groupCount = this.tbGroupMapper.countByChainIdAndGroupId(chainId, groupId);
         log.debug("checkGroupIdExisted groupId:{} groupCount:{}", groupId, groupCount);
-        if (groupCount != null && groupCount > 0) {
+        if (groupCount > 0) {
             throw new BaseException(ConstantCode.GROUP_ID_EXISTS);
         }
         log.debug("end checkGroupIdExisted");
@@ -356,9 +347,9 @@ public class GroupService {
             throw new BaseException(ConstantCode.GROUP_ID_NULL);
         }
 
-        Integer groupCount = countOfGroup(chainId, groupId, null);
+        int groupCount = this.tbGroupMapper.countByChainIdAndGroupId(chainId, groupId);
         log.debug("checkGroupIdValid groupId:{} groupCount:{}", groupId, groupCount);
-        if (groupCount == null || groupCount == 0) {
+        if (groupCount == 0) {
             throw new BaseException(ConstantCode.INVALID_GROUP_ID);
         }
         log.debug("end checkGroupIdValid");
@@ -459,7 +450,8 @@ public class GroupService {
                     continue;
                 }
 
-                if (!CommonUtils.isDateTimeInValid(localGroup.getModifyTime(),
+                Date modifyTime = localGroup.getModifyTime();
+                if (!CommonUtils.isDateTimeInValid(CommonUtils.timestamp2LocalDateTime(modifyTime.getTime()),
                         constants.getGroupInvalidGrayscaleValue())) {
                     log.warn("remove group, chainId:{} localGroup:{}", chainId,
                             JsonTools.toJSONString(localGroup));
@@ -492,7 +484,7 @@ public class GroupService {
             return;
         }
         // remove groupId.
-        groupMapper.remove(chainId, groupId);
+        this.tbGroupMapper.deleteByChainIdANdGroupId(chainId, groupId);
         // remove mapping.
         frontGroupMapService.removeByGroupId(chainId, groupId);
         // remove node
@@ -509,6 +501,6 @@ public class GroupService {
             return;
         }
         // remove chainId.
-        groupMapper.remove(chainId, null);
+        this.tbGroupMapper.deleteByChainId(chainId);
     }
 }

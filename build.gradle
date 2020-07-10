@@ -83,7 +83,8 @@ List mysql = [
 ]
 
 List test = [
-    "org.springframework.boot:spring-boot-starter-test:$springboot_version"
+    "org.springframework.boot:spring-boot-starter-test:$springboot_version",
+    "com.github.yuanmomo:mybatis-generator-plugin:1.0.10",
 ]
 
 def log4j_version="2.13.3"
@@ -96,6 +97,7 @@ List log4j = [
 dependencies {
     compile springboot,spring,jaxb,jwt,swagger,jackson,mysql,log4j
     compile 'org.fisco-bcos:web3sdk:2.4.1'
+    compile "org.apache.commons:commons-lang3:3.8.1"
     compile "org.apache.commons:commons-lang3:3.8.1"
 
     compile lombok

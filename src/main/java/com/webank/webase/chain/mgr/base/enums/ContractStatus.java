@@ -18,15 +18,15 @@ package com.webank.webase.chain.mgr.base.enums;
  */
 public enum ContractStatus {
 
-    NOTDEPLOYED(1), DEPLOYED(2), DEPLOYMENTFAILED(3);
+    NOTDEPLOYED((byte)1), DEPLOYED((byte)2), DEPLOYMENTFAILED((byte)3);
 
-    private int value;
+    private byte value;
 
-    private ContractStatus(Integer dataStatus) {
+    private ContractStatus(byte dataStatus) {
         this.value = dataStatus;
     }
 
-    public int getValue() {
+    public byte getValue() {
         return this.value;
     }
 }
