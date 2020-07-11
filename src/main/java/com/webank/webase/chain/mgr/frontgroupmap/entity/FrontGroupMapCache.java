@@ -17,6 +17,7 @@ package com.webank.webase.chain.mgr.frontgroupmap.entity;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,7 +33,6 @@ public class FrontGroupMapCache {
 
     private static Map<Integer, List<FrontGroup>> mapList = new ConcurrentHashMap<>();
 
-
     /**
      * clear mapList.
      */
@@ -43,8 +43,8 @@ public class FrontGroupMapCache {
     /**
      * reset mapList.
      */
-    public Map<Integer, List<FrontGroup>> resetMapList(int chainId, int groupId) {
-        mapList.put(chainId, this.tbFrontGroupMapMapper.selectByChainIdAndGroupId(chainId,groupId));
+    public Map<Integer, List<FrontGroup>> resetMapList(int chainId) {
+        mapList.put(chainId, this.tbFrontGroupMapMapper.selectByChainId(chainId));
         return mapList;
     }
 
@@ -52,19 +52,21 @@ public class FrontGroupMapCache {
      * get mapList.
      */
     public List<FrontGroup> getMapListByChainId(int chainId, int groupId) {
-        List<FrontGroup> list = getAllMap(chainId, groupId);
+        List<FrontGroup> list = getAllMap(chainId);
         if (list == null) {
             return null;
         }
-        return list;
+        List<FrontGroup> map =
+                list.stream().filter(m -> groupId == m.getGroupId()).collect(Collectors.toList());
+        return map;
     }
 
     /**
      * get all mapList.
      */
-    public List<FrontGroup> getAllMap(int chainId, int groupId) {
+    public List<FrontGroup> getAllMap(int chainId) {
         if (mapList == null || mapList.get(chainId) == null) {
-            mapList = resetMapList(chainId, groupId);
+            mapList = resetMapList(chainId);
         }
         return mapList.get(chainId);
     }

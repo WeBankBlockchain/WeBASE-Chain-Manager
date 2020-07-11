@@ -37,6 +37,13 @@ public interface TbFrontGroupMapMapper {
             "on(a.chain_id=d.chain_id) where a.group_id = #{groupId}  and a.chain_id = #{chainId} " })
     List<FrontGroup> selectByChainIdAndGroupId(@Param("chainId") int chainId, @Param("groupId") int groupId);
 
+    @Select({ "select a.id as map_id, a.chain_id as chain_id, a.group_id as group_id, a.front_id as front_id," +
+            "b.front_ip as front_ip,b.front_port as front_port from tb_front_group_map a left join tb_front b " +
+            "on(a.front_id=b.front_id) left join tb_group c " +
+            "on(a.chain_id=c.chain_id and a.group_id=c.group_id) left join tb_chain d " +
+            "on(a.chain_id=d.chain_id) where a.chain_id = #{chainId} " })
+    List<FrontGroup> selectByChainId(@Param("chainId") int chainId);
+
     @Delete({ "delete from tb_front_group_map where chain_id = #{chainId}" })
     int deleteByChainId(@Param("chainId") int chainId);
 
@@ -92,4 +99,5 @@ public interface TbFrontGroupMapMapper {
     @Options(useGeneratedKeys = true, keyProperty = "mapId", keyColumn = "map_id")
     @Insert({ "<script>", "insert into tb_front_group_map (map_id, ", "chain_id, front_id, ", "group_id, create_time, ", "modify_time)", "values<foreach collection=\"list\" item=\"detail\" index=\"index\" separator=\",\">(#{detail.mapId,jdbcType=INTEGER}, ", "#{detail.chainId,jdbcType=INTEGER}, #{detail.frontId,jdbcType=INTEGER}, ", "#{detail.groupId,jdbcType=INTEGER}, #{detail.createTime,jdbcType=TIMESTAMP}, ", "#{detail.modifyTime,jdbcType=TIMESTAMP})</foreach></script>" })
     int batchInsert(java.util.List<TbFrontGroupMap> list);
+
 }
