@@ -37,6 +37,7 @@ import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.contract.ContractService;
 import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
@@ -206,10 +207,18 @@ public class GroupService {
         }
         // save group id
         String groupName = "group" + groupId;
-        TbGroup tbGroup =
-                new TbGroup(groupId, chainId, groupName, nodeCount, description, groupType);
-        this.tbGroupMapper.insertSelective(tbGroup);
-        return tbGroup;
+        TbGroup exists = this.tbGroupMapper.selectByPrimaryKey(groupId, chainId);
+        if (exists != null) {
+            TbGroup tbGroup =
+                    new TbGroup(groupId, chainId, groupName, nodeCount, description, groupType);
+            try {
+                this.tbGroupMapper.insertSelective(tbGroup);
+            } catch (Exception e) {
+                log.error("Insert group error", e);
+            }
+            return tbGroup;
+        }
+        return exists;
     }
 
     /**
@@ -268,7 +277,9 @@ public class GroupService {
             Set<Integer> allGroupSet = new HashSet<>();
 
             // get all front
-            List<TbFront> frontList = tbFrontMapper.selectByChainId(chainId);
+            FrontParam param = new FrontParam();
+            param.setChainId(chainId);
+            List<TbFront> frontList = tbFrontMapper.selectByParam(param);
             if (frontList == null || frontList.size() == 0) {
                 log.info("chain {} not fount any front.", chainId);
                 // remove all group

@@ -1,7 +1,7 @@
 package com.webank.webase.chain.mgr.repository.mapper;
 
-import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import org.apache.ibatis.jdbc.SQL;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
 
 public class TbFrontSqlProvider {
 
@@ -22,9 +22,6 @@ public class TbFrontSqlProvider {
     public String insertSelective(TbFront record) {
         SQL sql = new SQL();
         sql.INSERT_INTO("tb_front");
-        if (record.getFrontId() != null) {
-            sql.VALUES("front_id", "#{frontId,jdbcType=INTEGER}");
-        }
         if (record.getChainId() != null) {
             sql.VALUES("chain_id", "#{chainId,jdbcType=INTEGER}");
         }

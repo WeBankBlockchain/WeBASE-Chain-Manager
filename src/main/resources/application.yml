@@ -7,8 +7,10 @@ server:
 
 #mybatis config
 mybatis:
-  typeAliasesPackage: com.webank.webase.chain.mgr
-  mapperLocations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  typeAliasesPackage: com.webank.webase.chain.mgr.repository.bean
+
 
 
 # database connection configuration

@@ -9,24 +9,19 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.SelectKey;
 import org.apache.ibatis.annotations.UpdateProvider;
 import org.apache.ibatis.type.JdbcType;
+import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import org.apache.ibatis.annotations.SelectKey;
 
 public interface TbFrontMapper {
 
-    @Select({ "select count(1) from tb_front where front_id in " + "(select front_id from tb_front_group_map where chain_id = #{chainId} and group_id = #{groupId} group by front_id) " + " and chain_id = #{chainId} and front_id = #{frontId}" })
-    int countByChainIdAndFrontIdAndGroupId(@Param("chainId") int chainId, @Param("frontId") int frontId, @Param("groupId") int groupId);
+    @Select({ "<script>", "select count(1) from tb_front " + "    where front_id in(select front_id from tb_front_group_map where 1=1 " + "    <if test=\"chainId != null\"> " + "      and chain_id = #{chainId} " + "    </if> " + "    <if test=\"groupId != null\"> " + "      and group_id = #{groupId} " + "    </if> " + "    group by front_id) " + "    <if test=\"chainId != null\"> " + "      and chain_id = #{chainId} " + "    </if> " + "    <if test=\"frontId != null\"> " + "      and front_id = #{frontId} " + "    </if> " + "    <if test=\"nodeId != null and nodeId !=''\"> " + "      and node_id = #{nodeId} " + "    </if>" + "</script>" })
+    int countByParam(FrontParam param);
 
-    @Select({ "select count(1) from tb_front where front_id in " + "(select front_id from tb_front_group_map where chain_id = #{chainId} and group_id = #{groupId} group by front_id) " + " and chain_id = #{chainId}" })
-    int countByChainIdAndNodeId(@Param("chainId") int chainId, @Param("nodeId") String nodeId);
-
-    @Select({ "select * from tb_front where front_id in " + "(select front_id from tb_front_group_map where chain_id = #{chainId} and group_id = #{groupId} group by front_id) " + " and chain_id = #{chainId} and front_id = #{frontId}" })
-    List<TbFront> selectByChainIdAndFrontIdAndGroupId(@Param("chainId") int chainId, @Param("frontId") int frontId, @Param("groupId") int groupId);
-
-    @Select({ "select * from tb_front where front_id in " + "(select front_id from tb_front_group_map where chain_id = #{chainId} group by front_id) " + " and chain_id = #{chainId}" })
-    List<TbFront> selectByChainId(@Param("chainId") int chainId);
+    @Select({ "<script>", "select * from tb_front " + "    where front_id in(select front_id from tb_front_group_map where 1=1 " + "    <if test=\"chainId != null\"> " + "      and chain_id = #{chainId} " + "    </if> " + "    <if test=\"groupId != null\"> " + "      and group_id = #{groupId} " + "    </if> " + "    group by front_id) " + "    <if test=\"chainId != null\"> " + "      and chain_id = #{chainId} " + "    </if> " + "    <if test=\"frontId != null\"> " + "      and front_id = #{frontId} " + "    </if> " + "    <if test=\"nodeId != null and nodeId !=''\"> " + "      and node_id = #{nodeId} " + "    </if>" + "</script>" })
+    List<TbFront> selectByParam(FrontParam param);
 
     @Select({ "select * from tb_front where chain_id = #{chainId} and node_id = #{nodeId}" })
     TbFront getByChainIdAndNodeId(@Param("chainId") int chainId, @Param("nodeId") String nodeId);
@@ -50,6 +45,7 @@ public interface TbFrontMapper {
      * @mbg.generated
      */
     @InsertProvider(type = TbFrontSqlProvider.class, method = "insertSelective")
+    @SelectKey(statement = "SELECT LAST_INSERT_ID()", keyProperty = "frontId", before = false, resultType = Integer.class)
     int insertSelective(TbFront record);
 
     /**
@@ -78,6 +74,6 @@ public interface TbFrontMapper {
      * @mbg.generated
      */
     @Options(useGeneratedKeys = true, keyProperty = "frontId", keyColumn = "front_id")
-    @Insert({ "<script>", "insert into tb_front (front_id, ", "chain_id, node_id, ", "front_ip, front_port, ", "agency, description, ", "create_time, modify_time)", "values<foreach collection=\"list\" item=\"detail\" index=\"index\" separator=\",\">(#{detail.frontId,jdbcType=INTEGER}, ", "#{detail.chainId,jdbcType=INTEGER}, #{detail.nodeId,jdbcType=VARCHAR}, ", "#{detail.frontIp,jdbcType=VARCHAR}, #{detail.frontPort,jdbcType=INTEGER}, ", "#{detail.agency,jdbcType=VARCHAR}, #{detail.description,jdbcType=VARCHAR}, ", "#{detail.createTime,jdbcType=TIMESTAMP}, #{detail.modifyTime,jdbcType=TIMESTAMP})</foreach></script>" })
+    @Insert({ "<script>", "insert into tb_front (chain_id, ", "node_id, front_ip, ", "front_port, agency, ", "description, create_time, ", "modify_time)", "values<foreach collection=\"list\" item=\"detail\" index=\"index\" separator=\",\">(#{detail.chainId,jdbcType=INTEGER}, ", "#{detail.nodeId,jdbcType=VARCHAR}, #{detail.frontIp,jdbcType=VARCHAR}, ", "#{detail.frontPort,jdbcType=INTEGER}, #{detail.agency,jdbcType=VARCHAR}, ", "#{detail.description,jdbcType=VARCHAR}, #{detail.createTime,jdbcType=TIMESTAMP}, ", "#{detail.modifyTime,jdbcType=TIMESTAMP})</foreach></script>" })
     int batchInsert(java.util.List<TbFront> list);
 }

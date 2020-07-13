@@ -41,6 +41,7 @@ import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
+import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 
@@ -93,10 +94,14 @@ public class FrontController extends BaseController {
                 startTime.toEpochMilli(), frontId, groupId);
 
         // query front info
-        int count = this.tbFrontMapper.countByChainIdAndFrontIdAndGroupId(chainId,frontId,groupId);
+        FrontParam param = new FrontParam();
+        param.setChainId(chainId);
+        param.setFrontId(frontId);
+        param.setGroupId(groupId);
+        int count = this.tbFrontMapper.countByParam(param);
         pagesponse.setTotalCount(count);
         if (count > 0) {
-            List<TbFront> list = tbFrontMapper.selectByChainIdAndFrontIdAndGroupId(chainId,frontId,groupId);
+            List<TbFront> list = tbFrontMapper.selectByParam(param);
             pagesponse.setData(list);
         }
 

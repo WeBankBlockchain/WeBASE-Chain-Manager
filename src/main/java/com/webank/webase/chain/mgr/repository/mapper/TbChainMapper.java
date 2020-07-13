@@ -1,7 +1,6 @@
 package com.webank.webase.chain.mgr.repository.mapper;
 
 import java.util.List;
-
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.InsertProvider;
@@ -12,7 +11,6 @@ import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.UpdateProvider;
 import org.apache.ibatis.type.JdbcType;
-
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 
 public interface TbChainMapper {

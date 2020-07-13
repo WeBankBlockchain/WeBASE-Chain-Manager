@@ -1,7 +1,6 @@
 package com.webank.webase.chain.mgr.repository.mapper;
 
 import java.util.List;
-
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.InsertProvider;
@@ -14,18 +13,16 @@ import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
 import org.apache.ibatis.annotations.UpdateProvider;
 import org.apache.ibatis.type.JdbcType;
-
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import org.apache.ibatis.annotations.SelectKey;
 
 public interface TbContractMapper {
 
-//    @Select({ "select * from tb_contract where group_id = #{groupId} and contract_bin like CONCAT(#{contractBin},'%')" })
-//    List<TbContract> selectByBin(@Param("groupId") Integer groupId, @Param("contractBin") String contractBin);
-
-//    @Select({ "select contract_bin from tb_contract where group_id = #{groupId} and contract_name = #{contractName}" })
-//    String getSystemContractBin(@Param("groupId") Integer groupId, @Param("contractName") String contractName);
-
+    //    @Select({ "select * from tb_contract where group_id = #{groupId} and contract_bin like CONCAT(#{contractBin},'%')" })
+    //    List<TbContract> selectByBin(@Param("groupId") Integer groupId, @Param("contractBin") String contractBin);
+    //    @Select({ "select contract_bin from tb_contract where group_id = #{groupId} and contract_name = #{contractName}" })
+    //    String getSystemContractBin(@Param("groupId") Integer groupId, @Param("contractName") String contractName);
     @SelectProvider(type = TbContractSqlProvider.class, method = "getByParam")
     TbContract getByParam(ContractParam param);
 
@@ -60,6 +57,7 @@ public interface TbContractMapper {
      * @mbg.generated
      */
     @InsertProvider(type = TbContractSqlProvider.class, method = "insertSelective")
+    @SelectKey(statement = "SELECT LAST_INSERT_ID()", keyProperty = "contractId", before = false, resultType = Integer.class)
     int insertSelective(TbContract record);
 
     /**
@@ -88,6 +86,6 @@ public interface TbContractMapper {
      * @mbg.generated
      */
     @Options(useGeneratedKeys = true, keyProperty = "contractId", keyColumn = "contract_id")
-    @Insert({ "<script>", "insert into tb_contract (contract_id, ", "contract_path, contract_name, ", "chain_id, group_id, ", "contract_address, deploy_time, ", "contract_status, contract_type, ", "description, create_time, ", "modify_time, contract_source, ", "contract_abi, contract_bin, ", "bytecode_bin)", "values<foreach collection=\"list\" item=\"detail\" index=\"index\" separator=\",\">(#{detail.contractId,jdbcType=INTEGER}, ", "#{detail.contractPath,jdbcType=VARCHAR}, #{detail.contractName,jdbcType=VARCHAR}, ", "#{detail.chainId,jdbcType=INTEGER}, #{detail.groupId,jdbcType=INTEGER}, ", "#{detail.contractAddress,jdbcType=VARCHAR}, #{detail.deployTime,jdbcType=TIMESTAMP}, ", "#{detail.contractStatus,jdbcType=TINYINT}, #{detail.contractType,jdbcType=TINYINT}, ", "#{detail.description,jdbcType=VARCHAR}, #{detail.createTime,jdbcType=TIMESTAMP}, ", "#{detail.modifyTime,jdbcType=TIMESTAMP}, #{detail.contractSource,jdbcType=LONGVARCHAR}, ", "#{detail.contractAbi,jdbcType=LONGVARCHAR}, #{detail.contractBin,jdbcType=LONGVARCHAR}, ", "#{detail.bytecodeBin,jdbcType=LONGVARCHAR})</foreach></script>" })
+    @Insert({ "<script>", "insert into tb_contract (contract_path, ", "contract_name, chain_id, ", "group_id, contract_address, ", "deploy_time, contract_status, ", "contract_type, description, ", "create_time, modify_time, ", "contract_source, contract_abi, ", "contract_bin, bytecode_bin)", "values<foreach collection=\"list\" item=\"detail\" index=\"index\" separator=\",\">(#{detail.contractPath,jdbcType=VARCHAR}, ", "#{detail.contractName,jdbcType=VARCHAR}, #{detail.chainId,jdbcType=INTEGER}, ", "#{detail.groupId,jdbcType=INTEGER}, #{detail.contractAddress,jdbcType=VARCHAR}, ", "#{detail.deployTime,jdbcType=TIMESTAMP}, #{detail.contractStatus,jdbcType=TINYINT}, ", "#{detail.contractType,jdbcType=TINYINT}, #{detail.description,jdbcType=VARCHAR}, ", "#{detail.createTime,jdbcType=TIMESTAMP}, #{detail.modifyTime,jdbcType=TIMESTAMP}, ", "#{detail.contractSource,jdbcType=LONGVARCHAR}, #{detail.contractAbi,jdbcType=LONGVARCHAR}, ", "#{detail.contractBin,jdbcType=LONGVARCHAR}, #{detail.bytecodeBin,jdbcType=LONGVARCHAR})</foreach></script>" })
     int batchInsert(java.util.List<TbContract> list);
 }

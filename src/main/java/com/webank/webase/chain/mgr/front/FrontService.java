@@ -34,6 +34,7 @@ import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
+import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
@@ -115,7 +116,10 @@ public class FrontService {
         // check front not exist
         SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontIp, frontPort,
                 Integer.valueOf(groupIdList.get(0)));
-        int count = this.tbFrontMapper.countByChainIdAndNodeId(chainId,syncStatus.getNodeId());
+        FrontParam param = new FrontParam();
+        param.setChainId(chainId);
+        param.setNodeId(syncStatus.getNodeId());
+        int count = this.tbFrontMapper.countByParam(param);
         if (count > 0) {
             throw new BaseException(ConstantCode.FRONT_EXISTS);
         }

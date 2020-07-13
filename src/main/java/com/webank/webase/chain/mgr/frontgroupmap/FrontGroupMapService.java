@@ -23,8 +23,11 @@ import com.webank.webase.chain.mgr.frontgroupmap.entity.MapListParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMap;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
 
 @Service
+@Slf4j
 public class FrontGroupMapService {
 
     @Autowired
@@ -34,11 +37,18 @@ public class FrontGroupMapService {
      * add new mapping
      */
     public TbFrontGroupMap newFrontGroup(Integer chainId, Integer frontId, Integer groupId) {
-        TbFrontGroupMap tbFrontGroupMap = new TbFrontGroupMap(chainId, frontId, groupId);
 
         //add db
-        this.tbFrontGroupMapMapper.insertSelective(tbFrontGroupMap);
-        return tbFrontGroupMap;
+        TbFrontGroupMap exists = this.tbFrontGroupMapMapper.selectByChainIdAndFrontIdAndGroupId(chainId, frontId, groupId);
+        if (exists == null){
+            TbFrontGroupMap tbFrontGroupMap = new TbFrontGroupMap(chainId, frontId, groupId);
+            try {
+                this.tbFrontGroupMapMapper.insertSelective(tbFrontGroupMap);
+            } catch (Exception e) {
+                log.error("Insert front group map error", e);
+            }
+        }
+        return exists;
     }
 
     /**

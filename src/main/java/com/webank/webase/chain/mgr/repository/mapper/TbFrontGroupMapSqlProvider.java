@@ -46,9 +46,6 @@ public class TbFrontGroupMapSqlProvider {
     public String insertSelective(TbFrontGroupMap record) {
         SQL sql = new SQL();
         sql.INSERT_INTO("tb_front_group_map");
-        if (record.getMapId() != null) {
-            sql.VALUES("map_id", "#{mapId,jdbcType=INTEGER}");
-        }
         if (record.getChainId() != null) {
             sql.VALUES("chain_id", "#{chainId,jdbcType=INTEGER}");
         }

@@ -2,7 +2,6 @@ package com.webank.webase.chain.mgr.repository.mapper;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
-
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 
@@ -74,9 +73,6 @@ public class TbContractSqlProvider {
     public String insertSelective(TbContract record) {
         SQL sql = new SQL();
         sql.INSERT_INTO("tb_contract");
-        if (record.getContractId() != null) {
-            sql.VALUES("contract_id", "#{contractId,jdbcType=INTEGER}");
-        }
         if (record.getContractPath() != null) {
             sql.VALUES("contract_path", "#{contractPath,jdbcType=VARCHAR}");
         }
