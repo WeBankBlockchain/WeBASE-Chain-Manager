@@ -13,9 +13,12 @@
  */
 package com.webank.webase.chain.mgr.base.properties;
 
-import lombok.Data;
+import java.io.File;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+
+import lombok.Data;
 
 /**
  * constants.
@@ -36,4 +39,45 @@ public class ConstantProperties {
     private Integer contractDeployTimeOut = 30000;
     private Integer maxRequestFail = 3;
     private Long sleepWhenHttpMaxFail = 60000L; // default 1min
+
+
+    //************************8 add by deploy
+    public static final int DEFAULT_GROUP_ID = 1;
+
+    private boolean useDockerSDK = false;
+    public int dockerDaemonPort = 3000;
+    public String sshDefaultUser = "root";
+    public int sshDefaultPort = 22;
+
+
+    // TODO. write tbchain's id in db into config.ini
+    private int defaultJsonrpcPort = 8545;
+    private int defaultP2pPort = 30300;
+    private int defaultChannelPort = 20200;
+    private int defaultFrontPort = 5002;
+
+    // timeout config
+    private long execHostInitTimeout = 2 * 60 * 60 * 1000L;
+    private long startNodeTimeout = 5 * 60 * 1000L;
+    private long execBuildChainTimeout = 10 * 60 * 1000L;
+    private long execShellTimeout = 2 * 60 * 1000L;
+    private long dockerRestartPeriodTime = 60 * 1000L;
+    private int dockerClientConnectTimeout = 10 * 60 * 1000;
+    private int dockerPullTimeout = 10 * 60 * 1000;
+    private int dockerClientReadTimeout = 10 * 60 * 1000;
+
+    private String dockerRepository= "fiscoorg/front";
+    private String imageTagUpdateUrl = "https://registry.hub.docker.com/v1/repositories/%s/tags";
+    private String dockerRegistryMirror = "";
+    private String nodesRootDir = "NODES_ROOT";
+    private String nodesRootTmpDir = "NODES_ROOT_TMP";
+
+    // shell script
+    private String nodeOperateShell = "./script/deploy/host_operate.sh";
+    private String buildChainShell = "./script/deploy/build_chain.sh";
+    private String genAgencyShell = "./script/deploy/gen_agency_cert.sh";
+    private String genNodeShell = "./script/deploy/gen_node_cert.sh";
+    private String scpShell =        "./script/deploy/file_trans_util.sh";
+    private String privateKey = System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa";
+    private String fiscoBcosBinary =  "";
 }

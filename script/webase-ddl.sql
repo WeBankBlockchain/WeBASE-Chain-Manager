@@ -21,6 +21,7 @@ CREATE TABLE tb_chain (
 -- ----------------------------
 -- Table structure for tb_group
 -- ----------------------------
+DROP TABLE IF EXISTS tb_group;
 CREATE TABLE IF NOT EXISTS tb_group (
     group_id int(11) NOT NULL COMMENT '群组ID',
     chain_id int(11) NOT NULL COMMENT '所属区块链编号',
@@ -38,6 +39,7 @@ CREATE TABLE IF NOT EXISTS tb_group (
 -- ----------------------------
 -- Table structure for tb_front
 -- ----------------------------
+DROP TABLE IF EXISTS tb_front;
 CREATE TABLE IF NOT EXISTS tb_front (
     front_id int(11) NOT NULL AUTO_INCREMENT COMMENT '前置服务编号',
     chain_id int(11) NOT NULL COMMENT '所属区块链编号',
@@ -67,6 +69,7 @@ CREATE TABLE IF NOT EXISTS tb_front (
 -- ----------------------------
 -- Table structure for tb_front_group_map
 -- ----------------------------
+DROP TABLE IF EXISTS tb_front_group_map;
 CREATE TABLE IF NOT EXISTS tb_front_group_map (
     map_id int(11) NOT NULL AUTO_INCREMENT COMMENT '映射编号',
     chain_id int(11) NOT NULL COMMENT '区块链编号',
@@ -83,6 +86,7 @@ CREATE TABLE IF NOT EXISTS tb_front_group_map (
 -- ----------------------------
 -- Table structure for tb_node
 -- ----------------------------
+DROP TABLE IF EXISTS tb_node;
 CREATE TABLE IF NOT EXISTS tb_node (
     node_id varchar(250) NOT NULL  COMMENT '节点编号',
     chain_id int(11) NOT NULL COMMENT '所属区块链编号',
@@ -103,6 +107,7 @@ CREATE TABLE IF NOT EXISTS tb_node (
 -- ----------------------------
 -- Table structure for tb_contract
 -- ----------------------------
+DROP TABLE IF EXISTS tb_contract;
 CREATE TABLE IF NOT EXISTS tb_contract (
     contract_id int(11) NOT NULL AUTO_INCREMENT COMMENT '合约编号',
     contract_path varchar(24) binary NOT NULL COMMENT '合约所在目录',
@@ -125,36 +130,18 @@ CREATE TABLE IF NOT EXISTS tb_contract (
 ) ENGINE=InnoDB AUTO_INCREMENT=400001 DEFAULT CHARSET=utf8 COMMENT='合约表';
 
 
+
 -- ----------------------------
--- Table structure for tb_host
+-- Table structure for tb_config
 -- ----------------------------
-CREATE TABLE `tb_host` (
+DROP TABLE IF EXISTS tb_config;
+CREATE TABLE `tb_config` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增长 ID',
-  `agency_id` int(10) unsigned NOT NULL DEFAULT '1' COMMENT '所属机构 ID',
-  `agency_name` varchar(64) DEFAULT NULL COMMENT '所属机构名称，冗余字段',
-  `chain_id` int(11) NOT NULL COMMENT '所属区块链编号',
-  `chain_name` varchar(120) DEFAULT NULL COMMENT '区块链名称',
-  `ip` varchar(16) NOT NULL COMMENT '主机IP',
-  `ssh_user` varchar(64) NOT NULL DEFAULT 'root' COMMENT 'SSH 登录账号',
-  `ssh_port` int(10) unsigned NOT NULL DEFAULT '22' COMMENT 'SSH 端口',
-  `root_dir` varchar(255) NOT NULL DEFAULT '/opt/fisco-bcos' COMMENT '主机存放节点配置文件的根目录，可能存放多个节点配置',
-  `docker_port` int(10) unsigned NOT NULL DEFAULT '2375' COMMENT 'Docker demon 的端口',
-  `status` tinyint(8) unsigned NOT NULL DEFAULT '0' COMMENT '主机状态',
+  `config_name` varchar(64) NOT NULL COMMENT '配置名称',
+  `config_type` int(10) NOT NULL DEFAULT '0' COMMENT '配置类型',
+  `config_value` varchar(512) NOT NULL DEFAULT '' COMMENT '配置值',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `modify_time` datetime NOT NULL COMMENT '最近一次更新时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unq_chainid_agencyid_ip` (`chain_id`,`agency_id`,`ip`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='物理主机信息';
-
-
-CREATE TABLE `tb_agency` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增长 ID',
-  `agency_name` varchar(64) NOT NULL COMMENT '机构名称',
-  `agency_desc` varchar(1024) DEFAULT '' COMMENT '机构描述信息',
-  `chain_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '所属链 ID',
-  `chain_name` varchar(64) DEFAULT '' COMMENT '所属链名称，冗余字段',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  `modify_time` datetime NOT NULL COMMENT '最近一次更新时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_chain_id_agency_name` (`chain_id`,`agency_name`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='机构信息表';
+  PRIMARY KEY (`id`)
+  UNIQUE KEY `unq_type_value` (`config_type`,`config_value`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统配置信息表';

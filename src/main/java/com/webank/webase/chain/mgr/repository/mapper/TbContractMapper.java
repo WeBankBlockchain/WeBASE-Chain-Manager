@@ -19,9 +19,6 @@ import org.apache.ibatis.annotations.SelectKey;
 
 public interface TbContractMapper {
 
-    //    @Select({ "select * from tb_contract where group_id = #{groupId} and contract_bin like CONCAT(#{contractBin},'%')" })
-    //    List<TbContract> selectByBin(@Param("groupId") Integer groupId, @Param("contractBin") String contractBin);
-    //    @Select({ "select contract_bin from tb_contract where group_id = #{groupId} and contract_name = #{contractName}" })
     //    String getSystemContractBin(@Param("groupId") Integer groupId, @Param("contractName") String contractName);
     @SelectProvider(type = TbContractSqlProvider.class, method = "getByParam")
     TbContract getByParam(ContractParam param);

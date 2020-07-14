@@ -1,7 +1,6 @@
 package com.webank.webase.chain.mgr.repository.mapper;
 
 import java.util.List;
-
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.InsertProvider;
@@ -14,7 +13,6 @@ import org.apache.ibatis.annotations.SelectKey;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.UpdateProvider;
 import org.apache.ibatis.type.JdbcType;
-
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.MapListParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMap;
@@ -70,8 +68,8 @@ public interface TbFrontGroupMapMapper {
      *
      * @mbg.generated
      */
-    @Select({ "select", "map_id, chain_id, front_id, group_id, create_time, modify_time", "from tb_front_group_map", "where map_id = #{mapId,jdbcType=INTEGER}" })
-    @Results({ @Result(column = "map_id", property = "mapId", jdbcType = JdbcType.INTEGER, id = true), @Result(column = "chain_id", property = "chainId", jdbcType = JdbcType.INTEGER), @Result(column = "front_id", property = "frontId", jdbcType = JdbcType.INTEGER), @Result(column = "group_id", property = "groupId", jdbcType = JdbcType.INTEGER), @Result(column = "create_time", property = "createTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "modify_time", property = "modifyTime", jdbcType = JdbcType.TIMESTAMP) })
+    @Select({ "select", "map_id, chain_id, front_id, group_id, create_time, modify_time, front_status", "from tb_front_group_map", "where map_id = #{mapId,jdbcType=INTEGER}" })
+    @Results({ @Result(column = "map_id", property = "mapId", jdbcType = JdbcType.INTEGER, id = true), @Result(column = "chain_id", property = "chainId", jdbcType = JdbcType.INTEGER), @Result(column = "front_id", property = "frontId", jdbcType = JdbcType.INTEGER), @Result(column = "group_id", property = "groupId", jdbcType = JdbcType.INTEGER), @Result(column = "create_time", property = "createTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "modify_time", property = "modifyTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "front_status", property = "frontStatus", jdbcType = JdbcType.TINYINT) })
     TbFrontGroupMap selectByPrimaryKey(Integer mapId);
 
     /**
@@ -90,6 +88,6 @@ public interface TbFrontGroupMapMapper {
      * @mbg.generated
      */
     @Options(useGeneratedKeys = true, keyProperty = "mapId", keyColumn = "map_id")
-    @Insert({ "<script>", "insert into tb_front_group_map (chain_id, ", "front_id, group_id, ", "create_time, modify_time)", "values<foreach collection=\"list\" item=\"detail\" index=\"index\" separator=\",\">(#{detail.chainId,jdbcType=INTEGER}, ", "#{detail.frontId,jdbcType=INTEGER}, #{detail.groupId,jdbcType=INTEGER}, ", "#{detail.createTime,jdbcType=TIMESTAMP}, #{detail.modifyTime,jdbcType=TIMESTAMP})</foreach></script>" })
+    @Insert({ "<script>", "insert into tb_front_group_map (chain_id, ", "front_id, group_id, ", "create_time, modify_time, ", "front_status)", "values<foreach collection=\"list\" item=\"detail\" index=\"index\" separator=\",\">(#{detail.chainId,jdbcType=INTEGER}, ", "#{detail.frontId,jdbcType=INTEGER}, #{detail.groupId,jdbcType=INTEGER}, ", "#{detail.createTime,jdbcType=TIMESTAMP}, #{detail.modifyTime,jdbcType=TIMESTAMP}, ", "#{detail.frontStatus,jdbcType=TINYINT})</foreach></script>" })
     int batchInsert(java.util.List<TbFrontGroupMap> list);
 }
