@@ -169,11 +169,23 @@ public class ChainService {
      */
     @Transactional
     public void generateChainConfig(ReqDeploy deploy) {
+        // check deploy count
+        int totalNodeNum = deploy.getDeployHostList().stream().mapToInt(ReqDeploy.DeployHost::getNum).sum();
+        if ( totalNodeNum < 2 ) {
+            throw new BaseException(ConstantCode.TWO_NODES_AT_LEAST);
+        }
+
+        log.info("Check chainId:[{}] exists....", deploy.getChainId());
+        TbChain chain = tbChainMapper.selectByPrimaryKey(deploy.getChainId());
+        if (chain != null) {
+            throw new BaseException(ConstantCode.CHAIN_ID_EXISTS_ERROR);
+        }
         log.info("Check chainName:[{}] exists....", deploy.getChainName());
-        TbChain chain = tbChainMapper.getByChainName(deploy.getChainName());
+        chain = tbChainMapper.getByChainName(deploy.getChainName());
         if (chain != null) {
             throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS_ERROR);
         }
+
 
         // check tagId existed
         TbConfig imageConfig = this.tbConfigMapper.selectByPrimaryKey(deploy.getTagId());
@@ -205,8 +217,21 @@ public class ChainService {
         // exec build_chain.sh shell script
         deployShellService.execBuildChain(encryptType, ipConf, deploy.getChainName());
 
-        // generate chain config
-        ((ChainService) AopContext.currentProxy()).initChainDbData(encryptType, imageConfig, deploy);
+        try {
+            // generate chain config
+            ((ChainService) AopContext.currentProxy()).initChainDbData(encryptType, imageConfig, deploy);
+        } catch (Exception e) {
+            log.error("Init chain:[{}] data error. remove generated files:[{}]",
+                    deploy.getChainName(), this.pathService.getChainRoot(deploy.getChainName()), e);
+            try {
+                this.pathService.deleteChain(deploy.getChainName());
+            } catch (IOException ex) {
+                log.error("Delete chain directory error when init chain data throws an exception.", e);
+                throw new BaseException(ConstantCode.DELETE_CHAIN_ERROR,
+                        "Delete chain directory error when init chain data throws an exception");
+            }
+            throw e;
+        }
     }
 
     /**

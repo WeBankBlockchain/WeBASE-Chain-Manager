@@ -178,5 +178,6 @@ public class ConstantCode {
     public static final RetCode TWO_NODES_AT_LEAST = RetCode.mark(400062, "Two nodes at least.");
     public static final RetCode TWO_SEALER_IN_GROUP_AT_LEAST = RetCode.mark(400063, "Group need two sealers at least.");
     public static final RetCode HOST_NOT_EXISTS = RetCode.mark(400064, "Host not exists.");
+    public static final RetCode CHAIN_ID_EXISTS_ERROR = RetCode.mark(400065, "Chain id exists.");
 
 }

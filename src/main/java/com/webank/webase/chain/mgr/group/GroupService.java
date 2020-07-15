@@ -229,8 +229,12 @@ public class GroupService {
     public List<TbGroup> getGroupList(Integer chainId, Byte groupStatus) throws BaseException {
         log.debug("start getGroupList");
         try {
-            List<TbGroup> groupList = this.tbGroupMapper.selectByChainIdAndGroupStatus(chainId, groupStatus);
-
+            List<TbGroup> groupList = null;
+            if (groupStatus == null){
+                groupList = this.tbGroupMapper.selectByChainId(chainId);
+            }else{
+                groupList = this.tbGroupMapper.selectByChainIdAndGroupStatus(chainId, groupStatus);
+            }
             log.debug("end getGroupList groupList:{}", JsonTools.toJSONString(groupList));
             return groupList;
         } catch (RuntimeException ex) {
@@ -525,6 +529,7 @@ public class GroupService {
     /**
      * update status.
      */
+    @Transactional
     public void updateGroupNodeCount(int chainId,int groupId, int nodeCount) {
         log.debug("start updateGroupNodeCount groupId:{} nodeCount:{}", groupId, nodeCount);
         this.tbGroupMapper.updateNodeCount(chainId,groupId, nodeCount);

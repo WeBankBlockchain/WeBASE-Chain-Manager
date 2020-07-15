@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.MapListParam;
@@ -36,6 +37,7 @@ public class FrontGroupMapService {
     /**
      * add new mapping
      */
+    @Transactional
     public TbFrontGroupMap newFrontGroup(Integer chainId, Integer frontId, Integer groupId) {
 
         //add db
