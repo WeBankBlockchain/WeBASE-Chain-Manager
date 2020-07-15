@@ -27,10 +27,7 @@ public interface TbChainMapper {
     @Select({ "select ", TbChainSqlProvider.ALL_COLUMN_FIELDS, " from tb_chain order by chain_name" })
     public List<TbChain> selectAll();
 
-    @Select({
-            "select ", TbChainSqlProvider.ALL_COLUMN_FIELDS, " from tb_chain ",
-            "where chain_name = #{chainName,jdbcType=VARCHAR}"
-    })
+    @Select({ "select ", TbChainSqlProvider.ALL_COLUMN_FIELDS, " from tb_chain ", "where chain_name = #{chainName,jdbcType=VARCHAR}" })
     TbChain getByChainName(@Param("chainName") String chainName);
 
     /**

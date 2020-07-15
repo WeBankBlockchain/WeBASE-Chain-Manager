@@ -13,26 +13,37 @@
  */
 package com.webank.webase.chain.mgr.front;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainService;
+import com.webank.webase.chain.mgr.deploy.service.PathService;
+import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
@@ -77,6 +88,12 @@ public class FrontService {
     private ResetGroupListTask resetGroupListTask;
     @Autowired
     private FrontService frontService;
+    @Autowired private DockerOptions dockerOptions;
+    @Autowired private PathService pathService;
+    @Autowired private ConstantProperties constantProperties;
+
+    @Qualifier(value = "deployAsyncScheduler")
+    @Autowired private ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
     /**
      * add new front
@@ -379,8 +396,81 @@ public class FrontService {
         if (chainId == 0) {
             return;
         }
+        log.info("Delete front data by chain id:[{}].", chainId);
+
+        // select host, front, group in agency
+        List<TbFront> frontList = this.tbFrontMapper.selectByChainId(chainId);
+        if (CollectionUtils.isEmpty(frontList)) {
+            log.warn("No front in chain:[{}]", chainId);
+            return ;
+        }
+        Set<Integer> deleteHostId = new HashSet<>();
+        for (TbFront front : frontList) {
+            // remote docker container
+            this.dockerOptions.stop(front.getFrontIp(),
+                    front.getDockerPort(), front.getSshUser(),
+                    front.getSshPort(), front.getContainerName());
+
+            // delete on remote host
+            if (deleteHostId.contains(front.getExtHostId())){
+                continue;
+            }
+
+            // move chain config files
+            ChainService.mvChainOnRemote(front.getFrontIp(),front.getRootOnHost(), front.getChainName(),
+                    front.getSshUser(), front.getSshPort(),constantProperties.getPrivateKey());
+            deleteHostId.add(front.getExtHostId());
+        }
 
         // remove front
         this.tbFrontMapper.deleteByChainId(chainId);
     }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public TbFront insert(TbFront tbFront) throws BaseException {
+        if (this.tbFrontMapper.insertSelective(tbFront) != 1 || tbFront.getFrontId() <= 0){
+            throw new BaseException(ConstantCode.INSERT_FRONT_ERROR);
+        }
+        return tbFront;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public boolean updateStatus(int frontId, FrontStatusEnum newStatus) {
+        log.info("Update front:[{}] status to:[{}]",frontId, newStatus.toString());
+        return this.tbFrontMapper.updateStatus(frontId, newStatus.getId()) == 1;
+    }
+
+    /**
+     *
+     * @param nodeId
+     * @return
+     */
+    @Transactional(rollbackFor = Throwable.class)
+    public boolean restart(int chainId, String nodeId){
+        log.info("Restart node:[{}]", nodeId );
+        // get front
+        TbFront front = this.tbFrontMapper.getByChainIdAndNodeId(chainId, nodeId);
+        if (front == null){
+            throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
+        }
+
+        // set front status to stopped to avoid error for time task.
+        this.updateStatus(front.getFrontId(),FrontStatusEnum.STOPPED);
+        log.info("Docker start container front id:[{}:{}].", front.getFrontId(), front.getContainerName());
+        try {
+            this.dockerOptions.run( front.getFrontIp(), front.getDockerPort(), front.getSshUser(), front.getSshPort(),
+                    front.getVersion(), front.getContainerName(),PathService.getChainRootOnHost(front.getRootOnHost(), front.getChainName()),
+                    front.getHostIndex());
+
+            threadPoolTaskScheduler.schedule(()->{
+                this.updateStatus(front.getFrontId(),FrontStatusEnum.RUNNING);
+            }, Instant.now().plusMillis( constantProperties.getDockerRestartPeriodTime()));
+            return true;
+        } catch (Exception e) {
+            log.error("Start front:[{}:{}] failed.",front.getFrontIp(), front.getHostIndex(),e);
+            this.updateStatus(front.getFrontId(),FrontStatusEnum.STOPPED);
+            throw new BaseException(ConstantCode.START_NODE_ERROR);
+        }
+    }
+
 }

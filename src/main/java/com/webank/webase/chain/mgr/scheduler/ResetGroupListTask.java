@@ -15,6 +15,7 @@ package com.webank.webase.chain.mgr.scheduler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.webank.webase.chain.mgr.group.GroupService;
@@ -25,10 +26,10 @@ public class ResetGroupListTask {
     @Autowired
     private GroupService groupService;
 
-//    @Scheduled(fixedDelayString = "${constant.resetGroupListCycle}")
-//    public void taskStart() {
-//        resetGroupList();
-//    }
+    @Scheduled(fixedDelayString = "${constant.resetGroupListCycle}")
+    public void taskStart() {
+        resetGroupList();
+    }
 
     /**
      * async reset groupList.

@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS tb_group (
     group_type tinyint(4) DEFAULT '1' COMMENT '群组类型(1-同步的，2-手动创建的)',
     create_time datetime DEFAULT NULL COMMENT '创建时间',
     modify_time datetime DEFAULT NULL COMMENT '修改时间',
+    group_timestamp varchar(64) COMMENT '群组创世块时间戳',
+    node_id_list text COMMENT '群组创世块成员节点的ID',
+    epoch_sealer_num int DEFAULT '0' COMMENT '群组创世块共识节点数',
     PRIMARY KEY (group_id,chain_id)
 ) COMMENT='群组信息表' ENGINE=InnoDB CHARSET=utf8;
 
@@ -51,18 +54,24 @@ CREATE TABLE IF NOT EXISTS tb_front (
     create_time datetime DEFAULT NULL COMMENT '创建时间',
     modify_time datetime DEFAULT NULL COMMENT '修改时间',
     front_status int(11) DEFAULT 1 COMMENT '前置服务状态：0，未创建；1，停止；2，启动；',
-    agency_id int(10) unsigned DEFAULT '0' COMMENT '所属机构 ID',
-    host_id int(10) unsigned DEFAULT '0' COMMENT '所属主机',
-    host_index int(6) DEFAULT '0' COMMENT '一台主机可能有多个节点。表示在主机中的编号，从 0 开始编号',
     version varchar(64) DEFAULT '' COMMENT '运行的镜像版本标签',
     container_name varchar(255) DEFAULT '' COMMENT 'Docker 启动的容器名称',
     jsonrpc_port int(6) DEFAULT '8545' COMMENT 'jsonrpc 端口',
     p2p_port int(6) DEFAULT '30303' COMMENT 'p2p 端口',
     channel_port int(6) DEFAULT '20200' COMMENT 'channel 端口',
     chain_name varchar(64) DEFAULT '' COMMENT '所属链名称，冗余字段',
+    ext_company_id int(10) unsigned DEFAULT '0' COMMENT '节点所在主机的所属公司 ID(Web Server)',
+    ext_agency_id int(10) unsigned DEFAULT '0' COMMENT '节点部署时的机构 ID(Web Server)',
+    ext_host_id int(10) unsigned DEFAULT '0' COMMENT '所属主机',
+    host_index int(6) DEFAULT '0' COMMENT '一台主机可能有多个节点。表示在主机中的编号，从 0 开始编号',
+    ssh_user varchar(32) NOT NULL DEFAULT 'root' COMMENT 'SSH 登录账号',
+    ssh_port int(11) NOT NULL DEFAULT 22 COMMENT 'SSH 登录 端口',
+    docker_port int(11) NOT NULL DEFAULT 3000 COMMENT 'Docker demon 端口',
+    root_on_host varchar(256) NOT NULL COMMENT 'front 所在主机存放节点数据的根目录，比如: /opt/fisco',
+    node_root_on_host varchar(256) NOT NULL COMMENT '节点根目录，比如: /opt/fisco/[chain_name]/node0',
     PRIMARY KEY (`front_id`),
     UNIQUE KEY unique_chainid_nodeid (chain_id,node_id),
-    UNIQUE KEY `unique_chainid_agencyid_frontip_frontport` (`chain_id`, `agency_id`,`front_ip`,`front_port`)
+    UNIQUE KEY `unique_chainid_agencyid_frontip_frontport` (`chain_id`, `ext_agency_id`,`front_ip`,`front_port`)
 ) ENGINE=InnoDB AUTO_INCREMENT=200001 DEFAULT CHARSET=utf8 COMMENT='前置服务信息表';
 
 
@@ -142,6 +151,6 @@ CREATE TABLE `tb_config` (
   `config_value` varchar(512) NOT NULL DEFAULT '' COMMENT '配置值',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `modify_time` datetime NOT NULL COMMENT '最近一次更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
   UNIQUE KEY `unq_type_value` (`config_type`,`config_value`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统配置信息表';

@@ -13,16 +13,28 @@
  */
 package com.webank.webase.chain.mgr.base.properties;
 
-import java.io.File;
+import static java.io.File.separator;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * constants.
  */
+@Slf4j
 @Data
 @Component
 @ConfigurationProperties(prefix = ConstantProperties.CONSTANT_PREFIX)
@@ -80,4 +92,64 @@ public class ConstantProperties {
     private String scpShell =        "./script/deploy/file_trans_util.sh";
     private String privateKey = System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa";
     private String fiscoBcosBinary =  "";
+
+    /**
+     * Docker client connect daemon ip with proxy ip.
+     */
+    private Map<String, MutablePair<String, Integer>> dockerProxyMap = new ConcurrentHashMap<>();
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void init() {
+        nodesRootDir = initDirectory(nodesRootDir, "NODES_ROOT/");
+        nodesRootTmpDir = initDirectory(nodesRootTmpDir, "NODES_ROOT_TMP/");
+
+        log.info("Init constant properties, generate nodes root dir:[{}]", nodesRootDir);
+        log.info("Init constant properties, generate nodes root temp dir:[{}]", nodesRootTmpDir);
+
+
+        this.imageTagUpdateUrl = String.format(this.imageTagUpdateUrl,dockerRepository);
+        log.info("Init constant properties, imageTagUpdateUrl: [{}]", this.imageTagUpdateUrl);
+
+        log.info("Init constant properties, dockerProxyMap: [{}]", dockerProxyMap);
+
+        log.info("Init constant properties, check FISCO-BCOS binary path: [{}]", fiscoBcosBinary);
+        if (!Files.exists(Paths.get(fiscoBcosBinary))) {
+            log.warn("FISCO-BCOS binary path: [{}] not exists.", fiscoBcosBinary);
+            fiscoBcosBinary = "";
+        }
+
+        log.info("Init constant properties, private key: [{}]", privateKey);
+
+        log.info("Init constant properties, defaultP2pPort:[{}], defaultChannelPort:[{}], defaultJsonrpcPort:[{}], defaultFrontPort:[{}]",
+                defaultP2pPort, defaultChannelPort, defaultJsonrpcPort, defaultFrontPort);
+    }
+
+    /**
+     *
+     * @param injectedValue
+     * @param defaultValue
+     * @return
+     */
+    private static String initDirectory(String injectedValue, String defaultValue){
+        String newDirectory = injectedValue;
+
+        if (StringUtils.isBlank(newDirectory)) {
+            newDirectory = defaultValue;
+        }
+
+        if (newDirectory.trim().endsWith(separator)) {
+            // ends with separator
+            newDirectory = newDirectory.trim();
+        } else {
+            // append a separator
+            newDirectory = String.format("%s%s", newDirectory.trim(), separator);
+        }
+
+        if (! newDirectory.startsWith("/")){
+            // not an absolute path
+            return String.format("%s/%s",new File(".").toPath().toAbsolutePath().toString(), newDirectory);
+        }
+        return newDirectory;
+    }
+    //******************* Add in v1.4.0 end. *******************
 }

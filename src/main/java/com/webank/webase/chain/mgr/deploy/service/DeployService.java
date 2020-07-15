@@ -14,14 +14,7 @@
 
 package com.webank.webase.chain.mgr.deploy.service;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -30,12 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
+import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
-import com.webank.webase.chain.mgr.repository.bean.TbHost;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbConfigMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
-import com.webank.webase.chain.mgr.repository.mapper.TbHostMapper;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -46,9 +38,7 @@ public class DeployService {
     @Autowired private TbConfigMapper tbConfigMapper;
     @Autowired private TbChainMapper tbChainMapper;
     @Autowired private TbFrontMapper frontMapper;
-    @Autowired private TbHostMapper tbHostMapper;
 
-    @Autowired private HostService hostService;
     @Autowired private ChainService chainService;
     @Autowired private AsyncService asyncService;
     @Autowired private PathService pathService;
@@ -72,9 +62,8 @@ public class DeployService {
         this.chainService.generateChainConfig(deploy);
 
         // init host and start node
-        this.asyncService.initHostListAndStart();
+        this.asyncService.deployChain(deploy.getChainName());
     }
-
 
 }
 

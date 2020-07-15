@@ -21,13 +21,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
@@ -200,21 +201,22 @@ public class GroupService {
     /**
      * save group id
      */
+    @Transactional
     public TbGroup saveGroup(int groupId, int chainId, int nodeCount, String description,
             int groupType) {
         if (groupId == 0) {
             return null;
         }
         // save group id
-        String groupName = "group" + groupId;
+        String groupName = String.format("chain_%s_group_%s", chainId, groupId);
         TbGroup exists = this.tbGroupMapper.selectByPrimaryKey(groupId, chainId);
-        if (exists != null) {
-            TbGroup tbGroup =
-                    new TbGroup(groupId, chainId, groupName, nodeCount, description, groupType);
+        if (exists == null) {
+            TbGroup tbGroup = new TbGroup(groupId, chainId, groupName, nodeCount, description, groupType);
             try {
                 this.tbGroupMapper.insertSelective(tbGroup);
             } catch (Exception e) {
                 log.error("Insert group error", e);
+                throw e;
             }
             return tbGroup;
         }
@@ -266,12 +268,17 @@ public class GroupService {
         log.info("start resetGroupList. startTime:{}", startTime.toEpochMilli());
 
         List<TbChain> chainList = tbChainMapper.selectAll();
-        if (chainList == null || chainList.size() == 0) {
-            log.info("not fount any chain.");
+        if (CollectionUtils.isEmpty(chainList)) {
+            log.info("No chain found.");
             return;
         }
 
         for (TbChain tbChain : chainList) {
+            if (! ChainStatusEnum.isRunning(tbChain.getChainStatus())){
+                log.warn("Chain is not running:[{}]", tbChain.getChainStatus());
+                continue;
+            }
+
             Integer chainId = tbChain.getChainId();
             // all groupId from chain
             Set<Integer> allGroupSet = new HashSet<>();
@@ -281,7 +288,7 @@ public class GroupService {
             param.setChainId(chainId);
             List<TbFront> frontList = tbFrontMapper.selectByParam(param);
             if (frontList == null || frontList.size() == 0) {
-                log.info("chain {} not fount any front.", chainId);
+                log.info("chain {} not found any front.", chainId);
                 // remove all group
                 // removeAllGroup(chainId);
                 continue;
@@ -513,5 +520,15 @@ public class GroupService {
         }
         // remove chainId.
         this.tbGroupMapper.deleteByChainId(chainId);
+    }
+
+    /**
+     * update status.
+     */
+    public void updateGroupNodeCount(int chainId,int groupId, int nodeCount) {
+        log.debug("start updateGroupNodeCount groupId:{} nodeCount:{}", groupId, nodeCount);
+        this.tbGroupMapper.updateNodeCount(chainId,groupId, nodeCount);
+        log.debug("end updateGroupNodeCount groupId:{} nodeCount:{}", groupId, nodeCount);
+
     }
 }

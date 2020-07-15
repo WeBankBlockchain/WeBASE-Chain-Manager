@@ -13,9 +13,6 @@
  */
 package chain.mgr.test.chain;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.Application;
-import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,13 +29,17 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.webank.webase.chain.mgr.Application;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
+
 /**
  * test chain controller
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @WebAppConfiguration
-public class ChainControllerTest {
+public class DeployControllerTest {
     private MockMvc mockMvc;
 
     @Autowired

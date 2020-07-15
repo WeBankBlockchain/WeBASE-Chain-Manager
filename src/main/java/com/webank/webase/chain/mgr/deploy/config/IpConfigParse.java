@@ -13,8 +13,11 @@
  */
 
 package com.webank.webase.chain.mgr.deploy.config;
-
+import java.util.HashSet;
 import java.util.Set;
+
+import com.google.common.collect.Sets;
+import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
 
 import lombok.Data;
 import lombok.ToString;
@@ -31,10 +34,18 @@ public class IpConfigParse {
     private String agencyName;
     private Set<Integer> groupIdSet;
 
-    public static IpConfigParse build(){
+    public static IpConfigParse build(ReqDeploy.DeployHost deployHost, int groupId){
         IpConfigParse ipConfigParse = new IpConfigParse();
+        ipConfigParse.setIp(deployHost.getIp());
+        ipConfigParse.setSshUser(deployHost.getSshUser());
+        ipConfigParse.setSshPort(deployHost.getSshPort());
+        ipConfigParse.setDockerPort(deployHost.getDockerDemonPort());
+        ipConfigParse.setNum(deployHost.getNum());
+        ipConfigParse.setAgencyName(deployHost.getExtAgencyName());
 
-
+        HashSet<Integer> groupIdSet = Sets.newHashSet();
+        groupIdSet.add(groupId);
+        ipConfigParse.setGroupIdSet(groupIdSet);
         return ipConfigParse;
     }
 }

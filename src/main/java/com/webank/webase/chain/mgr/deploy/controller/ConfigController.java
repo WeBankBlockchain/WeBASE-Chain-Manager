@@ -31,7 +31,7 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @RestController
-@RequestMapping(value = "/deploy/config")
+@RequestMapping(value = "/config")
 public class ConfigController extends BaseController {
 
     @Autowired private ConfigService configService;

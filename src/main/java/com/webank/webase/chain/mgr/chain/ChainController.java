@@ -34,8 +34,11 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
+import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
+import com.webank.webase.chain.mgr.deploy.service.DeployService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 
@@ -53,6 +56,8 @@ public class ChainController extends BaseController {
     private TbChainMapper tbChainMapper;
     @Autowired
     private ChainService chainService;
+
+    @Autowired private DeployService deployService;
 
     /**
      * add new chain
@@ -99,7 +104,7 @@ public class ChainController extends BaseController {
     /**
      * delete by chainId
      */
-    @DeleteMapping("/{chainId}")
+    @DeleteMapping("{chainId}")
     public BaseResponse removeChain(@PathVariable("chainId") Integer chainId) {
         Instant startTime = Instant.now();
         log.info("start removeChain startTime:{} chainId:{}", startTime.toEpochMilli(), chainId);
@@ -112,5 +117,41 @@ public class ChainController extends BaseController {
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JsonTools.toJSONString(baseResponse));
         return baseResponse;
+    }
+
+
+    @PostMapping(value = "deploy")
+    public BaseResponse checkAndInit(
+            @RequestBody @Valid ReqDeploy reqDeploy,
+            BindingResult result) throws BaseException {
+        checkBindResult(result);
+
+        Instant startTime = Instant.now();
+        log.info("Start:[{}] deploy chain:[{}] ", startTime, JsonTools.toJSONString(reqDeploy));
+
+        try {
+            // generate node config and return shell execution log
+            this.deployService.deployChain(reqDeploy);
+
+            return new BaseResponse(ConstantCode.SUCCESS);
+        } catch (BaseException e) {
+            return new BaseResponse(e.getRetCode());
+        }
+    }
+
+    @GetMapping("/get/{chainId}}")
+    public BaseResponse getChain(@PathVariable("chainId") int chainId)
+            throws BaseException {
+
+        Instant startTime = Instant.now();
+        log.info("Start:[{}] get chain:[{}] ", startTime, chainId);
+
+        try {
+            // generate node config and return shell execution log
+
+            return new BaseResponse(ConstantCode.SUCCESS);
+        } catch (BaseException e) {
+            return new BaseResponse(e.getRetCode());
+        }
     }
 }

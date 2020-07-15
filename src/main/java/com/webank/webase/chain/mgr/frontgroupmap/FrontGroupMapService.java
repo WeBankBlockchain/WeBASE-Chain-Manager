@@ -46,6 +46,7 @@ public class FrontGroupMapService {
                 this.tbFrontGroupMapMapper.insertSelective(tbFrontGroupMap);
             } catch (Exception e) {
                 log.error("Insert front group map error", e);
+                throw e;
             }
         }
         return exists;

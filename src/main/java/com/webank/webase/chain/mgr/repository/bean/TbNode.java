@@ -2,6 +2,7 @@ package com.webank.webase.chain.mgr.repository.bean;
 
 import java.io.Serializable;
 import java.util.Date;
+import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,24 @@ import lombok.ToString;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class TbNode implements Serializable {
+
+    public static TbNode init(int chainId, String nodeId, String nodeName, int groupId, String ip, int p2pPort, String description, DataStatus dataStatus) {
+        Date now = new Date();
+        TbNode node = new TbNode();
+        node.setNodeId(nodeId);
+        node.setChainId(chainId);
+        node.setGroupId(groupId);
+        node.setNodeName(nodeName);
+        node.setNodeIp(ip);
+        node.setP2pPort(p2pPort);
+        node.setBlockNumber(0L);
+        node.setPbftView(0L);
+        node.setNodeActive(dataStatus.getValue());
+        node.setDescription(description);
+        node.setCreateTime(now);
+        node.setModifyTime(now);
+        return node;
+    }
 
     /**
      *

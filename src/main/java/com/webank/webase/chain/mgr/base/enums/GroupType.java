@@ -34,7 +34,7 @@ package com.webank.webase.chain.mgr.base.enums;
  * Enumeration of group type.
  */
 public enum GroupType {
-    SYNC(1), MANUAL(2);
+    SYNC(1), MANUAL(2), DEPLOY(3);
 
     private int value;
 

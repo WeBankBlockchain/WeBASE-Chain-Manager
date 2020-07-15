@@ -61,13 +61,14 @@ public class DeployShellService {
      */
     public void scp(ScpTypeEnum typeEnum, String sshUser, String ip, int sshPort, String src, String dst) {
         if (typeEnum == ScpTypeEnum.UP) {
+            String newSrc = StringUtils.removeEnd(src, "*");
             // scp files to remote
-            if (Files.isRegularFile(Paths.get(src))) {
+            if (Files.isRegularFile(Paths.get(newSrc))) {
                 // if src is file, create parent directory of dst on remote
                 String parentOnRemote = Paths.get(dst).getParent().toAbsolutePath().toString();
                 SshTools.createDirOnRemote(ip, parentOnRemote,sshUser,sshPort,constant.getPrivateKey());
             }
-            if (Files.isDirectory(Paths.get(src))) {
+            if (Files.isDirectory(Paths.get(newSrc))) {
                 // if src is directory, create dst on remote
                 SshTools.createDirOnRemote(ip, dst,sshUser,sshPort,constant.getPrivateKey());
             }

@@ -2,9 +2,7 @@ package com.webank.webase.chain.mgr.repository.bean;
 
 import java.io.Serializable;
 import java.util.Date;
-
 import com.webank.webase.chain.mgr.base.enums.ConfigTypeEnum;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -15,19 +13,17 @@ import lombok.ToString;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class TbConfig implements Serializable {
-    public static TbConfig init(ConfigTypeEnum type, String value){
-        Date now = new Date();
 
+    public static TbConfig init(ConfigTypeEnum type, String value) {
+        Date now = new Date();
         TbConfig config = new TbConfig();
         config.setConfigName(type.getName());
         config.setConfigType(type.getId());
         config.setConfigValue(value);
         config.setCreateTime(now);
         config.setModifyTime(now);
-
         return config;
     }
-
 
     /**
      *

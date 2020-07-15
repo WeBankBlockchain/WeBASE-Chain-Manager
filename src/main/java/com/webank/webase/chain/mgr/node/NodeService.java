@@ -24,6 +24,8 @@ import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
@@ -38,6 +40,7 @@ import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
+import com.webank.webase.chain.mgr.util.ValidateUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -324,5 +327,33 @@ public class NodeService {
         observerList.stream().forEach(nodeId -> resList.add(new PeerInfo(nodeId)));
         log.debug("end getSealerAndObserverList resList:{}", resList);
         return resList;
+    }
+
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param nodeId
+     * @return
+     */
+    public static String getNodeName(int chainId,int groupId, String nodeId) {
+        return String.format("%s_%s_%s", chainId, groupId, nodeId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public TbNode insert(int chainId, String nodeId, String nodeName, int groupId, String ip, int p2pPort,
+            String description, final DataStatus dataStatus ) throws BaseException {
+        if (! ValidateUtil.ipv4Valid(ip)){
+            throw new BaseException(ConstantCode.IP_FORMAT_ERROR);
+        }
+
+        DataStatus newDataStatus = dataStatus == null ? DataStatus.INVALID : dataStatus;
+
+        TbNode node = TbNode.init(chainId,nodeId, nodeName, groupId, ip, p2pPort, description, newDataStatus);
+
+        if (tbNodeMapper.insertSelective(node) != 1) {
+            throw new BaseException(ConstantCode.INSERT_NODE_ERROR);
+        }
+        return node;
     }
 }
