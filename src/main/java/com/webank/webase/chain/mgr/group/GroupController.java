@@ -39,6 +39,7 @@ import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
@@ -103,6 +104,9 @@ public class GroupController extends BaseController {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start generateGroup startTime:{} groupId:{}", startTime.toEpochMilli(),
                 req.getGenerateGroupId());
+        if (req.getGenerateGroupId() == ConstantProperties.DEFAULT_GROUP_ID){
+            throw new BaseException(ConstantCode.CANNOT_USE_GROUP_ID_ERROR);
+        }
         TbGroup tbGroup = groupService.generateGroup(req);
         baseResponse.setData(tbGroup);
         log.info("end generateGroup useTime:{}",

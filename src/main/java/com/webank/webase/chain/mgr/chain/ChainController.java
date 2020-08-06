@@ -37,6 +37,7 @@ import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
+import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
 import com.webank.webase.chain.mgr.deploy.service.DeployService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
@@ -121,7 +122,7 @@ public class ChainController extends BaseController {
 
 
     @PostMapping(value = "deploy")
-    public BaseResponse checkAndInit(
+    public BaseResponse deploy(
             @RequestBody @Valid ReqDeploy reqDeploy,
             BindingResult result) throws BaseException {
         checkBindResult(result);
@@ -132,6 +133,25 @@ public class ChainController extends BaseController {
         try {
             // generate node config and return shell execution log
             this.deployService.deployChain(reqDeploy);
+
+            return new BaseResponse(ConstantCode.SUCCESS);
+        } catch (BaseException e) {
+            return new BaseResponse(e.getRetCode());
+        }
+    }
+
+    @PostMapping(value = "addNode")
+    public BaseResponse addNode(
+            @RequestBody @Valid ReqAddNode reqAddNode,
+            BindingResult result) throws BaseException {
+        checkBindResult(result);
+
+        Instant startTime = Instant.now();
+        log.info("Start:[{}] add node:[{}] ", startTime, JsonTools.toJSONString(reqAddNode));
+
+        try {
+            // generate node config and return shell execution log
+//            this.deployService.addNode(reqAddNode);
 
             return new BaseResponse(ConstantCode.SUCCESS);
         } catch (BaseException e) {

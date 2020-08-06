@@ -13,6 +13,7 @@
  */
 package com.webank.webase.chain.mgr.front;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -387,6 +388,26 @@ public class FrontService {
         resetGroupListTask.asyncResetGroupList();
         // clear cache
         frontGroupMapCache.clearMapList(tbFront.getChainId());
+
+        // remote docker container
+        this.dockerOptions.stop(tbFront.getFrontIp(),
+                tbFront.getDockerPort(), tbFront.getSshUser(),
+                tbFront.getSshPort(), tbFront.getContainerName());
+
+        // move node directory to tmp
+        try {
+            this.pathService.deleteNode(tbFront.getChainName(), tbFront.getFrontIp(),
+                    tbFront.getHostIndex(), tbFront.getNodeId());
+        } catch (IOException e) {
+            log.error("Delete node:[{}:{}:{}] config files error.",
+                    tbFront.getChainName(), tbFront.getFrontIp(), tbFront.getHostIndex(), e);
+            throw new BaseException(ConstantCode.DELETE_NODE_DIR_ERROR);
+        }
+
+        // move node of remote host files to temp directory, e.g./opt/fisco/delete-tmp
+        NodeService.mvNodeOnRemoteHost(tbFront.getFrontIp(), tbFront.getRootOnHost(), tbFront.getChainName(), tbFront.getHostIndex(),
+                tbFront.getNodeId(),tbFront.getSshUser(),tbFront.getSshPort(),constantProperties.getPrivateKey());
+
     }
 
     /**

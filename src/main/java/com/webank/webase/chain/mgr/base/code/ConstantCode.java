@@ -179,5 +179,6 @@ public class ConstantCode {
     public static final RetCode TWO_SEALER_IN_GROUP_AT_LEAST = RetCode.mark(400063, "Group need two sealers at least.");
     public static final RetCode HOST_NOT_EXISTS = RetCode.mark(400064, "Host not exists.");
     public static final RetCode CHAIN_ID_EXISTS_ERROR = RetCode.mark(400065, "Chain id exists.");
+    public static final RetCode CANNOT_USE_GROUP_ID_ERROR = RetCode.mark(400066, "Cannot use default group id.");
 
 }

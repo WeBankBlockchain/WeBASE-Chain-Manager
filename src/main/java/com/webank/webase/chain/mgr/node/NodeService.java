@@ -32,6 +32,7 @@ import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.deploy.service.PathService;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfConsensusStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfSyncStatus;
@@ -40,6 +41,7 @@ import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
+import com.webank.webase.chain.mgr.util.SshTools;
 import com.webank.webase.chain.mgr.util.ValidateUtil;
 
 import lombok.extern.log4j.Log4j2;
@@ -355,5 +357,30 @@ public class NodeService {
             throw new BaseException(ConstantCode.INSERT_NODE_ERROR);
         }
         return node;
+    }
+
+    /**
+     * @param ip
+     * @param rooDirOnHost
+     * @param chainName
+     * @param hostIndex
+     * @param nodeId
+     */
+    public static void mvNodeOnRemoteHost(String ip, String rooDirOnHost, String chainName, int hostIndex, String nodeId,
+                                          String sshUser, int sshPort,String privateKey) {
+        // create /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss as a parent
+        String chainDeleteRootOnHost = PathService.getChainDeletedRootOnHost(rooDirOnHost, chainName);
+        SshTools.createDirOnRemote(ip, chainDeleteRootOnHost,sshUser,sshPort,privateKey);
+
+        // e.g. /opt/fisco/default_chain
+        String chainRootOnHost = PathService.getChainRootOnHost(rooDirOnHost, chainName);
+        // e.g. /opt/fisco/default_chain/node[x]
+        String src_nodeRootOnHost = PathService.getNodeRootOnHost(chainRootOnHost, hostIndex);
+
+        // move to /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss/[nodeid(128)]
+        String dst_nodeDeletedRootOnHost =
+                PathService.getNodeDeletedRootOnHost(chainDeleteRootOnHost, nodeId);
+        // move
+        SshTools.mvDirOnRemote(ip, src_nodeRootOnHost, dst_nodeDeletedRootOnHost,sshUser,sshPort,privateKey);
     }
 }

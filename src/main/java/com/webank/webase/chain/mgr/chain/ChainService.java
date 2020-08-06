@@ -250,9 +250,8 @@ public class ChainService {
 
         // insert default group
         for (ReqDeploy.DeployHost deployHost : reqDeploy.getDeployHostList()) {
-            // save group if new
-            this.groupService.saveGroup(ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(),
-                    deployHost.getNum(), "deploy", GroupType.DEPLOY.getValue());
+            // save group if new , default node count = 0
+            this.groupService.saveGroup(ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(),0, "deploy", GroupType.DEPLOY.getValue());
 
             List<Path> nodePathList = null;
             try {
@@ -291,10 +290,6 @@ public class ChainService {
                 // insert front group mapping
                 this.frontGroupMapService.newFrontGroup(newChain.getChainId(), front.getFrontId(), ConstantProperties.DEFAULT_GROUP_ID);
 
-                // update node count of goup
-                TbGroup group = this.tbGroupMapper.selectByPrimaryKey(ConstantProperties.DEFAULT_GROUP_ID,newChain.getChainId());
-                this.groupService.updateGroupNodeCount(newChain.getChainId(),ConstantProperties.DEFAULT_GROUP_ID, group.getNodeCount() + 1);
-
                 // generate front application.yml
                 try {
                     ThymeleafUtil.newFrontConfig(nodeRoot, encryptType, nodeConfig.getChannelPort(), frontPort, reqDeploy.getWebaseSignAddr());
@@ -302,6 +297,10 @@ public class ChainService {
                     throw new BaseException(ConstantCode.GENERATE_FRONT_YML_ERROR);
                 }
             }
+
+            // update node count of goup
+            TbGroup group = this.tbGroupMapper.selectByPrimaryKey(ConstantProperties.DEFAULT_GROUP_ID,newChain.getChainId());
+            this.groupService.updateGroupNodeCount(newChain.getChainId(),ConstantProperties.DEFAULT_GROUP_ID, group.getNodeCount() + deployHost.getNum());
         }
     }
 

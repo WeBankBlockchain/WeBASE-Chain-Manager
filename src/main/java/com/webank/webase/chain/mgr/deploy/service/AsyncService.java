@@ -81,7 +81,6 @@ public class AsyncService {
             finishHost.add(front.getExtHostId());
         }
 
-        //
         this.startChain(chainName,ChainStatusEnum.RUNNING, ChainStatusEnum.DEPLOY_FAILED);
     }
 
