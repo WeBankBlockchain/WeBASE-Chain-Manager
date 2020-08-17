@@ -25,7 +25,6 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ConfigTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.deploy.service.ConfigService;
 
 import lombok.extern.log4j.Log4j2;
 

@@ -120,6 +120,10 @@ public class GroupService {
         BeanUtils.copyProperties(req, generateGroupInfo);
         frontInterface.generateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(),
                 generateGroupInfo);
+
+        // fetch group config file
+        this.pullAllGroupFiles(generateGroupId, tbFront);
+
         // save group
         TbGroup tbGroup = saveGroup(generateGroupId, chainId, req.getNodeList().size(),
                 req.getDescription(), GroupType.MANUAL.getValue());
@@ -150,6 +154,9 @@ public class GroupService {
             BeanUtils.copyProperties(req, generateGroupInfo);
             frontInterface.generateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(),
                     generateGroupInfo);
+
+            // fetch group config file
+            this.pullAllGroupFiles(generateGroupId, tbFront);
         }
         // save group
         TbGroup tbGroup = saveGroup(generateGroupId, chainId, req.getNodeList().size(),

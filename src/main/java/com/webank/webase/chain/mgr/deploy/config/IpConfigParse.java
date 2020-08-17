@@ -41,7 +41,7 @@ public class IpConfigParse {
         ipConfigParse.setSshPort(deployHost.getSshPort());
         ipConfigParse.setDockerPort(deployHost.getDockerDemonPort());
         ipConfigParse.setNum(deployHost.getNum());
-        ipConfigParse.setAgencyName(deployHost.getExtAgencyName());
+        ipConfigParse.setAgencyName(deployHost.getExtOrgName());
 
         HashSet<Integer> groupIdSet = Sets.newHashSet();
         groupIdSet.add(groupId);

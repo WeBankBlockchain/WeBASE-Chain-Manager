@@ -1,10 +1,8 @@
 -- ----------------------------
 -- Table structure for tb_chain
 -- ----------------------------
-DROP TABLE IF EXISTS tb_chain;
-CREATE TABLE tb_chain (
+CREATE TABLE IF NOT EXISTS tb_chain (
   chain_id int(11) NOT NULL COMMENT '区块链编号',
-  chain_name varchar(120) DEFAULT NULL COMMENT '区块链名称',
   chain_type tinyint(4) unsigned NOT NULL DEFAULT '0' COMMENT '加密类型：0，标密；1，国密；默认 0 ',
   description varchar(512) COMMENT '描述',
   create_time datetime DEFAULT NULL COMMENT '创建时间',
@@ -14,14 +12,13 @@ CREATE TABLE tb_chain (
   storage_type varchar(16) NOT NULL COMMENT '存储类型（支持：RocksDB, LevelDB, MySQL）',
   chain_status tinyint(8) unsigned NOT NULL DEFAULT '0' COMMENT '链状态',
   webase_sign_addr varchar(255) NOT NULL DEFAULT '127.0.0.1:5004' COMMENT 'WeBASE-Sign 的访问地址',
-  PRIMARY KEY (chain_id),
-  UNIQUE KEY unique_name (chain_name)
+  PRIMARY KEY (chain_id)
 ) ENGINE=InnoDB CHARSET=utf8 COMMENT='区块链信息表';
+
 
 -- ----------------------------
 -- Table structure for tb_group
 -- ----------------------------
-DROP TABLE IF EXISTS tb_group;
 CREATE TABLE IF NOT EXISTS tb_group (
     group_id int(11) NOT NULL COMMENT '群组ID',
     chain_id int(11) NOT NULL COMMENT '所属区块链编号',
@@ -42,7 +39,6 @@ CREATE TABLE IF NOT EXISTS tb_group (
 -- ----------------------------
 -- Table structure for tb_front
 -- ----------------------------
-DROP TABLE IF EXISTS tb_front;
 CREATE TABLE IF NOT EXISTS tb_front (
     front_id int(11) NOT NULL AUTO_INCREMENT COMMENT '前置服务编号',
     chain_id int(11) NOT NULL COMMENT '所属区块链编号',
@@ -78,7 +74,6 @@ CREATE TABLE IF NOT EXISTS tb_front (
 -- ----------------------------
 -- Table structure for tb_front_group_map
 -- ----------------------------
-DROP TABLE IF EXISTS tb_front_group_map;
 CREATE TABLE IF NOT EXISTS tb_front_group_map (
     map_id int(11) NOT NULL AUTO_INCREMENT COMMENT '映射编号',
     chain_id int(11) NOT NULL COMMENT '区块链编号',
@@ -95,7 +90,6 @@ CREATE TABLE IF NOT EXISTS tb_front_group_map (
 -- ----------------------------
 -- Table structure for tb_node
 -- ----------------------------
-DROP TABLE IF EXISTS tb_node;
 CREATE TABLE IF NOT EXISTS tb_node (
     node_id varchar(250) NOT NULL  COMMENT '节点编号',
     chain_id int(11) NOT NULL COMMENT '所属区块链编号',
@@ -116,7 +110,6 @@ CREATE TABLE IF NOT EXISTS tb_node (
 -- ----------------------------
 -- Table structure for tb_contract
 -- ----------------------------
-DROP TABLE IF EXISTS tb_contract;
 CREATE TABLE IF NOT EXISTS tb_contract (
     contract_id int(11) NOT NULL AUTO_INCREMENT COMMENT '合约编号',
     contract_path varchar(24) binary NOT NULL COMMENT '合约所在目录',
@@ -139,18 +132,3 @@ CREATE TABLE IF NOT EXISTS tb_contract (
 ) ENGINE=InnoDB AUTO_INCREMENT=400001 DEFAULT CHARSET=utf8 COMMENT='合约表';
 
 
-
--- ----------------------------
--- Table structure for tb_config
--- ----------------------------
-DROP TABLE IF EXISTS tb_config;
-CREATE TABLE `tb_config` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增长 ID',
-  `config_name` varchar(64) NOT NULL COMMENT '配置名称',
-  `config_type` int(10) NOT NULL DEFAULT '0' COMMENT '配置类型',
-  `config_value` varchar(512) NOT NULL DEFAULT '' COMMENT '配置值',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  `modify_time` datetime NOT NULL COMMENT '最近一次更新时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unq_type_value` (`config_type`,`config_value`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统配置信息表';

@@ -26,7 +26,6 @@ import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
-import com.webank.webase.chain.mgr.repository.mapper.TbConfigMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 
 import lombok.extern.log4j.Log4j2;

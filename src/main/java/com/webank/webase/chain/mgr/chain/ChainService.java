@@ -50,11 +50,9 @@ import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
-import com.webank.webase.chain.mgr.repository.bean.TbConfig;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
-import com.webank.webase.chain.mgr.repository.mapper.TbConfigMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import com.webank.webase.chain.mgr.util.SshTools;
@@ -210,7 +208,7 @@ public class ChainService {
             // TODO. check host evn (Docker)
 
             String ipConfigLine = String.format("%s:%s %s %s", deployHost.getIp(), deployHost.getNum(),
-                    deployHost.getExtAgencyName(), ConstantProperties.DEFAULT_GROUP_ID);
+                    deployHost.getExtOrgName(), ConstantProperties.DEFAULT_GROUP_ID);
             ipConf[i] = ipConfigLine;
         }
 
@@ -271,10 +269,10 @@ public class ChainService {
                         deployHost.getIp(), nodeConfig.getHostIndex());
                 // pass object
                 TbFront front = TbFront.build(newChain.getChainId(), nodeConfig.getNodeId(), deployHost.getIp(), frontPort,
-                        deployHost.getExtAgencyName(), frontDesc, FrontStatusEnum.INITIALIZED, imageConfig.getConfigValue(),
+                        deployHost.getExtOrgName(), frontDesc, FrontStatusEnum.INITIALIZED, imageConfig.getConfigValue(),
                         DockerOptions.getContainerName(deployHost.getRootDirOnHost(), reqDeploy.getChainName(), nodeConfig.getHostIndex()),
                         nodeConfig.getJsonrpcPort(), nodeConfig.getP2pPort(), nodeConfig.getChannelPort(), reqDeploy.getChainName(),
-                        deployHost.getExtCompanyId(), deployHost.getExtAgencyId(), deployHost.getExtHostId(), nodeConfig.getHostIndex(),
+                        deployHost.getExtCompanyId(), deployHost.getExtOrgId(), deployHost.getExtHostId(), nodeConfig.getHostIndex(),
                         deployHost.getSshUser(),deployHost.getSshPort(),deployHost.getDockerDemonPort(), deployHost.getRootDirOnHost(),
                         PathService.getNodeRootOnHost(PathService
                                 .getChainRootOnHost(deployHost.getRootDirOnHost(),reqDeploy.getChainName()),nodeConfig.getHostIndex()));

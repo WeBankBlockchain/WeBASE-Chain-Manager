@@ -36,7 +36,7 @@ public interface TbFrontMapper {
     @Update({ "update tb_front set `front_status`=#{frontStatus},modify_time=NOW() where front_id = #{frontId}" })
     int updateStatus(@Param("frontId") int frontId, @Param("frontStatus") int frontStatus);
 
-    @Select({ "select ",TbFrontSqlProvider.ALL_COLUMN_FIELDS," from tb_front where chain_name=#{chainName}" })
+    @Select({ "select ", TbFrontSqlProvider.ALL_COLUMN_FIELDS, " from tb_front where chain_name=#{chainName}" })
     List<TbFront> selectByChainName(@Param("chainName") String chainName);
 
     /**
