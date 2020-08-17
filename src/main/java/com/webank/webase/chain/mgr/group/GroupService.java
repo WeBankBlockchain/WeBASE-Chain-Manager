@@ -32,7 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.enums.ScpTypeEnum;
@@ -298,8 +297,8 @@ public class GroupService {
         }
 
         for (TbChain tbChain : chainList) {
-            if (! ChainStatusEnum.isRunning(tbChain.getChainStatus())){
-                log.warn("Chain is not running:[{}]", tbChain.getChainStatus());
+            if (! this.chainService.runTask(tbChain)){
+                log.warn("Chain status is not running:[{}]", tbChain.getChainStatus());
                 continue;
             }
 

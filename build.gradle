@@ -108,8 +108,12 @@ dependencies {
     compile 'org.thymeleaf:thymeleaf:3.0.11.RELEASE'
     compile 'ognl:ognl:3.2.14'
 
-    compile lombok
+    compileOnly lombok
     annotationProcessor lombok
+
+    testCompileOnly lombok
+    testAnnotationProcessor lombok
+
 
     testCompile test
 }

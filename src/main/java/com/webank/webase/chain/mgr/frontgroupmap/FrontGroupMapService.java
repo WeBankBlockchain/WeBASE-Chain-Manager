@@ -31,8 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FrontGroupMapService {
 
-    @Autowired
-    private TbFrontGroupMapMapper tbFrontGroupMapMapper;
+    @Autowired private TbFrontGroupMapMapper tbFrontGroupMapMapper;
 
     /**
      * add new mapping
@@ -103,4 +102,20 @@ public class FrontGroupMapService {
         }
         return this.tbFrontGroupMapMapper.selectByGroupId(groupId);
     }
+
+//    @Transactional(propagation = Propagation.REQUIRED)
+//    public void updateFrontMapStatus(int chainId,int frontId, GroupStatus status) {
+//        // update status
+//        log.info("Update front:[{}] all group map to status:[{}]", frontId, status);
+//        tbFrontGroupMapMapper.updateAllGroupsStatus(frontId,status.getValue());
+//        this.frontGroupMapCache.clearMapList(chainId);
+//    }
+//
+//    @Transactional(propagation = Propagation.REQUIRED)
+//    public void updateFrontMapStatus(int chainId, int frontId, int groupId, GroupStatus status) {
+//        // update status
+//        log.info("Update front:[{}] group:[{}] map to status:[{}]", frontId, groupId, status);
+//        tbFrontGroupMapMapper.updateOneGroupStatus(frontId,status.getValue(),groupId);
+//        this.frontGroupMapCache.clearMapList(chainId);
+//    }
 }

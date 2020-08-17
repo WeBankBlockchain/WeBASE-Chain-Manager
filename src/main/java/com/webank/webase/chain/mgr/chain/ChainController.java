@@ -20,6 +20,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,6 +36,7 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
@@ -59,6 +61,7 @@ public class ChainController extends BaseController {
     private ChainService chainService;
 
     @Autowired private DeployService deployService;
+    @Autowired private ConstantProperties constantProperties;
 
     /**
      * add new chain
@@ -131,6 +134,15 @@ public class ChainController extends BaseController {
         log.info("Start:[{}] deploy chain:[{}] ", startTime, JsonTools.toJSONString(reqDeploy));
 
         try {
+            // check WeBASE Sign accessible
+            if(StringUtils.isBlank(reqDeploy.getWebaseSignAddr())){
+                reqDeploy.setWebaseSignAddr(constantProperties.getWebaseSignAddress());
+            }
+            // check WeBASE Sign accessible
+            if(StringUtils.isBlank(reqDeploy.getChainName())){
+                reqDeploy.setChainName(String.valueOf(reqDeploy.getChainId()));
+            }
+
             // generate node config and return shell execution log
             this.deployService.deployChain(reqDeploy);
 

@@ -11,13 +11,11 @@ import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  */
 
-@Slf4j
 @Data
 @NoArgsConstructor
 public class ReqDeploy {
@@ -35,7 +33,7 @@ public class ReqDeploy {
     @Min(1)
     private int encrtyType;
 
-    private byte dockerImageType = DockerImageTypeEnum.MANUAL.getId();
+    private byte dockerImageType = DockerImageTypeEnum.PULL_OFFICIAL.getId();
 
     private String consensusType = "pbft";
 
@@ -44,6 +42,8 @@ public class ReqDeploy {
     private String description;
 
     private String webaseSignAddr;
+
+    private String chainName;
 
     @Data
     @NoArgsConstructor

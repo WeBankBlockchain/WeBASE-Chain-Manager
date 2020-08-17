@@ -1,22 +1,17 @@
 package com.webank.webase.chain.mgr.deploy.req;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  */
 
-@Slf4j
 @Data
 @NoArgsConstructor
 public class ReqAddNode {
@@ -75,47 +70,6 @@ public class ReqAddNode {
 
         @NotBlank(message = "Root dir blank error.")
         private String rootDirOnHost;
-    }
-
-    // TODO. delete
-    public static void main(String[] args) {
-        ReqAddNode reqDeploy =new ReqAddNode();
-        reqDeploy.setTagId(22);
-        reqDeploy.setWebaseSignAddr("127.0.0.1:6004");
-        reqDeploy.setChainName("default_chain");
-        reqDeploy.setConsensusType("pbft");
-        reqDeploy.setStorageType("rocksdb");
-        reqDeploy.setDescription("测试链");
-        List<DeployHost> deployHostList = new ArrayList<>();
-        DeployHost deployHost1 = new DeployHost();
-        deployHost1.setExtCompanyId(1);
-        deployHost1.setExtAgencyId(1);
-        deployHost1.setExtAgencyName("Org1");
-        deployHost1.setExtHostId(1);
-        deployHost1.setIp("106.55.28.72");
-        deployHost1.setSshUser("root");
-        deployHost1.setSshPort(22);
-        deployHost1.setDockerDemonPort(3000);
-        deployHost1.setNum(2);
-        deployHost1.setRootDirOnHost("/opt/fisco/3tx");
-
-        DeployHost deployHost2 = new DeployHost();
-        deployHost2.setExtCompanyId(1);
-        deployHost2.setExtAgencyId(2);
-        deployHost2.setExtAgencyName("Org2");
-        deployHost2.setExtHostId(2);
-        deployHost2.setIp("139.9.222.236");
-        deployHost2.setSshUser("root");
-        deployHost2.setSshPort(22);
-        deployHost2.setDockerDemonPort(3000);
-        deployHost2.setNum(3);
-        deployHost2.setRootDirOnHost("/opt/fisco/3hw");
-
-        deployHostList.add(deployHost1);
-        deployHostList.add(deployHost2);
-
-        reqDeploy.setDeployHostList(deployHostList);
-        System.out.println(JsonTools.toJSONString(reqDeploy));
     }
 }
 

@@ -26,6 +26,7 @@ import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.ini4j.Ini;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
 
@@ -49,10 +50,10 @@ public class NodeConfig {
      * @return
      * @throws IOException
      */
-    public static NodeConfig read(Path nodePath)  {
+    public static NodeConfig read(Path nodePath, EncryptTypeEnum encryptTypeEnum)  {
         NodeConfig config = new NodeConfig();
         try {
-            config.nodeId= PathService.getNodeId(nodePath);
+            config.nodeId= PathService.getNodeId(nodePath, encryptTypeEnum);
             try {
                 config.hostIndex = Integer.parseInt(nodePath.getFileName().toString().replaceAll("node", ""));
             } catch (Exception e) {
@@ -148,7 +149,7 @@ public class NodeConfig {
      * @param nodePath
      * @return
      */
-    public static Set<Integer> getGroupIdSet(Path nodePath ){
-        return NodeConfig.read(nodePath).getGroupIdSet();
+    public static Set<Integer> getGroupIdSet(Path nodePath,EncryptTypeEnum encryptTypeEnum ){
+        return NodeConfig.read(nodePath,encryptTypeEnum).getGroupIdSet();
     }
 }

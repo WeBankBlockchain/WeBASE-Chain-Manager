@@ -31,12 +31,13 @@ import lombok.extern.log4j.Log4j2;
 @AllArgsConstructor
 @Log4j2
 public enum ChainStatusEnum {
-    DEPLOYING((byte) 1, "deploying"),
-    UPGRADING((byte) 2, "Upgrading"),
-    DEPLOY_FAILED((byte) 3, "Deploy failed"),
-    UPGRADING_FAILED((byte) 4, "Upgrading failed"),
-    RUNNING((byte) 5, "Running"),
-    UPDATING((byte) 6, "Updating"),
+    INITIALIZED((byte) 0, "初始化"),
+    DEPLOYING((byte) 1, "部署中"),
+    DEPLOY_FAILED((byte) 2, "部署失败"),
+    RUNNING((byte) 3, "运行"),
+    RESTARTING((byte) 4, "重启中"),
+    UPGRADING((byte) 5, "升级中"),
+    UPGRADING_FAILED((byte) 6, "升级失败"),
     ;
 
     private byte id;
@@ -54,7 +55,13 @@ public enum ChainStatusEnum {
         }
         return null;
     }
-    public static boolean isRunning(byte status){
+
+    /**
+     *
+     * @param status
+     * @return
+     */
+    public static boolean successOrDeploying(byte status){
         ChainStatusEnum statusEnum = ChainStatusEnum.getById(status);
         if (statusEnum == null) {
             log.error("Chain with unknown status:[{}].", status);
@@ -63,12 +70,12 @@ public enum ChainStatusEnum {
 
         // check chain status
         switch (statusEnum){
+            case DEPLOYING:
             case RUNNING:
                 return true;
             default:
                 return false;
         }
-
     }
 
     /**

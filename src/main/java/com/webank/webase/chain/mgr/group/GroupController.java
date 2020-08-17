@@ -105,7 +105,7 @@ public class GroupController extends BaseController {
         log.info("start generateGroup startTime:{} groupId:{}", startTime.toEpochMilli(),
                 req.getGenerateGroupId());
         if (req.getGenerateGroupId() == ConstantProperties.DEFAULT_GROUP_ID){
-            throw new BaseException(ConstantCode.CANNOT_USE_GROUP_ID_ERROR);
+            throw new BaseException(ConstantCode.CANNOT_USER_DEFAULT_GROUP_ID);
         }
         TbGroup tbGroup = groupService.generateGroup(req);
         baseResponse.setData(tbGroup);

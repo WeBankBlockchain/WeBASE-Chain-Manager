@@ -33,14 +33,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.util.DateUtil;
 
 import lombok.extern.log4j.Log4j2;
-
-/**
- * TODO. check path exists
- */
 
 @Log4j2
 @Component
@@ -238,6 +235,15 @@ public class PathService {
     public static Path getConfigIniPath( Path nodePath ) {
         return nodePath.resolve("config.ini");
     }
+
+    /**
+     *
+     * @param nodePath
+     * @return
+     */
+    public static Path getGroupGenesisPath(Path nodePath,int groupId) {
+        return nodePath.resolve("conf").resolve(String.format("group.%s.genesis",groupId));
+    }
     /**
      * @param rootDirOnHost
      * @param chainName
@@ -306,8 +312,10 @@ public class PathService {
      * @return
      * @throws IOException
      */
-    public static String getNodeId(Path nodePath) throws IOException {
-        List<String> lines = Files.readAllLines(nodePath.resolve("conf/node.nodeid"));
+    public static String getNodeId(Path nodePath, EncryptTypeEnum encryptTypeEnum) throws IOException {
+        String nodeIdFile = encryptTypeEnum == EncryptTypeEnum.ECDSA_TYPE ? "node.nodeid" : "gmnode.nodeid";
+
+        List<String> lines = Files.readAllLines(nodePath.resolve("conf/").resolve(nodeIdFile));
         if (CollectionUtils.isEmpty(lines)) {
             return null;
         }

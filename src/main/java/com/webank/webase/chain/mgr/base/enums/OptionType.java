@@ -12,11 +12,10 @@ import lombok.ToString;
 @Getter
 @ToString
 @AllArgsConstructor
-public enum EncryptType {
-    ECDSA_TYPE(0,"ECDS"),
-    SM2_TYPE(1,"SM2, guomi"),
+public enum OptionType {
+    DEPLOY_CHAIN("Deploy chain."),
+    MODIFY_CHAIN("Add nodes, delete node, upgrade chain."),
     ;
 
-    private int type;
     private String description;
 }

@@ -79,39 +79,38 @@ public class ConstantCode {
 
     public static final RetCode ENCRYPT_TYPE_NOT_MATCH =
             RetCode.mark(205020, "front's encrypt type not match");
-    
+
     public static final RetCode CHAIN_NAME_EXISTS = RetCode.mark(205021, "chain name already exists");
-    
+
     public static final RetCode SAVE_CHAIN_FAIL = RetCode.mark(205022, "save chain fail");
-    
+
     public static final RetCode INVALID_CHAIN_ID = RetCode.mark(205023, "invalid chain id");
-    
+
     public static final RetCode USER_EXISTS = RetCode.mark(205024, "user already exists");
-    
+
     public static final RetCode PUBLICKEY_NULL = RetCode.mark(205025, "publicKey cannot be empty");
-    
+
     public static final RetCode PUBLICKEY_LENGTH_ERROR = RetCode
             .mark(205026, "publicKey's length is 130,address's length is 42");
-    
+
     public static final RetCode USER_ID_NULL = RetCode.mark(205027, "user id cannot be empty");
 
     public static final RetCode INVALID_USER = RetCode.mark(205028, "invalid user");
-    
+
     public static final RetCode CHAIN_ID_EXISTS = RetCode.mark(205029, "chain id already exists");
-    
+
     public static final RetCode CONTRACT_COMPILE_ERROR = RetCode.mark(205030, "contract compile error");
-    
+
     public static final RetCode GROUP_GENERATE_FAIL = RetCode.mark(205031, "group generate fail");
-    
+
     public static final RetCode GROUP_OPERATE_FAIL = RetCode.mark(205032, "group operate fail");
-    
+
     public static final RetCode REQUEST_NODE_EXCEPTION = RetCode.mark(205033, "request node exception");
     // JSON PARSE
     public static final RetCode FAIL_PARSE_JSON = RetCode.mark(205034, "Fail to parse json");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");
-
 
 
     public static final RetCode NO_DOCKER_TAG_UPDATE_URL_ERROR = RetCode.mark(400001, "No docker image tag update url.");
@@ -148,7 +147,7 @@ public class ConstantCode {
     public static final RetCode CHAIN_CERT_NOT_EXISTS_ERROR = RetCode.mark(400032, "Chain cert directory not exists.");
     public static final RetCode EXEC_GEN_AGENCY_ERROR = RetCode.mark(400033, "Exec generate agency script failed.");
     public static final RetCode HOST_WITH_NO_AGENCY_ERROR = RetCode.mark(400034, "Host's agency is null.");
-    public static final RetCode NODES_NUM_ERROR = RetCode.mark(400035, "Num should be positive integer and less then 200.");
+    public static final RetCode NODES_NUM_ERROR = RetCode.mark(400035, "Num should be positive integer and less then 4.");
     public static final RetCode EXEC_GEN_SDK_ERROR = RetCode.mark(400036, "Exec generate node script to generate sdk dir failed.");
     public static final RetCode EXEC_GEN_NODE_ERROR = RetCode.mark(400037, "Exec generate node script to generate node dir failed.");
     public static final RetCode COPY_SDK_FILES_ERROR = RetCode.mark(400038, "Copy sdk config files error.");
@@ -177,8 +176,10 @@ public class ConstantCode {
     public static final RetCode DOCKER_OPERATION_ERROR = RetCode.mark(400061, "Docker option error.");
     public static final RetCode TWO_NODES_AT_LEAST = RetCode.mark(400062, "Two nodes at least.");
     public static final RetCode TWO_SEALER_IN_GROUP_AT_LEAST = RetCode.mark(400063, "Group need two sealers at least.");
-    public static final RetCode HOST_NOT_EXISTS = RetCode.mark(400064, "Host not exists.");
-    public static final RetCode CHAIN_ID_EXISTS_ERROR = RetCode.mark(400065, "Chain id exists.");
-    public static final RetCode CANNOT_USE_GROUP_ID_ERROR = RetCode.mark(400066, "Cannot use default group id.");
-
+    public static final RetCode WEBASE_SIGN_CONFIG_ERROR = RetCode.mark(400064, "Please check webaseSignAddress in application.yml file.");
+    public static final RetCode UNKNOWN_DOCKER_IMAGE_TYPE = RetCode.mark(400065, "Docker image type param error.");
+    public static final RetCode IMAGE_NOT_EXISTS_ON_HOST = RetCode.mark(400066, "Image not exists on host.");
+    public static final RetCode NODES_NUM_EXCEED_MAX_ERROR = RetCode.mark(400067, "Max 4 nodes on a same host.");
+    public static final RetCode SAME_HOST_ERROR = RetCode.mark(400068, "Cannot install node and WeBASE-Node-Manager on same host.");
+    public static final RetCode CANNOT_USER_DEFAULT_GROUP_ID = RetCode.mark(400069, "Cannot use default group Id.");
 }

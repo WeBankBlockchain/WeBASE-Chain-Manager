@@ -3,6 +3,7 @@
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS tb_chain (
   chain_id int(11) NOT NULL COMMENT '区块链编号',
+  chain_name varchar(120) DEFAULT NULL COMMENT '区块链名称',
   chain_type tinyint(4) unsigned NOT NULL DEFAULT '0' COMMENT '加密类型：0，标密；1，国密；默认 0 ',
   description varchar(512) COMMENT '描述',
   create_time datetime DEFAULT NULL COMMENT '创建时间',
@@ -12,6 +13,8 @@ CREATE TABLE IF NOT EXISTS tb_chain (
   storage_type varchar(16) NOT NULL COMMENT '存储类型（支持：RocksDB, LevelDB, MySQL）',
   chain_status tinyint(8) unsigned NOT NULL DEFAULT '0' COMMENT '链状态',
   webase_sign_addr varchar(255) NOT NULL DEFAULT '127.0.0.1:5004' COMMENT 'WeBASE-Sign 的访问地址',
+  deploy_type tinyint(4) unsigned NOT NULL DEFAULT '0' COMMENT '部署类型：0，手动添加；1，部署接口',
+  remark text COMMENT '部署结果',
   PRIMARY KEY (chain_id)
 ) ENGINE=InnoDB CHARSET=utf8 COMMENT='区块链信息表';
 

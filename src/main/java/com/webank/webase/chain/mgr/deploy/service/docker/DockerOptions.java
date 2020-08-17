@@ -39,6 +39,16 @@ public interface DockerOptions {
     }
 
     /**
+     *
+     * @param ip
+     * @param dockerPort
+     * @param sshUser
+     * @param sshPort
+     * @param imageTag
+     */
+    public boolean checkImageExists(String ip, int dockerPort, String sshUser, int sshPort, String imageTag);
+
+    /**
      * Pull image, maybe same tag but newer.
      *
      * @param ip
@@ -60,36 +70,6 @@ public interface DockerOptions {
      * @return true if run success, false when run failed.
      */
     public void run(String ip, int dockerPort, String sshUser, int sshPort, String imageTag, String containerName, String chainRootOnHost, int nodeIndex) ;
-
-
-//    /**
-//     * @param ip
-//     * @param dockerPort
-//     * @param sshPort
-//     * @param containerName
-//     * @param chainRootOnHost
-//     * @param nodeIndex
-//     * @return container id.
-//     */
-//    public String create(String ip, int dockerPort,String sshUser, int sshPort, String imageTag, String containerName, String chainRootOnHost, int nodeIndex);
-
-
-//    /**
-//     *
-//     * @param ip
-//     * @param dockerPort
-//     * @param sshPort
-//     * @param containerId
-//     */
-//    public void startById(String ip, int dockerPort,String sshUser, int sshPort, String containerId) ;
-//    /**
-//     *
-//     * @param ip
-//     * @param dockerPort
-//     * @param sshPort
-//     * @param containerName
-//     */
-//    public void startByName(String ip, int dockerPort,String sshUser, int sshPort, String containerName) ;
 
 
     /**

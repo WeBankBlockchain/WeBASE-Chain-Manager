@@ -1,11 +1,11 @@
 /**
  * Copyright 2014-2019 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -18,14 +18,17 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
+import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
@@ -57,7 +61,9 @@ import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMap;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 
@@ -72,8 +78,7 @@ public class FrontService {
 
     @Autowired private TbChainMapper tbChainMapper;
     @Autowired private TbFrontMapper tbFrontMapper;
-    @Autowired
-    private ChainService chainService;
+    @Autowired private TbFrontGroupMapMapper tbFrontGroupMapMapper;
     @Autowired
     private GroupService groupService;
     @Autowired
@@ -186,11 +191,11 @@ public class FrontService {
 
     /**
      * add sealer(consensus node) and observer in nodeList
-     * 
+     *
      * @param groupId
      */
     public void refreshSealerAndObserverInNodeList(String frontIp, int frontPort, int chainId,
-            int groupId) {
+                                                   int groupId) {
         log.debug("start refreshSealerAndObserverInNodeList frontIp:{}, frontPort:{}, groupId:{}",
                 frontIp, frontPort, groupId);
         List<String> sealerList =
@@ -221,8 +226,8 @@ public class FrontService {
      * get monitor info.
      */
     public Object getNodeMonitorInfo(Integer frontId, LocalDateTime beginDate,
-            LocalDateTime endDate, LocalDateTime contrastBeginDate, LocalDateTime contrastEndDate,
-            int gap, int groupId) {
+                                     LocalDateTime endDate, LocalDateTime contrastBeginDate, LocalDateTime contrastEndDate,
+                                     int gap, int groupId) {
         log.debug(
                 "start getNodeMonitorInfo.  frontId:{} beginDate:{} endDate:{}"
                         + " contrastBeginDate:{} contrastEndDate:{} gap:{} groupId:{}",
@@ -260,8 +265,8 @@ public class FrontService {
      * get ratio of performance.
      */
     public Object getPerformanceRatio(Integer frontId, LocalDateTime beginDate,
-            LocalDateTime endDate, LocalDateTime contrastBeginDate, LocalDateTime contrastEndDate,
-            int gap) {
+                                      LocalDateTime endDate, LocalDateTime contrastBeginDate, LocalDateTime contrastEndDate,
+                                      int gap) {
         log.debug(
                 "start getPerformanceRatio.  frontId:{} beginDate:{} endDate:{}"
                         + " contrastBeginDate:{} contrastEndDate:{} gap:{}",
@@ -349,7 +354,6 @@ public class FrontService {
     }
 
 
-
     /**
      * query front by frontId.
      */
@@ -406,7 +410,7 @@ public class FrontService {
 
         // move node of remote host files to temp directory, e.g./opt/fisco/delete-tmp
         NodeService.mvNodeOnRemoteHost(tbFront.getFrontIp(), tbFront.getRootOnHost(), tbFront.getChainName(), tbFront.getHostIndex(),
-                tbFront.getNodeId(),tbFront.getSshUser(),tbFront.getSshPort(),constantProperties.getPrivateKey());
+                tbFront.getNodeId(), tbFront.getSshUser(), tbFront.getSshPort(), constantProperties.getPrivateKey());
 
     }
 
@@ -423,7 +427,7 @@ public class FrontService {
         List<TbFront> frontList = this.tbFrontMapper.selectByChainId(chainId);
         if (CollectionUtils.isEmpty(frontList)) {
             log.warn("No front in chain:[{}]", chainId);
-            return ;
+            return;
         }
         Set<Integer> deleteHostId = new HashSet<>();
         for (TbFront front : frontList) {
@@ -433,13 +437,13 @@ public class FrontService {
                     front.getSshPort(), front.getContainerName());
 
             // delete on remote host
-            if (deleteHostId.contains(front.getExtHostId())){
+            if (deleteHostId.contains(front.getExtHostId())) {
                 continue;
             }
 
             // move chain config files
-            ChainService.mvChainOnRemote(front.getFrontIp(),front.getRootOnHost(), front.getChainName(),
-                    front.getSshUser(), front.getSshPort(),constantProperties.getPrivateKey());
+            ChainService.mvChainOnRemote(front.getFrontIp(), front.getRootOnHost(), front.getChainName(),
+                    front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
             deleteHostId.add(front.getExtHostId());
         }
 
@@ -449,7 +453,7 @@ public class FrontService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public TbFront insert(TbFront tbFront) throws BaseException {
-        if (this.tbFrontMapper.insertSelective(tbFront) != 1 || tbFront.getFrontId() <= 0){
+        if (this.tbFrontMapper.insertSelective(tbFront) != 1 || tbFront.getFrontId() <= 0) {
             throw new BaseException(ConstantCode.INSERT_FRONT_ERROR);
         }
         return tbFront;
@@ -457,41 +461,106 @@ public class FrontService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public boolean updateStatus(int frontId, FrontStatusEnum newStatus) {
-        log.info("Update front:[{}] status to:[{}]",frontId, newStatus.toString());
+        log.info("Update front:[{}] status to:[{}]", frontId, newStatus.toString());
         return this.tbFrontMapper.updateStatus(frontId, newStatus.getId()) == 1;
     }
 
     /**
      *
+     * @param chainId
      * @param nodeId
+     * @param optionType
+     * @param before
+     * @param success
+     * @param failed
      * @return
      */
     @Transactional(rollbackFor = Throwable.class)
-    public boolean restart(int chainId, String nodeId){
-        log.info("Restart node:[{}]", nodeId );
+    public boolean restart(int chainId, String nodeId, OptionType optionType, FrontStatusEnum before,
+                           FrontStatusEnum success, FrontStatusEnum failed) {
+        TbChain chain = this.tbChainMapper.selectByPrimaryKey(chainId);
+        if (chain == null) {
+            log.error("Chain:[{}] not exists.", chainId);
+            return false;
+        }
+
+        log.info("Restart node:[{}:{}]", chainId, nodeId);
         // get front
         TbFront front = this.tbFrontMapper.getByChainIdAndNodeId(chainId, nodeId);
-        if (front == null){
+        if (front == null) {
             throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
         }
 
         // set front status to stopped to avoid error for time task.
-        this.updateStatus(front.getFrontId(),FrontStatusEnum.STOPPED);
+        ((FrontService) AopContext.currentProxy()).updateStatus(front.getFrontId(), before);
+
         log.info("Docker start container front id:[{}:{}].", front.getFrontId(), front.getContainerName());
         try {
-            this.dockerOptions.run( front.getFrontIp(), front.getDockerPort(), front.getSshUser(), front.getSshPort(),
-                    front.getVersion(), front.getContainerName(),PathService.getChainRootOnHost(front.getRootOnHost(), front.getChainName()),
-                    front.getHostIndex());
+            this.dockerOptions.run(
+                    front.getFrontIp(), front.getDockerPort(), front.getSshUser(), front.getSshPort(),
+                    front.getVersion(), front.getContainerName(),
+                    PathService.getChainRootOnHost(front.getRootOnHost(), front.getChainName()), front.getHostIndex());
 
-            threadPoolTaskScheduler.schedule(()->{
-                this.updateStatus(front.getFrontId(),FrontStatusEnum.RUNNING);
-            }, Instant.now().plusMillis( constantProperties.getDockerRestartPeriodTime()));
+            threadPoolTaskScheduler.schedule(() -> {
+                // update front status
+                this.updateStatus(front.getFrontId(), success);
+            }, Instant.now().plusMillis(constantProperties.getDockerRestartPeriodTime()));
             return true;
         } catch (Exception e) {
-            log.error("Start front:[{}:{}] failed.",front.getFrontIp(), front.getHostIndex(),e);
-            this.updateStatus(front.getFrontId(),FrontStatusEnum.STOPPED);
+            log.error("Start front:[{}:{}] failed.", front.getFrontIp(), front.getHostIndex(), e);
+            ((FrontService) AopContext.currentProxy()).updateStatus(front.getFrontId(), failed);
             throw new BaseException(ConstantCode.START_NODE_ERROR);
         }
+    }
+
+
+    /**
+     *
+     * @param groupId
+     * @return
+     */
+    public List<TbFront> selectFrontListByGroupId(int chainId, int groupId) {
+        // select all agencies by chainId
+        List<TbFrontGroupMap> frontGroupMapList = this.tbFrontGroupMapMapper.selectListByGroupId(chainId, groupId);
+        if (CollectionUtils.isEmpty(frontGroupMapList)) {
+            return Collections.emptyList();
+        }
+
+        // select all fronts by all agencies
+        List<TbFront> tbFrontList = frontGroupMapList.stream()
+                .map((map) -> tbFrontMapper.getById(map.getFrontId()))
+                .filter((front) -> front != null)
+                .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(tbFrontList)) {
+            log.error("Group:[{}] has no front.", groupId);
+            return Collections.emptyList();
+        }
+        return tbFrontList;
+    }
+
+
+    /**
+     *
+     * @param chainId
+     * @param groupIdSet
+     * @return
+     */
+    public List<TbFront> selectFrontListByGroupIdSet(int chainId, Set<Integer> groupIdSet) {
+        // select all fronts of all group id
+        List<TbFront> allTbFrontList = groupIdSet.stream()
+                .map((groupId) -> this.selectFrontListByGroupId(chainId, groupId))
+                .filter((front) -> front != null)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(allTbFrontList)) {
+            log.error("Group id set:[{}] has no front.", JsonTools.toJSONString(groupIdSet));
+            return Collections.emptyList();
+        }
+
+        // delete replication
+        return allTbFrontList.stream().distinct().collect(Collectors.toList());
     }
 
 }

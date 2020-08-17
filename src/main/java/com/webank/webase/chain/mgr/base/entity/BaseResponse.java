@@ -26,18 +26,21 @@ public class BaseResponse {
     private int code;
     private String message;
     private Object data;
+    private String attachment;
 
     public BaseResponse() {}
 
     public BaseResponse(RetCode retcode) {
         this.code = retcode.getCode();
         this.message = retcode.getMessage();
+        this.attachment = retcode.getAttachment();
     }
 
     public BaseResponse(RetCode retcode, Object data) {
         this.code = retcode.getCode();
         this.message = retcode.getMessage();
         this.data = data;
+        this.attachment = retcode.getAttachment();
     }
 
     public static BaseResponse success(Object data){

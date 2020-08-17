@@ -21,47 +21,43 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
-import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
-import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
+import com.webank.webase.chain.mgr.util.NetUtils;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Component
 public class DeployService {
-
-    @Autowired private TbConfigMapper tbConfigMapper;
-    @Autowired private TbChainMapper tbChainMapper;
-    @Autowired private TbFrontMapper frontMapper;
-
     @Autowired private ChainService chainService;
-    @Autowired private AsyncService asyncService;
-    @Autowired private PathService pathService;
-    @Autowired private ConstantProperties constantProperties;
+    @Autowired private NodeAsyncService nodeAsyncService;
 
     /**
-     *
      * @param deploy
      * @return
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public void deployChain(ReqDeploy deploy) throws BaseException {
-        if (StringUtils.isBlank(deploy.getChainName())) {
-            throw new BaseException(ConstantCode.PARAM_EXCEPTION);
+        DockerImageTypeEnum imageTypeEnum = DockerImageTypeEnum.getById(deploy.getDockerImageType());
+        if (imageTypeEnum == null) {
+            throw new BaseException(ConstantCode.UNKNOWN_DOCKER_IMAGE_TYPE);
         }
 
-        // TODO. check WeBASE Sign accessible
-//        deploy.getWebaseSignAddr();
+        // check WeBASE Sign accessible
+        if (StringUtils.isBlank(deploy.getWebaseSignAddr())
+                || !NetUtils.checkAddress(deploy.getWebaseSignAddr(), 2000)) {
+            throw new BaseException(ConstantCode.WEBASE_SIGN_CONFIG_ERROR);
+        }
 
         // generate config files and insert data to db
-        this.chainService.generateChainConfig(deploy);
+        this.chainService.generateChainConfig(deploy, imageTypeEnum);
 
         // init host and start node
-        this.asyncService.deployChain(deploy.getChainName());
+        this.nodeAsyncService.asyncDeployChain(deploy, OptionType.DEPLOY_CHAIN);
     }
 
 }

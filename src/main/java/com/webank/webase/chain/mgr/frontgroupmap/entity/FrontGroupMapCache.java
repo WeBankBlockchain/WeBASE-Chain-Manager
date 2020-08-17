@@ -22,13 +22,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 
 @Component
 public class FrontGroupMapCache {
 
-    @Autowired private FrontGroupMapService mapService;
     @Autowired private TbFrontGroupMapMapper tbFrontGroupMapMapper;
 
     private static Map<Integer, List<FrontGroup>> mapList = new ConcurrentHashMap<>();

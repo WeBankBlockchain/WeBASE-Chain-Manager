@@ -19,12 +19,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Properties;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
@@ -52,34 +50,19 @@ public class SshTools {
         config.put("PreferredAuthentications", "publickey");
     }
 
-
-    public final static String[] LOCAL_ARRAY = new String[]{"127.0.0.1", "localhost"};
-
     /**
-     * Check ip is local.
-     *
-     * @param ip
-     * @return
-     */
-    public static boolean isLocal(String ip) {
-        return Stream.of(LOCAL_ARRAY).anyMatch(ip::equalsIgnoreCase);
-
-    }
-
-    /**
-     * TODO exceptions and exec log
      *
      * @param ip
      * @param originalCommand
      */
-    private static boolean exec(String ip, String originalCommand,String sshUser,int sshPort,String privateKey) {
+    private static Pair<Boolean,String> exec(String ip, String originalCommand, String sshUser, int sshPort, String privateKey) {
         StringBuilder newCommandBuilder = new StringBuilder(originalCommand);
-        if (isLocal(ip)){
+        if (IPUtil.isLocal(ip)){
             ExecuteResult result = JavaCommandExecutor.executeCommand(originalCommand, 0);
             if (result.failed()) {
-                log.error("SshTools exec on localhost:[{}] command:[{}] error.", ip, originalCommand );
+                log.error("SshTools exec on localhost:[{}] command:[{}] error:[{}].", ip, originalCommand, result.getExecuteOut() );
             }
-            return result.success();
+            return Pair.of(result.success(),result.getExecuteOut());
         }else{
             newCommandBuilder.append(" ; exit 0;");
         }
@@ -105,17 +88,16 @@ public class SshTools {
                 if (status < 0) {
                     log.error("Exec command:[{}] on remote host:[{}], no exit status:[{}] not set, log:[{}].",
                             newCommand, ip, status, execLog.toString());
-                    return true;
+                    return Pair.of(true,execLog.toString());
                 } else if (status == 0) {
                     log.info("Exec command:[{}] on remote host:[{}] success, log:[{}].", newCommand, ip, execLog.toString());
-                    return true;
+                    return Pair.of(true,execLog.toString());
                 } else {
                     log.error("Exec command:[{}] on remote host:[{}] with error[{}], log:[{}].", newCommand, ip, status, execLog.toString());
                 }
             } catch (Exception e) {
                 log.error("Exec command:[{}] on remote host:[{}] occurred exception.", newCommand, ip, e);
             } finally {
-                // TODO.
                 if (channelExec != null) {
                     channelExec.disconnect();
                 }
@@ -129,7 +111,7 @@ public class SshTools {
                 session.disconnect();
             }
         }
-        return false;
+        return Pair.of(false,"");
     }
 
     /**
@@ -137,7 +119,7 @@ public class SshTools {
      * @return
      */
     public static boolean connect(String ip,String sshUser,int sshPort,String privateKey) {
-        if (isLocal(ip)) {
+        if (IPUtil.isLocal(ip)) {
             return true;
         }
 
@@ -191,7 +173,7 @@ public class SshTools {
             }
             session.connect(newConnectTimeoutInSeconds * 1000);
         } catch (Exception e) {
-            log.info("Connect to host:[{}] ERROR!!!", hostDetail, e);
+            log.error("Connect to host:[{}] ERROR!!!", hostDetail, e);
         }
         return session;
     }
@@ -202,17 +184,9 @@ public class SshTools {
      * @param dir
      */
     public static void createDirOnRemote(String ip, String dir, String sshUser, int sshPort,String privateKey){
-        if(isLocal(ip)){
-            try {
-                Files.createDirectories(Paths.get(dir));
-            } catch (IOException e) {
-                log.error("mkdir:[{}] on localhost:[{}] error",dir,ip,e );
-            }
-        }else{
-            exec(ip, String.format("sudo mkdir -p %s", dir),sshUser,sshPort,privateKey);
-            exec(ip, String.format("sudo chown -R %s %s ", sshUser,dir),sshUser,sshPort,privateKey);
-            exec(ip, String.format("sudo chgrp -R %s %s ", sshUser,dir),sshUser,sshPort,privateKey);
-        }
+        exec(ip, String.format("sudo mkdir -p %s", dir),sshUser,sshPort,privateKey);
+        exec(ip, String.format("sudo chown -R %s %s ", sshUser,dir),sshUser,sshPort,privateKey);
+        exec(ip, String.format("sudo chgrp -R %s %s ", sshUser,dir),sshUser,sshPort,privateKey);
     }
 
     /**
@@ -238,7 +212,7 @@ public class SshTools {
      * @param sshPort
      * @return
      */
-    public static boolean execDocker(String ip, String originalCommand, String sshUser,int sshPort,String privateKey) {
+    public static Pair<Boolean,String> execDocker(String ip, String originalCommand, String sshUser,int sshPort,String privateKey) {
         log.info("Execute docker command:[{}] on host:[{}]", originalCommand, ip);
         return exec(ip,originalCommand,sshUser,sshPort,privateKey);
     }
@@ -256,8 +230,7 @@ public class SshTools {
     public static boolean killCommand(String ip, String commandToKill, String sshUser,int sshPort,String privateKey) {
         String newCommand= String.format("sudo pkill -f '%s'", commandToKill);
         log.info("Execute kill command:[{}] on host:[{}]", newCommand, ip);
-        return exec(ip,newCommand,sshUser,sshPort,privateKey);
+        return exec(ip,newCommand,sshUser,sshPort,privateKey).getKey();
     }
-
 
 }

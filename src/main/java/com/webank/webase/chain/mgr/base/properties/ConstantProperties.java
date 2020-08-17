@@ -92,6 +92,7 @@ public class ConstantProperties {
     private String scpShell =        "./script/deploy/file_trans_util.sh";
     private String privateKey = System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa";
     private String fiscoBcosBinary =  "";
+    private String webaseSignAddress = "127.0.0.1:5004";
 
     /**
      * Docker client connect daemon ip with proxy ip.
@@ -111,6 +112,8 @@ public class ConstantProperties {
         log.info("Init constant properties, imageTagUpdateUrl: [{}]", this.imageTagUpdateUrl);
 
         log.info("Init constant properties, dockerProxyMap: [{}]", dockerProxyMap);
+
+        log.info("Init constant properties, webase sign server: [{}]", webaseSignAddress);
 
         log.info("Init constant properties, check FISCO-BCOS binary path: [{}]", fiscoBcosBinary);
         if (!Files.exists(Paths.get(fiscoBcosBinary))) {

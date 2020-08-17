@@ -17,10 +17,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +31,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
+import com.webank.webase.chain.mgr.base.enums.DeployTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
@@ -67,8 +69,12 @@ import lombok.extern.log4j.Log4j2;
 @Service
 public class ChainService {
 
+    /**
+     * Chains is running, default not.
+     */
+    public static AtomicBoolean isChainRunning  = new AtomicBoolean(false);
 
-    @Autowired private TbConfigMapper tbConfigMapper;
+
     @Autowired private TbChainMapper tbChainMapper;
     @Autowired private TbGroupMapper tbGroupMapper;
     @Autowired
@@ -90,6 +96,8 @@ public class ChainService {
     @Autowired private ConstantProperties constantProperties;
     @Autowired private DeployShellService deployShellService;
     @Autowired private PathService pathService;
+    @Autowired private DockerOptions dockerOptions;
+
 
     /**
      * add new chain
@@ -115,6 +123,7 @@ public class ChainService {
         Date now = new Date();
         tbChain.setCreateTime(now);
         tbChain.setModifyTime(now);
+        tbChain.setRemark("");
 
         // save chain info
         int result = tbChainMapper.insertSelective(tbChain);
@@ -166,7 +175,7 @@ public class ChainService {
      * @param deploy
      */
     @Transactional
-    public void generateChainConfig(ReqDeploy deploy) {
+    public void generateChainConfig(ReqDeploy deploy,DockerImageTypeEnum dockerImageTypeEnum) {
         // check deploy count
         int totalNodeNum = deploy.getDeployHostList().stream().mapToInt(ReqDeploy.DeployHost::getNum).sum();
         if ( totalNodeNum < 2 ) {
@@ -176,39 +185,39 @@ public class ChainService {
         log.info("Check chainId:[{}] exists....", deploy.getChainId());
         TbChain chain = tbChainMapper.selectByPrimaryKey(deploy.getChainId());
         if (chain != null) {
-            throw new BaseException(ConstantCode.CHAIN_ID_EXISTS_ERROR);
+            throw new BaseException(ConstantCode.CHAIN_ID_EXISTS);
         }
+
         log.info("Check chainName:[{}] exists....", deploy.getChainName());
         chain = tbChainMapper.getByChainName(deploy.getChainName());
         if (chain != null) {
             throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS_ERROR);
         }
 
-
-        // check tagId existed
-        TbConfig imageConfig = this.tbConfigMapper.selectByPrimaryKey(deploy.getTagId());
-        if (imageConfig == null || StringUtils.isBlank(imageConfig.getConfigValue())) {
-            throw new BaseException(ConstantCode.TAG_ID_PARAM_ERROR);
-        }
-
-        byte encryptType = (byte) (imageConfig.getConfigValue().endsWith("-gm") ?
-                EncryptType.SM2_TYPE : EncryptType.ECDSA_TYPE);
+        // get encrypt type
+        EncryptTypeEnum encryptType = EncryptTypeEnum.getById(deploy.getEncrtyType());
 
         // build ipConf
         String[] ipConf = new String[CollectionUtils.size(deploy.getDeployHostList())];
         for (int i = 0; i < deploy.getDeployHostList().size(); i++) {
-            ReqDeploy.DeployHost deployHost = deploy.getDeployHostList().get(i);
-            boolean connectable = SshTools.connect(deployHost.getIp(), deployHost.getSshUser(),
-                    deployHost.getSshPort(), constantProperties.getPrivateKey());
+            ReqDeploy.DeployHost host = deploy.getDeployHostList().get(i);
+            boolean connectable = SshTools.connect(host.getIp(), host.getSshUser(),
+                    host.getSshPort(), constantProperties.getPrivateKey());
             if (!connectable) {
-                throw new BaseException(ConstantCode.HOST_CONNECT_ERROR, String.format("Connect to host:[%s] failed.",
-                        deployHost.getIp()));
+                throw new BaseException(ConstantCode.HOST_CONNECT_ERROR, String.format("Connect to host:[%s] failed.", host.getIp()));
             }
 
-            // TODO. check host evn (Docker)
+            // check docker image exists
+            if (DockerImageTypeEnum.MANUAL == dockerImageTypeEnum) {
+                boolean exists = this.dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
+                        host.getSshUser(), host.getSshPort(), deploy.getVersion());
+                if (!exists) {
+                    log.error("Docker image:[{}] not exists on host:[{}].", deploy.getVersion(), host.getIp());
+                    throw new BaseException(ConstantCode.IMAGE_NOT_EXISTS_ON_HOST.attach(host.getIp()));
+                }
+            }
 
-            String ipConfigLine = String.format("%s:%s %s %s", deployHost.getIp(), deployHost.getNum(),
-                    deployHost.getExtOrgName(), ConstantProperties.DEFAULT_GROUP_ID);
+            String ipConfigLine = String.format("%s:%s %s %s", host.getIp(), host.getNum(), host.getExtOrgId(), ConstantProperties.DEFAULT_GROUP_ID);
             ipConf[i] = ipConfigLine;
         }
 
@@ -217,7 +226,7 @@ public class ChainService {
 
         try {
             // generate chain config
-            ((ChainService) AopContext.currentProxy()).initChainDbData(encryptType, imageConfig, deploy);
+            ((ChainService) AopContext.currentProxy()).initChainDbData(encryptType, deploy.getVersion(), deploy);
         } catch (Exception e) {
             log.error("Init chain:[{}] data error. remove generated files:[{}]",
                     deploy.getChainName(), this.pathService.getChainRoot(deploy.getChainName()), e);
@@ -234,17 +243,17 @@ public class ChainService {
 
     /**
      *
-     * @param encryptType
-     * @param imageConfig
+     * @param encryptTypeEnum
+     * @param version
      * @param reqDeploy
      */
     @Transactional
-    public void initChainDbData(byte encryptType, TbConfig imageConfig, ReqDeploy reqDeploy) {
+    public void initChainDbData(EncryptTypeEnum encryptTypeEnum, String version, ReqDeploy reqDeploy) {
         // insert chain
         final TbChain newChain = ((ChainService) AopContext.currentProxy())
-                .insert(reqDeploy.getChainId(),reqDeploy.getChainName(), reqDeploy.getDescription(), imageConfig.getConfigValue(),
-                        encryptType, ChainStatusEnum.DEPLOYING, reqDeploy.getConsensusType(),
-                        reqDeploy.getStorageType(), reqDeploy.getWebaseSignAddr());
+                .insert(reqDeploy.getChainId(),reqDeploy.getChainName(), reqDeploy.getDescription(),
+                        version, encryptTypeEnum, ChainStatusEnum.DEPLOYING, reqDeploy.getConsensusType(),
+                        reqDeploy.getStorageType(), reqDeploy.getWebaseSignAddr(),DeployTypeEnum.API);
 
         // insert default group
         for (ReqDeploy.DeployHost deployHost : reqDeploy.getDeployHostList()) {
@@ -260,7 +269,7 @@ public class ChainService {
 
             for (Path nodeRoot : CollectionUtils.emptyIfNull(nodePathList)) {
                 // get node properties
-                NodeConfig nodeConfig = NodeConfig.read(nodeRoot);
+                NodeConfig nodeConfig = NodeConfig.read(nodeRoot,encryptTypeEnum);
 
                 // frontPort = 5002 + indexOnHost(0,1,2,3...)
                 int frontPort = constantProperties.getDefaultFrontPort() + nodeConfig.getHostIndex();
@@ -269,7 +278,7 @@ public class ChainService {
                         deployHost.getIp(), nodeConfig.getHostIndex());
                 // pass object
                 TbFront front = TbFront.build(newChain.getChainId(), nodeConfig.getNodeId(), deployHost.getIp(), frontPort,
-                        deployHost.getExtOrgName(), frontDesc, FrontStatusEnum.INITIALIZED, imageConfig.getConfigValue(),
+                        String.valueOf(deployHost.getExtOrgId()), frontDesc, FrontStatusEnum.INITIALIZED, version,
                         DockerOptions.getContainerName(deployHost.getRootDirOnHost(), reqDeploy.getChainName(), nodeConfig.getHostIndex()),
                         nodeConfig.getJsonrpcPort(), nodeConfig.getP2pPort(), nodeConfig.getChannelPort(), reqDeploy.getChainName(),
                         deployHost.getExtCompanyId(), deployHost.getExtOrgId(), deployHost.getExtHostId(), nodeConfig.getHostIndex(),
@@ -290,7 +299,7 @@ public class ChainService {
 
                 // generate front application.yml
                 try {
-                    ThymeleafUtil.newFrontConfig(nodeRoot, encryptType, nodeConfig.getChannelPort(), frontPort, reqDeploy.getWebaseSignAddr());
+                    ThymeleafUtil.newFrontConfig(nodeRoot, (byte)encryptTypeEnum.getType(), nodeConfig.getChannelPort(), frontPort, reqDeploy.getWebaseSignAddr());
                 } catch (IOException e) {
                     throw new BaseException(ConstantCode.GENERATE_FRONT_YML_ERROR);
                 }
@@ -303,9 +312,9 @@ public class ChainService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public TbChain insert(int chainId,String chainName, String chainDesc, String version, byte encryptType, ChainStatusEnum status,
-                          String consensusType, String storageType, String webaseSignAddr) throws BaseException {
-        TbChain chain = TbChain.init(chainId,chainName, chainDesc, version, consensusType, storageType, encryptType, status, webaseSignAddr);
+    public TbChain insert(int chainId,String chainName, String chainDesc, String version, EncryptTypeEnum encryptType, ChainStatusEnum status,
+                          String consensusType, String storageType, String webaseSignAddr, DeployTypeEnum deployTypeEnum) throws BaseException {
+        TbChain chain = TbChain.init(chainId,chainName, chainDesc, version, consensusType, storageType, encryptType, status, webaseSignAddr,deployTypeEnum);
 
         if (tbChainMapper.insertSelective(chain) != 1 ) {
             throw new BaseException(ConstantCode.INSERT_CHAIN_ERROR);
@@ -321,12 +330,13 @@ public class ChainService {
      * @return
      */
     @Transactional(propagation = Propagation.REQUIRED)
-    public boolean updateStatus(int chainId, ChainStatusEnum newStatus) {
+    public boolean updateStatus(int chainId, ChainStatusEnum newStatus, String remark) {
         log.info("Update chain:[{}] status to:[{}]",chainId, newStatus.toString());
         TbChain newChain = new TbChain();
         newChain.setChainId(chainId);
         newChain.setChainStatus(newStatus.getId());
         newChain.setModifyTime(new Date());
+        newChain.setRemark(remark);
         return this.tbChainMapper.updateByPrimaryKeySelective(newChain) == 1;
     }
 
@@ -347,6 +357,29 @@ public class ChainService {
         String dst_chainDeletedRootOnHost = PathService.getChainDeletedRootOnHost(rootDirOnHost, chainName);
 
         SshTools.mvDirOnRemote(ip,src_chainRootOnHost,dst_chainDeletedRootOnHost,sshUser,sshPort,privateKey);
+    }
+
+    /**
+     *  run task.
+     *
+     * @return
+     */
+    public boolean runTask(TbChain chain){
+        if (chain == null){
+            log.error("Run task, chain not exists");
+            return false;
+        }
+        DeployTypeEnum deployTypeEnum = DeployTypeEnum.getById(chain.getDeployType());
+
+        if (deployTypeEnum == DeployTypeEnum.MANUALLY ){
+            log.info("Run task:[deployType:{}, isChainRunning:{}]", deployTypeEnum, isChainRunning.get());
+            return true;
+        }
+        if (chain.getChainStatus() == ChainStatusEnum.RUNNING.getId()){
+            isChainRunning.set(true);
+        }
+        log.info("Run task:[DeployType:{}, isChainRunning:{}]", chain.getDeployType(),isChainRunning.get());
+        return isChainRunning.get();
     }
 
 }

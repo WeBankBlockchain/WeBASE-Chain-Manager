@@ -23,15 +23,16 @@ import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.ScpTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.IPUtil;
 import com.webank.webase.chain.mgr.util.SshTools;
 import com.webank.webase.chain.mgr.util.cmd.ExecuteResult;
 import com.webank.webase.chain.mgr.util.cmd.JavaCommandExecutor;
@@ -45,8 +46,7 @@ import lombok.extern.log4j.Log4j2;
 @Component
 public class DeployShellService {
 
-    @Autowired
-    private ConstantProperties constant;
+    @Autowired private ConstantProperties constant;
     @Autowired
     private PathService pathService;
 
@@ -61,27 +61,27 @@ public class DeployShellService {
      */
     public void scp(ScpTypeEnum typeEnum, String sshUser, String ip, int sshPort, String src, String dst) {
         if (typeEnum == ScpTypeEnum.UP) {
-            String newSrc = StringUtils.removeEnd(src, "*");
             // scp files to remote
-            if (Files.isRegularFile(Paths.get(newSrc))) {
+            if (Files.isRegularFile(Paths.get(src))) {
                 // if src is file, create parent directory of dst on remote
                 String parentOnRemote = Paths.get(dst).getParent().toAbsolutePath().toString();
                 SshTools.createDirOnRemote(ip, parentOnRemote,sshUser,sshPort,constant.getPrivateKey());
             }
-            if (Files.isDirectory(Paths.get(newSrc))) {
+            if (Files.isDirectory(Paths.get(src))) {
                 // if src is directory, create dst on remote
                 SshTools.createDirOnRemote(ip, dst,sshUser,sshPort,constant.getPrivateKey());
             }
         }
 
-        String command = String.format("bash -x -e %s -t %s -i %s -u %s -p %s -s %s -d %s",
-                constant.getScpShell(), typeEnum.getValue(), ip, sshUser, sshPort, src, dst);
+        String command = String.format("bash -x -e %s -t %s -i %s -u %s -p %s -s '%s' -d '%s' %s",
+                constant.getScpShell(), typeEnum.getValue(), ip, sshUser, sshPort, src, dst,
+                IPUtil.isLocal(dst) ? " -l " : "");
         log.info("exec file send command: [{}]", command);
         ExecuteResult result = JavaCommandExecutor.executeCommand(command, constant.getExecHostInitTimeout());
 
         if (result.failed()) {
             log.error("Send files from [{}] to [{}:{}] failed.", src, ip, dst);
-            throw new BaseException(ConstantCode.TRANSFER_FILES_ERROR,result.getExecuteOut());
+            throw new BaseException(ConstantCode.TRANSFER_FILES_ERROR.attach(result.getExecuteOut()));
         }
     }
 
@@ -119,21 +119,19 @@ public class DeployShellService {
 
         ExecuteResult result = JavaCommandExecutor.executeCommand(command, constant.getExecHostInitTimeout());
         if (result.failed()) {
-            throw new BaseException(ConstantCode.EXEC_HOST_INIT_SCRIPT_ERROR, result.getExecuteOut());
+            throw new BaseException(ConstantCode.EXEC_HOST_INIT_SCRIPT_ERROR.attach(result.getExecuteOut()));
         }
     }
 
     /**
-     * TODO. if nodes config dir already exists, delete or backup first ?
-     * TODO. separate two steps: save config files local, and exec build_chain
      *
-     * @param encryptType
+     * @param encryptTypeEnum
      * @param ipLines
      * @return
      */
-    public void execBuildChain(byte encryptType,
-                                        String[] ipLines,
-                                        String chainName) {
+    public void execBuildChain(EncryptTypeEnum encryptTypeEnum,
+                               String[] ipLines,
+                               String chainName) {
         Path ipConf = pathService.getIpConfig(chainName);
         log.info("Exec execBuildChain method for [{}], chainName:[{}], ipConfig:[{}]",
                 JsonTools.toJSONString(ipLines), chainName, ipConf.toString());
@@ -143,6 +141,7 @@ public class DeployShellService {
             }
             Files.write(ipConf, Arrays.asList(ipLines));
         } catch (IOException e) {
+            log.error("Write ip conf file:[{}] error", ipConf.toAbsolutePath().toString(), e);
             throw new BaseException(ConstantCode.SAVE_IP_CONFIG_FILE_ERROR);
         }
 
@@ -162,7 +161,7 @@ public class DeployShellService {
                 // port param
                 shellPortParam,
                 // guomi or standard
-                encryptType == EncryptType.SM2_TYPE ? "-g" : "",
+                encryptTypeEnum == EncryptTypeEnum.SM2_TYPE ? "-g " : "",
                 // only linux supports docker model
                 SystemUtils.IS_OS_LINUX ? " -d " : "",
                 // use binary local
@@ -173,22 +172,21 @@ public class DeployShellService {
         ExecuteResult result = JavaCommandExecutor.executeCommand(command, constant.getExecBuildChainTimeout());
 
         if (result.failed()) {
-            throw new BaseException(ConstantCode.EXEC_BUILD_CHAIN_ERROR,result.getExecuteOut());
+            throw new BaseException(ConstantCode.EXEC_BUILD_CHAIN_ERROR.attach(result.getExecuteOut()));
         }
     }
 
     /**
-     * TODO. check agency cert dir, put to temp directory first
      *
-     * @param encryptType
+     * @param encryptTypeEnum
      * @param chainName
      * @param newAgencyName
      * @return
      */
-    public ExecuteResult execGenAgency(byte encryptType,
+    public ExecuteResult execGenAgency(EncryptTypeEnum encryptTypeEnum,
                                        String chainName,
                                        String newAgencyName) {
-        log.info("Exec execGenAgency method for chainName:[{}], newAgencyName:[{}:{}]", chainName, newAgencyName, encryptType);
+        log.info("Exec execGenAgency method for chainName:[{}], newAgencyName:[{}:{}]", chainName, newAgencyName);
 
         Path certRoot = this.pathService.getCertRoot(chainName);
 
@@ -206,7 +204,7 @@ public class DeployShellService {
                 certRoot.toAbsolutePath().toString(),
                 // new agency name
                 newAgencyName,
-                encryptType == EncryptType.SM2_TYPE ?
+                encryptTypeEnum == EncryptTypeEnum.SM2_TYPE ?
                         String.format(" -g %s", pathService.getGmCertRoot(chainName).toAbsolutePath().toString())
                         : ""
         );
@@ -216,20 +214,19 @@ public class DeployShellService {
 
 
     /**
-     * TODO. check agency cert dir, put to temp directory first
      *
-     * @param encryptType
+     * @param encryptTypeEnum
      * @param chainName
      * @param agencyName
      * @param newNodeRoot
      * @return
      */
-    public ExecuteResult execGenNode(byte encryptType,
+    public ExecuteResult execGenNode(EncryptTypeEnum encryptTypeEnum,
                                      String chainName,
                                      String agencyName,
                                      String newNodeRoot) {
-        log.info("Exec execGenNode method for chainName:[{}], " +
-                "node:[{}:{}:{}]", chainName, encryptType, agencyName, newNodeRoot);
+        log.info("Exec execGenNode method for chainName:[{}], node:[{}:{}:{}]",
+                chainName, encryptTypeEnum, agencyName, newNodeRoot);
 
         Path agencyRoot = this.pathService.getAgencyRoot(chainName,agencyName);
 
@@ -241,7 +238,7 @@ public class DeployShellService {
                 agencyRoot.toAbsolutePath().toString(),
                 // new node dir
                 newNodeRoot,
-                encryptType == EncryptType.SM2_TYPE ?
+                    encryptTypeEnum == EncryptTypeEnum.SM2_TYPE ?
                         String.format(" -g %s", pathService.getGmAgencyRoot(chainName,agencyName).toAbsolutePath().toString()) : ""
         );
 

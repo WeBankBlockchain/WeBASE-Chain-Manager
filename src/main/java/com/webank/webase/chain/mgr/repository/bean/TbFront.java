@@ -2,17 +2,31 @@ package com.webank.webase.chain.mgr.repository.bean;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
+
 import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
+
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Data
 @ToString
 @NoArgsConstructor
-@EqualsAndHashCode
 public class TbFront implements Serializable {
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TbFront front = (TbFront) o;
+        return Objects.equals(frontId, front.frontId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(frontId);
+    }
 
     public static TbFront build(int chainId, String nodeId, String ip, int frontPort, String agencyName, String description, FrontStatusEnum status, String version, String containerName, int jsonrpcPort, int p2pPort, int channelPort, String chainName, int extCompanyId, int extAgencyId, int extHostId, int hostIndex, String sshUser, int sshPort, int dockerPort, String rootOnHost, String nodeRootOnHost) {
         Date now = new Date();
