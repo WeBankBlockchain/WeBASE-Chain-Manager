@@ -2,6 +2,7 @@ package com.webank.webase.chain.mgr.deploy.req;
 
 import java.util.List;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
@@ -30,8 +31,8 @@ public class ReqDeploy {
     private List<DeployHost> deployHostList;
 
     @Min(0)
-    @Min(1)
-    private int encrtyType;
+    @Max(1)
+    private int encryptType;
 
     private byte dockerImageType = DockerImageTypeEnum.PULL_OFFICIAL.getId();
 

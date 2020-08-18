@@ -195,7 +195,7 @@ public class ChainService {
         }
 
         // get encrypt type
-        EncryptTypeEnum encryptType = EncryptTypeEnum.getById(deploy.getEncrtyType());
+        EncryptTypeEnum encryptType = EncryptTypeEnum.getById(deploy.getEncryptType());
 
         // build ipConf
         String[] ipConf = new String[CollectionUtils.size(deploy.getDeployHostList())];
@@ -252,7 +252,7 @@ public class ChainService {
         // insert chain
         final TbChain newChain = ((ChainService) AopContext.currentProxy())
                 .insert(reqDeploy.getChainId(),reqDeploy.getChainName(), reqDeploy.getDescription(),
-                        version, encryptTypeEnum, ChainStatusEnum.DEPLOYING, reqDeploy.getConsensusType(),
+                        version, encryptTypeEnum, ChainStatusEnum.INITIALIZED, reqDeploy.getConsensusType(),
                         reqDeploy.getStorageType(), reqDeploy.getWebaseSignAddr(),DeployTypeEnum.API);
 
         // insert default group

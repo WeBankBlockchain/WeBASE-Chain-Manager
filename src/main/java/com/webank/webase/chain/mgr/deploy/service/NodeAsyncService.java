@@ -247,8 +247,8 @@ public class NodeAsyncService {
             threadPoolTaskScheduler.submit(() -> {
                 List<TbFront> frontListToRestart = hostFrontListMap.get(hostIp);
                 //
-                for (TbFront front : CollectionUtils.emptyIfNull(frontListToRestart)) {
-                    try {
+                try {
+                    for (TbFront front : CollectionUtils.emptyIfNull(frontListToRestart)) {
                         log.info("Start front:[{}:{}:{}].", front.getFrontIp(), front.getHostIndex(), front.getNodeId());
                         boolean startResult = this.frontService.restart(chainId, front.getNodeId(), optionType, before, success, failed);
                         if (startResult) {
@@ -256,12 +256,13 @@ public class NodeAsyncService {
                             startSuccessCount.incrementAndGet();
                         }
                         Thread.sleep(constant.getDockerRestartPeriodTime());
-                    } catch (Exception e) {
-                        log.error("Start front on host:[{}] error", front.getFrontIp(), e);
-                    } finally {
-                        startLatch.countDown();
                     }
+                } catch (Exception e) {
+                    log.error("Start front on host:[{}] error", hostIp, e);
+                } finally {
+                    startLatch.countDown();
                 }
+
             });
         }
         boolean startSuccess = false;
@@ -353,7 +354,6 @@ public class NodeAsyncService {
         }
 
         initHostLatch.await(constant.getExecHostInitTimeout(), TimeUnit.MILLISECONDS);
-        log.error("Init host timeout, cancel unfinished tasks.");
         taskMap.entrySet().forEach((entry) -> {
             String ip = entry.getKey();
             Future<?> task = entry.getValue();
