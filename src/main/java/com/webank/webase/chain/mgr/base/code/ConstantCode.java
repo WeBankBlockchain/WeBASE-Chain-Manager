@@ -108,6 +108,7 @@ public class ConstantCode {
     public static final RetCode REQUEST_NODE_EXCEPTION = RetCode.mark(205033, "request node exception");
     // JSON PARSE
     public static final RetCode FAIL_PARSE_JSON = RetCode.mark(205034, "Fail to parse json");
+    public static final RetCode CHAIN_ID_NOT_EXISTS = RetCode.mark(205035, "chain id not exists");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");

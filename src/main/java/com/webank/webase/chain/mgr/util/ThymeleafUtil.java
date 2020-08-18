@@ -143,17 +143,14 @@ public class ThymeleafUtil {
      * @param encryptType
      * @param channelPort
      * @param frontPort
-     * @param webaseSignAddr
      * @throws IOException
      */
-    public static void newFrontConfig(Path nodeRoot, byte encryptType, int channelPort,
-                                       int frontPort, String webaseSignAddr) throws IOException {
+    public static void newFrontConfig(Path nodeRoot, byte encryptType, int channelPort, int frontPort) throws IOException {
         String applicationYml = ThymeleafUtil.generate(
                 ThymeleafUtil.FRONT_APLLICATION_YML,
                 Pair.of("encryptType", encryptType),
                 Pair.of("channelPort", channelPort),
-                Pair.of("frontPort", frontPort),
-                Pair.of("webaseSignAddr", webaseSignAddr)
+                Pair.of("frontPort", frontPort)
         );
         Files.write(nodeRoot.resolve("application.yml"), applicationYml.getBytes());
     }

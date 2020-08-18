@@ -253,7 +253,7 @@ public class ChainService {
         final TbChain newChain = ((ChainService) AopContext.currentProxy())
                 .insert(reqDeploy.getChainId(),reqDeploy.getChainName(), reqDeploy.getDescription(),
                         version, encryptTypeEnum, ChainStatusEnum.INITIALIZED, reqDeploy.getConsensusType(),
-                        reqDeploy.getStorageType(), reqDeploy.getWebaseSignAddr(),DeployTypeEnum.API);
+                        reqDeploy.getStorageType(),DeployTypeEnum.API);
 
         // insert default group
         for (ReqDeploy.DeployHost deployHost : reqDeploy.getDeployHostList()) {
@@ -299,7 +299,7 @@ public class ChainService {
 
                 // generate front application.yml
                 try {
-                    ThymeleafUtil.newFrontConfig(nodeRoot, (byte)encryptTypeEnum.getType(), nodeConfig.getChannelPort(), frontPort, reqDeploy.getWebaseSignAddr());
+                    ThymeleafUtil.newFrontConfig(nodeRoot, (byte)encryptTypeEnum.getType(), nodeConfig.getChannelPort(), frontPort);
                 } catch (IOException e) {
                     throw new BaseException(ConstantCode.GENERATE_FRONT_YML_ERROR);
                 }
@@ -313,8 +313,8 @@ public class ChainService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public TbChain insert(int chainId,String chainName, String chainDesc, String version, EncryptTypeEnum encryptType, ChainStatusEnum status,
-                          String consensusType, String storageType, String webaseSignAddr, DeployTypeEnum deployTypeEnum) throws BaseException {
-        TbChain chain = TbChain.init(chainId,chainName, chainDesc, version, consensusType, storageType, encryptType, status, webaseSignAddr,deployTypeEnum);
+                          String consensusType, String storageType, DeployTypeEnum deployTypeEnum) throws BaseException {
+        TbChain chain = TbChain.init(chainId,chainName, chainDesc, version, consensusType, storageType, encryptType, status, deployTypeEnum);
 
         if (tbChainMapper.insertSelective(chain) != 1 ) {
             throw new BaseException(ConstantCode.INSERT_CHAIN_ERROR);

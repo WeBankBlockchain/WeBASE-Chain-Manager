@@ -36,7 +36,6 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
@@ -61,7 +60,6 @@ public class ChainController extends BaseController {
     private ChainService chainService;
 
     @Autowired private DeployService deployService;
-    @Autowired private ConstantProperties constantProperties;
 
     /**
      * add new chain
@@ -134,11 +132,7 @@ public class ChainController extends BaseController {
         log.info("Start:[{}] deploy chain:[{}] ", startTime, JsonTools.toJSONString(reqDeploy));
 
         try {
-            // check WeBASE Sign accessible
-            if(StringUtils.isBlank(reqDeploy.getWebaseSignAddr())){
-                reqDeploy.setWebaseSignAddr(constantProperties.getWebaseSignAddress());
-            }
-            // check WeBASE Sign accessible
+            // check chain name
             if(StringUtils.isBlank(reqDeploy.getChainName())){
                 reqDeploy.setChainName(String.valueOf(reqDeploy.getChainId()));
             }
@@ -171,19 +165,17 @@ public class ChainController extends BaseController {
         }
     }
 
-    @GetMapping("/get/{chainId}}")
+    @GetMapping("/get/{chainId}")
     public BaseResponse getChain(@PathVariable("chainId") int chainId)
             throws BaseException {
 
         Instant startTime = Instant.now();
         log.info("Start:[{}] get chain:[{}] ", startTime, chainId);
 
-        try {
-            // generate node config and return shell execution log
-
-            return new BaseResponse(ConstantCode.SUCCESS);
-        } catch (BaseException e) {
-            return new BaseResponse(e.getRetCode());
+        TbChain chain = this.tbChainMapper.selectByPrimaryKey(chainId);
+        if (chain != null){
+            return BaseResponse.success(chain);
         }
+        return new BaseResponse(ConstantCode.CHAIN_ID_NOT_EXISTS);
     }
 }

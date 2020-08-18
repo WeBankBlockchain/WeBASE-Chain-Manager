@@ -42,8 +42,6 @@ public class ReqDeploy {
 
     private String description;
 
-    private String webaseSignAddr;
-
     private String chainName;
 
     @Data
