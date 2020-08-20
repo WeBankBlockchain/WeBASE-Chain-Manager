@@ -44,6 +44,8 @@ import com.webank.webase.chain.mgr.deploy.service.DeployService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -52,8 +54,8 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RestController
 @RequestMapping("chain")
+@Api(value = "chain")
 public class ChainController extends BaseController {
-
     @Autowired
     private TbChainMapper tbChainMapper;
     @Autowired
@@ -64,6 +66,7 @@ public class ChainController extends BaseController {
     /**
      * add new chain
      */
+    @ApiOperation(value = "添加链", hidden = true)
     @PostMapping("/new")
     public BaseResponse newChain(@RequestBody @Valid ChainInfo chainInfo, BindingResult result) {
         checkBindResult(result);
@@ -83,6 +86,7 @@ public class ChainController extends BaseController {
     /**
      * query chain info list.
      */
+    @ApiOperation(value = "查询所有链")
     @GetMapping("/all")
     public BasePageResponse queryChainList() {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
@@ -106,6 +110,7 @@ public class ChainController extends BaseController {
     /**
      * delete by chainId
      */
+    @ApiOperation(value = "删除链")
     @DeleteMapping("{chainId}")
     public BaseResponse removeChain(@PathVariable("chainId") Integer chainId) {
         Instant startTime = Instant.now();
@@ -122,6 +127,7 @@ public class ChainController extends BaseController {
     }
 
 
+    @ApiOperation(value = "部署链")
     @PostMapping(value = "deploy")
     public BaseResponse deploy(
             @RequestBody @Valid ReqDeploy reqDeploy,
@@ -146,6 +152,7 @@ public class ChainController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "新增节点",hidden = true)
     @PostMapping(value = "addNode")
     public BaseResponse addNode(
             @RequestBody @Valid ReqAddNode reqAddNode,
@@ -165,6 +172,7 @@ public class ChainController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "查询单链信息")
     @GetMapping("/get/{chainId}")
     public BaseResponse getChain(@PathVariable("chainId") int chainId)
             throws BaseException {
