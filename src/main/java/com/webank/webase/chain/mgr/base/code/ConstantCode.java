@@ -30,6 +30,10 @@ public class ConstantCode {
     public static final RetCode SYSTEM_EXCEPTION = RetCode.mark(105000, "system exception");
     public static final RetCode SYSTEM_EXCEPTION_GET_PRIVATE_KEY_FAIL = RetCode.mark(105001, "system exception: please check front");
 
+
+    // transaction
+    public static final RetCode REQUEST_TRANSACTION_EXCEPTION = RetCode.mark(203201, "request transaction server exception");
+
     /* Business exception */
     public static final RetCode INVALID_FRONT_ID = RetCode.mark(205000, "invalid front id");
 
@@ -114,6 +118,7 @@ public class ConstantCode {
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(305000, "param exception");
 
 
+
     public static final RetCode NO_DOCKER_TAG_UPDATE_URL_ERROR = RetCode.mark(400001, "No docker image tag update url.");
     public static final RetCode UPDATE_DOCKER_TAG_ERROR = RetCode.mark(400002, "Update docker tag from registry error.");
     public static final RetCode UNKNOWN_CONFIG_TYPE_ERROR = RetCode.mark(400003, "Unknown config type.");
@@ -182,5 +187,6 @@ public class ConstantCode {
     public static final RetCode IMAGE_NOT_EXISTS_ON_HOST = RetCode.mark(400066, "Image not exists on host.");
     public static final RetCode NODES_NUM_EXCEED_MAX_ERROR = RetCode.mark(400067, "Max 4 nodes on a same host.");
     public static final RetCode SAME_HOST_ERROR = RetCode.mark(400068, "Cannot install node and WeBASE-Node-Manager on same host.");
-    public static final RetCode CANNOT_USER_DEFAULT_GROUP_ID = RetCode.mark(400069, "Cannot use default group Id.");
+    public static final RetCode CANNOT_USE_DEFAULT_GROUP_ID = RetCode.mark(400069, "Cannot use default group Id.");
+    public static final RetCode CANNOT_OPERATE_DEFAULT_GROUP_ID = RetCode.mark(400069, "Cannot use default group Id.");
 }

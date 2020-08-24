@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
@@ -48,6 +49,7 @@ import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
 import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import com.webank.webase.chain.mgr.transaction.TransactionService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -56,8 +58,8 @@ import lombok.extern.log4j.Log4j2;
 @RequestMapping("contract")
 public class ContractController extends BaseController {
 
-    @Autowired
-    private ContractService contractService;
+    @Autowired private ContractService contractService;
+    @Autowired private TransactionService transactionService;
 
     /**
      * compile deployInputParam.
@@ -199,6 +201,7 @@ public class ContractController extends BaseController {
         return baseResponse;
     }
 
+
     /**
      * send transaction.
      */
@@ -234,5 +237,23 @@ public class ContractController extends BaseController {
         log.info("end statusManage useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
         return contractStatusManageResult;
+    }
+
+    /**
+     * deploy deployInputParam.
+     */
+    @GetMapping(value = "/deployByTransaction/{contractId}")
+    public Object deployByTransaction(
+            @PathVariable int contractId,
+            @RequestParam String signUserId
+    ) throws BaseException {
+        Instant startTime = Instant.now();
+        log.info("start deployByTransaction startTime:{}, signUserId:{}, contractId:{}",
+                startTime.toEpochMilli(), signUserId, contractId);
+
+        Object result = transactionService.deployContract(contractId, signUserId);
+        log.info("end deployByTransaction useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
+
+        return result;
     }
 }

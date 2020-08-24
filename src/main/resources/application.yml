@@ -39,6 +39,11 @@ constant:
   contractDeployTimeOut: 30000
   maxRequestFail: 3
   sleepWhenHttpMaxFail: 60000
+  transactionMap: # webase-transaction 配置，跟 ChainId 相关
+    1: "127.0.0.1:5003"
+    #2: "127.0.0.2:5003"
+
+
 
 # executor config
 executor:

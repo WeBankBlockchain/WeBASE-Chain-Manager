@@ -59,6 +59,20 @@ public class NodeController extends BaseController {
     @Autowired
     private FrontInterfaceService frontInterfaceService;
 
+    @GetMapping(value = "/all")
+    public BaseResponse allNode() throws BaseException {
+        Instant startTime = Instant.now();
+        log.info( "start get all node startTime:{} ", startTime.toEpochMilli());
+
+        // param
+        List<TbNode> nodeList = nodeService.qureyNodeList(new NodeParam());
+
+        log.info("end get all node useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JsonTools.toJSONString(nodeList));
+        return BaseResponse.success(nodeList);
+    }
+
     /**
      * qurey node info list.
      */

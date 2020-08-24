@@ -18,6 +18,7 @@ import static java.io.File.separator;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,6 +28,8 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -93,6 +96,9 @@ public class ConstantProperties {
     private String privateKey = System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa";
     private String fiscoBcosBinary =  "";
 
+
+    private Map<Integer,String> transactionMap = new HashMap<>();
+
     /**
      * Docker client connect daemon ip with proxy ip.
      */
@@ -119,6 +125,8 @@ public class ConstantProperties {
         }
 
         log.info("Init constant properties, private key: [{}]", privateKey);
+
+        log.info("Init constant properties, transactionMap : [{}]", JsonTools.toJSONString(transactionMap));
 
         log.info("Init constant properties, defaultP2pPort:[{}], defaultChannelPort:[{}], defaultJsonrpcPort:[{}], defaultFrontPort:[{}]",
                 defaultP2pPort, defaultChannelPort, defaultJsonrpcPort, defaultFrontPort);
