@@ -14,6 +14,7 @@
 
 package com.webank.webase.chain.mgr.transaction;
 
+import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +48,7 @@ public class TransactionRestTools {
     public static final String TRANSACTION_BASE_URL = "http://%s/WeBASE-Transaction";
 
     public static final String URI_USER_LIST = "%s/user/list/%s/%s/%s";
+    public static final String URI_USER_NEW = "%s/user/newUser";
     public static final String URI_CONTRACT_DEPLOY = "%s/contract/deploy";
 
     @Autowired private ConstantProperties constantProperties;
@@ -63,6 +65,18 @@ public class TransactionRestTools {
             return null;
         }
         return String.format(TRANSACTION_BASE_URL,transactionServer );
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getBaseUrl(){
+        Map.Entry<Integer, String> entry = constantProperties.getTransactionMap().entrySet().stream().findFirst().orElse(null);
+        if (entry == null || StringUtils.isBlank(entry.getValue())) {
+            return null;
+        }
+        return String.format(TRANSACTION_BASE_URL, entry.getValue() );
     }
 
 
