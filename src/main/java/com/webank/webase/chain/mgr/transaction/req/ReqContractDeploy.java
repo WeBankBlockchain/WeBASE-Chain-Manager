@@ -14,6 +14,8 @@
 
 package com.webank.webase.chain.mgr.transaction.req;
 
+import java.util.List;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -35,5 +37,5 @@ public class ReqContractDeploy {
     @NotBlank
     private String bytecodeBin;
     @NotEmpty
-    private String contractAbi;
+    private List<Object> contractAbi;
 }

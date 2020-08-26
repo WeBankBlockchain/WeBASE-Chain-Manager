@@ -57,7 +57,7 @@ import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
-import com.webank.webase.chain.mgr.util.SshTools;
+import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ThymeleafUtil;
 
 import lombok.extern.log4j.Log4j2;
@@ -70,9 +70,9 @@ import lombok.extern.log4j.Log4j2;
 public class ChainService {
 
     /**
-     * Chains is running, default not.
+     * Is operating chain
      */
-    public static AtomicBoolean isChainRunning  = new AtomicBoolean(false);
+    public static AtomicBoolean isDeleting = new AtomicBoolean(false);
 
 
     @Autowired private TbChainMapper tbChainMapper;
@@ -145,30 +145,35 @@ public class ChainService {
             throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
         }
 
-        // remove chain
-        tbChainMapper.deleteByPrimaryKey(chainId);
-        // remove group
-        groupService.removeByChainId(chainId);
-        // remove front
-        frontService.removeByChainId(chainId);
-        // remove front group map
-        this.frontGroupMapService.removeByChainId(chainId);
-        // remove node
-        nodeService.deleteByChainId(chainId);
-        // remove contract
-        contractService.deleteContractByChainId(chainId);
-        // clear cache
-        frontGroupMapCache.clearMapList(chainId);
-        // reset group list
-        resetGroupListTask.asyncResetGroupList();
-
-        log.info("Delete chain:[{}] config files", chainId);
         try {
-            this.pathService.deleteChain(chain.getChainName());
-        } catch (IOException e) {
-            log.error("Delete chain:[{}:{}] files error", chainId, chain.getChainName(),e);
-        }
+            isDeleting.set(true);
 
+            // remove chain
+            tbChainMapper.deleteByPrimaryKey(chainId);
+            // remove group
+            groupService.removeByChainId(chainId);
+            // remove front
+            frontService.removeByChainId(chainId);
+            // remove front group map
+            this.frontGroupMapService.removeByChainId(chainId);
+            // remove node
+            nodeService.deleteByChainId(chainId);
+            // remove contract
+            contractService.deleteContractByChainId(chainId);
+            // clear cache
+            frontGroupMapCache.clearMapList(chainId);
+            // reset group list
+            resetGroupListTask.asyncResetGroupList();
+
+            log.info("Delete chain:[{}] config files", chainId);
+            try {
+                this.pathService.deleteChain(chain.getChainName());
+            } catch (IOException e) {
+                log.error("Delete chain:[{}:{}] files error", chainId, chain.getChainName(),e);
+            }
+        }finally {
+            isDeleting.set(false);
+        }
     }
 
     /**
@@ -201,7 +206,7 @@ public class ChainService {
         String[] ipConf = new String[CollectionUtils.size(deploy.getDeployHostList())];
         for (int i = 0; i < deploy.getDeployHostList().size(); i++) {
             ReqDeploy.DeployHost host = deploy.getDeployHostList().get(i);
-            boolean connectable = SshTools.connect(host.getIp(), host.getSshUser(),
+            boolean connectable = SshUtil.connect(host.getIp(), host.getSshUser(),
                     host.getSshPort(), constantProperties.getPrivateKey());
             if (!connectable) {
                 throw new BaseException(ConstantCode.HOST_CONNECT_ERROR, String.format("Connect to host:[%s] failed.", host.getIp()));
@@ -349,14 +354,14 @@ public class ChainService {
     public static void mvChainOnRemote(String ip,String rootDirOnHost,String chainName,String sshUser,int sshPort,String privateKey){
         // create /opt/fisco/deleted-tmp/ as a parent dir
         String deleteRootOnHost = PathService.getDeletedRootOnHost(rootDirOnHost);
-        SshTools.createDirOnRemote(ip, deleteRootOnHost,sshUser,sshPort,privateKey);
+        SshUtil.createDirOnRemote(ip, deleteRootOnHost,sshUser,sshPort,privateKey);
 
         // like /opt/fisco/default_chain
         String src_chainRootOnHost = PathService.getChainRootOnHost(rootDirOnHost, chainName);
         // move to /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss
         String dst_chainDeletedRootOnHost = PathService.getChainDeletedRootOnHost(rootDirOnHost, chainName);
 
-        SshTools.mvDirOnRemote(ip,src_chainRootOnHost,dst_chainDeletedRootOnHost,sshUser,sshPort,privateKey);
+        SshUtil.mvDirOnRemote(ip,src_chainRootOnHost,dst_chainDeletedRootOnHost,sshUser,sshPort,privateKey);
     }
 
     /**
@@ -365,6 +370,9 @@ public class ChainService {
      * @return
      */
     public boolean runTask(TbChain chain){
+        if(isDeleting.get()){
+            return false;
+        }
         if (chain == null){
             log.error("Run task, chain not exists");
             return false;
@@ -372,14 +380,14 @@ public class ChainService {
         DeployTypeEnum deployTypeEnum = DeployTypeEnum.getById(chain.getDeployType());
 
         if (deployTypeEnum == DeployTypeEnum.MANUALLY ){
-            log.info("Run task:[deployType:{}, isChainRunning:{}]", deployTypeEnum, isChainRunning.get());
+            log.info("Chain:[{}] deployed manually, run task ",chain.getChainId());
             return true;
         }
         if (chain.getChainStatus() == ChainStatusEnum.RUNNING.getId()){
-            isChainRunning.set(true);
+            return true;
         }
-        log.info("Run task:[DeployType:{}, isChainRunning:{}]", chain.getDeployType(),isChainRunning.get());
-        return isChainRunning.get();
+        log.error("Chain:[{}] is not running, cancel reset group task.", chain.getChainId());
+        return false;
     }
 
 }

@@ -23,13 +23,19 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
+import com.webank.webase.chain.mgr.util.FileUtil;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class DeployService {
     @Autowired private ChainService chainService;
     @Autowired private NodeAsyncService nodeAsyncService;
+    @Autowired private ConstantProperties constantProperties;
 
     /**
      * @param deploy
@@ -42,11 +48,20 @@ public class DeployService {
             throw new BaseException(ConstantCode.UNKNOWN_DOCKER_IMAGE_TYPE);
         }
 
+        // check image tar file when install with offline
+        if (imageTypeEnum == DockerImageTypeEnum.LOCAL_OFFLINE){
+            String localTarFile = String.format(constantProperties.getImageTar(),deploy.getVersion());
+            if(FileUtil.notExists(localTarFile)){
+                log.error("Image tar file:[{}] not exists when use local offline.",localTarFile);
+                throw new BaseException(ConstantCode.FILE_NOT_EXISTS.attach(localTarFile));
+            }
+        }
+
         // generate config files and insert data to db
         this.chainService.generateChainConfig(deploy, imageTypeEnum);
 
         // init host and start node
-        this.nodeAsyncService.asyncDeployChain(deploy, OptionType.DEPLOY_CHAIN);
+        this.nodeAsyncService.asyncDeployChain(deploy, OptionType.DEPLOY_CHAIN, imageTypeEnum);
     }
 
 }

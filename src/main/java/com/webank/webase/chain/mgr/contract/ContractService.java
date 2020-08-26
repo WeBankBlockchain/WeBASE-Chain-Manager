@@ -26,7 +26,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
@@ -34,6 +36,7 @@ import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
 import com.webank.webase.chain.mgr.contract.entity.Contract;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
+import com.webank.webase.chain.mgr.contract.entity.RespContractDeploy;
 import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
 import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
 import com.webank.webase.chain.mgr.front.FrontService;
@@ -43,6 +46,8 @@ import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
+import com.webank.webase.chain.mgr.transaction.TransactionRestTools;
+import com.webank.webase.chain.mgr.transaction.req.ReqContractDeploy;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -59,10 +64,12 @@ public class ContractService {
     private FrontInterfaceService frontInterface;
     @Autowired
     private FrontService frontService;
+    @Autowired
+    private TransactionRestTools transactionRestTools;
 
     /**
      * compile contract.
-     * 
+     *
      */
     @SuppressWarnings("unchecked")
     public List<RspContractCompile> compileContract(CompileInputParam inputParam)
@@ -435,5 +442,46 @@ public class ContractService {
         if (contractId != localContract.getContractId()) {
             throw new BaseException(ConstantCode.CONTRACT_NAME_REPEAT);
         }
+    }
+
+    /**
+     * @param contractId
+     * @param signUserId
+     * @return
+     */
+    public Object deployByTransactionServer(int contractId, String signUserId) {
+        TbContract tbContract = this.tbContractMapper.selectByPrimaryKey(contractId);
+        if (tbContract == null) {
+            return new BaseResponse(ConstantCode.INVALID_CONTRACT_ID);
+        }
+
+        String url = String.format(TransactionRestTools.URI_CONTRACT_DEPLOY, transactionRestTools.getBaseUrl(tbContract.getChainId()));
+        ReqContractDeploy contractDeploy = new ReqContractDeploy();
+        BeanUtils.copyProperties(tbContract, contractDeploy);
+        contractDeploy.setSignUserId(signUserId);
+        contractDeploy.setContractAbi(JsonTools.toJavaObjectList(tbContract.getContractAbi(), Object.class));
+        log.info("Request transaction server:[{}]:[{}]", url, JsonTools.toJSONString(contractDeploy));
+        BaseResponse response = transactionRestTools.post(url, contractDeploy, BaseResponse.class);
+
+        Date now = new Date();
+        TbContract contractToUpdate = new TbContract();
+        contractToUpdate.setContractId(contractId);
+        contractToUpdate.setDeployTime(now);
+        contractToUpdate.setModifyTime(now);
+        if (response.isSuccess()) {
+            RespContractDeploy deploy = JsonTools.stringToObj(JsonTools.objToString(response.getData()),
+                    new TypeReference<RespContractDeploy>() {
+                    });
+            contractToUpdate.setContractAddress(deploy.getContractAddress());
+            contractToUpdate.setContractStatus(ContractStatus.DEPLOYED.getValue());
+        }else{
+            contractToUpdate.setContractStatus(ContractStatus.DEPLOYMENTFAILED.getValue());
+        }
+        this.update(contractToUpdate);
+        return response;
+    }
+
+    public boolean update(TbContract tbContract) {
+        return this.tbContractMapper.updateByPrimaryKeySelective(tbContract) == 1;
     }
 }

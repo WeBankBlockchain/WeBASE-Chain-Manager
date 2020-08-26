@@ -250,7 +250,7 @@ public class ContractController extends BaseController {
         log.info("start deployByTransaction startTime:{}, signUserId:{}, contractId:{}",
                 startTime.toEpochMilli(), signUserId, contractId);
 
-        Object result = transactionService.deployContract(contractId, signUserId);
+        Object result = contractService.deployByTransactionServer(contractId, signUserId);
         log.info("end deployByTransaction useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
 
         return result;

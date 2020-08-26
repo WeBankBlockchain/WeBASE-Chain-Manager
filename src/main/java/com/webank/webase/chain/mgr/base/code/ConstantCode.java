@@ -190,4 +190,6 @@ public class ConstantCode {
     public static final RetCode CANNOT_USE_DEFAULT_GROUP_ID = RetCode.mark(400069, "Cannot use default group Id.");
     public static final RetCode CANNOT_OPERATE_DEFAULT_GROUP_ID = RetCode.mark(400069, "Cannot use default group Id.");
     public static final RetCode NODE_ID_AND_ORG_LIST_EMPTY = RetCode.mark(400070, "Both node id list and org id list are empty.");
+    public static final RetCode DOWNLOAD_FILE_ERROR = RetCode.mark(400071, "Download from url error.");
+    public static final RetCode FILE_NOT_EXISTS = RetCode.mark(400072, "Image tar file not exits.");
 }

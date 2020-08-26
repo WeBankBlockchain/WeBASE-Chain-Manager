@@ -36,7 +36,7 @@ import lombok.extern.log4j.Log4j2;
 
 
 @Log4j2
-public class SshTools {
+public class SshUtil {
 
     public static final String DEFAULT_SSH_USER="root";
     public static final int DEFAULT_SSH_PORT=22;
@@ -232,5 +232,4 @@ public class SshTools {
         log.info("Execute kill command:[{}] on host:[{}]", newCommand, ip);
         return exec(ip,newCommand,sshUser,sshPort,privateKey).getKey();
     }
-
 }

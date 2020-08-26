@@ -116,3 +116,4 @@ NODES_ROOT/*
 NODES_ROOT_TMP/*
 *.srl
 gm*
+download

@@ -1,6 +1,7 @@
 package com.webank.webase.chain.mgr.repository.mapper;
 
 import java.util.List;
+
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.InsertProvider;
@@ -9,13 +10,14 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.SelectKey;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
 import org.apache.ibatis.annotations.UpdateProvider;
 import org.apache.ibatis.type.JdbcType;
+
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
-import org.apache.ibatis.annotations.SelectKey;
 
 public interface TbContractMapper {
 
@@ -26,7 +28,7 @@ public interface TbContractMapper {
     @SelectProvider(type = TbContractSqlProvider.class, method = "selectByParam")
     List<TbContract> selectByParam(ContractParam param);
 
-    @UpdateProvider(type = TbContractSqlProvider.class, method = "countByParam")
+    @SelectProvider(type = TbContractSqlProvider.class, method = "countByParam")
     int countByParam(ContractParam param);
 
     @Update({ "update tb_contract set contract_bin = #{contractBin}, " + "contract_address = #{contractAddress} " + "where group_id = #{groupId} and contract_name = #{contractName}" })

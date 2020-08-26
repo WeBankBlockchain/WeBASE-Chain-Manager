@@ -76,7 +76,7 @@ public class ConstantProperties {
     private long startNodeTimeout = 5 * 60 * 1000L;
     private long execBuildChainTimeout = 10 * 60 * 1000L;
     private long execShellTimeout = 2 * 60 * 1000L;
-    private long dockerRestartPeriodTime = 60 * 1000L;
+    private long dockerRestartPeriodTime = 30 * 1000L;
     private int dockerClientConnectTimeout = 10 * 60 * 1000;
     private int dockerPullTimeout = 10 * 60 * 1000;
     private int dockerClientReadTimeout = 10 * 60 * 1000;
@@ -86,6 +86,9 @@ public class ConstantProperties {
     private String dockerRegistryMirror = "";
     private String nodesRootDir = "NODES_ROOT";
     private String nodesRootTmpDir = "NODES_ROOT_TMP";
+    // docker image tar file
+    private String imageCDNUrl = "https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/WeBASE/download/docker/image/%s";
+    private String imageTar = "fisco-webase-%s.tar";
 
     // shell script
     private String nodeOperateShell = "./script/deploy/host_operate.sh";

@@ -33,7 +33,7 @@ import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.util.IPUtil;
-import com.webank.webase.chain.mgr.util.SshTools;
+import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.cmd.ExecuteResult;
 import com.webank.webase.chain.mgr.util.cmd.JavaCommandExecutor;
 
@@ -65,12 +65,12 @@ public class DeployShellService {
             if (Files.isRegularFile(Paths.get(src))) {
                 // if src is file, create parent directory of dst on remote
                 String parentOnRemote = Paths.get(dst).getParent().toAbsolutePath().toString();
-                SshTools.createDirOnRemote(ip, parentOnRemote,sshUser,sshPort,constant.getPrivateKey());
+                SshUtil.createDirOnRemote(ip, parentOnRemote,sshUser,sshPort,constant.getPrivateKey());
             }
             if (Files.isDirectory(Paths.get(src))
                     || Files.isDirectory(Paths.get(StringUtils.removeEnd(src,"/*")))) {
                 // if src is directory, create dst on remote
-                SshTools.createDirOnRemote(ip, dst,sshUser,sshPort,constant.getPrivateKey());
+                SshUtil.createDirOnRemote(ip, dst,sshUser,sshPort,constant.getPrivateKey());
             }
         }
 
@@ -109,8 +109,8 @@ public class DeployShellService {
     public void execHostOperate(String ip, int port, String user, String pwd, String chainRoot) {
         log.info("Exec execHostOperate method for [{}@{}:{}#{}]", user, ip, port, pwd);
 
-        int newport = port <= 0 || port > 65535 ? SshTools.DEFAULT_SSH_PORT : port;
-        String newUser = StringUtils.isBlank(user) ? SshTools.DEFAULT_SSH_USER : user;
+        int newport = port <= 0 || port > 65535 ? SshUtil.DEFAULT_SSH_PORT : port;
+        String newUser = StringUtils.isBlank(user) ? SshUtil.DEFAULT_SSH_USER : user;
         String useDockerCommand = constant.isUseDockerSDK() ? "" : "-c";
         String passwordParam = StringUtils.isBlank(pwd) ? "" : String.format(" -p %s ", pwd);
         String chainRootParam = StringUtils.isBlank(chainRoot) ? "" : String.format(" -n %s ",chainRoot);

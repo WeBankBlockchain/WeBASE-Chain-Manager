@@ -41,7 +41,7 @@ import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
-import com.webank.webase.chain.mgr.util.SshTools;
+import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ValidateUtil;
 
 import lombok.extern.log4j.Log4j2;
@@ -370,7 +370,7 @@ public class NodeService {
                                           String sshUser, int sshPort,String privateKey) {
         // create /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss as a parent
         String chainDeleteRootOnHost = PathService.getChainDeletedRootOnHost(rooDirOnHost, chainName);
-        SshTools.createDirOnRemote(ip, chainDeleteRootOnHost,sshUser,sshPort,privateKey);
+        SshUtil.createDirOnRemote(ip, chainDeleteRootOnHost,sshUser,sshPort,privateKey);
 
         // e.g. /opt/fisco/default_chain
         String chainRootOnHost = PathService.getChainRootOnHost(rooDirOnHost, chainName);
@@ -381,6 +381,6 @@ public class NodeService {
         String dst_nodeDeletedRootOnHost =
                 PathService.getNodeDeletedRootOnHost(chainDeleteRootOnHost, nodeId);
         // move
-        SshTools.mvDirOnRemote(ip, src_nodeRootOnHost, dst_nodeDeletedRootOnHost,sshUser,sshPort,privateKey);
+        SshUtil.mvDirOnRemote(ip, src_nodeRootOnHost, dst_nodeDeletedRootOnHost,sshUser,sshPort,privateKey);
     }
 }

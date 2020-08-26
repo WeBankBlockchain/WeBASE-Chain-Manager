@@ -177,6 +177,15 @@ public class GroupService {
         // save group
         TbGroup tbGroup = saveGroup(generateGroupId, chainId, req.getNodeList().size(),
                 req.getDescription(), GroupType.MANUAL.getValue());
+
+        // if create by orgIdList, then start up group
+        if (CollectionUtils.isNotEmpty(req.getOrgIdList())) {
+            ReqStartGroup reqStartGroup = new ReqStartGroup();
+            reqStartGroup.setChainId(req.getChainId());
+            reqStartGroup.setGenerateGroupId(req.getGenerateGroupId());
+            reqStartGroup.setNodeList(req.getNodeList());
+            this.batchStartGroup(reqStartGroup);
+        }
         return tbGroup;
     }
 

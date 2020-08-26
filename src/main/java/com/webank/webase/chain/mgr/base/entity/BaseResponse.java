@@ -48,4 +48,7 @@ public class BaseResponse {
         response.data = data;
         return response;
     }
+    public boolean isSuccess(){
+        return code == 0;
+    }
 }

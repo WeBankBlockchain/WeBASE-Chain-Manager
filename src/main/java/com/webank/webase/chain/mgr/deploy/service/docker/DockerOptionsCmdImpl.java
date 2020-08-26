@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
-import com.webank.webase.chain.mgr.util.SshTools;
+import com.webank.webase.chain.mgr.util.SshUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -21,7 +21,7 @@ public class DockerOptionsCmdImpl implements DockerOptions{
 
         String dockerListImageCommand = String.format("sudo docker images -a %s | grep -v 'IMAGE ID'",image);
 
-        Pair<Boolean, String> result = SshTools.execDocker(ip, dockerListImageCommand, sshUser, sshPort, constant.getPrivateKey());
+        Pair<Boolean, String> result = SshUtil.execDocker(ip, dockerListImageCommand, sshUser, sshPort, constant.getPrivateKey());
         if (result.getKey() && StringUtils.isNotBlank(result.getValue())){
             return true;
         }
@@ -43,9 +43,9 @@ public class DockerOptionsCmdImpl implements DockerOptions{
         String dockerPullCommand = String.format("sudo docker pull %s",image);
 
         // kill exists docker pull process
-        SshTools.killCommand(ip,dockerPullCommand,sshUser,sshPort,constant.getPrivateKey());
+        SshUtil.killCommand(ip,dockerPullCommand,sshUser,sshPort,constant.getPrivateKey());
 
-        SshTools.execDocker(ip,dockerPullCommand,sshUser,sshPort,constant.getPrivateKey());
+        SshUtil.execDocker(ip,dockerPullCommand,sshUser,sshPort,constant.getPrivateKey());
     }
 
     @Override
@@ -66,13 +66,13 @@ public class DockerOptionsCmdImpl implements DockerOptions{
                 "-e SPRING_PROFILES_ACTIVE=docker " +
                 "--network=host -w=/data %s ", containerName , nodeRootOnHost, yml,sdk,front_log, image);
         log.info("Host:[{}] run container:[{}].", ip, containerName);
-        SshTools.execDocker(ip,dockerCreateCommand,sshUser,sshPort,constant.getPrivateKey());
+        SshUtil.execDocker(ip,dockerCreateCommand,sshUser,sshPort,constant.getPrivateKey());
     }
 
     @Override
     public void stop(String ip, int dockerPort, String sshUser, int sshPort, String containerName) {
         String dockerRmCommand = String.format("sudo docker rm -f %s ", containerName);
-        SshTools.execDocker(ip,dockerRmCommand,sshUser,sshPort,constant.getPrivateKey());
+        SshUtil.execDocker(ip,dockerRmCommand,sshUser,sshPort,constant.getPrivateKey());
     }
 }
 
