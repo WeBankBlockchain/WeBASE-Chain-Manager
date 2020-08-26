@@ -19,11 +19,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -140,6 +142,21 @@ public class GroupService {
         Integer chainId = req.getChainId();
         Integer generateGroupId = req.getGenerateGroupId();
         checkGroupIdExisted(chainId, generateGroupId);
+
+        if (CollectionUtils.isEmpty(req.getNodeList())){
+            // select node list from db
+            if (CollectionUtils.isEmpty(req.getOrgIdList())){
+                throw new BaseException(ConstantCode.NODE_ID_AND_ORG_LIST_EMPTY);
+            }
+
+            Set<String> nodeIdSet = req.getOrgIdList().stream()
+                    .map((orgId) -> this.tbFrontMapper.selectByChainIdAndAgencyId(req.getChainId(), orgId))
+                    .filter((front) -> front != null)
+                    .flatMap(List::stream)
+                    .map(TbFront::getNodeId).collect(Collectors.toSet());
+
+            req.setNodeList(new ArrayList<>(nodeIdSet));
+        }
 
         for (String nodeId : req.getNodeList()) {
             // get front

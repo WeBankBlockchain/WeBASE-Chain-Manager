@@ -29,16 +29,15 @@ public class TransactionService {
 
 
     /**
-     * @param chainId
      * @param appId
      * @param pageNumber
      * @param pageSize
      * @return
      * @throws BaseException
      */
-    public Object getUserListByAppId(int chainId, String appId, Integer pageNumber, Integer pageSize)
+    public Object getUserListByAppId(String appId, Integer pageNumber, Integer pageSize)
             throws BaseException {
-        String url = String.format(TransactionRestTools.URI_USER_LIST, transactionRestTools.getBaseUrl(chainId),
+        String url = String.format(TransactionRestTools.URI_USER_LIST, transactionRestTools.getBaseUrl(),
                 appId, pageNumber, pageSize);
         Object response = transactionRestTools.get(url, Object.class);
         return response;

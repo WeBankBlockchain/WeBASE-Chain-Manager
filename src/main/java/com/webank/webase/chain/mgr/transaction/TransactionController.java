@@ -33,14 +33,13 @@ public class TransactionController extends BaseController {
      * get user list by app id
      */
     @ApiOperation(value = "get user list by app id", notes = "根据appId获取user列表")
-    @GetMapping("/user/list/{chainId}/{appId}/{pageNumber}/{pageSize}")
+    @GetMapping("/user/list/{appId}/{pageNumber}/{pageSize}")
     public Object getUserListByAppId(
-            @NotNull @PathVariable("chainId") Integer chainId,
             @NotBlank @PathVariable("appId") String appId,
             @NotNull @PathVariable("pageNumber") Integer pageNumber,
             @NotNull @PathVariable("pageSize") Integer pageSize) throws BaseException {
         log.info("getUserListByAppId start.");
-        return transactionService.getUserListByAppId(chainId,appId, pageNumber, pageSize);
+        return transactionService.getUserListByAppId(appId, pageNumber, pageSize);
     }
 
     /**

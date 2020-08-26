@@ -15,8 +15,9 @@ package com.webank.webase.chain.mgr.group.entity;
 
 import java.math.BigInteger;
 import java.util.List;
-import javax.validation.constraints.NotEmpty;
+
 import javax.validation.constraints.NotNull;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,7 +32,8 @@ public class ReqGenerateGroup {
     private Integer generateGroupId;
     @NotNull
     private BigInteger timestamp;
-    @NotEmpty
     private List<String> nodeList;
+    private List<Integer> orgIdList;
+
     private String description;
 }

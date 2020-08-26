@@ -189,4 +189,5 @@ public class ConstantCode {
     public static final RetCode SAME_HOST_ERROR = RetCode.mark(400068, "Cannot install node and WeBASE-Node-Manager on same host.");
     public static final RetCode CANNOT_USE_DEFAULT_GROUP_ID = RetCode.mark(400069, "Cannot use default group Id.");
     public static final RetCode CANNOT_OPERATE_DEFAULT_GROUP_ID = RetCode.mark(400069, "Cannot use default group Id.");
+    public static final RetCode NODE_ID_AND_ORG_LIST_EMPTY = RetCode.mark(400070, "Both node id list and org id list are empty.");
 }
