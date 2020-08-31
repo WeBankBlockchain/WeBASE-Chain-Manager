@@ -409,4 +409,32 @@ public class GroupController extends BaseController {
                 Duration.between(startTime, Instant.now()).toMillis());
         return result;
     }
+
+
+    /**
+     * get node consensus list.
+     */
+    @GetMapping("consensus/list/{chainId}/{groupId}")
+    public Object getConsensusList(@PathVariable("chainId") Integer chainId,
+                                   @PathVariable("groupId") Integer groupId,
+                                   @RequestParam(defaultValue = "10") Integer pageSize,
+                                   @RequestParam(defaultValue = "1") Integer pageNumber) {
+
+        Instant startTime = Instant.now();
+        log.info("start consensus list startTime:{}", startTime.toEpochMilli());
+
+        // get front
+        TbFront tbFront = frontService.getByChainIdAndGroupId(chainId,groupId);
+        if (tbFront == null) {
+            log.error("fail getConsensusList node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+
+        Object result = frontInterfaceService.getConsensusList(tbFront.getFrontIp(),
+                tbFront.getFrontPort(), groupId, pageSize, pageNumber);
+
+        log.info("end getConsensusList useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return result;
+    }
 }

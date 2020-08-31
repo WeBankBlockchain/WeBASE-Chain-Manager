@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -368,10 +369,26 @@ public class FrontService {
      * query front by nodeId.
      */
     public TbFront getByChainIdAndNodeId(Integer chainId, String nodeId) {
-        if (chainId == null || nodeId == null) {
+        if (chainId == null || StringUtils.isBlank(nodeId)) {
             return null;
         }
         return this.tbFrontMapper.getByChainIdAndNodeId(chainId, nodeId);
+    }
+
+    public TbFront getByChainIdAndGroupId(Integer chainId, Integer groupId ) {
+        if (chainId == null || groupId == null) {
+            return null;
+        }
+
+        FrontParam param = new FrontParam();
+        param.setChainId(chainId);
+        param.setGroupId(groupId);
+        List<TbFront> frontList = this.tbFrontMapper.selectByParam(param);
+        if (CollectionUtils.isEmpty(frontList)) {
+            return null;
+        }
+        // TODO. loop
+        return frontList.get(0);
     }
 
     /**
