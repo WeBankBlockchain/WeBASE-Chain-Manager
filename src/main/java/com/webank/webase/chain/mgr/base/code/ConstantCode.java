@@ -34,6 +34,12 @@ public class ConstantCode {
     // transaction
     public static final RetCode REQUEST_TRANSACTION_EXCEPTION = RetCode.mark(203201, "request transaction server exception");
 
+
+    // sign
+    public static final RetCode SIGN_USERID_ERROR = RetCode.mark(204201, "signUserId check failed");
+    public static final RetCode DATA_SIGN_ERROR = RetCode.mark(204202, "data request sign error");
+    public static final RetCode REQUEST_SIGN_EXCEPTION = RetCode.mark(204203, "request sign server exception");
+
     /* Business exception */
     public static final RetCode INVALID_FRONT_ID = RetCode.mark(205000, "invalid front id");
 

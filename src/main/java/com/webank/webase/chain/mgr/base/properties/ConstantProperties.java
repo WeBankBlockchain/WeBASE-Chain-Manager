@@ -99,6 +99,8 @@ public class ConstantProperties {
     private String privateKey = System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa";
     private String fiscoBcosBinary =  "";
 
+    private String  webaseSignAddress = "127.0.0.1:5004";
+
 
     private Map<Integer,String> transactionMap = new HashMap<>();
 
@@ -128,6 +130,8 @@ public class ConstantProperties {
         }
 
         log.info("Init constant properties, private key: [{}]", privateKey);
+
+        log.info("Init constant properties, webaseSignAddress: [{}]", webaseSignAddress);
 
         log.info("Init constant properties, transactionMap : [{}]", JsonTools.toJSONString(transactionMap));
 

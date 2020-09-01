@@ -48,7 +48,6 @@ import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
 import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
-import com.webank.webase.chain.mgr.transaction.TransactionService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -58,7 +57,6 @@ import lombok.extern.log4j.Log4j2;
 public class ContractController extends BaseController {
 
     @Autowired private ContractService contractService;
-    @Autowired private TransactionService transactionService;
 
     /**
      * compile deployInputParam.

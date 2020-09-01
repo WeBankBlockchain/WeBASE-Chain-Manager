@@ -46,8 +46,7 @@ import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
-import com.webank.webase.chain.mgr.transaction.TransactionRestTools;
-import com.webank.webase.chain.mgr.transaction.req.ReqContractDeploy;
+import com.webank.webase.chain.mgr.contract.entity.ReqContractDeploy;
 
 import lombok.extern.log4j.Log4j2;
 

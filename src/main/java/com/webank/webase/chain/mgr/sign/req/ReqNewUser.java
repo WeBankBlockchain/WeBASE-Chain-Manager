@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.webank.webase.chain.mgr.transaction.req;
+package com.webank.webase.chain.mgr.sign.req;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

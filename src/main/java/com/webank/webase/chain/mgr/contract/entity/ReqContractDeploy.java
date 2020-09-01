@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.webank.webase.chain.mgr.transaction.req;
+package com.webank.webase.chain.mgr.contract.entity;
 
 import java.util.List;
 
