@@ -182,6 +182,8 @@ public class ChainController extends BaseController {
 
         TbChain chain = this.tbChainMapper.selectByPrimaryKey(chainId);
         if (chain != null){
+            int progress = chainService.progress(chain);
+            chain.setProgress(progress);
             return BaseResponse.success(chain);
         }
         return new BaseResponse(ConstantCode.CHAIN_ID_NOT_EXISTS);

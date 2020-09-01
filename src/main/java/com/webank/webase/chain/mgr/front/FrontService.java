@@ -67,6 +67,7 @@ import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
+import com.webank.webase.chain.mgr.util.NumberUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -578,6 +579,30 @@ public class FrontService {
 
         // delete replication
         return allTbFrontList.stream().distinct().collect(Collectors.toList());
+    }
+
+    /**
+     *
+     * @param chainId
+     */
+    public int frontProgress(int chainId){
+        // check host init
+        int frontFinishCount = 0;
+        List<TbFront> frontList = this.tbFrontMapper.selectByChainId(chainId);
+        if (CollectionUtils.isEmpty(frontList)) {
+            return NumberUtil.PERCENTAGE_FINISH;
+        }
+        for (TbFront front : frontList) {
+            if(FrontStatusEnum.isRunning(front.getFrontStatus())){
+                frontFinishCount ++;
+            }
+        }
+        // check front init finish ?
+        if (frontFinishCount == frontList.size()){
+            // init success
+            return NumberUtil.PERCENTAGE_FINISH;
+        }
+        return NumberUtil.percentage(frontFinishCount,frontList.size());
     }
 
 }

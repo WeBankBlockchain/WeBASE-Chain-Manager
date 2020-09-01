@@ -57,6 +57,7 @@ import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
+import com.webank.webase.chain.mgr.util.NumberUtil;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ThymeleafUtil;
 
@@ -388,6 +389,28 @@ public class ChainService {
         }
         log.error("Chain:[{}] is not running, cancel reset group task.", chain.getChainId());
         return false;
+    }
+
+    /**
+     *
+     * @param chain
+     * @return
+     */
+    public int progress(TbChain chain){
+        int progress = ChainStatusEnum.progress(chain.getChainStatus());
+        switch (progress){
+            // deploy or upgrade failed
+            case NumberUtil.PERCENTAGE_FAILED:
+
+                // deploy or upgrade success
+            case NumberUtil.PERCENTAGE_FINISH:
+                return progress;
+            default:
+                break;
+        }
+
+        // check front start
+        return this.frontService.frontProgress(chain.getChainId());
     }
 
 }
