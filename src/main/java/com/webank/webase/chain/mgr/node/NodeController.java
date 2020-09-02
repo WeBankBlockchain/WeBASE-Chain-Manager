@@ -34,6 +34,7 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.front.entity.TransactionCount;
@@ -88,13 +89,16 @@ public class NodeController extends BaseController {
                 "start queryNodeList startTime:{} groupId:{} pageNumber:{} pageSize:{} nodeName:{}",
                 startTime.toEpochMilli(), groupId, pageNumber, pageSize, nodeId);
 
+
+        int newGroupId  = groupId == null || groupId <=0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId ;
+
         // check node status before query
-        nodeService.checkAndUpdateNodeStatus(chainId, groupId);
+        nodeService.checkAndUpdateNodeStatus(chainId, newGroupId);
 
         // param
         NodeParam queryParam = new NodeParam();
         queryParam.setChainId(chainId);
-        queryParam.setGroupId(groupId);
+        queryParam.setGroupId(newGroupId);
         queryParam.setNodeId(nodeId);
         queryParam.setPageSize(pageSize);
         Integer count = nodeService.countOfNode(queryParam);
