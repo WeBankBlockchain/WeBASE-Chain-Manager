@@ -239,7 +239,7 @@ public class ContractController extends BaseController {
     /**
      * deploy deployInputParam.
      */
-    @GetMapping(value = "/deployByTransaction/{contractId}/{signUserId}")
+    @PostMapping(value = "/deploy/transaction/{contractId}/{signUserId}")
     public Object deployByTransaction(
             @PathVariable int contractId,
             @PathVariable String signUserId,
