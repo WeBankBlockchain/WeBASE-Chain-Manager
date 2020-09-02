@@ -242,13 +242,14 @@ public class ContractController extends BaseController {
     @GetMapping(value = "/deployByTransaction/{contractId}/{signUserId}")
     public Object deployByTransaction(
             @PathVariable int contractId,
-            @PathVariable String signUserId
+            @PathVariable String signUserId,
+            @RequestBody List<Object> constructorParams
     ) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start deployByTransaction startTime:{}, signUserId:{}, contractId:{}",
                 startTime.toEpochMilli(), signUserId, contractId);
 
-        Object result = contractService.deployByTransactionServer(contractId, signUserId);
+        Object result = contractService.deployByTransactionServer(contractId, signUserId,constructorParams);
         log.info("end deployByTransaction useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
 
         return result;

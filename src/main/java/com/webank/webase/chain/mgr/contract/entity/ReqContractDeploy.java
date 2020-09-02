@@ -14,6 +14,7 @@
 
 package com.webank.webase.chain.mgr.contract.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.constraints.NotBlank;
@@ -38,4 +39,7 @@ public class ReqContractDeploy {
     private String bytecodeBin;
     @NotEmpty
     private List<Object> contractAbi;
+
+    private List<Object> funcParam = new ArrayList<>();
+
 }

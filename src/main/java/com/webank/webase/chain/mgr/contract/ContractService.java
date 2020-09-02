@@ -448,7 +448,7 @@ public class ContractService {
      * @param signUserId
      * @return
      */
-    public Object deployByTransactionServer(int contractId, String signUserId) {
+    public Object deployByTransactionServer(int contractId, String signUserId,List<Object> constructorParams) {
         TbContract tbContract = this.tbContractMapper.selectByPrimaryKey(contractId);
         if (tbContract == null) {
             return new BaseResponse(ConstantCode.INVALID_CONTRACT_ID);
@@ -459,6 +459,7 @@ public class ContractService {
         BeanUtils.copyProperties(tbContract, contractDeploy);
         contractDeploy.setSignUserId(signUserId);
         contractDeploy.setContractAbi(JsonTools.toJavaObjectList(tbContract.getContractAbi(), Object.class));
+        contractDeploy.setFuncParam(constructorParams);
         log.info("Request transaction server:[{}]:[{}]", url, JsonTools.toJSONString(contractDeploy));
         BaseResponse response = transactionRestTools.post(url, contractDeploy, BaseResponse.class);
 
