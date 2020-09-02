@@ -423,15 +423,17 @@ public class GroupController extends BaseController {
         Instant startTime = Instant.now();
         log.info("start consensus list startTime:{}", startTime.toEpochMilli());
 
+        int newGroupId  = groupId == null || groupId <=0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId ;
+
         // get front
-        TbFront tbFront = frontService.getByChainIdAndGroupId(chainId,groupId);
+        TbFront tbFront = frontService.getByChainIdAndGroupId(chainId,newGroupId);
         if (tbFront == null) {
             log.error("fail getConsensusList node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
         Object result = frontInterfaceService.getConsensusList(tbFront.getFrontIp(),
-                tbFront.getFrontPort(), groupId, pageSize, pageNumber);
+                tbFront.getFrontPort(), newGroupId, pageSize, pageNumber);
 
         log.info("end getConsensusList useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
