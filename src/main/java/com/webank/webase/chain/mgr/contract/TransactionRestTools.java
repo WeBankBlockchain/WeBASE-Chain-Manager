@@ -62,7 +62,8 @@ public class TransactionRestTools {
     public String getBaseUrl(int chainId){
         String transactionServer = constantProperties.getTransactionMap().get(chainId);
         if (StringUtils.isBlank(transactionServer)) {
-            return null;
+            // no transaction server for chain id, use default
+            return getBaseUrl();
         }
         return String.format(TRANSACTION_BASE_URL,transactionServer );
     }
