@@ -52,7 +52,6 @@ public class UserController extends BaseController {
     public Object newUser(@Valid @RequestBody ReqNewUser reqNewUser, BindingResult result) throws BaseException {
         checkBindResult(result);
         log.info("newUser start.");
-        log.info("getUserListByAppId start.");
         return userService.newUser(reqNewUser);
     }
 
