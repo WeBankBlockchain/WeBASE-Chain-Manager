@@ -27,6 +27,10 @@ public class BaseException extends RuntimeException {
         super(retCode.getMessage());
         this.retCode = retCode;
     }
+    public BaseException(RetCode retCode,String message) {
+        super(message);
+        this.retCode = new RetCode(retCode.getCode(),message);
+    }
 
     public BaseException(int code, String msg) {
         super(msg);

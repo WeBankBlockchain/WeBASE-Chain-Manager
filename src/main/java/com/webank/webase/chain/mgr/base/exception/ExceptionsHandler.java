@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class ExceptionsHandler {
 
     /**
-     * catch：NodeMgrException.
+     * catch：BaseException.
      */
     @ResponseBody
     @ExceptionHandler(value = BaseException.class)

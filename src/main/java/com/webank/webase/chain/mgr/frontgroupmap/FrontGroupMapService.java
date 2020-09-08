@@ -13,36 +13,51 @@
  */
 package com.webank.webase.chain.mgr.frontgroupmap;
 
-import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
-import com.webank.webase.chain.mgr.frontgroupmap.entity.MapListParam;
-import com.webank.webase.chain.mgr.frontgroupmap.entity.TbFrontGroupMap;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
+import com.webank.webase.chain.mgr.frontgroupmap.entity.MapListParam;
+import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMap;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
+
+import lombok.extern.slf4j.Slf4j;
 
 
 @Service
+@Slf4j
 public class FrontGroupMapService {
 
-    @Autowired
-    private FrontGroupMapMapper frontGroupMapMapper;
+    @Autowired private TbFrontGroupMapMapper tbFrontGroupMapMapper;
 
     /**
      * add new mapping
      */
+    @Transactional
     public TbFrontGroupMap newFrontGroup(Integer chainId, Integer frontId, Integer groupId) {
-        TbFrontGroupMap tbFrontGroupMap = new TbFrontGroupMap(chainId, frontId, groupId);
 
         //add db
-        frontGroupMapMapper.add(tbFrontGroupMap);
-        return tbFrontGroupMap;
+        TbFrontGroupMap exists = this.tbFrontGroupMapMapper.selectByChainIdAndFrontIdAndGroupId(chainId, frontId, groupId);
+        if (exists == null){
+            TbFrontGroupMap tbFrontGroupMap = new TbFrontGroupMap(chainId, frontId, groupId);
+            try {
+                this.tbFrontGroupMapMapper.insertSelective(tbFrontGroupMap);
+            } catch (Exception e) {
+                log.error("Insert front group map error", e);
+                throw e;
+            }
+        }
+        return exists;
     }
 
     /**
      * get map count
      */
     public int getCount(MapListParam param) {
-        return frontGroupMapMapper.getCount(param);
+        return this.tbFrontGroupMapMapper.countByParam(param);
     }
 
     /**
@@ -53,7 +68,7 @@ public class FrontGroupMapService {
             return;
         }
         //remove by chainId
-        frontGroupMapMapper.removeByChainId(chainId);
+        this.tbFrontGroupMapMapper.deleteByChainId(chainId);
     }
     
     /**
@@ -64,7 +79,7 @@ public class FrontGroupMapService {
             return;
         }
         //remove by groupId
-        frontGroupMapMapper.removeByGroupId(chainId, groupId);
+        this.tbFrontGroupMapMapper.deleteByGroupId(chainId,groupId);
     }
 
     /**
@@ -75,7 +90,7 @@ public class FrontGroupMapService {
             return;
         }
         //remove by frontId
-        frontGroupMapMapper.removeByFrontId(frontId);
+        this.tbFrontGroupMapMapper.deleteByFrontId(frontId);
     }
 
     /**
@@ -85,15 +100,22 @@ public class FrontGroupMapService {
         if (groupId == 0) {
             return null;
         }
-        MapListParam param = new MapListParam();
-        param.setGroupId(groupId);
-        return getList(param);
+        return this.tbFrontGroupMapMapper.selectByGroupId(groupId);
     }
 
-    /**
-     * get map list
-     */
-    public List<FrontGroup> getList(MapListParam mapListParam) {
-        return frontGroupMapMapper.getList(mapListParam);
-    }
+//    @Transactional(propagation = Propagation.REQUIRED)
+//    public void updateFrontMapStatus(int chainId,int frontId, GroupStatus status) {
+//        // update status
+//        log.info("Update front:[{}] all group map to status:[{}]", frontId, status);
+//        tbFrontGroupMapMapper.updateAllGroupsStatus(frontId,status.getValue());
+//        this.frontGroupMapCache.clearMapList(chainId);
+//    }
+//
+//    @Transactional(propagation = Propagation.REQUIRED)
+//    public void updateFrontMapStatus(int chainId, int frontId, int groupId, GroupStatus status) {
+//        // update status
+//        log.info("Update front:[{}] group:[{}] map to status:[{}]", frontId, groupId, status);
+//        tbFrontGroupMapMapper.updateOneGroupStatus(frontId,status.getValue(),groupId);
+//        this.frontGroupMapCache.clearMapList(chainId);
+//    }
 }

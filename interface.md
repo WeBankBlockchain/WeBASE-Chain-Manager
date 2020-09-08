@@ -308,7 +308,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/new
 #### 2.2.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/front/find?chainId={chainId}?frontId={frontId}&groupId={groupId}**
+- 请求地址：**/front/find?chainId={chainId}&frontId={frontId}&groupId={groupId}**
 - 请求方式：GET
 - 返回格式：JSON
 

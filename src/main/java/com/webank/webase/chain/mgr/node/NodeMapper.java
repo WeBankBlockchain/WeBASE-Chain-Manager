@@ -13,9 +13,6 @@
  */
 package com.webank.webase.chain.mgr.node;
 
-import com.webank.webase.chain.mgr.node.entity.NodeParam;
-import com.webank.webase.chain.mgr.node.entity.TbNode;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -25,42 +22,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface NodeMapper {
 
-    /**
-     * Add new node data.
-     */
-    Integer add(TbNode tbNode);
 
-    /**
-     * Query the number of node according to some conditions.
-     */
-    Integer getCount(NodeParam nodeParam);
-
-
-    /**
-     * Query node list according to some conditions.
-     */
-    List<TbNode> getList(NodeParam nodeParam);
-
-    /**
-     * query tb_node by nodeip and p2pport.
-     */
-    TbNode queryNodeByIpAndP2pPort(@Param("nodeIp") String nodeIp,
-            @Param("p2pPort") Integer p2pPort);
-
-    /**
-     * query node info.
-     */
-    TbNode queryByNodeId(@Param("nodeId") String nodeId);
-
-    /**
-     * update node info.
-     */
-    Integer update(TbNode dbNode);
-
-    /**
-     * query node info.
-     */
-    TbNode queryNodeInfo(NodeParam nodeParam);
 
 
     /**
