@@ -201,6 +201,12 @@ GRANT ALL PRIVILEGES ON *.* TO 'TestUser'@'%' IDENTIFIED BY '此处为TestUser�
 | constant.contractDeployTimeOut      | 30000                                          | 合约部署超时时间（毫秒）                                     |
 | constant.maxRequestFail             | 3                                              | 请求前置（frot）被允许失败次数，达到配置值后，将会停止往该路径发送请求 |
 | constant.sleepWhenHttpMaxFail       | 60000                                          | 请求失败次数过多，熔断时间长度（毫秒）                       |
+| constant.dockerRepository       |    fiscoorg/fisco-webase                                    | 使用的 Docker 镜像              |
+| constant.dockerRestartPeriodTime       | 30000                                          |  容器默认启动时长                      |
+| constant.webaseSignAddress       | 127.0.0.1:5004                                          | WeBASE-Sign 的访问地址                       |
+| constant.sshDefaultUser       | root                                          | SSH 免密登录账号                       |
+| constant.sshDefaultPort       | 22                                          |  SSH 免密登录端口                      |
+| constant.transactionMap       | 1: "127.0.0.1:5003"                           |  链 chainId 和交易服地址的对应关系                       |
 | executor.corePoolSize               | 3                                              | 线程池大小                                                   |
 | executor.maxPoolSize                | 10                                             | 线程池最大线程数                                             |
 | executor.queueSize                  | 50                                             | 线程池队列大小                                               |
