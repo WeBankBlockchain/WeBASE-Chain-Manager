@@ -330,7 +330,8 @@ public class NodeAsyncService {
                         } catch (Exception e) {
                             log.error("Send file to host :[{}] failed", host.getIp(), e);
                             this.chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED,
-                                    String.format("Scp failed:[%s]", host.getIp()));
+                                    String.format("Scp failed:[%s], please check space left or permission of directory:[%s]",
+                                            host.getIp(),host.getRootDirOnHost()));
                             return;
                         }
 
