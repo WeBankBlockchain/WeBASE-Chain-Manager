@@ -143,8 +143,7 @@ public class ChainService {
         // check chainId
         TbChain chain= tbChainMapper.selectByPrimaryKey(chainId);
         if (chain == null) {
-            log.warn("Chain id:[{}] not exits when delete.",chainId);
-            return;
+            throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
         }
 
         try {
