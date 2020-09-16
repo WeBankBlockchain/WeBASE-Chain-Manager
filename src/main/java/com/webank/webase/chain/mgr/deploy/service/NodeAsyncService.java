@@ -367,7 +367,7 @@ public class NodeAsyncService {
                                     break;
                                 case HOST_DOWNLOAD_CDN:
                                     String cdnUrl = constant.getCdnUrl(tbChain.getVersion());
-                                    String dockerImport = String.format("sudo docker import %s", cdnUrl);
+                                    String dockerImport = String.format("curl -sL %s | sudo docker load ", cdnUrl);
                                     SshUtil.execDocker(host.getIp(), dockerImport,
                                             host.getSshUser(), host.getSshPort(), constant.getPrivateKey());
                                     break;
