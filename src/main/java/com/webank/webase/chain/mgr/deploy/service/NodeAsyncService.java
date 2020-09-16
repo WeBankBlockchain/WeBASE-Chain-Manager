@@ -100,8 +100,8 @@ public class NodeAsyncService {
 
             // download image from cdn if download from cdn
             if (dockerImageTypeEnum == DockerImageTypeEnum.DOWNLOAD_CDN) {
-                String dockerTarFileName = String.format(constant.getImageTar(), deploy.getVersion());
-                String cdnUrl = String.format(constant.getImageCDNUrl(), dockerTarFileName);
+                String dockerTarFileName = constant.getDockerTarFileName(deploy.getVersion());
+                String cdnUrl = constant.getCdnUrl(deploy.getVersion());
                 FileUtil.download(false, cdnUrl, dockerTarFileName, constant.getDockerPullTimeout());
             }
 
@@ -331,7 +331,7 @@ public class NodeAsyncService {
                             log.error("Send file to host :[{}] failed", host.getIp(), e);
                             this.chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED,
                                     String.format("Scp failed:[%s], please check space left or permission of directory:[%s]",
-                                            host.getIp(),host.getRootDirOnHost()));
+                                            host.getIp(), host.getRootDirOnHost()));
                             return;
                         }
 
@@ -339,21 +339,21 @@ public class NodeAsyncService {
 
                     // docker pull image
                     try {
-                        log.info("Install image with option:[{}]", dockerImageTypeEnum.getDescription());
-                        switch (dockerImageTypeEnum) {
-                            case PULL_OFFICIAL:
-                                // pull from official registry
-                                dockerOptions.pullImage(host.getIp(), host.getDockerDemonPort(), host.getSshUser(), host.getSshPort(), tbChain.getVersion());
-                                break;
+                        boolean exists = dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
+                                host.getSshUser(), host.getSshPort(), tbChain.getVersion());
+                        log.info("check docker image:[{}] exists:[{}] on host:[{}] first.", tbChain.getVersion(), host.getIp(), exists);
 
-                            case LOCAL_OFFLINE:
-                            case DOWNLOAD_CDN:
-                                // check exists
-                                boolean exists = dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
-                                        host.getSshUser(), host.getSshPort(), tbChain.getVersion());
-                                if (exists) {
-                                    log.warn("Docker image:[{}] not exists on host:[{}].", tbChain.getVersion(), host.getIp());
-                                } else {
+                        if (!exists) {
+                            // only pull image when not exists remote host note
+                            log.info("Install image with option:[{}]", dockerImageTypeEnum.getDescription());
+                            switch (dockerImageTypeEnum) {
+                                case PULL_OFFICIAL:
+                                    // pull from official registry
+                                    dockerOptions.pullImage(host.getIp(), host.getDockerDemonPort(), host.getSshUser(), host.getSshPort(), tbChain.getVersion());
+                                    break;
+
+                                case LOCAL_OFFLINE:
+                                case DOWNLOAD_CDN:
                                     // scp tar file to remote host
                                     String imageTarFileName = String.format(constant.getImageTar(), tbChain.getVersion());
                                     String dst = String.format("~/%s", imageTarFileName);
@@ -363,18 +363,23 @@ public class NodeAsyncService {
                                     String unzip = String.format("sudo docker load -i %s", dst);
                                     SshUtil.execDocker(host.getIp(), unzip,
                                             host.getSshUser(), host.getSshPort(), constant.getPrivateKey());
-                                }
 
-                                break;
-                            default:
-                                break;
-                        }
-
-                        boolean exists = dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
-                                host.getSshUser(), host.getSshPort(), tbChain.getVersion());
-                        if (! exists) {
-                            log.error("Docker image:[{}] not exists on host after execute installation:[{}].", tbChain.getVersion(), host.getIp());
-                            throw new BaseException(ConstantCode.IMAGE_NOT_EXISTS_ON_HOST.attach("after installation"));
+                                    break;
+                                case HOST_DOWNLOAD_CDN:
+                                    String cdnUrl = constant.getCdnUrl(tbChain.getVersion());
+                                    String dockerImport = String.format("sudo docker import %s", cdnUrl);
+                                    SshUtil.execDocker(host.getIp(), dockerImport,
+                                            host.getSshUser(), host.getSshPort(), constant.getPrivateKey());
+                                    break;
+                                default:
+                                    break;
+                            }
+                            exists = dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
+                                    host.getSshUser(), host.getSshPort(), tbChain.getVersion());
+                            if (!exists) {
+                                log.error("Docker image:[{}] not exists on host after execute installation:[{}].", tbChain.getVersion(), host.getIp());
+                                throw new BaseException(ConstantCode.IMAGE_NOT_EXISTS_ON_HOST.attach("after installation"));
+                            }
                         }
                     } catch (Exception e) {
                         log.error("Install docker image on host :[{}] failed", host.getIp(), e);

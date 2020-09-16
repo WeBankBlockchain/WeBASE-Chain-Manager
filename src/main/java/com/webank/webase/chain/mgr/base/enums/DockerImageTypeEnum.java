@@ -14,6 +14,9 @@
  
 package com.webank.webase.chain.mgr.base.enums;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -22,14 +25,16 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 public enum DockerImageTypeEnum {
-    MANUAL((byte) 0, "Download docker image and unzip manually."),
-    PULL_OFFICIAL((byte) 1, "Pull image from docker registry."),
-    LOCAL_OFFLINE((byte) 2, "Use local image tar file and scp to host."),
-    DOWNLOAD_CDN((byte) 3, "Download docker image from CDN and scp to host."),
+    MANUAL((byte) 0, "Download docker image and unzip manually.","手动上传镜像到节点主机"),
+    PULL_OFFICIAL((byte) 1, "Pull image from docker registry.","节点主机从 Docker 官方拉取镜像"),
+    LOCAL_OFFLINE((byte) 2, "Use local image tar file and scp to host.","部署服务主机使用离线镜像，直接使用 scp 发送到节点主机"),
+    DOWNLOAD_CDN((byte) 3, "Download docker image from CDN and scp to host.","部署服务主机统一从 CDN 拉取镜像后，再使用 scp 发送到节点主机"),
+    HOST_DOWNLOAD_CDN((byte) 4, "Download docker image from CDN by each host.","每台节点主机单独从 CDN 拉取镜像包"),
     ;
 
     private byte id;
     private String description;
+    private String tip;
 
     /**
      * @param id
@@ -42,6 +47,18 @@ public enum DockerImageTypeEnum {
             }
         }
         return null;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static Map<Integer,String> getTypeMap(){
+        Map<Integer,String> map = new HashMap<>();
+        for (DockerImageTypeEnum value : DockerImageTypeEnum.values()) {
+            map.put(Integer.valueOf(value.getId()),value.getTip());
+        }
+        return map;
     }
 
 

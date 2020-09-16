@@ -167,4 +167,12 @@ public class ConstantProperties {
         return newDirectory;
     }
     //******************* Add in v1.4.0 end. *******************
+
+    public String getDockerTarFileName(String version){
+        return String.format(imageTar, version);
+    }
+    public String getCdnUrl(String version){
+        String dockerTarFileName = this.getDockerTarFileName(version);
+        return String.format(imageCDNUrl, dockerTarFileName);
+    }
 }
