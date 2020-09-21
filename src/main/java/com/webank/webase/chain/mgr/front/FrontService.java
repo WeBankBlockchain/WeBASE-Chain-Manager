@@ -121,6 +121,7 @@ public class FrontService {
         Integer frontPort = frontInfo.getFrontPort();
         // check front ip and port
         CommonUtils.checkServerConnect(frontIp, frontPort);
+        tbFront.setFrontStatus(FrontStatusEnum.RUNNING.getId());
         // check front's encrypt type same as chain(guomi or standard)
         int encryptType = frontInterface.getEncryptTypeFromSpecificFront(frontIp, frontPort);
         if (encryptType != tbChain.getChainType()) {
