@@ -16,7 +16,9 @@ package com.webank.webase.chain.mgr.chain;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -231,7 +233,9 @@ public class ChainService {
                 }
             }
 
-            String ipConfigLine = String.format("%s:%s %s %s", host.getIp(), host.getNum(), host.getExtOrgId(), ConstantProperties.DEFAULT_GROUP_ID);
+            String ipConfigLine = String.format("%s:%s %s %s %s,%s,%s",
+                    host.getIp(), host.getNum(), host.getExtOrgId(), ConstantProperties.DEFAULT_GROUP_ID,
+                    host.getP2pPort(),host.getChannelPort(),host.getJsonrpcPort());
             ipConf[i] = ipConfigLine;
         }
 
@@ -269,7 +273,12 @@ public class ChainService {
                         reqDeploy.getStorageType(), DeployTypeEnum.API);
 
         // insert default group
+        Set<String> ipSet = new HashSet<>();
         for (ReqDeploy.DeployHost deployHost : reqDeploy.getDeployHostList()) {
+            boolean add = ipSet.add(deployHost.getIp());
+            if (!add){ // ip already handled
+                continue;
+            }
             // save group if new , default node count = 0
             this.groupService.saveGroup(ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), 0, "deploy", GroupType.DEPLOY.getValue());
 
@@ -285,7 +294,7 @@ public class ChainService {
                 NodeConfig nodeConfig = NodeConfig.read(nodeRoot, encryptTypeEnum);
 
                 // frontPort = 5002 + indexOnHost(0,1,2,3...)
-                int frontPort = constantProperties.getDefaultFrontPort() + nodeConfig.getHostIndex();
+                int frontPort = deployHost.getFrontPort() + nodeConfig.getHostIndex();
 
                 String frontDesc = String.format("front of chain:[%s] on host:[%s:%s]", newChain.getChainId(),
                         deployHost.getIp(), nodeConfig.getHostIndex());
