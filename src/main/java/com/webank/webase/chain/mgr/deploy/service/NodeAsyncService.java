@@ -389,15 +389,22 @@ public class NodeAsyncService {
                     }
 
                     // check port
-                    Pair<Boolean, Integer> portReachable = NetUtils.checkPorts(host.getIp(), 2000,
-                            constant.getDefaultChannelPort(), constant.getDefaultP2pPort(), constant.getDefaultFrontPort(), constant.getDefaultJsonrpcPort());
-                    if (portReachable.getKey()) {
-                        log.error("Port:[{}] is in use on host :[{}] failed", portReachable.getValue(), host.getIp());
-                        this.chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED,
-                                String.format("Port:[%s:%s] in use", host.getIp(), portReachable.getValue()));
-                        return;
+                    for (int i = 0; i < host.getNum(); i++) {
+                        Pair<Boolean, Integer> portReachable = NetUtils.anyPortInUse(host.getIp(),
+                                host.getSshUser(),
+                                host.getSshPort(),
+                                constant.getPrivateKey(),
+                                host.getChannelPort() + i,
+                                host.getP2pPort() + i,
+                                host.getFrontPort() + i,
+                                host.getJsonrpcPort() + i);
+                        if (portReachable.getKey()) {
+                            log.error("Port:[{}] is in use on host :[{}] failed", portReachable.getValue(), host.getIp());
+                            this.chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED,
+                                    String.format("Port:[%s:%s] in use", host.getIp(), portReachable.getValue()));
+                            return;
+                        }
                     }
-
                     initSuccessCount.incrementAndGet();
                 } catch (Exception e) {
                     log.error("Init host:[{}] with unknown error", host.getIp(), e);

@@ -552,6 +552,8 @@ generate_config_ini()
     cert=${prefix}node.crt
     ; the ca certificate file
     ca_cert=${prefix}ca.crt
+    ; sdk from same agency
+    check_cert_issuer=false
 
 [storage_security]
     enable=false

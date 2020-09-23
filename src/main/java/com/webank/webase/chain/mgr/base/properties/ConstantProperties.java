@@ -65,12 +65,6 @@ public class ConstantProperties {
     public int sshDefaultPort = 22;
 
 
-    // TODO. write tbchain's id in db into config.ini
-    private int defaultJsonrpcPort = 8545;
-    private int defaultP2pPort = 30300;
-    private int defaultChannelPort = 20200;
-    private int defaultFrontPort = 5002;
-
     // timeout config
     private long execHostInitTimeout = 2 * 60 * 60 * 1000L;
     private long startNodeTimeout = 5 * 60 * 1000L;
@@ -134,9 +128,6 @@ public class ConstantProperties {
         log.info("Init constant properties, webaseSignAddress: [{}]", webaseSignAddress);
 
         log.info("Init constant properties, transactionMap : [{}]", JsonTools.toJSONString(transactionMap));
-
-        log.info("Init constant properties, defaultP2pPort:[{}], defaultChannelPort:[{}], defaultJsonrpcPort:[{}], defaultFrontPort:[{}]",
-                defaultP2pPort, defaultChannelPort, defaultJsonrpcPort, defaultFrontPort);
     }
 
     /**
