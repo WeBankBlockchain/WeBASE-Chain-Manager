@@ -81,7 +81,7 @@ public class ConstantProperties {
     private int dockerPullTimeout = 10 * 60 * 1000;
     private int dockerClientReadTimeout = 10 * 60 * 1000;
 
-    private String dockerRepository= "fiscoorg/front";
+    private String dockerRepository= "fiscoorg/fisco-webase";
     private String imageTagUpdateUrl = "https://registry.hub.docker.com/v1/repositories/%s/tags";
     private String dockerRegistryMirror = "";
     private String nodesRootDir = "NODES_ROOT";
@@ -167,4 +167,12 @@ public class ConstantProperties {
         return newDirectory;
     }
     //******************* Add in v1.4.0 end. *******************
+
+    public String getDockerTarFileName(String version){
+        return String.format(imageTar, version);
+    }
+    public String getCdnUrl(String version){
+        String dockerTarFileName = this.getDockerTarFileName(version);
+        return String.format(imageCDNUrl, dockerTarFileName);
+    }
 }

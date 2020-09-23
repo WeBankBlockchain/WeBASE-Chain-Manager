@@ -53,6 +53,9 @@ public class TbContractSqlProvider {
         if (param.getContractStatus() != null) {
             sql.WHERE("contract_status = #{contractStatus}");
         }
+        if (StringUtils.isNotBlank(param.getFlagSortedByTime())) {
+            sql.ORDER_BY("modify_time ${flagSortedByTime}");
+        }
         return sql;
     }
 

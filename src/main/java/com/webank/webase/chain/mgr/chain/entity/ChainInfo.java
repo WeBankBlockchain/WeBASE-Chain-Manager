@@ -13,8 +13,13 @@
  */
 package com.webank.webase.chain.mgr.chain.entity;
 
+import java.util.List;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
+import com.webank.webase.chain.mgr.front.entity.FrontInfo;
+
 import lombok.Data;
 
 @Data
@@ -26,4 +31,6 @@ public class ChainInfo {
     @NotNull
     private Integer chainType;
     private String description;
+
+    List<FrontInfo> frontList;
 }

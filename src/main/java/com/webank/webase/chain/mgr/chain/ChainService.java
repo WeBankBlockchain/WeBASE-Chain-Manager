@@ -125,12 +125,20 @@ public class ChainService {
         tbChain.setCreateTime(now);
         tbChain.setModifyTime(now);
         tbChain.setRemark("");
+        tbChain.setChainStatus(ChainStatusEnum.RUNNING.getId());
 
         // save chain info
         int result = tbChainMapper.insertSelective(tbChain);
         if (result == 0) {
             log.warn("fail newChain, after save, tbChain:{}", JsonTools.toJSONString(tbChain));
             throw new BaseException(ConstantCode.SAVE_CHAIN_FAIL);
+        }
+        if (CollectionUtils.isNotEmpty(chainInfo.getFrontList())) {
+            chainInfo.getFrontList().forEach((front) -> {
+                log.info("Add front [{}:{}]",front.getFrontIp(),front.getFrontPort());
+                front.setChainId(chainInfo.getChainId());
+                frontService.newFront(front);
+            });
         }
         return tbChainMapper.selectByPrimaryKey(tbChain.getChainId());
     }
@@ -141,7 +149,7 @@ public class ChainService {
     @Transactional
     public void removeChain(Integer chainId) {
         // check chainId
-        TbChain chain= tbChainMapper.selectByPrimaryKey(chainId);
+        TbChain chain = tbChainMapper.selectByPrimaryKey(chainId);
         if (chain == null) {
             throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
         }
@@ -170,9 +178,9 @@ public class ChainService {
             try {
                 this.pathService.deleteChain(chain.getChainName());
             } catch (IOException e) {
-                log.error("Delete chain:[{}:{}] files error", chainId, chain.getChainName(),e);
+                log.error("Delete chain:[{}:{}] files error", chainId, chain.getChainName(), e);
             }
-        }finally {
+        } finally {
             isDeleting.set(false);
         }
     }
@@ -181,10 +189,10 @@ public class ChainService {
      * @param deploy
      */
     @Transactional
-    public void generateChainConfig(ReqDeploy deploy,DockerImageTypeEnum dockerImageTypeEnum) {
+    public void generateChainConfig(ReqDeploy deploy, DockerImageTypeEnum dockerImageTypeEnum) {
         // check deploy count
         int totalNodeNum = deploy.getDeployHostList().stream().mapToInt(ReqDeploy.DeployHost::getNum).sum();
-        if ( totalNodeNum < 2 ) {
+        if (totalNodeNum < 2) {
             throw new BaseException(ConstantCode.TWO_NODES_AT_LEAST);
         }
 
@@ -248,7 +256,6 @@ public class ChainService {
     }
 
     /**
-     *
      * @param encryptTypeEnum
      * @param version
      * @param reqDeploy
@@ -257,14 +264,14 @@ public class ChainService {
     public void initChainDbData(EncryptTypeEnum encryptTypeEnum, String version, ReqDeploy reqDeploy) {
         // insert chain
         final TbChain newChain = ((ChainService) AopContext.currentProxy())
-                .insert(reqDeploy.getChainId(),reqDeploy.getChainName(), reqDeploy.getDescription(),
+                .insert(reqDeploy.getChainId(), reqDeploy.getChainName(), reqDeploy.getDescription(),
                         version, encryptTypeEnum, ChainStatusEnum.INITIALIZED, reqDeploy.getConsensusType(),
-                        reqDeploy.getStorageType(),DeployTypeEnum.API);
+                        reqDeploy.getStorageType(), DeployTypeEnum.API);
 
         // insert default group
         for (ReqDeploy.DeployHost deployHost : reqDeploy.getDeployHostList()) {
             // save group if new , default node count = 0
-            this.groupService.saveGroup(ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(),0, "deploy", GroupType.DEPLOY.getValue());
+            this.groupService.saveGroup(ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), 0, "deploy", GroupType.DEPLOY.getValue());
 
             List<Path> nodePathList = null;
             try {
@@ -275,7 +282,7 @@ public class ChainService {
 
             for (Path nodeRoot : CollectionUtils.emptyIfNull(nodePathList)) {
                 // get node properties
-                NodeConfig nodeConfig = NodeConfig.read(nodeRoot,encryptTypeEnum);
+                NodeConfig nodeConfig = NodeConfig.read(nodeRoot, encryptTypeEnum);
 
                 // frontPort = 5002 + indexOnHost(0,1,2,3...)
                 int frontPort = constantProperties.getDefaultFrontPort() + nodeConfig.getHostIndex();
@@ -288,9 +295,9 @@ public class ChainService {
                         DockerOptions.getContainerName(deployHost.getRootDirOnHost(), reqDeploy.getChainName(), nodeConfig.getHostIndex()),
                         nodeConfig.getJsonrpcPort(), nodeConfig.getP2pPort(), nodeConfig.getChannelPort(), reqDeploy.getChainName(),
                         deployHost.getExtCompanyId(), deployHost.getExtOrgId(), deployHost.getExtHostId(), nodeConfig.getHostIndex(),
-                        deployHost.getSshUser(),deployHost.getSshPort(),deployHost.getDockerDemonPort(), deployHost.getRootDirOnHost(),
+                        deployHost.getSshUser(), deployHost.getSshPort(), deployHost.getDockerDemonPort(), deployHost.getRootDirOnHost(),
                         PathService.getNodeRootOnHost(PathService
-                                .getChainRootOnHost(deployHost.getRootDirOnHost(),reqDeploy.getChainName()),nodeConfig.getHostIndex()));
+                                .getChainRootOnHost(deployHost.getRootDirOnHost(), reqDeploy.getChainName()), nodeConfig.getHostIndex()));
 
                 this.frontService.insert(front);
 
@@ -298,31 +305,31 @@ public class ChainService {
                 String nodeName = NodeService.getNodeName(newChain.getChainId(), ConstantProperties.DEFAULT_GROUP_ID, nodeConfig.getNodeId());
                 this.nodeService.insert(newChain.getChainId(), nodeConfig.getNodeId(), nodeName,
                         ConstantProperties.DEFAULT_GROUP_ID, deployHost.getIp(), nodeConfig.getP2pPort(),
-                        nodeName,DataStatus.INVALID);
+                        nodeName, DataStatus.INVALID);
 
                 // insert front group mapping
                 this.frontGroupMapService.newFrontGroup(newChain.getChainId(), front.getFrontId(), ConstantProperties.DEFAULT_GROUP_ID);
 
                 // generate front application.yml
                 try {
-                    ThymeleafUtil.newFrontConfig(nodeRoot, (byte)encryptTypeEnum.getType(), nodeConfig.getChannelPort(), frontPort);
+                    ThymeleafUtil.newFrontConfig(nodeRoot, (byte) encryptTypeEnum.getType(), nodeConfig.getChannelPort(), frontPort);
                 } catch (IOException e) {
                     throw new BaseException(ConstantCode.GENERATE_FRONT_YML_ERROR);
                 }
             }
 
             // update node count of goup
-            TbGroup group = this.tbGroupMapper.selectByPrimaryKey(ConstantProperties.DEFAULT_GROUP_ID,newChain.getChainId());
-            this.groupService.updateGroupNodeCount(newChain.getChainId(),ConstantProperties.DEFAULT_GROUP_ID, group.getNodeCount() + deployHost.getNum());
+            TbGroup group = this.tbGroupMapper.selectByPrimaryKey(ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId());
+            this.groupService.updateGroupNodeCount(newChain.getChainId(), ConstantProperties.DEFAULT_GROUP_ID, group.getNodeCount() + deployHost.getNum());
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public TbChain insert(int chainId,String chainName, String chainDesc, String version, EncryptTypeEnum encryptType, ChainStatusEnum status,
+    public TbChain insert(int chainId, String chainName, String chainDesc, String version, EncryptTypeEnum encryptType, ChainStatusEnum status,
                           String consensusType, String storageType, DeployTypeEnum deployTypeEnum) throws BaseException {
-        TbChain chain = TbChain.init(chainId,chainName, chainDesc, version, consensusType, storageType, encryptType, status, deployTypeEnum);
+        TbChain chain = TbChain.init(chainId, chainName, chainDesc, version, consensusType, storageType, encryptType, status, deployTypeEnum);
 
-        if (tbChainMapper.insertSelective(chain) != 1 ) {
+        if (tbChainMapper.insertSelective(chain) != 1) {
             throw new BaseException(ConstantCode.INSERT_CHAIN_ERROR);
         }
         return chain;
@@ -330,14 +337,13 @@ public class ChainService {
 
 
     /**
-     *
      * @param chainId
      * @param newStatus
      * @return
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public boolean updateStatus(int chainId, ChainStatusEnum newStatus, String remark) {
-        log.info("Update chain:[{}] status to:[{}]",chainId, newStatus.toString());
+        log.info("Update chain:[{}] status to:[{}]", chainId, newStatus.toString());
         TbChain newChain = new TbChain();
         newChain.setChainId(chainId);
         newChain.setChainStatus(newStatus.getId());
@@ -347,44 +353,43 @@ public class ChainService {
     }
 
     /**
-     *
      * @param ip
      * @param rootDirOnHost
      * @param chainName
      */
-    public static void mvChainOnRemote(String ip,String rootDirOnHost,String chainName,String sshUser,int sshPort,String privateKey){
+    public static void mvChainOnRemote(String ip, String rootDirOnHost, String chainName, String sshUser, int sshPort, String privateKey) {
         // create /opt/fisco/deleted-tmp/ as a parent dir
         String deleteRootOnHost = PathService.getDeletedRootOnHost(rootDirOnHost);
-        SshUtil.createDirOnRemote(ip, deleteRootOnHost,sshUser,sshPort,privateKey);
+        SshUtil.createDirOnRemote(ip, deleteRootOnHost, sshUser, sshPort, privateKey);
 
         // like /opt/fisco/default_chain
         String src_chainRootOnHost = PathService.getChainRootOnHost(rootDirOnHost, chainName);
         // move to /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss
         String dst_chainDeletedRootOnHost = PathService.getChainDeletedRootOnHost(rootDirOnHost, chainName);
 
-        SshUtil.mvDirOnRemote(ip,src_chainRootOnHost,dst_chainDeletedRootOnHost,sshUser,sshPort,privateKey);
+        SshUtil.mvDirOnRemote(ip, src_chainRootOnHost, dst_chainDeletedRootOnHost, sshUser, sshPort, privateKey);
     }
 
     /**
-     *  run task.
+     * run task.
      *
      * @return
      */
-    public boolean runTask(TbChain chain){
-        if(isDeleting.get()){
+    public boolean runTask(TbChain chain) {
+        if (isDeleting.get()) {
             return false;
         }
-        if (chain == null){
+        if (chain == null) {
             log.error("Run task, chain not exists");
             return false;
         }
         DeployTypeEnum deployTypeEnum = DeployTypeEnum.getById(chain.getDeployType());
 
-        if (deployTypeEnum == DeployTypeEnum.MANUALLY ){
-            log.info("Chain:[{}] deployed manually, run task ",chain.getChainId());
+        if (deployTypeEnum == DeployTypeEnum.MANUALLY) {
+            log.info("Chain:[{}] deployed manually, run task ", chain.getChainId());
             return true;
         }
-        if (chain.getChainStatus() == ChainStatusEnum.RUNNING.getId()){
+        if (chain.getChainStatus() == ChainStatusEnum.RUNNING.getId()) {
             return true;
         }
         log.error("Chain:[{}] is not running, cancel reset group task.", chain.getChainId());
@@ -392,13 +397,12 @@ public class ChainService {
     }
 
     /**
-     *
      * @param chain
      * @return
      */
-    public int progress(TbChain chain){
+    public int progress(TbChain chain) {
         int progress = ChainStatusEnum.progress(chain.getChainStatus());
-        switch (progress){
+        switch (progress) {
             // deploy or upgrade failed
             case NumberUtil.PERCENTAGE_FAILED:
 

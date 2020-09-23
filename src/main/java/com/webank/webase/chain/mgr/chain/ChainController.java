@@ -35,6 +35,7 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
@@ -187,5 +188,14 @@ public class ChainController extends BaseController {
             return BaseResponse.success(chain);
         }
         return new BaseResponse(ConstantCode.CHAIN_ID_NOT_EXISTS);
+    }
+    @ApiOperation(value = "查询镜像获取方式")
+    @GetMapping("/image/type")
+    public BaseResponse getChain() throws BaseException {
+
+        Instant startTime = Instant.now();
+        log.info("Start:[{}] get image type ", startTime);
+
+        return BaseResponse.success(DockerImageTypeEnum.getTypeMap());
     }
 }
