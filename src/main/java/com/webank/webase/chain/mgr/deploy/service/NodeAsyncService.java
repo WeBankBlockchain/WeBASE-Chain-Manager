@@ -390,7 +390,10 @@ public class NodeAsyncService {
 
                     // check port
                     for (int i = 0; i < host.getNum(); i++) {
-                        Pair<Boolean, Integer> portReachable = NetUtils.checkPorts(host.getIp(), 2000,
+                        Pair<Boolean, Integer> portReachable = NetUtils.anyPortInUse(host.getIp(),
+                                host.getSshUser(),
+                                host.getSshPort(),
+                                constant.getPrivateKey(),
                                 host.getChannelPort() + i,
                                 host.getP2pPort() + i,
                                 host.getFrontPort() + i,

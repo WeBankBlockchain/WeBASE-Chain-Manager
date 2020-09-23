@@ -86,7 +86,7 @@ public class SshUtil {
 
                 int status = channelExec.getExitStatus();
                 if (status < 0) {
-                    log.error("Exec command:[{}] on remote host:[{}], no exit status:[{}] not set, log:[{}].",
+                    log.warn("Exec command:[{}] on remote host:[{}], no exit status:[{}] not set, log:[{}].",
                             newCommand, ip, status, execLog.toString());
                     return Pair.of(true,execLog.toString());
                 } else if (status == 0) {
@@ -231,5 +231,22 @@ public class SshUtil {
         String newCommand= String.format("sudo pkill -f '%s'", commandToKill);
         log.info("Execute kill command:[{}] on host:[{}]", newCommand, ip);
         return exec(ip,newCommand,sshUser,sshPort,privateKey).getKey();
+    }
+
+    /**
+     * kill an executing command.
+     *
+     * @param ip
+     * @param sshUser
+     * @param sshPort
+     * @param privateKey
+     * @return
+     */
+    public static boolean portInUse(int port, String ip, String sshUser,int sshPort,String privateKey) {
+        String newCommand= String.format("sudo fuser %s/tcp 2>/dev/null | sed -e 's/\\\\s*//g'| tr -d '[:space:]'", port);
+        log.info("Execute command:[{}] on host:[{}]", newCommand, ip);
+
+        String result = exec(ip,newCommand,sshUser,sshPort,privateKey).getValue();
+        return StringUtils.isNotBlank(result);
     }
 }

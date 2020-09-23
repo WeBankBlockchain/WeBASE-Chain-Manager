@@ -16,18 +16,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NetUtils {
 
-    public static Pair<Boolean,Integer> checkPorts(String ip, int timeout, int ... portArray) {
-        if (ArrayUtils.isEmpty(portArray)){
-            return Pair.of(false,0);
+    public static Pair<Boolean, Integer> anyPortInUse(String ip, String sshUser,int sshPort,String privateKey, int ... portArray) {
+        if (ArrayUtils.isEmpty(portArray)) {
+            return Pair.of(false, 0);
         }
 
         for (int port : portArray) {
-            boolean reachable = checkAddress(ip, port, timeout);
-            if (reachable){
-                return Pair.of(true,port);
+            boolean inUse = SshUtil.portInUse(port,ip,sshUser,sshPort,privateKey);
+            if (inUse) {
+                return Pair.of(true, port);
             }
         }
-        return Pair.of(false,0);
+        return Pair.of(false, 0);
     }
 
 
@@ -42,20 +42,21 @@ public class NetUtils {
             // Return true if connection successful
             return true;
         } catch (IOException e) {
-            log.error("Connect to host:[{}] and port:[{}] with timeout:[{}] is error.", ip, port, newTimeout, e.getMessage() );
+            log.error("Connect to host:[{}] and port:[{}] with timeout:[{}] is error.", ip, port, newTimeout, e.getMessage());
         }
         return false;
     }
 
     /**
-     *  Check ip:port accessible.
+     * Check ip:port accessible.
+     *
      * @param address format ip:port, like 127.0.0.1:6004;
      * @param timeout
      * @return
      */
     public static boolean checkAddress(String address, int timeout) {
         String[] ipPortArray = address.split(":");
-        if (ArrayUtils.getLength(ipPortArray) != 2){
+        if (ArrayUtils.getLength(ipPortArray) != 2) {
             log.error("Address:[{}] format error, should be [ip:port], like 127.0.0.1:6004.", address);
             return false;
         }
@@ -67,5 +68,4 @@ public class NetUtils {
         }
         return false;
     }
-
 }
