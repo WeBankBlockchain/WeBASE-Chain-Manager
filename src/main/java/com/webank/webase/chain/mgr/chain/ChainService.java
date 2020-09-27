@@ -306,7 +306,7 @@ public class ChainService {
                 NodeConfig nodeConfig = NodeConfig.read(nodeRoot, encryptTypeEnum);
 
                 // frontPort = 5002 + indexOnHost(0,1,2,3...)
-                int frontPort = deployHost.getFrontPort() + nodeConfig.getHostIndex();
+                int frontPort = deployHost.getFrontPort() + (nodeConfig.getP2pPort() - deployHost.getP2pPort());
 
                 String frontDesc = String.format("front of chain:[%s] on host:[%s:%s]", newChain.getChainId(),
                         deployHost.getIp(), nodeConfig.getHostIndex());
