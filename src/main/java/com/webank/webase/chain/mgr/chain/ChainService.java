@@ -297,8 +297,8 @@ public class ChainService {
             } else { // new ip
                 for (int i = 0; i < deployHost.getNum(); i++) {
                     nodeOfHostList.add(nodeOfIpList.get(i));
-                    ipIndexMap.put(deployHost.getIp(), new AtomicInteger(deployHost.getNum()));
                 }
+                ipIndexMap.put(deployHost.getIp(), new AtomicInteger(deployHost.getNum()));
             }
 
             for (Path nodeRoot : CollectionUtils.emptyIfNull(nodeOfHostList)) {
