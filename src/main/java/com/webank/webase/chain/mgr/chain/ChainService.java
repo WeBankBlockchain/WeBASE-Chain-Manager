@@ -15,10 +15,9 @@ package com.webank.webase.chain.mgr.chain;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -273,12 +272,9 @@ public class ChainService {
                         reqDeploy.getStorageType(), DeployTypeEnum.API);
 
         // insert default group
-        Set<String> ipSet = new HashSet<>();
+        // TODO .fix
+        int index = 0;
         for (ReqDeploy.DeployHost deployHost : reqDeploy.getDeployHostList()) {
-            boolean add = ipSet.add(deployHost.getIp());
-            if (!add){ // ip already handled
-                continue;
-            }
             // save group if new , default node count = 0
             this.groupService.saveGroup(ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), 0, "deploy", GroupType.DEPLOY.getValue());
 
@@ -289,7 +285,13 @@ public class ChainService {
                 throw new BaseException(ConstantCode.LIST_HOST_NODE_DIR_ERROR, deployHost.getIp());
             }
 
-            for (Path nodeRoot : CollectionUtils.emptyIfNull(nodePathList)) {
+            List<Path> nodeOfHostList = new ArrayList<>();
+            for (int i = 0; i < deployHost.getNum(); i++) {
+                nodeOfHostList.add(nodePathList.get(index));
+                index ++ ;
+            }
+
+            for (Path nodeRoot : CollectionUtils.emptyIfNull(nodeOfHostList)) {
                 // get node properties
                 NodeConfig nodeConfig = NodeConfig.read(nodeRoot, encryptTypeEnum);
 
