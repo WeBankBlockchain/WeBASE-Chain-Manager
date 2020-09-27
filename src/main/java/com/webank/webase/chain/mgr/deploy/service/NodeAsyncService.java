@@ -412,7 +412,7 @@ public class NodeAsyncService {
                     initHostLatch.countDown();
                 }
             });
-            taskMap.put(host.getIp(), task);
+            taskMap.put(String.format("%s_%s", host.getExtHostId(),host.getIp()), task);
         }
 
         initHostLatch.await(constant.getExecHostInitTimeout(), TimeUnit.MILLISECONDS);
