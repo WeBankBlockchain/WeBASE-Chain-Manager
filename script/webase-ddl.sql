@@ -134,4 +134,19 @@ CREATE TABLE IF NOT EXISTS tb_contract (
     UNIQUE KEY uk_group_path_name (chain_id,group_id,contract_path,contract_name)
 ) ENGINE=InnoDB AUTO_INCREMENT=400001 DEFAULT CHARSET=utf8 COMMENT='合约表';
 
-
+-- ----------------------------
+-- Table structure for tb_method
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS tb_method (
+	id int(11) NOT NULL AUTO_INCREMENT COMMENT '自增编号',
+	contract_id int(11) NOT NULL COMMENT '所属合约编号',
+	chain_id int(11) NOT NULL COMMENT '所属区块链编号',
+	group_id int(11) NOT NULL COMMENT '所属群组编号',
+	method_id varchar(128) COMMENT '方法id',
+	method_name varchar(128) COMMENT '方法名',
+	method_type varchar(32) COMMENT '方法类型',
+	create_time datetime DEFAULT NULL COMMENT '创建时间',
+	modify_time datetime DEFAULT NULL COMMENT '修改时间',
+	PRIMARY KEY (id),
+	UNIQUE KEY uk_method (contract_id,method_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='方法解析信息表';
