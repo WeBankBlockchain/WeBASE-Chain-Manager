@@ -15,6 +15,7 @@
 package com.webank.webase.chain.mgr.deploy.service;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -115,9 +116,6 @@ public class NodeAsyncService {
                         FrontStatusEnum.INITIALIZED, FrontStatusEnum.RUNNING, FrontStatusEnum.STOPPED);
 
                 return;
-            } else {
-                log.error("Init host list failed:[{}]", chainName);
-                chainService.updateStatus(chain.getChainId(), ChainStatusEnum.DEPLOY_FAILED, "Deploy failed by unknown error.");
             }
         } catch (Exception e) {
             log.error("Init host list and start chain:[{}] error", chainName, e);
@@ -315,26 +313,32 @@ public class NodeAsyncService {
         AtomicInteger initSuccessCount = new AtomicInteger(0);
         Map<String, Future> taskMap = new HashedMap<>();
 
+
+        Set<String> ipSet = new HashSet<>();
         for (final ReqDeploy.DeployHost host : hostList) {
             Future<?> task = threadPoolTaskScheduler.submit(() -> {
                 try {
                     if (scpNodeConfig) {
-                        // scp config files from local to remote
-                        // local: NODES_ROOT/[chainName]/[ip] TO remote: /opt/fisco/[chainName]
-                        String src = String.format("%s/*", pathService.getHost(tbChain.getChainName(), host.getIp()).toString());
-                        String dst = PathService.getChainRootOnHost(host.getRootDirOnHost(), tbChain.getChainName());
-                        try {
-                            deployShellService.scp(ScpTypeEnum.UP, host.getSshUser(), host.getIp(), host.getSshPort(), src, dst);
-                            log.info("Send files from:[{}] to:[{}@{}#{}:{}] success.",
-                                    src, host.getSshUser(), host.getIp(), host.getSshPort(), dst);
-                        } catch (Exception e) {
-                            log.error("Send file to host :[{}] failed", host.getIp(), e);
-                            this.chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED,
-                                    String.format("Scp failed:[%s], please check space left or permission of directory:[%s]",
-                                            host.getIp(), host.getRootDirOnHost()));
-                            return;
+                        if (ipSet.contains(host.getIp())) {
+                            log.info("Already scp file to host:[{}]", host.getIp());
+                        }else{
+                            // scp config files from local to remote
+                            // local: NODES_ROOT/[chainName]/[ip] TO remote: /opt/fisco/[chainName]
+                            String src = String.format("%s/*", pathService.getHost(tbChain.getChainName(), host.getIp()).toString());
+                            String dst = PathService.getChainRootOnHost(host.getRootDirOnHost(), tbChain.getChainName());
+                            try {
+                                deployShellService.scp(ScpTypeEnum.UP, host.getSshUser(), host.getIp(), host.getSshPort(), src, dst);
+                                log.info("Send files from:[{}] to:[{}@{}#{}:{}] success.",
+                                        src, host.getSshUser(), host.getIp(), host.getSshPort(), dst);
+                                ipSet.add(host.getIp());
+                            } catch (Exception e) {
+                                log.error("Send file to host :[{}] failed", host.getIp(), e);
+                                this.chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED,
+                                        String.format("Scp failed:[%s], please check space left or permission of directory:[%s]",
+                                                host.getIp(), host.getRootDirOnHost()));
+                                return;
+                            }
                         }
-
                     }
 
                     // docker pull image
@@ -408,6 +412,8 @@ public class NodeAsyncService {
                     initSuccessCount.incrementAndGet();
                 } catch (Exception e) {
                     log.error("Init host:[{}] with unknown error", host.getIp(), e);
+                    chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED,
+                            String.format("Init host with unknown exception:[%s].", e.getMessage()));
                 } finally {
                     initHostLatch.countDown();
                 }
@@ -435,6 +441,8 @@ public class NodeAsyncService {
         } else {
             log.error("Host of chain:[{}] init failed: total:[{}], success:[{}]",
                     tbChain.getChainName(), CollectionUtils.size(hostList), initSuccessCount.get());
+            chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED,
+                    String.format("Init host error,total:[%s], success:[%s].", CollectionUtils.size(hostList), initSuccessCount.get()));
         }
         return hostInitSuccess;
     }
