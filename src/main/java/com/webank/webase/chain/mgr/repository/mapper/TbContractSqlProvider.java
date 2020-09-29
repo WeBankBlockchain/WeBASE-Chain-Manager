@@ -45,7 +45,7 @@ public class TbContractSqlProvider {
             sql.WHERE("contract_address = #{contractAddress}");
         }
         if (StringUtils.isNotBlank(param.getContractPath())) {
-            sql.WHERE("contract_path = #{contractVersion}");
+            sql.WHERE("contract_path = #{contractPath}");
         }
         if (param.getContractType() != null) {
             sql.WHERE("contract_type = #{contractType}");
