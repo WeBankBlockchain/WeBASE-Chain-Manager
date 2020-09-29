@@ -15,11 +15,13 @@ package com.webank.webase.chain.mgr.chain;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.aop.framework.AopContext;
@@ -137,7 +139,7 @@ public class ChainService {
         }
         if (CollectionUtils.isNotEmpty(chainInfo.getFrontList())) {
             chainInfo.getFrontList().forEach((front) -> {
-                log.info("Add front [{}:{}]",front.getFrontIp(),front.getFrontPort());
+                log.info("Add front [{}:{}]", front.getFrontIp(), front.getFrontPort());
                 front.setChainId(chainInfo.getChainId());
                 frontService.newFront(front);
             });
@@ -235,7 +237,7 @@ public class ChainService {
 
             String ipConfigLine = String.format("%s:%s %s %s %s,%s,%s",
                     host.getIp(), host.getNum(), host.getExtOrgId(), ConstantProperties.DEFAULT_GROUP_ID,
-                    host.getP2pPort(),host.getChannelPort(),host.getJsonrpcPort());
+                    host.getP2pPort(), host.getChannelPort(), host.getJsonrpcPort());
             ipConf[i] = ipConfigLine;
         }
 
@@ -272,29 +274,39 @@ public class ChainService {
                         version, encryptTypeEnum, ChainStatusEnum.INITIALIZED, reqDeploy.getConsensusType(),
                         reqDeploy.getStorageType(), DeployTypeEnum.API);
 
-        // insert default group
-        Set<String> ipSet = new HashSet<>();
-        for (ReqDeploy.DeployHost deployHost : reqDeploy.getDeployHostList()) {
-            boolean add = ipSet.add(deployHost.getIp());
-            if (!add){ // ip already handled
-                continue;
-            }
-            // save group if new , default node count = 0
-            this.groupService.saveGroup(ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), 0, "deploy", GroupType.DEPLOY.getValue());
+        // save group if new , default node count = 0
+        this.groupService.saveGroup(ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), 0, "deploy", GroupType.DEPLOY.getValue());
 
-            List<Path> nodePathList = null;
+        // insert default group
+        Map<String, AtomicInteger> ipIndexMap = new HashMap<>();
+        for (ReqDeploy.DeployHost deployHost : reqDeploy.getDeployHostList()) {
+            List<Path> nodeOfIpList = null;
             try {
-                nodePathList = pathService.listHostNodesPath(newChain.getChainName(), deployHost.getIp());
+                nodeOfIpList = pathService.listHostNodesPath(newChain.getChainName(), deployHost.getIp());
             } catch (Exception e) {
                 throw new BaseException(ConstantCode.LIST_HOST_NODE_DIR_ERROR, deployHost.getIp());
             }
 
-            for (Path nodeRoot : CollectionUtils.emptyIfNull(nodePathList)) {
+            List<Path> nodeOfHostList = new ArrayList<>();
+            AtomicInteger index = ipIndexMap.get(deployHost.getIp());
+            if (index != null) { // exists ip
+                for (int i = 0; i < deployHost.getNum(); i++) {
+                    nodeOfHostList.add(nodeOfIpList.get(index.get()));
+                    index.incrementAndGet();
+                }
+            } else { // new ip
+                for (int i = 0; i < deployHost.getNum(); i++) {
+                    nodeOfHostList.add(nodeOfIpList.get(i));
+                }
+                ipIndexMap.put(deployHost.getIp(), new AtomicInteger(deployHost.getNum()));
+            }
+
+            for (Path nodeRoot : CollectionUtils.emptyIfNull(nodeOfHostList)) {
                 // get node properties
                 NodeConfig nodeConfig = NodeConfig.read(nodeRoot, encryptTypeEnum);
 
                 // frontPort = 5002 + indexOnHost(0,1,2,3...)
-                int frontPort = deployHost.getFrontPort() + nodeConfig.getHostIndex();
+                int frontPort = deployHost.getFrontPort() + (nodeConfig.getP2pPort() - deployHost.getP2pPort());
 
                 String frontDesc = String.format("front of chain:[%s] on host:[%s:%s]", newChain.getChainId(),
                         deployHost.getIp(), nodeConfig.getHostIndex());

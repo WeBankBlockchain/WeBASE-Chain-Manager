@@ -61,7 +61,7 @@ public class TbNodeSqlProvider {
             sql.WHERE("node_ip = #{nodeIp}");
         }
         if (StringUtils.isNotBlank(param.getFlagSortedByTime())) {
-            sql.ORDER_BY("modify_time ${flagSortedByTime}");
+            sql.ORDER_BY(String.format("modify_time %s",param.getFlagSortedByTime()));
         }
         return sql;
     }
