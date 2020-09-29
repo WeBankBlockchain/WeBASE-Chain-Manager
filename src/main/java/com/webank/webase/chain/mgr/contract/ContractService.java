@@ -13,19 +13,6 @@
  */
 package com.webank.webase.chain.mgr.contract;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
@@ -36,6 +23,7 @@ import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
 import com.webank.webase.chain.mgr.contract.entity.Contract;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
+import com.webank.webase.chain.mgr.contract.entity.ReqContractDeploy;
 import com.webank.webase.chain.mgr.contract.entity.RespContractDeploy;
 import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
 import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
@@ -43,12 +31,22 @@ import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
+import com.webank.webase.chain.mgr.method.MethodService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
-import com.webank.webase.chain.mgr.contract.entity.ReqContractDeploy;
-
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * services for contract data.
@@ -65,6 +63,8 @@ public class ContractService {
     private FrontService frontService;
     @Autowired
     private TransactionRestTools transactionRestTools;
+    @Autowired
+    private MethodService methodService;
 
     /**
      * compile contract.
@@ -103,6 +103,8 @@ public class ContractService {
         } else {
             tbContract = updateContract(contract);// update
         }
+        // Async save method
+        methodService.saveMethodFromContract(tbContract);
         return tbContract;
     }
 
@@ -151,6 +153,8 @@ public class ContractService {
         verifyContractNotDeploy(chainId, contractId, groupId);
         // remove
         this.tbContractMapper.deleteByPrimaryKey(contractId);
+        // delete method
+        methodService.deleteByContractId(contractId);
         log.debug("end deleteContract");
     }
 
