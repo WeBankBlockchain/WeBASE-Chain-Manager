@@ -1,11 +1,11 @@
 /**
  * Copyright 2014-2019 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,9 @@ import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfSyncStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
+import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
+import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ValidateUtil;
@@ -53,8 +56,8 @@ import lombok.extern.log4j.Log4j2;
 @Service
 public class NodeService {
 
-    @Autowired
-    private TbNodeMapper tbNodeMapper;
+    @Autowired private TbNodeMapper tbNodeMapper;
+    @Autowired private TbGroupMapper tbGroupMapper;
     @Autowired
     private FrontInterfaceService frontInterface;
 
@@ -205,6 +208,18 @@ public class NodeService {
     /**
      * check node status
      */
+    public void checkAndUpdateNodeStatus(int chainId) {
+
+        List<TbGroup> tbGroups = tbGroupMapper.selectByChainId(chainId);
+        if (CollectionUtils.isEmpty(tbGroups)) {
+            return;
+        }
+
+        for (TbGroup tbGroup : tbGroups) {
+            this.checkAndUpdateNodeStatus(chainId, tbGroup.getGroupId());
+        }
+    }
+
     public void checkAndUpdateNodeStatus(int chainId, int groupId) {
         // get local node list
         List<TbNode> nodeList = queryByGroupId(chainId, groupId);
@@ -272,7 +287,6 @@ public class NodeService {
             // update node
             updateNode(tbNode);
         }
-
     }
 
     /**
@@ -303,10 +317,10 @@ public class NodeService {
             throw new BaseException(ConstantCode.FAIL_PARSE_JSON);
         }
         List<PeerOfConsensusStatus> dataIsList = new ArrayList<>();
-        for (int i = 0; i < jsonArr.size(); i++ ) {
+        for (int i = 0; i < jsonArr.size(); i++) {
             if (jsonArr.get(i) instanceof List) {
                 List<PeerOfConsensusStatus> tempList = JsonTools.toJavaObjectList(
-                    JsonTools.toJSONString(jsonArr.get(i)), PeerOfConsensusStatus.class);
+                        JsonTools.toJSONString(jsonArr.get(i)), PeerOfConsensusStatus.class);
                 if (tempList != null) {
                     dataIsList.addAll(tempList);
                 } else {
@@ -338,20 +352,20 @@ public class NodeService {
      * @param nodeId
      * @return
      */
-    public static String getNodeName(int chainId,int groupId, String nodeId) {
+    public static String getNodeName(int chainId, int groupId, String nodeId) {
         return String.format("%s_%s_%s", chainId, groupId, nodeId);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
     public TbNode insert(int chainId, String nodeId, String nodeName, int groupId, String ip, int p2pPort,
-            String description, final DataStatus dataStatus ) throws BaseException {
-        if (! ValidateUtil.ipv4Valid(ip)){
+                         String description, final DataStatus dataStatus) throws BaseException {
+        if (!ValidateUtil.ipv4Valid(ip)) {
             throw new BaseException(ConstantCode.IP_FORMAT_ERROR);
         }
 
         DataStatus newDataStatus = dataStatus == null ? DataStatus.INVALID : dataStatus;
 
-        TbNode node = TbNode.init(chainId,nodeId, nodeName, groupId, ip, p2pPort, description, newDataStatus);
+        TbNode node = TbNode.init(chainId, nodeId, nodeName, groupId, ip, p2pPort, description, newDataStatus);
 
         if (tbNodeMapper.insertSelective(node) != 1) {
             throw new BaseException(ConstantCode.INSERT_NODE_ERROR);
@@ -367,10 +381,10 @@ public class NodeService {
      * @param nodeId
      */
     public static void mvNodeOnRemoteHost(String ip, String rooDirOnHost, String chainName, int hostIndex, String nodeId,
-                                          String sshUser, int sshPort,String privateKey) {
+                                          String sshUser, int sshPort, String privateKey) {
         // create /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss as a parent
         String chainDeleteRootOnHost = PathService.getChainDeletedRootOnHost(rooDirOnHost, chainName);
-        SshUtil.createDirOnRemote(ip, chainDeleteRootOnHost,sshUser,sshPort,privateKey);
+        SshUtil.createDirOnRemote(ip, chainDeleteRootOnHost, sshUser, sshPort, privateKey);
 
         // e.g. /opt/fisco/default_chain
         String chainRootOnHost = PathService.getChainRootOnHost(rooDirOnHost, chainName);
@@ -381,6 +395,6 @@ public class NodeService {
         String dst_nodeDeletedRootOnHost =
                 PathService.getNodeDeletedRootOnHost(chainDeleteRootOnHost, nodeId);
         // move
-        SshUtil.mvDirOnRemote(ip, src_nodeRootOnHost, dst_nodeDeletedRootOnHost,sshUser,sshPort,privateKey);
+        SshUtil.mvDirOnRemote(ip, src_nodeRootOnHost, dst_nodeDeletedRootOnHost, sshUser, sshPort, privateKey);
     }
 }
