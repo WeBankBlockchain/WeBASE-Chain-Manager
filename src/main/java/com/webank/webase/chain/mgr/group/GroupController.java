@@ -13,29 +13,13 @@
  */
 package com.webank.webase.chain.mgr.group;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.controller.BaseController;
-import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.enums.DataStatus;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.front.FrontService;
-import com.webank.webase.chain.mgr.front.entity.TbFront;
-import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
-import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
-import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
-import com.webank.webase.chain.mgr.group.entity.ReqSetSysConfig;
-import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
-import com.webank.webase.chain.mgr.group.entity.TbGroup;
-import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
-import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+
 import javax.validation.Valid;
-import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -49,6 +33,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.controller.BaseController;
+import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.enums.DataStatus;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
+import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
+import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
+import com.webank.webase.chain.mgr.group.entity.ReqSetSysConfig;
+import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
+import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.TbGroup;
+import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
+import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
+
+import lombok.extern.log4j.Log4j2;
+
 /**
  * Controller for processing group information.
  */
@@ -57,6 +63,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("group")
 public class GroupController extends BaseController {
 
+    @Autowired
+    private TbGroupMapper tbGroupMapper;
     @Autowired
     private GroupService groupService;
     @Autowired
@@ -96,6 +104,9 @@ public class GroupController extends BaseController {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start generateGroup startTime:{} groupId:{}", startTime.toEpochMilli(),
                 req.getGenerateGroupId());
+        if (req.getGenerateGroupId() == ConstantProperties.DEFAULT_GROUP_ID){
+            throw new BaseException(ConstantCode.CANNOT_USE_DEFAULT_GROUP_ID);
+        }
         TbGroup tbGroup = groupService.generateGroup(req);
         baseResponse.setData(tbGroup);
         log.info("end generateGroup useTime:{}",
@@ -180,8 +191,8 @@ public class GroupController extends BaseController {
         log.info("start getAllGroup startTime:{}", startTime.toEpochMilli());
 
         // get group list
-        Integer count = groupService.countOfGroup(chainId, null, DataStatus.NORMAL.getValue());
-        if (count != null && count > 0) {
+        int count = this.tbGroupMapper.countByChainIdAndGroupStatus(chainId, DataStatus.NORMAL.getValue());
+        if (count > 0) {
             List<TbGroup> groupList =
                     groupService.getGroupList(chainId, DataStatus.NORMAL.getValue());
             pagesponse.setTotalCount(count);
@@ -395,6 +406,36 @@ public class GroupController extends BaseController {
                 tbFront.getFrontPort(), groupId, type, keepEndDate);
 
         log.info("end deleteData useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return result;
+    }
+
+
+    /**
+     * get node consensus list.
+     */
+    @GetMapping("consensus/list/{chainId}/{groupId}")
+    public Object getConsensusList(@PathVariable("chainId") Integer chainId,
+                                   @PathVariable("groupId") Integer groupId,
+                                   @RequestParam(defaultValue = "10") Integer pageSize,
+                                   @RequestParam(defaultValue = "1") Integer pageNumber) {
+
+        Instant startTime = Instant.now();
+        log.info("start consensus list startTime:{}", startTime.toEpochMilli());
+
+        int newGroupId  = groupId == null || groupId <=0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId ;
+
+        // get front
+        TbFront tbFront = frontService.getByChainIdAndGroupId(chainId,newGroupId);
+        if (tbFront == null) {
+            log.error("fail getConsensusList node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+
+        Object result = frontInterfaceService.getConsensusList(tbFront.getFrontIp(),
+                tbFront.getFrontPort(), newGroupId, pageSize, pageNumber);
+
+        log.info("end getConsensusList useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
         return result;
     }

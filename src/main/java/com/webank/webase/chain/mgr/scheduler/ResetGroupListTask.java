@@ -13,11 +13,12 @@
  */
 package com.webank.webase.chain.mgr.scheduler;
 
-import com.webank.webase.chain.mgr.group.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import com.webank.webase.chain.mgr.group.GroupService;
 
 @Component
 public class ResetGroupListTask {

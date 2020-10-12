@@ -7,15 +7,17 @@ server:
 
 #mybatis config
 mybatis:
-  typeAliasesPackage: com.webank.webase.chain.mgr
-  mapperLocations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  typeAliasesPackage: com.webank.webase.chain.mgr.repository.bean
+
 
 
 # database connection configuration
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/webasechainmanager?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull
+    url: jdbc:mysql://127.0.0.1:3306/webasechainmanager?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
     username: "defaultAccount"
     password: "defaultPassword"
 
@@ -37,6 +39,22 @@ constant:
   contractDeployTimeOut: 30000
   maxRequestFail: 3
   sleepWhenHttpMaxFail: 60000
+
+
+  ## 部署配置
+  dockerRepository: fiscoorg/fisco-webase
+  dockerRestartPeriodTime: 30000
+  webaseSignAddress: "127.0.0.1:5004"
+  # SSH 免密登录的账号
+  sshDefaultUser: root
+  # SSH 服务的端口
+  sshDefaultPort: 22
+
+  # 链 chainId 和交易服地址的对应关系，可配置多行
+  # 1 表示链 id，127.0.0.1:5003 表示交易服地址
+  # 需要在部署链成功后，再启动交易服
+  transactionMap: # webase-transaction 配置，跟 ChainId 相关
+    1: "127.0.0.1:5003"
 
 # executor config
 executor:

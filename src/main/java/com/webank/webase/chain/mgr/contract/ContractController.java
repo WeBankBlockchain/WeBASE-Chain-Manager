@@ -13,29 +13,14 @@
  */
 package com.webank.webase.chain.mgr.contract;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.controller.BaseController;
-import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.enums.SqlSortType;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
-import com.webank.webase.chain.mgr.contract.entity.Contract;
-import com.webank.webase.chain.mgr.contract.entity.ContractParam;
-import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
-import com.webank.webase.chain.mgr.contract.entity.QueryContractParam;
-import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
-import com.webank.webase.chain.mgr.contract.entity.TbContract;
-import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
-import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+
 import javax.validation.Valid;
-import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -47,13 +32,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.controller.BaseController;
+import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.enums.SqlSortType;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
+import com.webank.webase.chain.mgr.contract.entity.Contract;
+import com.webank.webase.chain.mgr.contract.entity.ContractParam;
+import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
+import com.webank.webase.chain.mgr.contract.entity.QueryContractParam;
+import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
+import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
+import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
+import com.webank.webase.chain.mgr.repository.bean.TbContract;
+
+import lombok.extern.log4j.Log4j2;
+
 @Log4j2
 @RestController
 @RequestMapping("contract")
 public class ContractController extends BaseController {
 
-    @Autowired
-    private ContractService contractService;
+    @Autowired private ContractService contractService;
 
     /**
      * compile deployInputParam.
@@ -166,7 +169,7 @@ public class ContractController extends BaseController {
         log.info("start queryContract startTime:{} contractId:{}", startTime.toEpochMilli(),
                 contractId);
 
-        TbContract contractRow = contractService.queryByContractId(contractId);
+        TbContract contractRow = contractService.getByContractId(contractId);
         baseResponse.setData(contractRow);
 
         log.info("end queryContract useTime:{}",
@@ -194,6 +197,7 @@ public class ContractController extends BaseController {
 
         return baseResponse;
     }
+
 
     /**
      * send transaction.
@@ -230,5 +234,24 @@ public class ContractController extends BaseController {
         log.info("end statusManage useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
         return contractStatusManageResult;
+    }
+
+    /**
+     * deploy deployInputParam.
+     */
+    @PostMapping(value = "/deploy/transaction/{contractId}/{signUserId}")
+    public Object deployByTransaction(
+            @PathVariable int contractId,
+            @PathVariable String signUserId,
+            @RequestBody List<Object> constructorParams
+    ) throws BaseException {
+        Instant startTime = Instant.now();
+        log.info("start deployByTransaction startTime:{}, signUserId:{}, contractId:{}",
+                startTime.toEpochMilli(), signUserId, contractId);
+
+        Object result = contractService.deployByTransactionServer(contractId, signUserId,constructorParams);
+        log.info("end deployByTransaction useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
+
+        return result;
     }
 }

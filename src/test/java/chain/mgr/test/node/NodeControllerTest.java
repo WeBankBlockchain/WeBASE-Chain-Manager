@@ -13,9 +13,6 @@
  */
 package chain.mgr.test.node;
 
-import com.webank.webase.chain.mgr.Application;
-import com.webank.webase.chain.mgr.node.NodeService;
-import com.webank.webase.chain.mgr.node.entity.TbNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +28,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import com.webank.webase.chain.mgr.Application;
+import com.webank.webase.chain.mgr.node.NodeService;
+import com.webank.webase.chain.mgr.repository.bean.TbNode;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)

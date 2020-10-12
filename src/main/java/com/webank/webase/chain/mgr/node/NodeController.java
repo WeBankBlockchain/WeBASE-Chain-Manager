@@ -13,24 +13,12 @@
  */
 package com.webank.webase.chain.mgr.node;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.controller.BaseController;
-import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.front.FrontService;
-import com.webank.webase.chain.mgr.front.entity.TbFront;
-import com.webank.webase.chain.mgr.front.entity.TransactionCount;
-import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
-import com.webank.webase.chain.mgr.node.entity.NodeParam;
-import com.webank.webase.chain.mgr.node.entity.TbNode;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import lombok.extern.log4j.Log4j2;
+
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -40,6 +28,22 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.controller.BaseController;
+import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.front.entity.TransactionCount;
+import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
+import com.webank.webase.chain.mgr.node.entity.NodeParam;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.TbNode;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Controller for node data.
@@ -56,6 +60,20 @@ public class NodeController extends BaseController {
     @Autowired
     private FrontInterfaceService frontInterfaceService;
 
+    @GetMapping(value = "/all")
+    public BaseResponse allNode() throws BaseException {
+        Instant startTime = Instant.now();
+        log.info( "start get all node startTime:{} ", startTime.toEpochMilli());
+
+        // param
+        List<TbNode> nodeList = nodeService.qureyNodeList(new NodeParam());
+
+        log.info("end get all node useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JsonTools.toJSONString(nodeList));
+        return BaseResponse.success(nodeList);
+    }
+
     /**
      * qurey node info list.
      */
@@ -71,13 +89,16 @@ public class NodeController extends BaseController {
                 "start queryNodeList startTime:{} groupId:{} pageNumber:{} pageSize:{} nodeName:{}",
                 startTime.toEpochMilli(), groupId, pageNumber, pageSize, nodeId);
 
+
+        int newGroupId  = groupId == null || groupId <=0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId ;
+
         // check node status before query
-        nodeService.checkAndUpdateNodeStatus(chainId, groupId);
+        nodeService.checkAndUpdateNodeStatus(chainId, newGroupId);
 
         // param
         NodeParam queryParam = new NodeParam();
         queryParam.setChainId(chainId);
-        queryParam.setGroupId(groupId);
+        queryParam.setGroupId(newGroupId);
         queryParam.setNodeId(nodeId);
         queryParam.setPageSize(pageSize);
         Integer count = nodeService.countOfNode(queryParam);

@@ -13,24 +13,30 @@
  */
 package com.webank.webase.chain.mgr.contract;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
 import com.webank.webase.chain.mgr.contract.entity.Contract;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
+import com.webank.webase.chain.mgr.contract.entity.ReqContractDeploy;
+import com.webank.webase.chain.mgr.contract.entity.RespContractDeploy;
 import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
-import com.webank.webase.chain.mgr.contract.entity.TbContract;
 import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
-import com.webank.webase.chain.mgr.front.entity.TbFront;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
+import com.webank.webase.chain.mgr.method.MethodService;
+import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,15 +56,19 @@ import org.springframework.stereotype.Service;
 public class ContractService {
 
     @Autowired
-    private ContractMapper contractMapper;
+    private TbContractMapper tbContractMapper;
     @Autowired
     private FrontInterfaceService frontInterface;
     @Autowired
     private FrontService frontService;
+    @Autowired
+    private TransactionRestTools transactionRestTools;
+    @Autowired
+    private MethodService methodService;
 
     /**
      * compile contract.
-     * 
+     *
      */
     @SuppressWarnings("unchecked")
     public List<RspContractCompile> compileContract(CompileInputParam inputParam)
@@ -93,6 +103,8 @@ public class ContractService {
         } else {
             tbContract = updateContract(contract);// update
         }
+        // Async save method
+        methodService.saveMethodFromContract(tbContract);
         return tbContract;
     }
 
@@ -108,8 +120,11 @@ public class ContractService {
         // add to database.
         TbContract tbContract = new TbContract();
         BeanUtils.copyProperties(contract, tbContract);
-        contractMapper.add(tbContract);
-        return queryByContractId(tbContract.getContractId());
+        Date now = new Date();
+        tbContract.setCreateTime(now);
+        tbContract.setModifyTime(now);
+        tbContractMapper.insertSelective(tbContract);
+        return this.tbContractMapper.selectByPrimaryKey(tbContract.getContractId());
     }
 
 
@@ -124,8 +139,9 @@ public class ContractService {
         verifyContractNameNotExist(contract.getChainId(), contract.getGroupId(),
                 contract.getContractPath(), contract.getContractName(), contract.getContractId());
         BeanUtils.copyProperties(contract, tbContract);
-        contractMapper.update(tbContract);
-        return queryByContractId(tbContract.getContractId());
+        tbContract.setModifyTime(new Date());
+        tbContractMapper.updateByPrimaryKeySelective(tbContract);
+        return getByContractId(tbContract.getContractId());
     }
 
     /**
@@ -136,7 +152,9 @@ public class ContractService {
         // check contract id
         verifyContractNotDeploy(chainId, contractId, groupId);
         // remove
-        contractMapper.remove(contractId);
+        this.tbContractMapper.deleteByPrimaryKey(contractId);
+        // delete method
+        methodService.deleteByContractId(contractId);
         log.debug("end deleteContract");
     }
 
@@ -149,7 +167,7 @@ public class ContractService {
             return;
         }
         // remove
-        contractMapper.removeByChainId(chainId);
+        this.tbContractMapper.deleteByChainId(chainId);
         log.debug("end deleteContractByChainId");
     }
 
@@ -160,7 +178,7 @@ public class ContractService {
         if (chainId == 0 || groupId == 0) {
             return;
         }
-        contractMapper.removeByGroupId(chainId, groupId);
+        this.tbContractMapper.deleteByChainIdAndGroupId(chainId, groupId);
     }
 
     /**
@@ -170,7 +188,7 @@ public class ContractService {
         log.debug("start qureyContractList ContractListParam:{}", JsonTools.toJSONString(param));
 
         // query contract list
-        List<TbContract> listOfContract = contractMapper.listOfContract(param);
+        List<TbContract> listOfContract = this.tbContractMapper.selectByParam(param);
 
         log.debug("end qureyContractList listOfContract:{}", JsonTools.toJSONString(listOfContract));
         return listOfContract;
@@ -183,7 +201,7 @@ public class ContractService {
     public int countOfContract(ContractParam param) throws BaseException {
         log.debug("start countOfContract ContractListParam:{}", JsonTools.toJSONString(param));
         try {
-            return contractMapper.countOfContract(param);
+            return this.tbContractMapper.countByParam(param);
         } catch (RuntimeException ex) {
             log.error("fail countOfContract", ex);
             throw new BaseException(ConstantCode.DB_EXCEPTION);
@@ -193,10 +211,10 @@ public class ContractService {
     /**
      * query contract by contract id.
      */
-    public TbContract queryByContractId(Integer contractId) throws BaseException {
+    public TbContract getByContractId(Integer contractId) throws BaseException {
         log.debug("start queryContract contractId:{}", contractId);
         try {
-            TbContract contractRow = contractMapper.queryByContractId(contractId);
+            TbContract contractRow = tbContractMapper.selectByPrimaryKey(contractId);
             log.debug("start queryContract contractId:{} contractRow:{}", contractId,
                     JsonTools.toJSONString(contractRow));
             return contractRow;
@@ -210,27 +228,27 @@ public class ContractService {
     /**
      * query DeployInputParam By Address.
      */
-    public List<TbContract> queryContractByBin(Integer groupId, String contractBin)
-            throws BaseException {
-        try {
-            if (StringUtils.isEmpty(contractBin)) {
-                return null;
-            }
-            List<TbContract> contractRow = contractMapper.queryContractByBin(groupId, contractBin);
-            log.debug("start queryContractByBin:{}", contractBin, JsonTools.toJSONString(contractRow));
-            return contractRow;
-        } catch (RuntimeException ex) {
-            log.error("fail queryContractByBin", ex);
-            throw new BaseException(ConstantCode.DB_EXCEPTION);
-        }
-    }
+//    public List<TbContract> queryContractByBin(Integer groupId, String contractBin)
+//            throws BaseException {
+//        try {
+//            if (StringUtils.isEmpty(contractBin)) {
+//                return null;
+//            }
+//            List<TbContract> contractRow = this.tbContractMapper.selectByBin(groupId, contractBin);
+//            log.debug("start queryContractByBin:{}", contractBin, JsonTools.toJSONString(contractRow));
+//            return contractRow;
+//        } catch (RuntimeException ex) {
+//            log.error("fail queryContractByBin", ex);
+//            throw new BaseException(ConstantCode.DB_EXCEPTION);
+//        }
+//    }
 
     /**
      * query contract info.
      */
     public TbContract queryContract(ContractParam queryParam) {
         log.debug("start queryContract. queryParam:{}", JsonTools.toJSONString(queryParam));
-        TbContract tbContract = contractMapper.queryContract(queryParam);
+        TbContract tbContract = this.tbContractMapper.getByParam(queryParam);
         log.debug("end queryContract. queryParam:{} tbContract:{}", JsonTools.toJSONString(queryParam),
                 JsonTools.toJSONString(tbContract));
         return tbContract;
@@ -285,12 +303,13 @@ public class ContractService {
         BeanUtils.copyProperties(inputParam, tbContract);
         tbContract.setContractAddress(contractAddress);
         tbContract.setContractStatus(ContractStatus.DEPLOYED.getValue());
-        tbContract.setDeployTime(LocalDateTime.now());
-        contractMapper.update(tbContract);
+        tbContract.setDeployTime(new Date());
+        tbContract.setContractId(inputParam.getContractId());
+        this.tbContractMapper.updateByPrimaryKeySelective(tbContract);
 
         log.debug("end deployContract. contractId:{} groupId:{} contractAddress:{}",
                 tbContract.getContractId(), groupId, contractAddress);
-        return queryByContractId(tbContract.getContractId());
+        return getByContractId(tbContract.getContractId());
     }
 
     /**
@@ -426,5 +445,47 @@ public class ContractService {
         if (contractId != localContract.getContractId()) {
             throw new BaseException(ConstantCode.CONTRACT_NAME_REPEAT);
         }
+    }
+
+    /**
+     * @param contractId
+     * @param signUserId
+     * @return
+     */
+    public Object deployByTransactionServer(int contractId, String signUserId,List<Object> constructorParams) {
+        TbContract tbContract = this.tbContractMapper.selectByPrimaryKey(contractId);
+        if (tbContract == null) {
+            return new BaseResponse(ConstantCode.INVALID_CONTRACT_ID);
+        }
+
+        String url = String.format(TransactionRestTools.URI_CONTRACT_DEPLOY, transactionRestTools.getBaseUrl(tbContract.getChainId()));
+        ReqContractDeploy contractDeploy = new ReqContractDeploy();
+        BeanUtils.copyProperties(tbContract, contractDeploy);
+        contractDeploy.setSignUserId(signUserId);
+        contractDeploy.setContractAbi(JsonTools.toJavaObjectList(tbContract.getContractAbi(), Object.class));
+        contractDeploy.setFuncParam(constructorParams);
+        log.info("Request transaction server:[{}]:[{}]", url, JsonTools.toJSONString(contractDeploy));
+        BaseResponse response = transactionRestTools.post(url, contractDeploy, BaseResponse.class);
+
+        Date now = new Date();
+        TbContract contractToUpdate = new TbContract();
+        contractToUpdate.setContractId(contractId);
+        contractToUpdate.setDeployTime(now);
+        contractToUpdate.setModifyTime(now);
+        if (response.isSuccess()) {
+            RespContractDeploy deploy = JsonTools.stringToObj(JsonTools.objToString(response.getData()),
+                    new TypeReference<RespContractDeploy>() {
+                    });
+            contractToUpdate.setContractAddress(deploy.getContractAddress());
+            contractToUpdate.setContractStatus(ContractStatus.DEPLOYED.getValue());
+        }else{
+            contractToUpdate.setContractStatus(ContractStatus.DEPLOYMENTFAILED.getValue());
+        }
+        this.update(contractToUpdate);
+        return response;
+    }
+
+    public boolean update(TbContract tbContract) {
+        return this.tbContractMapper.updateByPrimaryKeySelective(tbContract) == 1;
     }
 }

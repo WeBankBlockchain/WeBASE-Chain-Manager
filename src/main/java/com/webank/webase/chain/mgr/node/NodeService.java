@@ -13,29 +13,38 @@
  */
 package com.webank.webase.chain.mgr.node;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import java.math.BigInteger;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.deploy.service.PathService;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfConsensusStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfSyncStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
-import com.webank.webase.chain.mgr.node.entity.TbNode;
-import java.math.BigInteger;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import com.webank.webase.chain.mgr.repository.bean.TbNode;
+import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
+import com.webank.webase.chain.mgr.util.SshUtil;
+import com.webank.webase.chain.mgr.util.ValidateUtil;
+
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * services for node data.
@@ -45,7 +54,7 @@ import org.springframework.stereotype.Service;
 public class NodeService {
 
     @Autowired
-    private NodeMapper nodeMapper;
+    private TbNodeMapper tbNodeMapper;
     @Autowired
     private FrontInterfaceService frontInterface;
 
@@ -74,7 +83,10 @@ public class NodeService {
         tbNode.setNodeIp(nodeIp);
         tbNode.setNodeName(nodeName);
         tbNode.setP2pPort(nodeP2PPort);
-        nodeMapper.add(tbNode);
+        Date now = new Date();
+        tbNode.setCreateTime(now);
+        tbNode.setModifyTime(now);
+        this.tbNodeMapper.insertSelective(tbNode);
     }
 
     /**
@@ -83,7 +95,7 @@ public class NodeService {
     public Integer countOfNode(NodeParam queryParam) throws BaseException {
         log.debug("start countOfNode queryParam:{}", JsonTools.toJSONString(queryParam));
         try {
-            Integer nodeCount = nodeMapper.getCount(queryParam);
+            Integer nodeCount = this.tbNodeMapper.countByParam(queryParam);
             log.debug("end countOfNode nodeCount:{} queryParam:{}", nodeCount,
                     JsonTools.toJSONString(queryParam));
             return nodeCount;
@@ -100,7 +112,7 @@ public class NodeService {
         log.debug("start qureyNodeList queryParam:{}", JsonTools.toJSONString(queryParam));
 
         // query node list
-        List<TbNode> listOfNode = nodeMapper.getList(queryParam);
+        List<TbNode> listOfNode = this.tbNodeMapper.selectByParam(queryParam);
 
         log.debug("end qureyNodeList listOfNode:{}", JsonTools.toJSONString(listOfNode));
         return listOfNode;
@@ -129,7 +141,7 @@ public class NodeService {
     public TbNode queryByNodeId(String nodeId) throws BaseException {
         log.debug("start queryNode nodeId:{}", nodeId);
         try {
-            TbNode nodeRow = nodeMapper.queryByNodeId(nodeId);
+            TbNode nodeRow = this.tbNodeMapper.getByNodeId(nodeId);
             log.debug("end queryNode nodeId:{} TbNode:{}", nodeId, JsonTools.toJSONString(nodeRow));
             return nodeRow;
         } catch (RuntimeException ex) {
@@ -146,8 +158,9 @@ public class NodeService {
         log.debug("start updateNodeInfo  param:{}", JsonTools.toJSONString(tbNode));
         Integer affectRow = 0;
         try {
+            tbNode.setModifyTime(new Date());
 
-            affectRow = nodeMapper.update(tbNode);
+            affectRow = tbNodeMapper.update(tbNode);
         } catch (RuntimeException ex) {
             log.error("updateNodeInfo exception", ex);
             throw new BaseException(ConstantCode.DB_EXCEPTION);
@@ -161,21 +174,11 @@ public class NodeService {
     }
 
     /**
-     * query node info.
-     */
-    public TbNode queryNodeInfo(NodeParam nodeParam) {
-        log.debug("start queryNodeInfo nodeParam:{}", JsonTools.toJSONString(nodeParam));
-        TbNode tbNode = nodeMapper.queryNodeInfo(nodeParam);
-        log.debug("end queryNodeInfo result:{}", tbNode);
-        return tbNode;
-    }
-
-    /**
      * delete by node and group.
      */
     public void deleteByNodeAndGroupId(String nodeId, int groupId) throws BaseException {
         log.debug("start deleteByNodeAndGroupId nodeId:{} groupId:{}", nodeId, groupId);
-        nodeMapper.deleteByNodeAndGroup(nodeId, groupId);
+        tbNodeMapper.deleteByNodeIdAndGroupId(nodeId, groupId);
         log.debug("end deleteByNodeAndGroupId");
     }
 
@@ -186,7 +189,7 @@ public class NodeService {
         if (chainId == 0 || groupId == 0) {
             return;
         }
-        nodeMapper.deleteByGroupId(chainId, groupId);
+        tbNodeMapper.deleteByChainIdAndGroupId(chainId, groupId);
     }
 
     /**
@@ -196,7 +199,7 @@ public class NodeService {
         if (chainId == 0) {
             return;
         }
-        nodeMapper.deleteByChainId(chainId);
+        this.tbNodeMapper.deleteByChainId(chainId);
     }
 
     /**
@@ -218,10 +221,10 @@ public class NodeService {
 
         for (TbNode tbNode : nodeList) {
             String nodeId = tbNode.getNodeId();
-            BigInteger localBlockNumber = tbNode.getBlockNumber();
-            BigInteger localPbftView = tbNode.getPbftView();
-            LocalDateTime modifyTime = tbNode.getModifyTime();
-            LocalDateTime createTime = tbNode.getCreateTime();
+            BigInteger localBlockNumber = BigInteger.valueOf(tbNode.getBlockNumber());
+            BigInteger localPbftView = BigInteger.valueOf(tbNode.getPbftView());
+            LocalDateTime modifyTime = CommonUtils.timestamp2LocalDateTime(tbNode.getModifyTime().getTime());
+            LocalDateTime createTime = CommonUtils.timestamp2LocalDateTime(tbNode.getCreateTime().getTime());
 
             Duration duration = Duration.between(modifyTime, LocalDateTime.now());
             Long subTime = duration.toMillis();
@@ -249,8 +252,8 @@ public class NodeService {
                             nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
                     tbNode.setNodeActive(DataStatus.INVALID.getValue());
                 } else {
-                    tbNode.setBlockNumber(latestNumber);
-                    tbNode.setPbftView(latestView);
+                    tbNode.setBlockNumber(latestNumber.longValue());
+                    tbNode.setPbftView(latestView.longValue());
                     tbNode.setNodeActive(DataStatus.NORMAL.getValue());
                 }
             } else { // observer
@@ -260,8 +263,8 @@ public class NodeService {
                             nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
                     tbNode.setNodeActive(DataStatus.INVALID.getValue());
                 } else {
-                    tbNode.setBlockNumber(latestNumber);
-                    tbNode.setPbftView(latestView);
+                    tbNode.setBlockNumber(latestNumber.longValue());
+                    tbNode.setPbftView(latestView.longValue());
                     tbNode.setNodeActive(DataStatus.NORMAL.getValue());
                 }
             }
@@ -326,5 +329,58 @@ public class NodeService {
         observerList.stream().forEach(nodeId -> resList.add(new PeerInfo(nodeId)));
         log.debug("end getSealerAndObserverList resList:{}", resList);
         return resList;
+    }
+
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param nodeId
+     * @return
+     */
+    public static String getNodeName(int chainId,int groupId, String nodeId) {
+        return String.format("%s_%s_%s", chainId, groupId, nodeId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public TbNode insert(int chainId, String nodeId, String nodeName, int groupId, String ip, int p2pPort,
+            String description, final DataStatus dataStatus ) throws BaseException {
+        if (! ValidateUtil.ipv4Valid(ip)){
+            throw new BaseException(ConstantCode.IP_FORMAT_ERROR);
+        }
+
+        DataStatus newDataStatus = dataStatus == null ? DataStatus.INVALID : dataStatus;
+
+        TbNode node = TbNode.init(chainId,nodeId, nodeName, groupId, ip, p2pPort, description, newDataStatus);
+
+        if (tbNodeMapper.insertSelective(node) != 1) {
+            throw new BaseException(ConstantCode.INSERT_NODE_ERROR);
+        }
+        return node;
+    }
+
+    /**
+     * @param ip
+     * @param rooDirOnHost
+     * @param chainName
+     * @param hostIndex
+     * @param nodeId
+     */
+    public static void mvNodeOnRemoteHost(String ip, String rooDirOnHost, String chainName, int hostIndex, String nodeId,
+                                          String sshUser, int sshPort,String privateKey) {
+        // create /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss as a parent
+        String chainDeleteRootOnHost = PathService.getChainDeletedRootOnHost(rooDirOnHost, chainName);
+        SshUtil.createDirOnRemote(ip, chainDeleteRootOnHost,sshUser,sshPort,privateKey);
+
+        // e.g. /opt/fisco/default_chain
+        String chainRootOnHost = PathService.getChainRootOnHost(rooDirOnHost, chainName);
+        // e.g. /opt/fisco/default_chain/node[x]
+        String src_nodeRootOnHost = PathService.getNodeRootOnHost(chainRootOnHost, hostIndex);
+
+        // move to /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss/[nodeid(128)]
+        String dst_nodeDeletedRootOnHost =
+                PathService.getNodeDeletedRootOnHost(chainDeleteRootOnHost, nodeId);
+        // move
+        SshUtil.mvDirOnRemote(ip, src_nodeRootOnHost, dst_nodeDeletedRootOnHost,sshUser,sshPort,privateKey);
     }
 }
