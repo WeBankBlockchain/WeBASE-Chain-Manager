@@ -107,7 +107,7 @@ public class DeployShellService {
      * @return
      */
     public void execHostOperate(String ip, int port, String user, String pwd, String chainRoot) {
-        log.info("Exec execHostOperate method for [{}@{}:{}#{}]", user, ip, port, pwd);
+        log.info("Exec execHostOperate method for [{}@{}:{}]", user, ip, port);
 
         int newport = port <= 0 || port > 65535 ? SshUtil.DEFAULT_SSH_PORT : port;
         String newUser = StringUtils.isBlank(user) ? SshUtil.DEFAULT_SSH_USER : user;
