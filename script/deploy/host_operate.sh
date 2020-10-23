@@ -213,14 +213,14 @@ function init() {
         fi
         
         ## config docker listen on tcp:3000
-        if [[ "${use_docker_sdk}"x == "yes"x ]] ; then
-            cat "${__dir}/host_docker_tcp.sh" | sshExec bash -e -x
-            status=($?)
-            if [[ $status != 0 ]] ;then
-                echo "Config docker list on tcp:3000 ERROR!!!"
-                exit "$status"
-            fi
-        fi
+        #if [[ "${use_docker_sdk}"x == "yes"x ]] ; then
+        #    cat "${__dir}/host_docker_tcp.sh" | sshExec bash -e -x
+        #    status=($?)
+        #    if [[ $status != 0 ]] ;then
+        #        echo "Config docker list on tcp:3000 ERROR!!!"
+        #        exit "$status"
+        #    fi
+        #fi
 
         echo "mkdir node root ${node_root} on remote"
         sshExec "sudo mkdir -p ${node_root} && sudo chown -R ${user} ${node_root} && sudo chgrp -R ${user} ${node_root}"
