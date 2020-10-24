@@ -36,12 +36,14 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
 import com.webank.webase.chain.mgr.deploy.service.DeployService;
+import com.webank.webase.chain.mgr.deploy.service.NodeAsyncService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 
@@ -63,7 +65,7 @@ public class ChainController extends BaseController {
     private ChainService chainService;
 
     @Autowired private DeployService deployService;
-
+    @Autowired private NodeAsyncService nodeAsyncService;
     /**
      * add new chain
      */
@@ -144,8 +146,17 @@ public class ChainController extends BaseController {
                 reqDeploy.setChainName(String.valueOf(reqDeploy.getChainId()));
             }
 
+            DockerImageTypeEnum imageTypeEnum = DockerImageTypeEnum.getById(reqDeploy.getDockerImageType());
+            if (imageTypeEnum == null) {
+                throw new BaseException(ConstantCode.UNKNOWN_DOCKER_IMAGE_TYPE);
+            }
+
             // generate node config and return shell execution log
-            this.deployService.deployChain(reqDeploy);
+            this.deployService.deployChain(reqDeploy,imageTypeEnum);
+
+
+            // init host and start node
+            this.nodeAsyncService.asyncDeployChain(reqDeploy, OptionType.DEPLOY_CHAIN, imageTypeEnum);
 
             return new BaseResponse(ConstantCode.SUCCESS);
         } catch (BaseException e) {

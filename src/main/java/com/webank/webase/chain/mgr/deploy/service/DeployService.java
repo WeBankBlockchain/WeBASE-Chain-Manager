@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
-import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.chain.ChainService;
@@ -34,19 +33,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DeployService {
     @Autowired private ChainService chainService;
-    @Autowired private NodeAsyncService nodeAsyncService;
     @Autowired private ConstantProperties constantProperties;
 
     /**
      * @param deploy
+     * @param imageTypeEnum
      * @return
      */
     @Transactional(propagation = Propagation.REQUIRED)
-    public void deployChain(ReqDeploy deploy) throws BaseException {
-        DockerImageTypeEnum imageTypeEnum = DockerImageTypeEnum.getById(deploy.getDockerImageType());
-        if (imageTypeEnum == null) {
-            throw new BaseException(ConstantCode.UNKNOWN_DOCKER_IMAGE_TYPE);
-        }
+    public void deployChain(ReqDeploy deploy, DockerImageTypeEnum imageTypeEnum) throws BaseException {
 
         // check image tar file when install with offline
         if (imageTypeEnum == DockerImageTypeEnum.LOCAL_OFFLINE){
@@ -59,9 +54,6 @@ public class DeployService {
 
         // generate config files and insert data to db
         this.chainService.generateChainConfig(deploy, imageTypeEnum);
-
-        // init host and start node
-        this.nodeAsyncService.asyncDeployChain(deploy, OptionType.DEPLOY_CHAIN, imageTypeEnum);
     }
 
 
