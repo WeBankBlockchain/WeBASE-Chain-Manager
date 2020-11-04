@@ -74,5 +74,7 @@ public class DockerOptionsCmdImpl implements DockerOptions{
         String dockerRmCommand = String.format("sudo docker rm -f %s ", containerName);
         SshUtil.execDocker(ip,dockerRmCommand,sshUser,sshPort,constant.getPrivateKey());
     }
+
+
 }
 

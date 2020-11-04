@@ -156,14 +156,29 @@ constant:
   # 1 表示链 id，127.0.0.1:5003 表示交易服地址
   # 需要在部署链成功后，再启动交易服
   # 格式 {chainId}: "{Transaction-IP}:{Transaction-PORT}"
-  
+
   transactionMap: # WeBASE-Transaction 配置，跟 ChainId 相关
      1: "127.0.0.1:5003"
-     
+
 ```
 
 * 重启 WeBASE-Chain-Manager 服务
 
+## 8. 配置国密库
+
+* 进入 WeBASE-Chain-Manager 根目录
+* 解压 `tassl.tar.gz` 文件后，解压后放置于 `~/.fisco/tassl`
+
+```shell
+# 解压文件
+tar -zvxf tassl.tar.gz
+
+# 创建目录
+mkdir -p ~/.fisco/
+
+# 移动文件
+mv tassl ~/.fisco/
+```
 
 ## 8. 常见问题
 ### 镜像问题
