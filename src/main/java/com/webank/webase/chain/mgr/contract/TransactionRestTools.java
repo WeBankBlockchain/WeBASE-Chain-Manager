@@ -144,10 +144,10 @@ public class TransactionRestTools {
     private static void errorFormat(String str) throws BaseException {
         JsonNode error = JsonTools.stringToJsonNode(str);
         log.error("request transaction fail. error:{}", error);
-        if (ObjectUtils.isEmpty(error.get("errorMessage"))) {
+        if (ObjectUtils.isEmpty(error.get("message"))) {
             throw new BaseException(ConstantCode.REQUEST_TRANSACTION_EXCEPTION);
         }
-        String errorMessage = error.get("errorMessage").asText();
-        throw new BaseException(ConstantCode.REQUEST_TRANSACTION_EXCEPTION.getCode(), errorMessage);
+        String errorMessage = error.get("message").asText();
+        throw new BaseException(error.get("code").asInt(), errorMessage);
     }
 }
