@@ -25,6 +25,16 @@ public interface TbContractMapper {
     @SelectProvider(type = TbContractSqlProvider.class, method = "getByParam")
     TbContract getByParam(ContractParam param);
 
+
+    @Select({ "select ", TbContractSqlProvider.ALL_COLUMN_FIELDS, " from tb_contract ",
+            "where chain_id = #{chainId} ",
+            "and group_id= #{groupId} ",
+            "and contract_name = #{name} ",
+            "and contract_path = #{path}",
+    })
+    TbContract getContract(@Param("chainId") int chainId,@Param("groupId") int groupId,@Param("name") String name, @Param("path") String path);
+
+
     @SelectProvider(type = TbContractSqlProvider.class, method = "selectByParam")
     List<TbContract> selectByParam(ContractParam param);
 
