@@ -148,6 +148,6 @@ public class TransactionRestTools {
             throw new BaseException(ConstantCode.REQUEST_TRANSACTION_EXCEPTION);
         }
         String errorMessage = error.get("message").asText();
-        throw new BaseException(ConstantCode.REQUEST_TRANSACTION_EXCEPTION.getCode(), errorMessage);
+        throw new BaseException(error.get("code").asInt(), errorMessage);
     }
 }
