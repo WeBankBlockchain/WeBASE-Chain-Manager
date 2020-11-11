@@ -32,7 +32,7 @@ public class ConstantCode {
 
 
     // transaction
-    public static final RetCode REQUEST_TRANSACTION_EXCEPTION = RetCode.mark(203201, "request transaction server exception");
+    public static final RetCode REQUEST_TRANSACTION_EXCEPTION = RetCode.mark(205101, "request transaction server exception");
 
 
     // sign

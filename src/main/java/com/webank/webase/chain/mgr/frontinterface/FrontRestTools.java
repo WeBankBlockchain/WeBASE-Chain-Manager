@@ -331,13 +331,13 @@ public class FrontRestTools {
         log.error("http request fail. error:{}", JsonTools.toJSONString(error));
         String errorMessage = error.get("errorMessage").asText();
         if (StringUtils.isBlank(errorMessage)) {
-            throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
+            throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
         }
         if (errorMessage.contains("code")) {
             JsonNode errorInside = JsonTools.stringToJsonNode(errorMessage).get("error");
             throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
                     errorInside.get("message").asText());
         }
-        throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
+        throw new BaseException(error.get("code").asInt(), errorMessage);
     }
 }
