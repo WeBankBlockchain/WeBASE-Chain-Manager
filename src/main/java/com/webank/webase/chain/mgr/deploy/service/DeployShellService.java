@@ -60,18 +60,33 @@ public class DeployShellService {
      * @return
      */
     public void scp(ScpTypeEnum typeEnum, String sshUser, String ip, int sshPort, String src, String dst) {
-        if (typeEnum == ScpTypeEnum.UP) {
-            // scp files to remote
-            if (Files.isRegularFile(Paths.get(src))) {
-                // if src is file, create parent directory of dst on remote
-                String parentOnRemote = Paths.get(dst).getParent().toAbsolutePath().toString();
-                SshUtil.createDirOnRemote(ip, parentOnRemote,sshUser,sshPort,constant.getPrivateKey());
-            }
-            if (Files.isDirectory(Paths.get(src))
-                    || Files.isDirectory(Paths.get(StringUtils.removeEnd(src,"/*")))) {
-                // if src is directory, create dst on remote
-                SshUtil.createDirOnRemote(ip, dst,sshUser,sshPort,constant.getPrivateKey());
-            }
+        switch (typeEnum) {
+            case UP:
+                // scp files to remote
+                if (Files.isRegularFile(Paths.get(src))) {
+                    // if src is file, create parent directory of dst on remote
+                    String parentOnRemote = Paths.get(dst).getParent().toAbsolutePath().toString();
+                    SshUtil.createDirOnRemote(ip, parentOnRemote,sshUser,sshPort,constant.getPrivateKey());
+                }
+                if (Files.isDirectory(Paths.get(src))
+                        || Files.isDirectory(Paths.get(StringUtils.removeEnd(src,"/*")))) {
+                    // if src is directory, create dst on remote
+                    SshUtil.createDirOnRemote(ip, dst,sshUser,sshPort,constant.getPrivateKey());
+                }
+                break;
+            case DOWNLOAD:
+                // scp files to remote
+                if (Files.isRegularFile(Paths.get(src))) {
+                    // if src is file, create parent directory of dst on remote
+                    String parentOnRemote = Paths.get(dst).getParent().toAbsolutePath().toString();
+                    SshUtil.createDirOnRemote(ip, parentOnRemote,sshUser,sshPort,constant.getPrivateKey());
+                }
+                if (Files.isDirectory(Paths.get(src))
+                        || Files.isDirectory(Paths.get(StringUtils.removeEnd(src,"/*")))) {
+                    // if src is directory, create dst on remote
+                    SshUtil.createDirOnRemote(ip, dst,sshUser,sshPort,constant.getPrivateKey());
+                }
+                break;
         }
 
         String command = String.format("bash -x -e %s -t %s -i %s -u %s -p %s -s '%s' -d '%s' %s",
