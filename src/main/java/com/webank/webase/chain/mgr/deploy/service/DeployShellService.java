@@ -60,33 +60,18 @@ public class DeployShellService {
      * @return
      */
     public void scp(ScpTypeEnum typeEnum, String sshUser, String ip, int sshPort, String src, String dst) {
-        switch (typeEnum) {
-            case UP:
-                // scp files to remote
-                if (Files.isRegularFile(Paths.get(src))) {
-                    // if src is file, create parent directory of dst on remote
-                    String parentOnRemote = Paths.get(dst).getParent().toAbsolutePath().toString();
-                    SshUtil.createDirOnRemote(ip, parentOnRemote,sshUser,sshPort,constant.getPrivateKey());
-                }
-                if (Files.isDirectory(Paths.get(src))
-                        || Files.isDirectory(Paths.get(StringUtils.removeEnd(src,"/*")))) {
-                    // if src is directory, create dst on remote
-                    SshUtil.createDirOnRemote(ip, dst,sshUser,sshPort,constant.getPrivateKey());
-                }
-                break;
-            case DOWNLOAD:
-                // scp files to remote
-                if (Files.isRegularFile(Paths.get(src))) {
-                    // if src is file, create parent directory of dst on remote
-                    String parentOnRemote = Paths.get(dst).getParent().toAbsolutePath().toString();
-                    SshUtil.createDirOnRemote(ip, parentOnRemote,sshUser,sshPort,constant.getPrivateKey());
-                }
-                if (Files.isDirectory(Paths.get(src))
-                        || Files.isDirectory(Paths.get(StringUtils.removeEnd(src,"/*")))) {
-                    // if src is directory, create dst on remote
-                    SshUtil.createDirOnRemote(ip, dst,sshUser,sshPort,constant.getPrivateKey());
-                }
-                break;
+        if (typeEnum == ScpTypeEnum.UP) {
+            // scp files to remote
+            if (Files.isRegularFile(Paths.get(src))) {
+                // if src is file, create parent directory of dst on remote
+                String parentOnRemote = Paths.get(dst).getParent().toAbsolutePath().toString();
+                SshUtil.createDirOnRemote(ip, parentOnRemote, sshUser, sshPort, constant.getPrivateKey());
+            }
+            if (Files.isDirectory(Paths.get(src))
+                    || Files.isDirectory(Paths.get(StringUtils.removeEnd(src, "/*")))) {
+                // if src is directory, create dst on remote
+                SshUtil.createDirOnRemote(ip, dst, sshUser, sshPort, constant.getPrivateKey());
+            }
         }
 
         String command = String.format("bash -x -e %s -t %s -i %s -u %s -p %s -s '%s' -d '%s' %s",
@@ -128,10 +113,10 @@ public class DeployShellService {
         String newUser = StringUtils.isBlank(user) ? SshUtil.DEFAULT_SSH_USER : user;
         String useDockerCommand = constant.isUseDockerSDK() ? "" : "-c";
         String passwordParam = StringUtils.isBlank(pwd) ? "" : String.format(" -p %s ", pwd);
-        String chainRootParam = StringUtils.isBlank(chainRoot) ? "" : String.format(" -n %s ",chainRoot);
+        String chainRootParam = StringUtils.isBlank(chainRoot) ? "" : String.format(" -n %s ", chainRoot);
 
         String command = String.format("bash -x -e %s -H %s -P %s -u %s %s %s %s ",
-                constant.getNodeOperateShell(), ip, newport, newUser,passwordParam, chainRootParam, useDockerCommand);
+                constant.getNodeOperateShell(), ip, newport, newUser, passwordParam, chainRootParam, useDockerCommand);
 
         ExecuteResult result = JavaCommandExecutor.executeCommand(command, constant.getExecHostInitTimeout());
         if (result.failed()) {
@@ -140,7 +125,6 @@ public class DeployShellService {
     }
 
     /**
-     *
      * @param encryptTypeEnum
      * @param ipLines
      * @return
@@ -152,7 +136,7 @@ public class DeployShellService {
         log.info("Exec execBuildChain method for [{}], chainName:[{}], ipConfig:[{}]",
                 JsonTools.toJSONString(ipLines), chainName, ipConf.toString());
         try {
-            if ( ! Files.exists(ipConf.getParent())) {
+            if (!Files.exists(ipConf.getParent())) {
                 Files.createDirectories(ipConf.getParent());
             }
             Files.write(ipConf, Arrays.asList(ipLines));
@@ -187,7 +171,6 @@ public class DeployShellService {
     }
 
     /**
-     *
      * @param encryptTypeEnum
      * @param chainName
      * @param newAgencyName
@@ -224,7 +207,6 @@ public class DeployShellService {
 
 
     /**
-     *
      * @param encryptTypeEnum
      * @param chainName
      * @param agencyName
@@ -238,7 +220,7 @@ public class DeployShellService {
         log.info("Exec execGenNode method for chainName:[{}], node:[{}:{}:{}]",
                 chainName, encryptTypeEnum, agencyName, newNodeRoot);
 
-        Path agencyRoot = this.pathService.getAgencyRoot(chainName,agencyName);
+        Path agencyRoot = this.pathService.getAgencyRoot(chainName, agencyName);
 
         // build_chain.sh only support docker on linux
         String command = String.format("bash -x -e %s -c %s -o %s %s",
@@ -248,8 +230,8 @@ public class DeployShellService {
                 agencyRoot.toAbsolutePath().toString(),
                 // new node dir
                 newNodeRoot,
-                    encryptTypeEnum == EncryptTypeEnum.SM2_TYPE ?
-                        String.format(" -g %s", pathService.getGmAgencyRoot(chainName,agencyName).toAbsolutePath().toString()) : ""
+                encryptTypeEnum == EncryptTypeEnum.SM2_TYPE ?
+                        String.format(" -g %s", pathService.getGmAgencyRoot(chainName, agencyName).toAbsolutePath().toString()) : ""
         );
 
         return JavaCommandExecutor.executeCommand(command, constant.getExecShellTimeout());
