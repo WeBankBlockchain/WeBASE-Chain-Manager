@@ -609,10 +609,17 @@ public class GroupService {
         // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0
         String localNodePath = pathService.getNodeRoot(chainName, tbFront.getFrontIp(),tbFront.getHostIndex()).toString();
         // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0/conf/group.1001.*
-        String localDst = String.format("%s/conf/", localNodePath, generateGroupId);
-        // copy group config files to local node's conf dir
-        deployShellService.scp(ScpTypeEnum.DOWNLOAD,tbFront.getSshUser(),
-                tbFront.getFrontIp(), tbFront.getSshPort(), remoteGroupConfSource, localDst);
+        Path localDst = Paths.get(String.format("%s/conf/", localNodePath, generateGroupId));
+        try {
+            if (Files.notExists(localDst)){
+                Files.createDirectories(localDst);
+            }
+            // copy group config files to local node's conf dir
+            deployShellService.scp(ScpTypeEnum.DOWNLOAD,  tbFront.getSshUser(),
+                    tbFront.getFrontIp(), tbFront.getSshPort(), remoteGroupConfSource, localDst.toAbsolutePath().toString());
+        } catch (Exception e) {
+            log.error("Backup group config files:[{} to {}] error.", remoteGroupConfSource,localDst.toAbsolutePath().toString(), e);
+        }
     }
 
 
