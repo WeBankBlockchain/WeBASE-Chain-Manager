@@ -39,7 +39,7 @@ public class TbContractSqlProvider {
             sql.WHERE("group_id = #{groupId}");
         }
         if (StringUtils.isNotBlank(param.getContractName())) {
-            sql.WHERE("contract_name like CONCAT('%',#{contractName},'%')");
+            sql.WHERE("contract_name = #{contractName}");
         }
         if (StringUtils.isNotBlank(param.getContractAddress())) {
             sql.WHERE("contract_address = #{contractAddress}");

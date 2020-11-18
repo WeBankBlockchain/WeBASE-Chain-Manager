@@ -16,6 +16,8 @@ package com.webank.webase.chain.mgr.front.entity;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+
 import lombok.Data;
 
 @Data
@@ -26,7 +28,24 @@ public class FrontInfo {
     private String frontIp;
     @NotNull
     private Integer frontPort;
-    @NotBlank
-    private String agency;
+
+    @Positive(message = "External company id error.")
+    private int extCompanyId;
+    @Positive(message = "External agency id error.")
+    private int extOrgId;
+    @Positive(message = "External host id error.")
+    private int extHostId;
+
+    /**
+     * 可空
+     */
     private String description;
+    /**
+     *  可空
+     */
+    private String agency;
+    /**
+     *  可空
+     */
+    private String chainName;
 }

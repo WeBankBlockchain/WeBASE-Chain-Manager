@@ -13,7 +13,6 @@
  */
 package com.webank.webase.chain.mgr.group;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -583,8 +582,8 @@ public class GroupService {
     }
 
     private void pullAllGroupFiles(int generateGroupId, TbFront tbFront) {
-        this.pullGroupConfigFile(generateGroupId, tbFront);
         this.pullGroupStatusFile(generateGroupId, tbFront);
+        this.pullGroupConfigFile(generateGroupId, tbFront);
     }
 
 
@@ -610,10 +609,17 @@ public class GroupService {
         // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0
         String localNodePath = pathService.getNodeRoot(chainName, tbFront.getFrontIp(),tbFront.getHostIndex()).toString();
         // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0/conf/group.1001.*
-        String localDst = String.format("%s/conf/", localNodePath, generateGroupId);
-        // copy group config files to local node's conf dir
-        deployShellService.scp(ScpTypeEnum.DOWNLOAD,tbFront.getSshUser(),
-                tbFront.getFrontIp(), tbFront.getSshPort(), remoteGroupConfSource, localDst);
+        Path localDst = Paths.get(String.format("%s/conf/", localNodePath, generateGroupId));
+        try {
+            if (Files.notExists(localDst)){
+                Files.createDirectories(localDst);
+            }
+            // copy group config files to local node's conf dir
+            deployShellService.scp(ScpTypeEnum.DOWNLOAD,  tbFront.getSshUser(),
+                    tbFront.getFrontIp(), tbFront.getSshPort(), remoteGroupConfSource, localDst.toAbsolutePath().toString());
+        } catch (Exception e) {
+            log.error("Backup group config files:[{} to {}] error.", remoteGroupConfSource,localDst.toAbsolutePath().toString(), e);
+        }
     }
 
 
@@ -635,17 +641,17 @@ public class GroupService {
         // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0/data/group[groupId]/group.1001.*
         Path localDst = Paths.get(String.format("%s/data/group%s/.group_status", localNodePath,generateGroupId));
         // create data parent directory
-        if (Files.notExists(localDst.getParent())){
-            try {
+        try {
+            if (Files.notExists(localDst.getParent())){
                 Files.createDirectories(localDst.getParent());
-            } catch (IOException e) {
-                // TODO. throw exception ???
-                log.error("Create data group:[{}] file error", localDst.toAbsolutePath().toString(),e);
             }
+            // copy group status file to local node's conf dir
+            deployShellService.scp(ScpTypeEnum.DOWNLOAD,  tbFront.getSshUser(),
+                    tbFront.getFrontIp(), tbFront.getSshPort(), remoteGroupStatusSource, localDst.toAbsolutePath().toString());
+        } catch (Exception e) {
+            log.error("Backup group files:[{} to {}] error.", remoteGroupStatusSource,localDst.toAbsolutePath().toString(), e);
         }
-        // copy group status file to local node's conf dir
-        deployShellService.scp(ScpTypeEnum.DOWNLOAD,  tbFront.getSshUser(),
-                tbFront.getFrontIp(), tbFront.getSshPort(), remoteGroupStatusSource, localDst.toAbsolutePath().toString());
+
     }
 
 }

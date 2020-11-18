@@ -21,37 +21,37 @@ function install(){
 }
 
 # Update DNS
-NAME_SERVER=()
-function UpdateDNS() {
-  file=/etc/resolv.conf
-  for var in ${NAME_SERVER[@]};
-  do
-    [[ "$(grep -i "$var" "$file")" == "" ]] && sudo echo "nameserver $var" >> "$file"
-  done
-}
-UpdateDNS
-
-# GNU/Linux操作系统
-if [[ $(command -v apt) ]]; then
-    # Debian/Ubuntu
-    sudo apt -y update && sudo dpkg --configure -a
-elif [[ $(command -v yum) ]]; then
-    # RHEL/CentOS
-    install epel-release epel-release
-fi
-
-# install rsync for synchronizing node files
-install wget wget
-install curl curl
+#NAME_SERVER=()
+#function UpdateDNS() {
+#  file=/etc/resolv.conf
+#  for var in ${NAME_SERVER[@]};
+#  do
+#    [[ "$(grep -i "$var" "$file")" == "" ]] && sudo echo "nameserver $var" >> "$file"
+#  done
+#}
+#UpdateDNS
+#
+## GNU/Linux操作系统
+#if [[ $(command -v apt) ]]; then
+#    # Debian/Ubuntu
+#    sudo apt -y update && sudo dpkg --configure -a
+#elif [[ $(command -v yum) ]]; then
+#    # RHEL/CentOS
+#    install epel-release epel-release
+#fi
+#
+## install rsync for synchronizing node files
+#install wget wget
+#install curl curl
 #install vim vim
 #install rsync rsync
 #install nslookup bind-utils
 
 # install docker
-if [[ ! $(command -v docker) ]]; then
-    echo "Install docker..."
-    bash <(curl -s -L get.docker.com)
-fi
+#if [[ ! $(command -v docker) ]]; then
+#    echo "Install docker..."
+#    bash <(curl -s -L get.docker.com)
+#fi
 
 # install docker-compose
 #if [[ ! $(command -v docker-compose) ]]; then

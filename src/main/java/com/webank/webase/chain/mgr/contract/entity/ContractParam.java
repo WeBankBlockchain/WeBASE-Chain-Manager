@@ -43,16 +43,4 @@ public class ContractParam extends BaseQueryParam {
         this.contractId = contractId;
         this.groupId = groupId;
     }
-
-    /**
-     * init by contractName、contractPath.
-     */
-    public ContractParam(int chainId, int groupId, String contractPath, String contractName) {
-        super();
-        super.setChainId(chainId);
-        this.groupId = groupId;
-        this.contractName = contractName;
-        this.contractPath = contractPath;
-    }
-
 }
