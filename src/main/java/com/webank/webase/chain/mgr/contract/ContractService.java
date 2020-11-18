@@ -117,7 +117,7 @@ public class ContractService {
      */
     private TbContract newContract(Contract contract) {
         // check contract not exist.
-        verifyContractNotExist(contract.getChainId(), contract.getGroupId(),
+        verifyContractNotExistByName(contract.getChainId(), contract.getGroupId(),
                 contract.getContractName(), contract.getContractPath());
 
         // add to database.
@@ -139,8 +139,8 @@ public class ContractService {
         TbContract tbContract = verifyContractNotDeploy(contract.getChainId(),
                 contract.getContractId(), contract.getGroupId());
         // check contractName
-        verifyContractNameNotExist(contract.getChainId(), contract.getGroupId(),
-                contract.getContractPath(), contract.getContractName(), contract.getContractId());
+        verifyContractNotExistByName(contract.getChainId(), contract.getGroupId(),
+                contract.getContractPath(), contract.getContractName());
         BeanUtils.copyProperties(contract, tbContract);
         tbContract.setModifyTime(new Date());
         tbContractMapper.updateByPrimaryKeySelective(tbContract);
@@ -389,7 +389,7 @@ public class ContractService {
     /**
      * verify that the contract does not exist.
      */
-    private void verifyContractNotExist(int chainId, int groupId, String name, String path) {
+    private void verifyContractNotExistByName(int chainId, int groupId, String name, String path) {
         TbContract contract = tbContractMapper.getContract(chainId,groupId,name,path);
         if (Objects.nonNull(contract)) {
             log.warn("contract is exist. groupId:{} name:{} path:{}", groupId, name, path);
@@ -437,16 +437,8 @@ public class ContractService {
     /**
      * contract name can not be repeated.
      */
-    private void verifyContractNameNotExist(int chainId, int groupId, String path, String name,
-            int contractId) {
-        ContractParam param = new ContractParam(chainId, groupId, path, name);
-        TbContract localContract = queryContract(param);
-        if (Objects.isNull(localContract)) {
-            return;
-        }
-        if (contractId != localContract.getContractId()) {
-            throw new BaseException(ConstantCode.CONTRACT_NAME_REPEAT);
-        }
+    private void verifyContractNameNotExist(int chainId, int groupId, String path, String name, int contractId) {
+
     }
 
     /**
