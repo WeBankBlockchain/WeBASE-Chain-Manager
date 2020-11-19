@@ -14,33 +14,8 @@
 
 package com.webank.webase.chain.mgr.deploy.service;
 
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.map.HashedMap;
-import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.stereotype.Component;
-
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
-import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
-import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
-import com.webank.webase.chain.mgr.base.enums.OptionType;
-import com.webank.webase.chain.mgr.base.enums.ScpTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.*;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
@@ -55,25 +30,56 @@ import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.util.FileUtil;
 import com.webank.webase.chain.mgr.util.NetUtils;
 import com.webank.webase.chain.mgr.util.SshUtil;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.map.HashedMap;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class NodeAsyncService {
 
-    @Autowired private TbFrontMapper frontMapper;
-    @Autowired private TbChainMapper tbChainMapper;
+    @Autowired
+    private TbFrontMapper frontMapper;
+    @Autowired
+    private TbChainMapper tbChainMapper;
 
-    @Autowired private FrontService frontService;
-    @Autowired private ChainService chainService;
-    @Autowired private ConstantProperties constant;
-    @Autowired private PathService pathService;
-    @Autowired private DeployShellService deployShellService;
-    @Autowired private DockerOptions dockerOptions;
+    @Autowired
+    private FrontService frontService;
+    @Autowired
+    private ChainService chainService;
+    @Autowired
+    private ConstantProperties constant;
+    @Autowired
+    private PathService pathService;
+    @Autowired
+    private DeployShellService deployShellService;
+    @Autowired
+    private DockerOptions dockerOptions;
+    @Autowired
+    private ConstantProperties constantProperties;
 
     @Qualifier(value = "deployAsyncScheduler")
-    @Autowired private ThreadPoolTaskScheduler threadPoolTaskScheduler;
+    @Autowired
+    private ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
     /**
      * @param deploy
@@ -321,7 +327,7 @@ public class NodeAsyncService {
                     if (scpNodeConfig) {
                         if (ipSet.contains(host.getIp())) {
                             log.info("Already scp file to host:[{}]", host.getIp());
-                        }else{
+                        } else {
                             // scp config files from local to remote
                             // local: NODES_ROOT/[chainName]/[ip] TO remote: /opt/fisco/[chainName]
                             String src = String.format("%s/*", pathService.getHost(tbChain.getChainName(), host.getIp()).toString());
@@ -418,7 +424,7 @@ public class NodeAsyncService {
                     initHostLatch.countDown();
                 }
             });
-            taskMap.put(String.format("%s_%s", host.getExtHostId(),host.getIp()), task);
+            taskMap.put(String.format("%s_%s", host.getExtHostId(), host.getIp()), task);
         }
 
         initHostLatch.await(constant.getExecHostInitTimeout(), TimeUnit.MILLISECONDS);
@@ -445,6 +451,158 @@ public class NodeAsyncService {
                     String.format("Init host error,total:[%s], success:[%s].", CollectionUtils.size(hostList), initSuccessCount.get()));
         }
         return hostInitSuccess;
+    }
+
+
+    /**
+     * @param hostList
+     * @param imageVersion
+     * @param dockerImageTypeEnum
+     * @return
+     * @throws InterruptedException
+     */
+    public boolean initHostList(List<ReqDeploy.DeployHost> hostList, String imageVersion, DockerImageTypeEnum dockerImageTypeEnum) throws InterruptedException, IOException {
+        log.info("Start init imageVersion:{} imagePullType:{} hosts:{} .", imageVersion, dockerImageTypeEnum.getId(), CollectionUtils.size(hostList));
+
+        // check image tar file when install with offline
+        if (dockerImageTypeEnum == DockerImageTypeEnum.LOCAL_OFFLINE) {
+            String localTarFile = String.format(constantProperties.getImageTar(), imageVersion);
+            if (FileUtil.notExists(localTarFile)) {
+                log.error("Image tar file:[{}] not exists when use local offline.", localTarFile);
+                throw new BaseException(ConstantCode.FILE_NOT_EXISTS.attach(localTarFile));
+            }
+        } else if (dockerImageTypeEnum == DockerImageTypeEnum.DOWNLOAD_CDN) {
+            String dockerTarFileName = constant.getDockerTarFileName(imageVersion);
+            String cdnUrl = constant.getCdnUrl(imageVersion);
+            FileUtil.download(false, cdnUrl, dockerTarFileName, constant.getDockerPullTimeout());
+        }
+
+
+        final CountDownLatch initHostLatch = new CountDownLatch(CollectionUtils.size(hostList));
+        // check success count
+        AtomicInteger initSuccessCount = new AtomicInteger(0);
+        Map<String, Future> taskMap = new HashedMap<>();
+
+        for (final ReqDeploy.DeployHost host : hostList) {
+            Future<?> task = threadPoolTaskScheduler.submit(() -> {
+                try {
+                    //check ssh connect
+                    boolean connectable = SshUtil.connect(host.getIp(), host.getSshUser(),
+                            host.getSshPort(), constantProperties.getPrivateKey());
+                    if (!connectable) {
+                        throw new BaseException(ConstantCode.HOST_CONNECT_ERROR, String.format("Connect to host:[%s] failed.", host.getIp()));
+                    }
+
+                    // docker pull image
+                    pullHostImage(host, imageVersion, dockerImageTypeEnum);
+                    // check port
+                    checkHostPort(host);
+                    initSuccessCount.incrementAndGet();
+                } catch (Exception e) {
+                    log.error("Init host:[{}] with unknown error", host.getIp(), e);
+                } finally {
+                    initHostLatch.countDown();
+                }
+            });
+            taskMap.put(String.format("%s_%s", host.getExtHostId(), host.getIp()), task);
+        }
+
+        initHostLatch.await(constant.getExecHostInitTimeout(), TimeUnit.MILLISECONDS);
+        taskMap.entrySet().forEach((entry) -> {
+            String ip = entry.getKey();
+            Future<?> task = entry.getValue();
+            if (!task.isDone()) {
+                log.error("Init host:[{}] timeout, cancel the task.", ip);
+                task.cancel(false);
+            }
+        });
+
+        boolean hostInitSuccess = initSuccessCount.get() == CollectionUtils.size(hostList);
+        // check if all host init success
+        if (hostInitSuccess) {
+            log.info("Host init success: total:[{}], success:[{}]", CollectionUtils.size(hostList), initSuccessCount.get());
+        } else {
+            log.error("Host of init failed: total:[{}], success:[{}]", CollectionUtils.size(hostList), initSuccessCount.get());
+        }
+        return hostInitSuccess;
+    }
+
+
+    /**
+     * @param host
+     * @param imageVersion
+     * @param dockerImageTypeEnum
+     */
+    public void pullHostImage(ReqDeploy.DeployHost host, String imageVersion, DockerImageTypeEnum dockerImageTypeEnum) {
+        log.info("start pullImage .  host:[{}] imageVersion:[{}] dockerImageTypeEnum:[{}].", host.getIp(), imageVersion, dockerImageTypeEnum.getId());
+
+        boolean exists = dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
+                host.getSshUser(), host.getSshPort(), imageVersion);
+        log.info("check docker image:[{}] exists:[{}] on host:[{}] first.", imageVersion, host.getIp(), exists);
+
+        if (!exists) {
+            // only pull image when not exists remote host note
+            log.info("Install image with option:[{}]", dockerImageTypeEnum.getDescription());
+            switch (dockerImageTypeEnum) {
+                case MANUAL:
+                    log.error("Docker image:[{}] not exists on host:[{}].", imageVersion, host.getIp());
+                    throw new BaseException(ConstantCode.IMAGE_NOT_EXISTS_ON_HOST.attach(host.getIp()));
+                case PULL_OFFICIAL:
+                    // pull from official registry
+                    dockerOptions.pullImage(host.getIp(), host.getDockerDemonPort(), host.getSshUser(), host.getSshPort(), imageVersion);
+                    break;
+
+                case LOCAL_OFFLINE:
+                case DOWNLOAD_CDN:
+                    // scp tar file to remote host
+                    String imageTarFileName = String.format(constant.getImageTar(), imageVersion);
+                    String dst = String.format("~/%s", imageTarFileName);
+                    deployShellService.scp(ScpTypeEnum.UP, host.getSshUser(), host.getIp(), host.getSshPort(),
+                            FileUtil.getFilePath(imageTarFileName), dst);
+                    // unzip tar file
+                    String unzip = String.format("sudo docker load -i %s", dst);
+                    SshUtil.execDocker(host.getIp(), unzip,
+                            host.getSshUser(), host.getSshPort(), constant.getPrivateKey());
+
+                    break;
+                case HOST_DOWNLOAD_CDN:
+                    String cdnUrl = constant.getCdnUrl(imageVersion);
+                    String dockerImport = String.format("curl -sL %s | sudo docker load ", cdnUrl);
+                    SshUtil.execDocker(host.getIp(), dockerImport,
+                            host.getSshUser(), host.getSshPort(), constant.getPrivateKey());
+                    break;
+                default:
+                    break;
+            }
+            exists = dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
+                    host.getSshUser(), host.getSshPort(), imageVersion);
+            if (!exists) {
+                log.error("Docker image:[{}] not exists on host after execute installation:[{}].", imageVersion, host.getIp());
+                throw new BaseException(ConstantCode.IMAGE_NOT_EXISTS_ON_HOST.attach("after installation"));
+            }
+        }
+    }
+
+    /**
+     * @param host
+     */
+    public void checkHostPort(ReqDeploy.DeployHost host) {
+        log.info("start checkHostPort,hostIp:{} nodeCount:{}", host.getIp(), host.getNum());
+        for (int i = 0; i < host.getNum(); i++) {
+            Pair<Boolean, Integer> portReachable = NetUtils.anyPortInUse(host.getIp(),
+                    host.getSshUser(),
+                    host.getSshPort(),
+                    constant.getPrivateKey(),
+                    host.getChannelPort() + i,
+                    host.getP2pPort() + i,
+                    host.getFrontPort() + i,
+                    host.getJsonrpcPort() + i);
+            if (portReachable.getKey()) {
+                log.error("Port:[{}] is in use on host :[{}] failed", portReachable.getValue(), host.getIp());
+                throw new BaseException(ConstantCode.CHECK_PORT_NOT_SUCCESS.attach("after installation"));
+            }
+        }
+        log.info("success checkHostPort,hostIp:{} nodeCount:{}", host.getIp(), host.getNum());
     }
 }
 
