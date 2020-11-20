@@ -25,6 +25,7 @@ import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
+import com.webank.webase.chain.mgr.deploy.resp.RespInitHost;
 import com.webank.webase.chain.mgr.deploy.service.DeployService;
 import com.webank.webase.chain.mgr.deploy.service.NodeAsyncService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
@@ -206,7 +207,7 @@ public class ChainController extends BaseController {
     }
 
     @ApiOperation(value = "节点机器初始化（拉镜像/确认端口未被占用）")
-    @GetMapping("/initHostList")
+    @PostMapping("/initHostList")
     public BaseResponse initHostList(@RequestBody @Valid ReqDeploy reqDeploy,
                                      BindingResult result) throws BaseException {
         checkBindResult(result);
@@ -221,9 +222,11 @@ public class ChainController extends BaseController {
             }
 
             // init host and start node
-            this.nodeAsyncService.initHostList(reqDeploy.getDeployHostList(), reqDeploy.getVersion(), imageTypeEnum);
+            List<RespInitHost> list = nodeAsyncService.initHostList(reqDeploy.getDeployHostList(), reqDeploy.getVersion(), imageTypeEnum);
 
-            return new BaseResponse(ConstantCode.SUCCESS);
+            BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+            baseResponse.setData(list);
+            return baseResponse;
         } catch (BaseException e) {
             return new BaseResponse(e.getRetCode());
         } catch (Exception e) {

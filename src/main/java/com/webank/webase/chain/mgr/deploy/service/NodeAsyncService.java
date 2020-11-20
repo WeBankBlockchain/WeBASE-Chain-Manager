@@ -21,6 +21,7 @@ import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
+import com.webank.webase.chain.mgr.deploy.resp.RespInitHost;
 import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
@@ -42,10 +43,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -461,7 +459,7 @@ public class NodeAsyncService {
      * @return
      * @throws InterruptedException
      */
-    public boolean initHostList(List<ReqDeploy.DeployHost> hostList, String imageVersion, DockerImageTypeEnum dockerImageTypeEnum) throws InterruptedException, IOException {
+    public List<RespInitHost> initHostList(List<ReqDeploy.DeployHost> hostList, String imageVersion, DockerImageTypeEnum dockerImageTypeEnum) throws InterruptedException, IOException {
         log.info("Start init imageVersion:{} imagePullType:{} hosts:{} .", imageVersion, dockerImageTypeEnum.getId(), CollectionUtils.size(hostList));
 
         // check image tar file when install with offline
@@ -484,7 +482,7 @@ public class NodeAsyncService {
         Map<String, Future> taskMap = new HashedMap<>();
 
         for (final ReqDeploy.DeployHost host : hostList) {
-            Future<?> task = threadPoolTaskScheduler.submit(() -> {
+            Future<Pair<Boolean, String>> task = threadPoolTaskScheduler.submit(() -> {
                 try {
                     //check ssh connect
                     boolean connectable = SshUtil.connect(host.getIp(), host.getSshUser(),
@@ -498,8 +496,14 @@ public class NodeAsyncService {
                     // check port
                     checkHostPort(host);
                     initSuccessCount.incrementAndGet();
+
+                    return Pair.of(true, null);
+                } catch (BaseException ex) {
+                    log.error("Init host:[{}] with BaseException", ex);
+                    return Pair.of(false, ex.getRetCode().getMessage());
                 } catch (Exception e) {
                     log.error("Init host:[{}] with unknown error", host.getIp(), e);
+                    return Pair.of(false, String.format("Init host:[%s] with unknown error.", host.getIp()));
                 } finally {
                     initHostLatch.countDown();
                 }
@@ -508,25 +512,32 @@ public class NodeAsyncService {
         }
 
         initHostLatch.await(constant.getExecHostInitTimeout(), TimeUnit.MILLISECONDS);
+
+        //result data
+        List<RespInitHost> respInitHostList = new ArrayList<>();
         taskMap.entrySet().forEach((entry) -> {
-            String ip = entry.getKey();
-            Future<?> task = entry.getValue();
+            String key = entry.getKey();
+            Future<Pair<Boolean, String>> task = entry.getValue();
+            RespInitHost respInitHost = new RespInitHost(false);
             if (!task.isDone()) {
-                log.error("Init host:[{}] timeout, cancel the task.", ip);
+                log.error("Init host:[{}] timeout, cancel the task.", key);
+                respInitHost.setErrorMessage(String.format("Init host:[%s] timeout, cancel the task.", key));
                 task.cancel(false);
+            } else {
+                try {
+                    Pair<Boolean, String> pair = task.get();
+                    respInitHost.setSuccess(pair.getLeft());
+                    respInitHost.setErrorMessage(pair.getRight());
+                } catch (Exception ex) {
+                    log.error(String.format("Init host:[%s] error.", key), ex);
+                }
             }
+            respInitHostList.add(respInitHost);
         });
 
-        boolean hostInitSuccess = initSuccessCount.get() == CollectionUtils.size(hostList);
-        // check if all host init success
-        if (hostInitSuccess) {
-            log.info("Host init success: total:[{}], success:[{}]", CollectionUtils.size(hostList), initSuccessCount.get());
-        } else {
-            log.error("Host of init failed: total:[{}], success:[{}]", CollectionUtils.size(hostList), initSuccessCount.get());
-        }
-        return hostInitSuccess;
+        log.info("finish initHostList. result:{} ",JsonTools.objToString(respInitHostList));
+        return respInitHostList;
     }
-
 
     /**
      * @param host
@@ -604,6 +615,7 @@ public class NodeAsyncService {
         }
         log.info("success checkHostPort,hostIp:{} nodeCount:{}", host.getIp(), host.getNum());
     }
+
 }
 
 
