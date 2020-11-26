@@ -19,6 +19,7 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.EnumService;
 import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
@@ -60,6 +61,8 @@ public class ChainController extends BaseController {
     private DeployService deployService;
     @Autowired
     private NodeAsyncService nodeAsyncService;
+    @Autowired
+    private EnumService enumService;
 
     /**
      * add new chain
@@ -141,14 +144,11 @@ public class ChainController extends BaseController {
                 reqDeploy.setChainName(String.valueOf(reqDeploy.getChainId()));
             }
 
-            DockerImageTypeEnum imageTypeEnum = DockerImageTypeEnum.getById(reqDeploy.getDockerImageType());
-            if (imageTypeEnum == null) {
-                throw new BaseException(ConstantCode.UNKNOWN_DOCKER_IMAGE_TYPE);
-            }
+            //verify dockerImageType
+            DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqDeploy.getDockerImageType());
 
             // generate node config and return shell execution log
             this.deployService.deployChain(reqDeploy, imageTypeEnum);
-
 
             // init host and start node
             this.nodeAsyncService.asyncDeployChain(reqDeploy, OptionType.DEPLOY_CHAIN, imageTypeEnum);
@@ -216,10 +216,8 @@ public class ChainController extends BaseController {
         log.info("Start:[{}] initHostList, param:[{}] ", startTime, JsonTools.toJSONString(reqDeploy));
 
         try {
-            DockerImageTypeEnum imageTypeEnum = DockerImageTypeEnum.getById(reqDeploy.getDockerImageType());
-            if (imageTypeEnum == null) {
-                throw new BaseException(ConstantCode.UNKNOWN_DOCKER_IMAGE_TYPE);
-            }
+            //verify dockerImageType
+            DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqDeploy.getDockerImageType());
 
             // init host and start node
             List<RespInitHost> list = nodeAsyncService.initHostList(reqDeploy.getDeployHostList(), reqDeploy.getVersion(), imageTypeEnum);
@@ -228,9 +226,10 @@ public class ChainController extends BaseController {
             baseResponse.setData(list);
             return baseResponse;
         } catch (BaseException e) {
+            log.error("fail initHostList with BaseException", e);
             return new BaseResponse(e.getRetCode());
         } catch (Exception e) {
-            log.error("fail initHostList", e);
+            log.error("fail initHostList with Exception", e);
             return new BaseResponse(ConstantCode.HOST_INIT_NOT_SUCCESS);
         }
     }

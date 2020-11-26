@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 public class ReqDeploy {
 
     @ApiModelProperty(value = "Chain id，由 WebServer 生成", example = "10", required = true)
-    @NotNull(message = "chain id error.")
+//    @NotNull(message = "chain id error.")
     private int chainId;
 
     @ApiModelProperty(value = "Docker 镜像版本", example = "v2.5.0", required = true)

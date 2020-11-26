@@ -13,33 +13,8 @@
  */
 package com.webank.webase.chain.mgr.chain;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.aop.framework.AopContext;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
-import com.webank.webase.chain.mgr.base.enums.DataStatus;
-import com.webank.webase.chain.mgr.base.enums.DeployTypeEnum;
-import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
-import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
-import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
-import com.webank.webase.chain.mgr.base.enums.GroupType;
+import com.webank.webase.chain.mgr.base.enums.*;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
@@ -64,8 +39,21 @@ import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import com.webank.webase.chain.mgr.util.NumberUtil;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ThymeleafUtil;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * service of chain.
@@ -80,8 +68,10 @@ public class ChainService {
     public static AtomicBoolean isDeleting = new AtomicBoolean(false);
 
 
-    @Autowired private TbChainMapper tbChainMapper;
-    @Autowired private TbGroupMapper tbGroupMapper;
+    @Autowired
+    private TbChainMapper tbChainMapper;
+    @Autowired
+    private TbGroupMapper tbGroupMapper;
     @Autowired
     private GroupService groupService;
     @Autowired
@@ -98,10 +88,14 @@ public class ChainService {
     @Lazy
     private ResetGroupListTask resetGroupListTask;
 
-    @Autowired private ConstantProperties constantProperties;
-    @Autowired private DeployShellService deployShellService;
-    @Autowired private PathService pathService;
-    @Autowired private DockerOptions dockerOptions;
+    @Autowired
+    private ConstantProperties constantProperties;
+    @Autowired
+    private DeployShellService deployShellService;
+    @Autowired
+    private PathService pathService;
+    @Autowired
+    private DockerOptions dockerOptions;
 
 
     /**
@@ -219,11 +213,8 @@ public class ChainService {
         String[] ipConf = new String[CollectionUtils.size(deploy.getDeployHostList())];
         for (int i = 0; i < deploy.getDeployHostList().size(); i++) {
             ReqDeploy.DeployHost host = deploy.getDeployHostList().get(i);
-            boolean connectable = SshUtil.connect(host.getIp(), host.getSshUser(),
-                    host.getSshPort(), constantProperties.getPrivateKey());
-            if (!connectable) {
-                throw new BaseException(ConstantCode.HOST_CONNECT_ERROR, String.format("Connect to host:[%s] failed.", host.getIp()));
-            }
+            //check host connect
+            SshUtil.verifyHostConnect(host.getIp(), host.getSshUser(), host.getSshPort(), constantProperties.getPrivateKey());
 
             // check docker image exists
             if (DockerImageTypeEnum.MANUAL == dockerImageTypeEnum) {
