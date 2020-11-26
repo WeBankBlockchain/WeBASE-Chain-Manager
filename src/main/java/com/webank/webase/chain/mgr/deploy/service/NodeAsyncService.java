@@ -499,7 +499,7 @@ public class NodeAsyncService {
 
                     return Pair.of(true, null);
                 } catch (BaseException ex) {
-                    log.error("Init host:[{}] with BaseException", ex);
+                    log.error("Init host:[{}] with BaseException", host, ex);
                     return Pair.of(false, ex.getRetCode().getMessage());
                 } catch (Exception e) {
                     log.error("Init host:[{}] with unknown error", host.getIp(), e);
@@ -526,7 +526,7 @@ public class NodeAsyncService {
             } else {
                 try {
                     Pair<Boolean, String> pair = task.get();
-                    respInitHost.setHostId(Integer.valueOf(key.substring(0,key.indexOf("_"))));
+                    respInitHost.setHostId(Integer.valueOf(key.substring(0, key.indexOf("_"))));
                     respInitHost.setSuccess(pair.getLeft());
                     respInitHost.setErrorMessage(pair.getRight());
                 } catch (Exception ex) {
@@ -536,7 +536,7 @@ public class NodeAsyncService {
             respInitHostList.add(respInitHost);
         });
 
-        log.info("finish initHostList. result:{} ",JsonTools.objToString(respInitHostList));
+        log.info("finish initHostList. result:{} ", JsonTools.objToString(respInitHostList));
         return respInitHostList;
     }
 
@@ -589,8 +589,8 @@ public class NodeAsyncService {
             exists = dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
                     host.getSshUser(), host.getSshPort(), imageVersion);
             if (!exists) {
-                log.error("Docker image:[{}] not exists on host after execute installation:[{}].", imageVersion, host.getIp());
-                throw new BaseException(ConstantCode.IMAGE_NOT_EXISTS_ON_HOST.attach("after installation"));
+                String message = String.format("Docker image:[%1s] not exists on host after execute installation:[%2s]", imageVersion, host.getIp());
+                throw new BaseException(ConstantCode.IMAGE_NOT_EXISTS_ON_HOST.getCode(),message);
             }
         }
     }
@@ -610,8 +610,8 @@ public class NodeAsyncService {
                     host.getFrontPort() + i,
                     host.getJsonrpcPort() + i);
             if (portReachable.getKey()) {
-                log.error("Port:[{}] is in use on host :[{}] failed", portReachable.getValue(), host.getIp());
-                throw new BaseException(ConstantCode.CHECK_PORT_NOT_SUCCESS.attach("after installation"));
+                String message = String.format("Port:[%1d] is in use on host :[%2s] failed", portReachable.getValue(), host.getIp());
+                throw new BaseException(ConstantCode.CHECK_PORT_NOT_SUCCESS.getCode(),message);
             }
         }
         log.info("success checkHostPort,hostIp:{} nodeCount:{}", host.getIp(), host.getNum());
