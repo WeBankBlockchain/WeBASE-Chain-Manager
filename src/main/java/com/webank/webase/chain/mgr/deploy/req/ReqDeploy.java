@@ -2,11 +2,7 @@ package com.webank.webase.chain.mgr.deploy.req;
 
 import java.util.List;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 
 import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
 
@@ -25,7 +21,7 @@ import lombok.NoArgsConstructor;
 public class ReqDeploy {
 
     @ApiModelProperty(value = "Chain id，由 WebServer 生成", example = "10", required = true)
-    @Positive(message = "chain id error.")
+    @NotNull(message = "chain id error.")
     private int chainId;
 
     @ApiModelProperty(value = "Docker 镜像版本", example = "v2.5.0", required = true)

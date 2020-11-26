@@ -526,6 +526,7 @@ public class NodeAsyncService {
             } else {
                 try {
                     Pair<Boolean, String> pair = task.get();
+                    respInitHost.setHostId(Integer.valueOf(key.substring(0,key.indexOf("_"))));
                     respInitHost.setSuccess(pair.getLeft());
                     respInitHost.setErrorMessage(pair.getRight());
                 } catch (Exception ex) {

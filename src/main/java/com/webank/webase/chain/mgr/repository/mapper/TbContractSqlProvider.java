@@ -1,5 +1,6 @@
 package com.webank.webase.chain.mgr.repository.mapper;
 
+import com.webank.webase.chain.mgr.util.cmd.ExecuteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
@@ -181,4 +182,6 @@ public class TbContractSqlProvider {
         sql.WHERE("contract_id = #{contractId,jdbcType=INTEGER}");
         return sql.toString();
     }
+
+    ExecuteResult
 }
