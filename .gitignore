@@ -118,3 +118,4 @@ NODES_ROOT_TMP/*
 gm*
 download
 dist
+/.idea/

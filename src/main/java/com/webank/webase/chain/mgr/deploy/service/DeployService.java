@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DeployService {
     @Autowired private ChainService chainService;
     @Autowired private ConstantProperties constantProperties;
+    @Autowired private ImageService imageService;
 
     /**
      * @param deploy
@@ -44,14 +45,7 @@ public class DeployService {
     public void deployChain(ReqDeploy deploy, DockerImageTypeEnum imageTypeEnum) throws BaseException {
 
         // check image tar file when install with offline
-        if (imageTypeEnum == DockerImageTypeEnum.LOCAL_OFFLINE){
-            String localTarFile = String.format(constantProperties.getImageTar(),deploy.getVersion());
-            if(FileUtil.notExists(localTarFile)){
-                log.error("Image tar file:[{}] not exists when use local offline.",localTarFile);
-                throw new BaseException(ConstantCode.FILE_NOT_EXISTS.attach(localTarFile));
-            }
-        }
-
+        imageService.checkLocalImageByDockerImageTypeEnum(imageTypeEnum,deploy.getVersion());
         // generate config files and insert data to db
         this.chainService.generateChainConfig(deploy, imageTypeEnum);
     }

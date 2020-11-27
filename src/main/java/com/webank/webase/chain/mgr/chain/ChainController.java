@@ -1,11 +1,11 @@
 /**
  * Copyright 2014-2019 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -14,42 +14,35 @@
 package com.webank.webase.chain.mgr.chain;
 
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-
-import javax.validation.Valid;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.EnumService;
 import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
+import com.webank.webase.chain.mgr.deploy.resp.RespInitHost;
 import com.webank.webase.chain.mgr.deploy.service.DeployService;
 import com.webank.webase.chain.mgr.deploy.service.NodeAsyncService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
 
 /**
  * chain controller
@@ -64,8 +57,13 @@ public class ChainController extends BaseController {
     @Autowired
     private ChainService chainService;
 
-    @Autowired private DeployService deployService;
-    @Autowired private NodeAsyncService nodeAsyncService;
+    @Autowired
+    private DeployService deployService;
+    @Autowired
+    private NodeAsyncService nodeAsyncService;
+    @Autowired
+    private EnumService enumService;
+
     /**
      * add new chain
      */
@@ -142,18 +140,15 @@ public class ChainController extends BaseController {
 
         try {
             // check chain name
-            if(StringUtils.isBlank(reqDeploy.getChainName())){
+            if (StringUtils.isBlank(reqDeploy.getChainName())) {
                 reqDeploy.setChainName(String.valueOf(reqDeploy.getChainId()));
             }
 
-            DockerImageTypeEnum imageTypeEnum = DockerImageTypeEnum.getById(reqDeploy.getDockerImageType());
-            if (imageTypeEnum == null) {
-                throw new BaseException(ConstantCode.UNKNOWN_DOCKER_IMAGE_TYPE);
-            }
+            //verify dockerImageType
+            DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqDeploy.getDockerImageType());
 
             // generate node config and return shell execution log
-            this.deployService.deployChain(reqDeploy,imageTypeEnum);
-
+            this.deployService.deployChain(reqDeploy, imageTypeEnum);
 
             // init host and start node
             this.nodeAsyncService.asyncDeployChain(reqDeploy, OptionType.DEPLOY_CHAIN, imageTypeEnum);
@@ -164,7 +159,7 @@ public class ChainController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "新增节点",hidden = true)
+    @ApiOperation(value = "新增节点", hidden = true)
     @PostMapping(value = "addNode")
     public BaseResponse addNode(
             @RequestBody @Valid ReqAddNode reqAddNode,
@@ -193,13 +188,14 @@ public class ChainController extends BaseController {
         log.info("Start:[{}] get chain:[{}] ", startTime, chainId);
 
         TbChain chain = this.tbChainMapper.selectByPrimaryKey(chainId);
-        if (chain != null){
+        if (chain != null) {
             int progress = chainService.progress(chain);
             chain.setProgress(progress);
             return BaseResponse.success(chain);
         }
         return new BaseResponse(ConstantCode.CHAIN_ID_NOT_EXISTS);
     }
+
     @ApiOperation(value = "查询镜像获取方式")
     @GetMapping("/image/type")
     public BaseResponse getChain() throws BaseException {
@@ -208,5 +204,33 @@ public class ChainController extends BaseController {
         log.info("Start:[{}] get image type ", startTime);
 
         return BaseResponse.success(DockerImageTypeEnum.getTypeMap());
+    }
+
+    @ApiOperation(value = "节点机器初始化（拉镜像/确认端口未被占用）")
+    @PostMapping("/initHostList")
+    public BaseResponse initHostList(@RequestBody @Valid ReqDeploy reqDeploy,
+                                     BindingResult result) throws BaseException {
+        checkBindResult(result);
+
+        Instant startTime = Instant.now();
+        log.info("Start:[{}] initHostList, param:[{}] ", startTime, JsonTools.toJSONString(reqDeploy));
+
+        try {
+            //verify dockerImageType
+            DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqDeploy.getDockerImageType());
+
+            // init host and start node
+            List<RespInitHost> list = nodeAsyncService.initHostList(reqDeploy.getDeployHostList(), reqDeploy.getVersion(), imageTypeEnum);
+
+            BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+            baseResponse.setData(list);
+            return baseResponse;
+        } catch (BaseException e) {
+            log.error("fail initHostList with BaseException", e);
+            return new BaseResponse(e.getRetCode());
+        } catch (Exception e) {
+            log.error("fail initHostList with Exception", e);
+            return new BaseResponse(ConstantCode.HOST_INIT_NOT_SUCCESS);
+        }
     }
 }

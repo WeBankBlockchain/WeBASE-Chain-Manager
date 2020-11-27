@@ -62,6 +62,7 @@ public class NodeService {
     private FrontInterfaceService frontInterface;
 
     private static final Long CHECK_NODE_WAIT_MIN_MILLIS = 5000L;
+    private static final Long EXT_CHECK_NODE_WAIT_MIN_MILLIS = 3500L;
 
     /**
      * add new node data.
@@ -233,6 +234,7 @@ public class NodeService {
 
         // getObserverList
         List<String> observerList = frontInterface.getObserverList(chainId, groupId);
+        int nodeCount = CollectionUtils.size(consensusList) + CollectionUtils.size(observerList);
 
         for (TbNode tbNode : nodeList) {
             String nodeId = tbNode.getNodeId();
@@ -243,8 +245,8 @@ public class NodeService {
 
             Duration duration = Duration.between(modifyTime, LocalDateTime.now());
             Long subTime = duration.toMillis();
-            if (subTime < CHECK_NODE_WAIT_MIN_MILLIS && createTime.isBefore(modifyTime)) {
-                log.info("checkNodeStatus jump over. subTime:{}", subTime);
+            if (subTime < (nodeCount * 1000 + EXT_CHECK_NODE_WAIT_MIN_MILLIS) && createTime.isBefore(modifyTime)) {
+                log.warn("checkNodeStatus jump over. for time internal subTime:{}", subTime);
                 return;
             }
 

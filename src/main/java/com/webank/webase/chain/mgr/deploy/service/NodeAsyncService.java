@@ -14,18 +14,23 @@
 
 package com.webank.webase.chain.mgr.deploy.service;
 
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.*;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.chain.ChainService;
+import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
+import com.webank.webase.chain.mgr.deploy.resp.RespInitHost;
+import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
+import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.repository.bean.TbChain;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
+import com.webank.webase.chain.mgr.util.NetUtils;
+import com.webank.webase.chain.mgr.util.SshUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,45 +40,44 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
-import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
-import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
-import com.webank.webase.chain.mgr.base.enums.OptionType;
-import com.webank.webase.chain.mgr.base.enums.ScpTypeEnum;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.chain.ChainService;
-import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
-import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
-import com.webank.webase.chain.mgr.front.FrontService;
-import com.webank.webase.chain.mgr.repository.bean.TbChain;
-import com.webank.webase.chain.mgr.repository.bean.TbFront;
-import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
-import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
-import com.webank.webase.chain.mgr.util.FileUtil;
-import com.webank.webase.chain.mgr.util.NetUtils;
-import com.webank.webase.chain.mgr.util.SshUtil;
-
-import lombok.extern.slf4j.Slf4j;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class NodeAsyncService {
 
-    @Autowired private TbFrontMapper frontMapper;
-    @Autowired private TbChainMapper tbChainMapper;
+    @Autowired
+    private TbFrontMapper frontMapper;
+    @Autowired
+    private TbChainMapper tbChainMapper;
 
-    @Autowired private FrontService frontService;
-    @Autowired private ChainService chainService;
-    @Autowired private ConstantProperties constant;
-    @Autowired private PathService pathService;
-    @Autowired private DeployShellService deployShellService;
-    @Autowired private DockerOptions dockerOptions;
+    @Autowired
+    private FrontService frontService;
+    @Autowired
+    private ChainService chainService;
+    @Autowired
+    private ConstantProperties constant;
+    @Autowired
+    private PathService pathService;
+    @Autowired
+    private DeployShellService deployShellService;
+    @Autowired
+    private DockerOptions dockerOptions;
+    @Autowired
+    private ConstantProperties constantProperties;
 
     @Qualifier(value = "deployAsyncScheduler")
-    @Autowired private ThreadPoolTaskScheduler threadPoolTaskScheduler;
+    @Autowired
+    private ThreadPoolTaskScheduler threadPoolTaskScheduler;
+    @Autowired
+    private ImageService imageService;
 
     /**
      * @param deploy
@@ -99,12 +103,12 @@ public class NodeAsyncService {
                 return;
             }
 
-            // download image from cdn if download from cdn
-            if (dockerImageTypeEnum == DockerImageTypeEnum.DOWNLOAD_CDN) {
-                String dockerTarFileName = constant.getDockerTarFileName(deploy.getVersion());
-                String cdnUrl = constant.getCdnUrl(deploy.getVersion());
-                FileUtil.download(false, cdnUrl, dockerTarFileName, constant.getDockerPullTimeout());
-            }
+//            // download image from cdn if download from cdn
+//            if (dockerImageTypeEnum == DockerImageTypeEnum.DOWNLOAD_CDN) {
+//                String dockerTarFileName = constant.getDockerTarFileName(deploy.getVersion());
+//                String cdnUrl = constant.getCdnUrl(deploy.getVersion());
+//                FileUtil.download(false, cdnUrl, dockerTarFileName, constant.getDockerPullTimeout());
+//            }
 
             // init host
             // 1. install docker and docker-compose,
@@ -321,7 +325,7 @@ public class NodeAsyncService {
                     if (scpNodeConfig) {
                         if (ipSet.contains(host.getIp())) {
                             log.info("Already scp file to host:[{}]", host.getIp());
-                        }else{
+                        } else {
                             // scp config files from local to remote
                             // local: NODES_ROOT/[chainName]/[ip] TO remote: /opt/fisco/[chainName]
                             String src = String.format("%s/*", pathService.getHost(tbChain.getChainName(), host.getIp()).toString());
@@ -342,74 +346,13 @@ public class NodeAsyncService {
                     }
 
                     // docker pull image
-                    try {
-                        boolean exists = dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
-                                host.getSshUser(), host.getSshPort(), tbChain.getVersion());
-                        log.info("check docker image:[{}] exists:[{}] on host:[{}] first.", tbChain.getVersion(), host.getIp(), exists);
-
-                        if (!exists) {
-                            // only pull image when not exists remote host note
-                            log.info("Install image with option:[{}]", dockerImageTypeEnum.getDescription());
-                            switch (dockerImageTypeEnum) {
-                                case PULL_OFFICIAL:
-                                    // pull from official registry
-                                    dockerOptions.pullImage(host.getIp(), host.getDockerDemonPort(), host.getSshUser(), host.getSshPort(), tbChain.getVersion());
-                                    break;
-
-                                case LOCAL_OFFLINE:
-                                case DOWNLOAD_CDN:
-                                    // scp tar file to remote host
-                                    String imageTarFileName = String.format(constant.getImageTar(), tbChain.getVersion());
-                                    String dst = String.format("~/%s", imageTarFileName);
-                                    deployShellService.scp(ScpTypeEnum.UP, host.getSshUser(), host.getIp(), host.getSshPort(),
-                                            FileUtil.getFilePath(imageTarFileName), dst);
-                                    // unzip tar file
-                                    String unzip = String.format("sudo docker load -i %s", dst);
-                                    SshUtil.execDocker(host.getIp(), unzip,
-                                            host.getSshUser(), host.getSshPort(), constant.getPrivateKey());
-
-                                    break;
-                                case HOST_DOWNLOAD_CDN:
-                                    String cdnUrl = constant.getCdnUrl(tbChain.getVersion());
-                                    String dockerImport = String.format("curl -sL %s | sudo docker load ", cdnUrl);
-                                    SshUtil.execDocker(host.getIp(), dockerImport,
-                                            host.getSshUser(), host.getSshPort(), constant.getPrivateKey());
-                                    break;
-                                default:
-                                    break;
-                            }
-                            exists = dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
-                                    host.getSshUser(), host.getSshPort(), tbChain.getVersion());
-                            if (!exists) {
-                                log.error("Docker image:[{}] not exists on host after execute installation:[{}].", tbChain.getVersion(), host.getIp());
-                                throw new BaseException(ConstantCode.IMAGE_NOT_EXISTS_ON_HOST.attach("after installation"));
-                            }
-                        }
-                    } catch (Exception e) {
-                        log.error("Install docker image on host :[{}] failed", host.getIp(), e);
-                        this.chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED,
-                                String.format("Install docker image failed:[%s:%s]", host.getIp(), tbChain.getVersion()));
-                        return;
-                    }
-
+                    imageService.pullHostImage(host, tbChain.getVersion(), dockerImageTypeEnum);
                     // check port
-                    for (int i = 0; i < host.getNum(); i++) {
-                        Pair<Boolean, Integer> portReachable = NetUtils.anyPortInUse(host.getIp(),
-                                host.getSshUser(),
-                                host.getSshPort(),
-                                constant.getPrivateKey(),
-                                host.getChannelPort() + i,
-                                host.getP2pPort() + i,
-                                host.getFrontPort() + i,
-                                host.getJsonrpcPort() + i);
-                        if (portReachable.getKey()) {
-                            log.error("Port:[{}] is in use on host :[{}] failed", portReachable.getValue(), host.getIp());
-                            this.chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED,
-                                    String.format("Port:[%s:%s] in use", host.getIp(), portReachable.getValue()));
-                            return;
-                        }
-                    }
+                    checkHostPort(host);
                     initSuccessCount.incrementAndGet();
+                } catch (BaseException ex) {
+                    log.error("Init host:[{}] with BaseException", host.getIp(), ex);
+                    chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED, ex.getRetCode().getMessage());
                 } catch (Exception e) {
                     log.error("Init host:[{}] with unknown error", host.getIp(), e);
                     chainService.updateStatus(tbChain.getChainId(), ChainStatusEnum.DEPLOY_FAILED,
@@ -418,7 +361,7 @@ public class NodeAsyncService {
                     initHostLatch.countDown();
                 }
             });
-            taskMap.put(String.format("%s_%s", host.getExtHostId(),host.getIp()), task);
+            taskMap.put(String.format("%s_%s", host.getExtHostId(), host.getIp()), task);
         }
 
         initHostLatch.await(constant.getExecHostInitTimeout(), TimeUnit.MILLISECONDS);
@@ -445,6 +388,102 @@ public class NodeAsyncService {
                     String.format("Init host error,total:[%s], success:[%s].", CollectionUtils.size(hostList), initSuccessCount.get()));
         }
         return hostInitSuccess;
+    }
+
+
+    /**
+     * @param hostList
+     * @param imageVersion
+     * @param dockerImageTypeEnum
+     * @return
+     * @throws InterruptedException
+     */
+    public List<RespInitHost> initHostList(List<ReqDeploy.DeployHost> hostList, String imageVersion, DockerImageTypeEnum dockerImageTypeEnum) throws InterruptedException {
+        log.info("Start init imageVersion:{} imagePullType:{} hosts:{} .", imageVersion, dockerImageTypeEnum.getId(), CollectionUtils.size(hostList));
+
+        // check image tar file when install with offline
+        imageService.checkLocalImageByDockerImageTypeEnum(dockerImageTypeEnum, imageVersion);
+
+        final CountDownLatch initHostLatch = new CountDownLatch(CollectionUtils.size(hostList));
+        // check success count
+//        AtomicInteger initSuccessCount = new AtomicInteger(0);
+        Map<String, Future> taskMap = new HashedMap<>();
+
+        for (final ReqDeploy.DeployHost host : hostList) {
+            Future<Pair<Boolean, String>> task = threadPoolTaskScheduler.submit(() -> {
+                try {
+                    //check ssh connect
+                    SshUtil.verifyHostConnect(host.getIp(), host.getSshUser(), host.getSshPort(), constantProperties.getPrivateKey());
+                    // docker pull image
+                    imageService.pullHostImage(host, imageVersion, dockerImageTypeEnum);
+                    // check port
+                    checkHostPort(host);
+//                    initSuccessCount.incrementAndGet();
+
+                    return Pair.of(true, null);
+                } catch (BaseException ex) {
+                    log.error("Init host:[{}] with BaseException", host, ex);
+                    return Pair.of(false, ex.getRetCode().getMessage());
+                } catch (Exception e) {
+                    log.error("Init host:[{}] with unknown error", host.getIp(), e);
+                    return Pair.of(false, String.format("Init host:[%s] with unknown error.", host.getIp()));
+                } finally {
+                    initHostLatch.countDown();
+                }
+            });
+            taskMap.put(String.format("%s_%s", host.getExtHostId(), host.getIp()), task);
+        }
+
+        initHostLatch.await(constant.getExecHostInitTimeout(), TimeUnit.MILLISECONDS);
+
+        //result data
+        List<RespInitHost> respInitHostList = new ArrayList<>();
+        taskMap.entrySet().forEach((entry) -> {
+            String key = entry.getKey();
+            Future<Pair<Boolean, String>> task = entry.getValue();
+            RespInitHost respInitHost = new RespInitHost(false);
+            if (!task.isDone()) {
+                log.error("Init host:[{}] timeout, cancel the task.", key);
+                respInitHost.setErrorMessage(String.format("Init host:[%s] timeout, cancel the task.", key));
+                task.cancel(false);
+            } else {
+                try {
+                    Pair<Boolean, String> pair = task.get();
+                    respInitHost.setHostId(Integer.valueOf(key.substring(0, key.indexOf("_"))));
+                    respInitHost.setSuccess(pair.getLeft());
+                    respInitHost.setErrorMessage(pair.getRight());
+                } catch (Exception ex) {
+                    log.error(String.format("Init host:[%s] error.", key), ex);
+                }
+            }
+            respInitHostList.add(respInitHost);
+        });
+
+        log.info("finish initHostList. result:{} ", JsonTools.objToString(respInitHostList));
+        return respInitHostList;
+    }
+
+
+    /**
+     * @param host
+     */
+    public void checkHostPort(ReqDeploy.DeployHost host) {
+        log.info("start checkHostPort,hostIp:{} nodeCount:{}", host.getIp(), host.getNum());
+        for (int i = 0; i < host.getNum(); i++) {
+            Pair<Boolean, Integer> portReachable = NetUtils.anyPortInUse(host.getIp(),
+                    host.getSshUser(),
+                    host.getSshPort(),
+                    constant.getPrivateKey(),
+                    host.getChannelPort() + i,
+                    host.getP2pPort() + i,
+                    host.getFrontPort() + i,
+                    host.getJsonrpcPort() + i);
+            if (portReachable.getKey()) {
+                String message = String.format("Port:[%1d] is in use on host :[%2s] failed", portReachable.getValue(), host.getIp());
+                throw new BaseException(ConstantCode.CHECK_PORT_NOT_SUCCESS.getCode(), message);
+            }
+        }
+        log.info("success checkHostPort,hostIp:{} nodeCount:{}", host.getIp(), host.getNum());
     }
 }
 

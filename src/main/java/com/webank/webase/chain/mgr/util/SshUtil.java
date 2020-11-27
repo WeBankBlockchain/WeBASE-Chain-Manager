@@ -15,15 +15,6 @@
  */
 package com.webank.webase.chain.mgr.util;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Properties;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
@@ -31,15 +22,22 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.util.cmd.ExecuteResult;
 import com.webank.webase.chain.mgr.util.cmd.JavaCommandExecutor;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Properties;
 
 
 @Log4j2
 public class SshUtil {
 
-    public static final String DEFAULT_SSH_USER="root";
-    public static final int DEFAULT_SSH_PORT=22;
+    public static final String DEFAULT_SSH_USER = "root";
+    public static final int DEFAULT_SSH_PORT = 22;
 
     private static Properties config = new Properties();
 
@@ -51,23 +49,22 @@ public class SshUtil {
     }
 
     /**
-     *
      * @param ip
      * @param originalCommand
      */
-    private static Pair<Boolean,String> exec(String ip, String originalCommand, String sshUser, int sshPort, String privateKey) {
+    private static Pair<Boolean, String> exec(String ip, String originalCommand, String sshUser, int sshPort, String privateKey) {
         StringBuilder newCommandBuilder = new StringBuilder(originalCommand);
-        if (IPUtil.isLocal(ip)){
+        if (IPUtil.isLocal(ip)) {
             ExecuteResult result = JavaCommandExecutor.executeCommand(originalCommand, 0);
             if (result.failed()) {
-                log.error("SshTools exec on localhost:[{}] command:[{}] error:[{}].", ip, originalCommand, result.getExecuteOut() );
+                log.error("SshTools exec on localhost:[{}] command:[{}] error:[{}].", ip, originalCommand, result.getExecuteOut());
             }
-            return Pair.of(result.success(),result.getExecuteOut());
-        }else{
+            return Pair.of(result.success(), result.getExecuteOut());
+        } else {
             newCommandBuilder.append(" ; exit 0;");
         }
         String newCommand = newCommandBuilder.toString();
-        Session session = connect(ip, sshPort, sshUser, "",privateKey, 0);
+        Session session = connect(ip, sshPort, sshUser, "", privateKey, 0);
         if (session != null && session.isConnected()) {
             ChannelExec channelExec = null;
             StringBuilder execLog = new StringBuilder();
@@ -88,10 +85,10 @@ public class SshUtil {
                 if (status < 0) {
                     log.warn("Exec command:[{}] on remote host:[{}], no exit status:[{}] not set, log:[{}].",
                             newCommand, ip, status, execLog.toString());
-                    return Pair.of(true,execLog.toString());
+                    return Pair.of(true, execLog.toString());
                 } else if (status == 0) {
                     log.info("Exec command:[{}] on remote host:[{}] success, log:[{}].", newCommand, ip, execLog.toString());
-                    return Pair.of(true,execLog.toString());
+                    return Pair.of(true, execLog.toString());
                 } else {
                     log.error("Exec command:[{}] on remote host:[{}] with error[{}], log:[{}].", newCommand, ip, status, execLog.toString());
                 }
@@ -105,25 +102,25 @@ public class SshUtil {
                     try {
                         reader.close();
                     } catch (IOException e) {
-                        log.error("SSH close error to ip:[{}]",ip,e);
+                        log.error("SSH close error to ip:[{}]", ip, e);
                     }
                 }
                 session.disconnect();
             }
         }
-        return Pair.of(false,"");
+        return Pair.of(false, "");
     }
 
     /**
      * @param ip
      * @return
      */
-    public static boolean connect(String ip,String sshUser,int sshPort,String privateKey) {
+    public static boolean connect(String ip, String sshUser, int sshPort, String privateKey) {
         if (IPUtil.isLocal(ip)) {
             return true;
         }
 
-        Session session = connect(ip, sshPort, sshUser, "",privateKey, 0);
+        Session session = connect(ip, sshPort, sshUser, "", privateKey, 0);
         if (session != null && session.isConnected()) {
             session.disconnect();
             return true;
@@ -179,27 +176,25 @@ public class SshUtil {
     }
 
     /**
-     *
      * @param ip
      * @param dir
      */
-    public static void createDirOnRemote(String ip, String dir, String sshUser, int sshPort,String privateKey){
-        exec(ip, String.format("sudo mkdir -p %s", dir),sshUser,sshPort,privateKey);
-        exec(ip, String.format("sudo chown -R %s %s ", sshUser,dir),sshUser,sshPort,privateKey);
-        exec(ip, String.format("sudo chgrp -R %s %s ", sshUser,dir),sshUser,sshPort,privateKey);
+    public static void createDirOnRemote(String ip, String dir, String sshUser, int sshPort, String privateKey) {
+        exec(ip, String.format("sudo mkdir -p %s", dir), sshUser, sshPort, privateKey);
+        exec(ip, String.format("sudo chown -R %s %s ", sshUser, dir), sshUser, sshPort, privateKey);
+        exec(ip, String.format("sudo chgrp -R %s %s ", sshUser, dir), sshUser, sshPort, privateKey);
     }
 
     /**
-     *
      * @param ip
      * @param src
      * @param dst
      */
-    public static void mvDirOnRemote(String ip, String src, String dst, String sshUser, int sshPort,String privateKey){
-        if (StringUtils.isNoneBlank(ip,src,dst)) {
+    public static void mvDirOnRemote(String ip, String src, String dst, String sshUser, int sshPort, String privateKey) {
+        if (StringUtils.isNoneBlank(ip, src, dst)) {
             String rmCommand = String.format("sudo mv -fv %s %s", src, dst);
             log.info("Remove config on remote host:[{}], command:[{}].", ip, rmCommand);
-            exec(ip, rmCommand,sshUser,sshPort,privateKey);
+            exec(ip, rmCommand, sshUser, sshPort, privateKey);
         }
     }
 
@@ -212,9 +207,9 @@ public class SshUtil {
      * @param sshPort
      * @return
      */
-    public static Pair<Boolean,String> execDocker(String ip, String originalCommand, String sshUser,int sshPort,String privateKey) {
+    public static Pair<Boolean, String> execDocker(String ip, String originalCommand, String sshUser, int sshPort, String privateKey) {
         log.info("Execute docker command:[{}] on host:[{}]", originalCommand, ip);
-        return exec(ip,originalCommand,sshUser,sshPort,privateKey);
+        return exec(ip, originalCommand, sshUser, sshPort, privateKey);
     }
 
     /**
@@ -227,10 +222,10 @@ public class SshUtil {
      * @param privateKey
      * @return
      */
-    public static boolean killCommand(String ip, String commandToKill, String sshUser,int sshPort,String privateKey) {
-        String newCommand= String.format("sudo pkill -f '%s'", commandToKill);
+    public static boolean killCommand(String ip, String commandToKill, String sshUser, int sshPort, String privateKey) {
+        String newCommand = String.format("sudo pkill -f '%s'", commandToKill);
         log.info("Execute kill command:[{}] on host:[{}]", newCommand, ip);
-        return exec(ip,newCommand,sshUser,sshPort,privateKey).getKey();
+        return exec(ip, newCommand, sshUser, sshPort, privateKey).getKey();
     }
 
     /**
@@ -242,11 +237,27 @@ public class SshUtil {
      * @param privateKey
      * @return
      */
-    public static boolean portInUse(int port, String ip, String sshUser,int sshPort,String privateKey) {
-        String newCommand= String.format("sudo fuser %s/tcp 2>/dev/null | sed -e 's/\\\\s*//g'| tr -d '[:space:]'", port);
+    public static boolean portInUse(int port, String ip, String sshUser, int sshPort, String privateKey) {
+        String newCommand = String.format("sudo fuser %s/tcp 2>/dev/null | sed -e 's/\\\\s*//g'| tr -d '[:space:]'", port);
         log.info("Execute command:[{}] on host:[{}]", newCommand, ip);
 
-        String result = exec(ip,newCommand,sshUser,sshPort,privateKey).getValue();
+        String result = exec(ip, newCommand, sshUser, sshPort, privateKey).getValue();
         return StringUtils.isNotBlank(result);
+    }
+
+    /**
+     * @param ip
+     * @param sshUser
+     * @param sshPort
+     * @param privateKey
+     */
+    public static void verifyHostConnect(String ip, String sshUser, int sshPort, String privateKey) {
+        log.info("start exec method[verifyHostConnect]. ip:{} sshUser:{} sshPort:{}", ip, sshUser, sshPort);
+        boolean connectSuccess = SshUtil.connect(ip, sshUser, sshPort, privateKey);
+        if (!connectSuccess) {
+            throw new BaseException(ConstantCode.HOST_CONNECT_ERROR, String.format("Connect to host:[%s] failed.", ip));
+        }
+        log.info("success exec method[verifyHostConnect]. ip:{} sshUser:{} sshPort:{}", ip, sshUser, sshPort);
+
     }
 }
