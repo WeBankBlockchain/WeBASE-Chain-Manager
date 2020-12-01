@@ -1,11 +1,11 @@
 /**
  * Copyright 2014-2019 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -13,33 +13,14 @@
  */
 package com.webank.webase.chain.mgr.contract;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
-import com.webank.webase.chain.mgr.contract.entity.Contract;
-import com.webank.webase.chain.mgr.contract.entity.ContractParam;
-import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
-import com.webank.webase.chain.mgr.contract.entity.ReqContractDeploy;
-import com.webank.webase.chain.mgr.contract.entity.RespContractDeploy;
-import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
-import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
+import com.webank.webase.chain.mgr.base.tools.Web3Tools;
+import com.webank.webase.chain.mgr.contract.entity.*;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
@@ -48,8 +29,15 @@ import com.webank.webase.chain.mgr.method.MethodService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * services for contract data.
@@ -71,7 +59,6 @@ public class ContractService {
 
     /**
      * compile contract.
-     *
      */
     @SuppressWarnings("unchecked")
     public List<RspContractCompile> compileContract(CompileInputParam inputParam)
@@ -390,7 +377,7 @@ public class ContractService {
      * verify that the contract does not exist.
      */
     private void verifyContractNotExistByName(int chainId, int groupId, String name, String path) {
-        TbContract contract = tbContractMapper.getContract(chainId,groupId,name,path);
+        TbContract contract = tbContractMapper.getContract(chainId, groupId, name, path);
         if (Objects.nonNull(contract)) {
             log.warn("contract is exist. groupId:{} name:{} path:{}", groupId, name, path);
             throw new BaseException(ConstantCode.CONTRACT_EXISTS);
@@ -446,7 +433,7 @@ public class ContractService {
      * @param signUserId
      * @return
      */
-    public Object deployByTransactionServer(int contractId, String signUserId,List<Object> constructorParams) {
+    public Object deployByTransactionServer(int contractId, String signUserId, List<Object> constructorParams) {
         TbContract tbContract = this.tbContractMapper.selectByPrimaryKey(contractId);
         if (tbContract == null) {
             return new BaseResponse(ConstantCode.INVALID_CONTRACT_ID);
@@ -472,14 +459,51 @@ public class ContractService {
                     });
             contractToUpdate.setContractAddress(deploy.getContractAddress());
             contractToUpdate.setContractStatus(ContractStatus.DEPLOYED.getValue());
-        }else{
+        } else {
             contractToUpdate.setContractStatus(ContractStatus.DEPLOYMENTFAILED.getValue());
         }
         this.update(contractToUpdate);
         return response;
     }
 
+
+    /**
+     * @param contractId
+     * @param signUserId
+     * @param funcName
+     * @param funcParams
+     * @return
+     */
+    public Object sendByTransactionServer(int contractId, String signUserId, String funcName, List<Object> funcParams) {
+        //check
+        TbContract tbContract = this.tbContractMapper.selectByPrimaryKey(contractId);
+        if (tbContract == null) {
+            return new BaseResponse(ConstantCode.INVALID_CONTRACT_ID);
+        }
+        if (ContractStatus.DEPLOYED.getValue() != tbContract.getContractStatus()) {
+            return new BaseException(ConstantCode.CONTRACT_NOT_DEPLOY);
+        }
+
+        String url = String.format(TransactionRestTools.URI_SEND_TRANSACTION, transactionRestTools.getBaseUrl(tbContract.getChainId()));
+
+        //param
+        ReqTransSendInfoDto transParam = new ReqTransSendInfoDto();
+        BeanUtils.copyProperties(tbContract, transParam);
+        transParam.setSignUserId(signUserId);
+        transParam.setFuncName(funcName);
+        transParam.setFuncParam(funcParams);
+        transParam.setFunctionAbi(Arrays.asList(Web3Tools.getAbiDefinition(funcName, tbContract.getContractAbi())));
+
+        //send
+        log.info("Request transaction server:[{}]:[{}]", url, JsonTools.toJSONString(transParam));
+        BaseResponse response = transactionRestTools.post(url, transParam, BaseResponse.class);
+        log.info("transaction result:{}", JsonTools.objToString(response));
+        return response;
+    }
+
     public boolean update(TbContract tbContract) {
         return this.tbContractMapper.updateByPrimaryKeySelective(tbContract) == 1;
     }
+
+
 }
