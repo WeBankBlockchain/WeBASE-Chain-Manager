@@ -19,6 +19,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @ToString(callSuper = true)
@@ -33,6 +35,7 @@ public class ContractParam extends BaseQueryParam {
     private Integer contractStatus;
     private Integer contractType;
     private String partOfBytecodeBin;
+    private List<Integer> contractIdList;
 
     /**
      * init by contractId.

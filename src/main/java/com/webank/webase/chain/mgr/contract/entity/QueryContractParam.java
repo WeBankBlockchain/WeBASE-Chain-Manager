@@ -15,8 +15,11 @@ package com.webank.webase.chain.mgr.contract.entity;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class QueryContractParam {
+    private List<Integer> contractIdList;
     private Integer chainId;
     private Integer groupId;
     private String contractName;
