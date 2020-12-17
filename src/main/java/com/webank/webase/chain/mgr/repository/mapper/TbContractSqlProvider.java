@@ -1,9 +1,12 @@
 package com.webank.webase.chain.mgr.repository.mapper;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
+
+import java.util.stream.Collectors;
 
 public class TbContractSqlProvider {
 
@@ -52,6 +55,9 @@ public class TbContractSqlProvider {
         }
         if (param.getContractStatus() != null) {
             sql.WHERE("contract_status = #{contractStatus}");
+        }
+        if(!CollectionUtils.isEmpty(param.getContractIdList())){
+            sql.WHERE(String.format("contract_id in(%s)", StringUtils.join(param.getContractIdList(),",")));
         }
         if (StringUtils.isNotBlank(param.getFlagSortedByTime())) {
             sql.ORDER_BY(String.format("modify_time %s",param.getFlagSortedByTime()));

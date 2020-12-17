@@ -1,5 +1,5 @@
-/**
- * Copyright 2014-2019 the original author or authors.
+/*
+ * Copyright 2014-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,20 +11,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.webank.webase.chain.mgr.contract.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.util.List;
-
+/**
+ * transaction request parameters.
+ *
+ */
 @Data
-public class QueryContractParam {
-    private List<Integer> contractIdList;
+public class ReqTransSendInfoDto {
+    @NotNull
     private Integer chainId;
+    @NotNull
     private Integer groupId;
-    private String contractName;
+    @NotBlank
     private String contractAddress;
-    private Integer contractStatus;
-    private Integer pageNumber;
-    private Integer pageSize;
+    @NotBlank
+    private String signUserId;
+    @NotBlank
+    private String funcName;
+    @NotEmpty
+    private List<Object> functionAbi = new ArrayList<>();
+    private List<Object> funcParam = new ArrayList<>();
 }

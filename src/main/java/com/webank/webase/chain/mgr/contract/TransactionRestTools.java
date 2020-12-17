@@ -50,6 +50,7 @@ public class TransactionRestTools {
     public static final String URI_USER_LIST = "%s/user/list/%s/%s/%s";
     public static final String URI_USER_NEW = "%s/user/newUser";
     public static final String URI_CONTRACT_DEPLOY = "%s/contract/deploy";
+    public static final String URI_SEND_TRANSACTION = "%s/trans/send";
 
     @Autowired private ConstantProperties constantProperties;
     @Autowired private RestTemplate restTemplate;

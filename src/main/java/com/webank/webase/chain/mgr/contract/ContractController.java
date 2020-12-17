@@ -1,36 +1,17 @@
 /**
  * Copyright 2014-2019 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 package com.webank.webase.chain.mgr.contract;
-
-import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-
-import javax.validation.Valid;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
@@ -39,31 +20,36 @@ import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.SqlSortType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
-import com.webank.webase.chain.mgr.contract.entity.Contract;
-import com.webank.webase.chain.mgr.contract.entity.ContractParam;
-import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
-import com.webank.webase.chain.mgr.contract.entity.QueryContractParam;
-import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
-import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
+import com.webank.webase.chain.mgr.contract.entity.*;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
-
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 
 @Log4j2
 @RestController
 @RequestMapping("contract")
 public class ContractController extends BaseController {
 
-    @Autowired private ContractService contractService;
+    @Autowired
+    private ContractService contractService;
 
     /**
      * compile deployInputParam.
      */
     @PostMapping(value = "/compile")
     public BaseResponse compileContract(@RequestBody @Valid CompileInputParam compileInputParam,
-            BindingResult result) throws BaseException, IOException {
+                                        BindingResult result) throws BaseException, IOException {
         checkBindResult(result);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
@@ -108,8 +94,8 @@ public class ContractController extends BaseController {
      */
     @DeleteMapping(value = "/{chainId}/{groupId}/{contractId}")
     public BaseResponse deleteContract(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId,
-            @PathVariable("contractId") Integer contractId) throws BaseException, Exception {
+                                       @PathVariable("groupId") Integer groupId,
+                                       @PathVariable("contractId") Integer contractId) throws BaseException, Exception {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start deleteContract startTime:{} contractId:{} groupId:{}",
@@ -128,7 +114,7 @@ public class ContractController extends BaseController {
      */
     @PostMapping(value = "/contractList")
     public BasePageResponse queryContractList(@RequestBody @Valid QueryContractParam inputParam,
-            BindingResult result) throws BaseException {
+                                              BindingResult result) throws BaseException {
         checkBindResult(result);
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
@@ -182,7 +168,7 @@ public class ContractController extends BaseController {
      */
     @PostMapping(value = "/deploy")
     public BaseResponse deployContract(@RequestBody @Valid DeployInputParam deployInputParam,
-            BindingResult result) throws BaseException {
+                                       BindingResult result) throws BaseException {
         checkBindResult(result);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
@@ -204,7 +190,7 @@ public class ContractController extends BaseController {
      */
     @PostMapping(value = "/transaction")
     public BaseResponse sendTransaction(@RequestBody @Valid TransactionInputParam param,
-            BindingResult result) throws BaseException {
+                                        BindingResult result) throws BaseException {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start sendTransaction startTime:{} param:{}", startTime.toEpochMilli(),
@@ -249,8 +235,20 @@ public class ContractController extends BaseController {
         log.info("start deployByTransaction startTime:{}, signUserId:{}, contractId:{}",
                 startTime.toEpochMilli(), signUserId, contractId);
 
-        Object result = contractService.deployByTransactionServer(contractId, signUserId,constructorParams);
+        Object result = contractService.deployByTransactionServer(contractId, signUserId, constructorParams);
         log.info("end deployByTransaction useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
+
+        return result;
+    }
+
+
+    @PostMapping(value = "/send/transaction")
+    public Object sendByTransaction(@RequestBody ReqTransSendInfoVO param) {
+        Instant startTime = Instant.now();
+        log.info("start sendByTransaction startTime:{}, param:{}",
+                startTime.toEpochMilli(), JsonTools.objToString(param));
+        Object result = contractService.sendByTransactionServer(param.getContractId(), param.getSignUserId(), param.getFuncName(), param.getFuncParam());
+        log.info("end sendByTransaction useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
 
         return result;
     }
