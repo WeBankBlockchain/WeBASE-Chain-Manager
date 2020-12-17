@@ -57,7 +57,7 @@ public class TbContractSqlProvider {
             sql.WHERE("contract_status = #{contractStatus}");
         }
         if(!CollectionUtils.isEmpty(param.getContractIdList())){
-            sql.WHERE(String.format(" contract_id in(%s)", param.getContractIdList().stream().map(s -> String.valueOf(s)).collect(Collectors.joining(","))));
+            sql.WHERE(String.format("contract_id in(%s)", StringUtils.join(param.getContractIdList(),",",0,param.getContractIdList().size())));
         }
         if (StringUtils.isNotBlank(param.getFlagSortedByTime())) {
             sql.ORDER_BY(String.format("modify_time %s",param.getFlagSortedByTime()));
