@@ -124,9 +124,9 @@ fi
 
 function sshExec(){
 
-    use_rsa = ""
+    use_rsa=
     if [[ $rsa ]] ; then
-        use_rsa = " -i ${rsa}"
+        use_rsa=" -i ${rsa}"
     fi
     echo ${use_rsa}
 

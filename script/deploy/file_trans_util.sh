@@ -112,9 +112,9 @@ while getopts t:i:u:p:s:d:r:lh OPT;do
 done
 
 
-use_rsa = ""
+use_rsa=
 if [[ $rsa ]] ; then
-    use_rsa = " -i ${rsa}"
+    use_rsa=" -i ${rsa}"
 fi
 echo ${use_rsa}
 
