@@ -15,17 +15,6 @@
  */
 package com.webank.webase.chain.mgr.deploy.service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.ScpTypeEnum;
@@ -36,8 +25,17 @@ import com.webank.webase.chain.mgr.util.IPUtil;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.cmd.ExecuteResult;
 import com.webank.webase.chain.mgr.util.cmd.JavaCommandExecutor;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 
 /**
  * Java call shell script and system command.
@@ -46,7 +44,8 @@ import lombok.extern.log4j.Log4j2;
 @Component
 public class DeployShellService {
 
-    @Autowired private ConstantProperties constant;
+    @Autowired
+    private ConstantProperties constant;
     @Autowired
     private PathService pathService;
 
@@ -74,8 +73,8 @@ public class DeployShellService {
             }
         }
 
-        String command = String.format("bash -x -e %s -t %s -i %s -u %s -p %s -s '%s' -d '%s' %s",
-                constant.getScpShell(), typeEnum.getValue(), ip, sshUser, sshPort, src, dst,
+        String command = String.format("bash -x -e %s -t %s -i %s -u %s -p %s -s '%s' -d '%s' -r '%s' %s",
+                constant.getScpShell(), typeEnum.getValue(), ip, sshUser, sshPort, src, dst, constant.getPrivateKey(),
                 IPUtil.isLocal(dst) ? " -l " : "");
         log.info("exec file send command: [{}]", command);
         ExecuteResult result = JavaCommandExecutor.executeCommand(command, constant.getExecHostInitTimeout());
@@ -115,8 +114,8 @@ public class DeployShellService {
         String passwordParam = StringUtils.isBlank(pwd) ? "" : String.format(" -p %s ", pwd);
         String chainRootParam = StringUtils.isBlank(chainRoot) ? "" : String.format(" -n %s ", chainRoot);
 
-        String command = String.format("bash -x -e %s -H %s -P %s -u %s %s %s %s ",
-                constant.getNodeOperateShell(), ip, newport, newUser, passwordParam, chainRootParam, useDockerCommand);
+        String command = String.format("bash -x -e %s -H %s -P %s -u %s -r '%s' %s %s %s ",
+                constant.getNodeOperateShell(), ip, newport, newUser, constant.getPrivateKey(), passwordParam, chainRootParam, useDockerCommand);
 
         ExecuteResult result = JavaCommandExecutor.executeCommand(command, constant.getExecHostInitTimeout());
         if (result.failed()) {

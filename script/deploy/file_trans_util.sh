@@ -43,6 +43,7 @@ port=22
 src=
 dst=
 local=no
+rsa=
 
 ####### 参数解析 #######
 cmdname=$(basename "$0")
@@ -51,13 +52,14 @@ cmdname=$(basename "$0")
 usage() {
     cat << USAGE  >&2
 Usage:
-    $cmdname [-t up|down ] [-i ip] [-u ssh_user] [-p ssh_port] [-s src] [-d dst] [-l] [-h]
+    $cmdname [-t up|down ] [-i ip] [-u ssh_user] [-p ssh_port] [-s src] [-d dst] [-r rsa] [-l] [-h]
     -t     Required, transfer file by upload or download, only up and down is valid.
     -i     Required, remote server ip.
     -u     Required, SSH user.
     -p     Required, SSH port, default 22.
     -s     Required, scp source files.
     -d     Required, scp destination files.
+    -r     Not Required, SSH rsa private key file.
     -l     Not Required, if set, then src address and dst address both are the same.
     -h     Show help info.
 USAGE
@@ -65,7 +67,7 @@ USAGE
 }
 
 
-while getopts t:i:u:p:s:d:lh OPT;do
+while getopts t:i:u:p:s:d:r:lh OPT;do
     case ${OPT} in
         t)
             case $OPTARG in
@@ -92,6 +94,9 @@ while getopts t:i:u:p:s:d:lh OPT;do
         d)
             dst=$OPTARG
             ;;
+        r)
+            rsa=$OPTARG
+            ;;
         l)
             local=yes
             ;;
@@ -106,13 +111,21 @@ while getopts t:i:u:p:s:d:lh OPT;do
     esac
 done
 
+
+use_rsa=
+if [[ $rsa ]] ; then
+    use_rsa=" -i ${rsa}"
+fi
+echo ${use_rsa}
+
+
 if [[ "${type}"x == "up"x ]] ; then
     echo "Upload files from local:[${src}] to remote dst:[${user}@${ip}:${dst}], using port:[${port}]"
 
     if [[ "$local"x == "yes"x ]] ; then
         sudo cp -rfv ${src} ${dst}
     else
-        scp -o "StrictHostKeyChecking=no" -o "LogLevel=ERROR" -o "UserKnownHostsFile=/dev/null" -P ${port} -r ${src} ${user}@${ip}:${dst}
+        scp ${use_rsa} -o "StrictHostKeyChecking=no" -o "LogLevel=ERROR" -o "UserKnownHostsFile=/dev/null" -P ${port} -r ${src} ${user}@${ip}:${dst}
     fi
 elif [[ "${type}"x == "down"x ]] ; then
     echo "Download files from remote :[${user}@${ip}:${src}] to local dst:[${dst}], using port:[${port}]"
@@ -120,7 +133,7 @@ elif [[ "${type}"x == "down"x ]] ; then
     if [[ "$local"x == "yes"x ]] ; then
         sudo cp -rfv ${src} ${dst}
     else
-        scp -o "StrictHostKeyChecking=no" -o "LogLevel=ERROR" -o "UserKnownHostsFile=/dev/null" -P ${port} -r ${user}@${ip}:${src} ${dst}
+        scp ${use_rsa}  -o "StrictHostKeyChecking=no" -o "LogLevel=ERROR" -o "UserKnownHostsFile=/dev/null" -P ${port} -r ${user}@${ip}:${src} ${dst}
     fi
 fi
 
