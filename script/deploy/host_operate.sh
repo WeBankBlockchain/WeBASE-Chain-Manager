@@ -47,6 +47,7 @@ user=root
 password=
 node_root=/opt/fisco
 use_docker_sdk=yes
+rsa=
 
 ####### error code
 SUCCESS=0
@@ -59,10 +60,11 @@ cmdname=$(basename "$0")
 usage() {
     cat << USAGE  >&2
 Usage:
-    $cmdname [-H host] [-P port] [-u user] [-p password] [-n node_root] [-c] [-d] [-h]
+    $cmdname [-H host] [-P port] [-u user]  [-r rsa] [-p password] [-n node_root] [-c] [-d] [-h]
     -H     Required, remote host.
     -P     Not required, remote port, default is 22.
     -u     Not required, remote userName, default is root.
+    -r     Not Required, SSH rsa private key file.
     -p     Required, password.
     -n     Node config root directory, default is /opt/fisco
     -c     Use docker command instead of using docker SDK api, default no.
@@ -73,7 +75,7 @@ USAGE
 }
 
 
-while getopts H:P:u:p:n:dch OPT;do
+while getopts H:P:u:r:p:n:dch OPT;do
     case ${OPT} in
         H)
             host=$OPTARG
@@ -83,6 +85,9 @@ while getopts H:P:u:p:n:dch OPT;do
             ;;
         u)
             user=$OPTARG
+            ;;
+        r)
+            rsa=$OPTARG
             ;;
         p)
             password=$OPTARG
@@ -118,12 +123,22 @@ fi
 
 
 function sshExec(){
-    ssh -q -o "StrictHostKeyChecking=no" \
-    -o "LogLevel=ERROR" \
-    -o "UserKnownHostsFile=/dev/null" \
-    -o "PubkeyAuthentication=yes" \
-    -o "PasswordAuthentication=no" \
-     "${user}"@"${host}" -p "${port}" $@
+
+    if [[ "$rsa"x == ""x ]] ; then
+        ssh -q -o "StrictHostKeyChecking=no" \
+        -o "LogLevel=ERROR" \
+        -o "UserKnownHostsFile=/dev/null" \
+        -o "PubkeyAuthentication=yes" \
+        -o "PasswordAuthentication=no" \
+         "${user}"@"${host}" -p "${port}" $@
+    else
+        ssh -i ${rsa} -q -o "StrictHostKeyChecking=no" \
+        -o "LogLevel=ERROR" \
+        -o "UserKnownHostsFile=/dev/null" \
+        -o "PubkeyAuthentication=yes" \
+        -o "PasswordAuthentication=no" \
+         "${user}"@"${host}" -p "${port}" $@
+    fi
 }
 
 function init() {
