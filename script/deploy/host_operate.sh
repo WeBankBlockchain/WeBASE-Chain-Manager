@@ -124,21 +124,19 @@ fi
 
 function sshExec(){
 
-    if [[ "$rsa"x == ""x ]] ; then
-        ssh -q -o "StrictHostKeyChecking=no" \
-        -o "LogLevel=ERROR" \
-        -o "UserKnownHostsFile=/dev/null" \
-        -o "PubkeyAuthentication=yes" \
-        -o "PasswordAuthentication=no" \
-         "${user}"@"${host}" -p "${port}" $@
-    else
-        ssh -i ${rsa} -q -o "StrictHostKeyChecking=no" \
-        -o "LogLevel=ERROR" \
-        -o "UserKnownHostsFile=/dev/null" \
-        -o "PubkeyAuthentication=yes" \
-        -o "PasswordAuthentication=no" \
-         "${user}"@"${host}" -p "${port}" $@
+    use_rsa = ""
+    if [[ $rsa ]] ; then
+        use_rsa = " -i ${rsa}"
     fi
+    echo ${use_rsa}
+
+
+    ssh  ${use_rsa} -q -o "StrictHostKeyChecking=no" \
+    -o "LogLevel=ERROR" \
+    -o "UserKnownHostsFile=/dev/null" \
+    -o "PubkeyAuthentication=yes" \
+    -o "PasswordAuthentication=no" \
+     "${user}"@"${host}" -p "${port}" $@
 }
 
 function init() {

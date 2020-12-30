@@ -111,25 +111,29 @@ while getopts t:i:u:p:s:d:r:lh OPT;do
     esac
 done
 
+
+use_rsa = ""
+if [[ $rsa ]] ; then
+    use_rsa = " -i ${rsa}"
+fi
+echo ${use_rsa}
+
+
 if [[ "${type}"x == "up"x ]] ; then
     echo "Upload files from local:[${src}] to remote dst:[${user}@${ip}:${dst}], using port:[${port}]"
 
     if [[ "$local"x == "yes"x ]] ; then
         sudo cp -rfv ${src} ${dst}
-    elif [[ "$rsa"x == ""x ]] ; then
-        scp -o "StrictHostKeyChecking=no" -o "LogLevel=ERROR" -o "UserKnownHostsFile=/dev/null" -P ${port} -r ${src} ${user}@${ip}:${dst}
     else
-        scp -i ${rsa} -o "StrictHostKeyChecking=no" -o "LogLevel=ERROR" -o "UserKnownHostsFile=/dev/null" -P ${port} -r ${src} ${user}@${ip}:${dst}
+        scp ${use_rsa} -o "StrictHostKeyChecking=no" -o "LogLevel=ERROR" -o "UserKnownHostsFile=/dev/null" -P ${port} -r ${src} ${user}@${ip}:${dst}
     fi
 elif [[ "${type}"x == "down"x ]] ; then
     echo "Download files from remote :[${user}@${ip}:${src}] to local dst:[${dst}], using port:[${port}]"
 
     if [[ "$local"x == "yes"x ]] ; then
         sudo cp -rfv ${src} ${dst}
-    elif [[ "$rsa"x == ""x ]] ; then
-        scp -o "StrictHostKeyChecking=no" -o "LogLevel=ERROR" -o "UserKnownHostsFile=/dev/null" -P ${port} -r ${user}@${ip}:${src} ${dst}
     else
-        scp -i ${rsa}  -o "StrictHostKeyChecking=no" -o "LogLevel=ERROR" -o "UserKnownHostsFile=/dev/null" -P ${port} -r ${user}@${ip}:${src} ${dst}
+        scp ${use_rsa}  -o "StrictHostKeyChecking=no" -o "LogLevel=ERROR" -o "UserKnownHostsFile=/dev/null" -P ${port} -r ${user}@${ip}:${src} ${dst}
     fi
 fi
 
