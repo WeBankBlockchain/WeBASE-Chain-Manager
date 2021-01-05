@@ -235,7 +235,7 @@ public class ChainService {
 
         // exec build_chain.sh shell script
 
-        String fiscoVersion = StringUtils.remove(deploy.getVersion(),"v");
+        String fiscoVersion = StringUtils.removeStart(deploy.getVersion(),"v");
         deployShellService.execBuildChain(encryptType, ipConf, fiscoVersion, deploy.getChainName());
 
         try {
