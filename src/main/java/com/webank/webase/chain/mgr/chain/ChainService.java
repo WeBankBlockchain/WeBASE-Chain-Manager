@@ -41,6 +41,7 @@ import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ThymeleafUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -233,7 +234,9 @@ public class ChainService {
         }
 
         // exec build_chain.sh shell script
-        deployShellService.execBuildChain(encryptType, ipConf, deploy.getChainName());
+
+        String fiscoVersion = StringUtils.removeStart(deploy.getVersion(),"v");
+        deployShellService.execBuildChain(encryptType, ipConf, fiscoVersion, deploy.getChainName());
 
         try {
             // generate chain config
