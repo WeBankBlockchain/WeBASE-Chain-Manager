@@ -130,10 +130,11 @@ public class DeployShellService {
      */
     public void execBuildChain(EncryptTypeEnum encryptTypeEnum,
                                String[] ipLines,
+                               String version,
                                String chainName) {
         Path ipConf = pathService.getIpConfig(chainName);
-        log.info("Exec execBuildChain method for [{}], chainName:[{}], ipConfig:[{}]",
-                JsonTools.toJSONString(ipLines), chainName, ipConf.toString());
+        log.info("Exec execBuildChain method for [{}], version:{} chainName:[{}], ipConfig:[{}]",
+                JsonTools.toJSONString(ipLines), version, chainName, ipConf.toString());
         try {
             if (!Files.exists(ipConf.getParent())) {
                 Files.createDirectories(ipConf.getParent());
@@ -145,14 +146,16 @@ public class DeployShellService {
         }
 
         // build_chain.sh only support docker on linux
-        // command e.g : build_chain.sh -f ipconf -o outputDir [ -p ports_start ] [ -g ] [ -d ] [ -e exec_binary ]
-        String command = String.format("bash -e %s -S -f %s -o %s %s %s %s",
+        // command e.g : build_chain.sh -f ipconf -o outputDir [-v version] [ -p ports_start ] [ -g ] [ -d ] [ -e exec_binary ]
+        String command = String.format("bash -e %s -S -f %s -o %s %s %s %s %s",
                 // build_chain.sh shell script
                 constant.getBuildChainShell(),
                 // ipconf file path
                 ipConf.toString(),
                 // output path
                 pathService.getChainRootString(chainName),
+                // use binary local
+                StringUtils.isBlank(version) ? "" : String.format(" -v %s ", version),
                 // guomi or standard
                 encryptTypeEnum == EncryptTypeEnum.SM2_TYPE ? "-g " : "",
                 // only linux supports docker model
