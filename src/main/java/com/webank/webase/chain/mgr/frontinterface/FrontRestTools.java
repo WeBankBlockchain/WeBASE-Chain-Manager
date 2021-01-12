@@ -88,6 +88,7 @@ public class FrontRestTools {
     public static final String URI_CONSENSUS_LIST = "precompiled/consensus/list";
     public static final String URI_CONSENSUS = "precompiled/consensus";
     public static final String URI_CONTRACT_STATUS_MANAGE = "precompiled/contractStatusManage";
+    public static final String URI_GAS_CHARGE_MANAGE = "precompiled/GasChargeManage";
 
     public static final String URI_CERT = "cert";
     public static final String URI_ENCRYPT_TYPE = "encrypt";

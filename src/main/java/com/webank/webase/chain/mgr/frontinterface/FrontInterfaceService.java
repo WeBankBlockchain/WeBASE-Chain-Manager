@@ -27,6 +27,7 @@ import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.HttpRequestTools;
 import com.webank.webase.chain.mgr.front.entity.TransactionCount;
+import com.webank.webase.chain.mgr.frontinterface.entity.GasChargeManageHandle;
 import com.webank.webase.chain.mgr.frontinterface.entity.GenerateGroupInfo;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
 import com.webank.webase.chain.mgr.group.entity.ReqSetSysConfig;
@@ -497,5 +498,18 @@ public class FrontInterfaceService {
         Integer groupId = Integer.MAX_VALUE;
         return getFromSpecificFront(groupId, frontIp, frontPort,
                 FrontRestTools.URI_GET_GROUP_SIZE_INFOS, Object.class);
+    }
+
+    public Object gasChargeManage(String frontIp, Integer frontPort,
+                                  GasChargeManageHandle gasChargeManageHandle) {
+        log.debug("start gasChargeManage. gasChargeManageHandle:{}", JsonTools.toJSONString(gasChargeManageHandle));
+        if (Objects.isNull(gasChargeManageHandle)) {
+            log.error("fail gasChargeManage. request param is null");
+            throw new BaseException(ConstantCode.INVALID_PARAM_INFO);
+        }
+        Object response = postToSpecificFront(gasChargeManageHandle.getGroupId(), frontIp, frontPort,
+                FrontRestTools.URI_CONSENSUS, gasChargeManageHandle, Object.class);
+        log.debug("end URI_GAS_CHARGE_MANAGE. response:{}", JsonTools.toJSONString(response));
+        return response;
     }
 }
