@@ -508,7 +508,7 @@ public class FrontInterfaceService {
             throw new BaseException(ConstantCode.INVALID_PARAM_INFO);
         }
         Object response = postToSpecificFront(gasChargeManageHandle.getGroupId(), frontIp, frontPort,
-                FrontRestTools.URI_CONSENSUS, gasChargeManageHandle, Object.class);
+                FrontRestTools.URI_GAS_CHARGE_MANAGE, gasChargeManageHandle, Object.class);
         log.debug("end URI_GAS_CHARGE_MANAGE. response:{}", JsonTools.toJSONString(response));
         return response;
     }
