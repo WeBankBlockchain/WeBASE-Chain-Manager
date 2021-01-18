@@ -74,6 +74,7 @@ public class FrontRestTools {
     public static final String URI_SYSTEMCONFIG_BY_KEY = "web3/systemConfigByKey/%1s";
     public static final String URI_GENERATE_GROUP = "web3/generateGroup";
     public static final String URI_OPERATE_GROUP = "web3/operateGroup/%1s";
+    public static final String URI_CLIENT_VERSION = "web3/clientVersion";
     public static final String FRONT_PERFORMANCE_RATIO = "performance";
     public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
     public static final String URI_MULTI_CONTRACT_COMPILE = "contract/multiContractCompile";

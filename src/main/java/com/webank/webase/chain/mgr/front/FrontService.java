@@ -14,6 +14,7 @@
 package com.webank.webase.chain.mgr.front;
 
 import java.io.IOException;
+import java.sql.Time;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,6 +30,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tomcat.util.buf.ByteBufferUtils;
+import org.fisco.bcos.web3j.utils.Bytes;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,12 +120,14 @@ public class FrontService {
             throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
         }
 
-        TbFront tbFront = new TbFront();
         String frontIp = frontInfo.getFrontIp();
         Integer frontPort = frontInfo.getFrontPort();
         // check front ip and port
         CommonUtils.checkServerConnect(frontIp, frontPort);
+
+        TbFront tbFront = new TbFront();
         tbFront.setFrontStatus(FrontStatusEnum.RUNNING.getId());
+
         // check front's encrypt type same as chain(guomi or standard)
         int encryptType = frontInterface.getEncryptTypeFromSpecificFront(frontIp, frontPort);
         if (encryptType != tbChain.getChainType()) {

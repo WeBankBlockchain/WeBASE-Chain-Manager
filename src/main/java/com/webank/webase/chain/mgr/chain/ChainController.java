@@ -67,7 +67,7 @@ public class ChainController extends BaseController {
     /**
      * add new chain
      */
-    @ApiOperation(value = "添加链", hidden = true)
+    @ApiOperation(value = "添加链")
     @PostMapping("/new")
     public BaseResponse newChain(@RequestBody @Valid ChainInfo chainInfo, BindingResult result) {
         checkBindResult(result);

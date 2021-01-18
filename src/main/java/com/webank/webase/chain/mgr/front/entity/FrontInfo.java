@@ -18,34 +18,55 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
 public class FrontInfo {
-    @NotNull
+
+    @ApiModelProperty(value = "链id")
     private Integer chainId;
+
+    @ApiModelProperty(value = "front的ip地址", example = "127.0.0.2", required = true)
     @NotBlank
     private String frontIp;
-    @NotNull
-    private Integer frontPort;
 
+    @ApiModelProperty(value = "主机所属公司 ID", example = "10", required = true)
     @Positive(message = "External company id error.")
     private int extCompanyId;
+
+    @ApiModelProperty(value = "主机所属组织名称", required = true)
+    @NotBlank
+    private String agency;
+
+    @ApiModelProperty(value = "主机所属组织 ID", example = "10", required = true)
     @Positive(message = "External agency id error.")
-    private int extOrgId;
+    private int extAgencyId;
+
+    @ApiModelProperty(value = "主机ID", example = "10", required = true)
     @Positive(message = "External host id error.")
     private int extHostId;
 
-    /**
-     * 可空
-     */
-    private String description;
-    /**
-     *  可空
-     */
-    private String agency;
-    /**
-     *  可空
-     */
-    private String chainName;
+    @ApiModelProperty(value = "主机 SSH 免密账号，默认 root", example = "root")
+    private String sshUser = "root";
+
+    @ApiModelProperty(value = "主机 SSH 端口，默认 22", example = "22")
+    private int sshPort = 22;
+
+    @ApiModelProperty(value = "节点根目录",example = "/data/app/nodes/127.0.0.1/node0")
+    @NotBlank
+    private String rootDirOnHost;
+
+    @ApiModelProperty(value = "front的端口号", example = "5002", required = true)
+    @NotNull
+    private Integer frontPort;
+
+    @ApiModelProperty(value = "默认的 JSON-RPC 端口", example = "8545")
+    private int jsonrpcPort = 8545;
+
+    @ApiModelProperty(value = "默认的 P2P 端口 ", example = "30300")
+    private int p2pPort = 30300;
+
+    @ApiModelProperty(value = "默认的 Channel 端口", example = "20200")
+    private int channelPort = 20200;
 }

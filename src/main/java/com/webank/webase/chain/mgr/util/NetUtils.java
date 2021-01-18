@@ -3,6 +3,7 @@ package com.webank.webase.chain.mgr.util;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -24,6 +25,20 @@ public class NetUtils {
         for (int port : portArray) {
             boolean inUse = SshUtil.portInUse(port,ip,sshUser,sshPort,privateKey);
             if (inUse) {
+                return Pair.of(true, port);
+            }
+        }
+        return Pair.of(false, 0);
+    }
+
+    public static Pair<Boolean, Integer> anyPortNotInUse(String ip, String sshUser,int sshPort,String privateKey, Integer[] portArray) {
+        if (ArrayUtils.isEmpty(portArray)) {
+            return Pair.of(false, 0);
+        }
+
+        for (int port : portArray) {
+            boolean inUse = SshUtil.portInUse(port,ip,sshUser,sshPort,privateKey);
+            if (!inUse) {
                 return Pair.of(true, port);
             }
         }

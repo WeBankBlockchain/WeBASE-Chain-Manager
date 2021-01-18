@@ -186,6 +186,19 @@ public class SshUtil {
     }
 
     /**
+     *
+     * @param ip
+     * @param dir
+     * @param sshUser
+     * @param sshPort
+     * @param privateKey
+     * @return
+     */
+    public static Pair<Boolean, String> listRemoteFile(String ip, String dir, String sshUser, int sshPort, String privateKey){
+        return exec(ip, String.format("sudo ll %s", dir), sshUser, sshPort, privateKey);
+    }
+
+    /**
      * @param ip
      * @param src
      * @param dst
