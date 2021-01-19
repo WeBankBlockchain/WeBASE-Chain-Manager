@@ -13,27 +13,9 @@
  */
 package com.webank.webase.chain.mgr.group;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
+import com.webank.webase.chain.mgr.base.enums.DeployTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.enums.ScpTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
@@ -62,8 +44,20 @@ import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * services for group data.
@@ -101,7 +95,7 @@ public class GroupService {
 
     /**
      * generate group to single node.
-     * 
+     *
      * @param req info
      * @return
      */
@@ -132,7 +126,7 @@ public class GroupService {
 
     /**
      * generate group.
-     * 
+     *
      * @param req info
      * @return
      */
@@ -142,9 +136,11 @@ public class GroupService {
         Integer generateGroupId = req.getGenerateGroupId();
         checkGroupIdExisted(chainId, generateGroupId);
 
-        if (CollectionUtils.isEmpty(req.getNodeList())){
+        TbChain tbChain = chainService.verifyChainId(chainId);
+
+        if (CollectionUtils.isEmpty(req.getNodeList())) {
             // select node list from db
-            if (CollectionUtils.isEmpty(req.getOrgIdList())){
+            if (CollectionUtils.isEmpty(req.getOrgIdList())) {
                 throw new BaseException(ConstantCode.NODE_ID_AND_ORG_LIST_EMPTY);
             }
 
@@ -170,8 +166,10 @@ public class GroupService {
             frontInterface.generateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(),
                     generateGroupInfo);
 
-            // fetch group config file
-            this.pullAllGroupFiles(generateGroupId, tbFront);
+            if (tbChain.getDeployType() == DeployTypeEnum.API.getType()) {
+                // fetch group config file
+                this.pullAllGroupFiles(generateGroupId, tbFront);
+            }
         }
         // save group
         TbGroup tbGroup = saveGroup(generateGroupId, chainId, req.getNodeList().size(),
@@ -190,7 +188,7 @@ public class GroupService {
 
     /**
      * operate group.
-     * 
+     *
      * @param chainId
      * @param nodeId
      * @param groupId
@@ -219,7 +217,7 @@ public class GroupService {
 
     /**
      * batch start group.
-     * 
+     *
      * @param req
      */
     public void batchStartGroup(ReqStartGroup req) {
@@ -247,7 +245,7 @@ public class GroupService {
      */
     @Transactional
     public TbGroup saveGroup(int groupId, int chainId, int nodeCount, String description,
-            int groupType) {
+                             int groupType) {
         if (groupId == 0) {
             return null;
         }
@@ -274,9 +272,9 @@ public class GroupService {
         log.debug("start getGroupList");
         try {
             List<TbGroup> groupList = null;
-            if (groupStatus == null){
+            if (groupStatus == null) {
                 groupList = this.tbGroupMapper.selectByChainId(chainId);
-            }else{
+            } else {
                 groupList = this.tbGroupMapper.selectByChainIdAndGroupStatus(chainId, groupStatus);
             }
             log.debug("end getGroupList groupList:{}", JsonTools.toJSONString(groupList));
@@ -322,7 +320,7 @@ public class GroupService {
         }
 
         for (TbChain tbChain : chainList) {
-            if (! this.chainService.runTask(tbChain)){
+            if (!this.chainService.runTask(tbChain)) {
                 log.warn("Chain status is not running:[{}]", tbChain.getChainStatus());
                 continue;
             }
@@ -425,7 +423,7 @@ public class GroupService {
      * save new peers.
      */
     private void savePeerList(int chainId, String frontIp, Integer frontPort, int groupId,
-            List<String> groupPeerList) {
+                              List<String> groupPeerList) {
         // get all local nodes
         List<TbNode> localNodeList = nodeService.queryByGroupId(chainId, groupId);
         // get peers on chain
@@ -495,7 +493,7 @@ public class GroupService {
      * check group status.
      */
     private void checkGroupStatusAndRemoveInvalidGroup(Integer chainId,
-            Set<Integer> allGroupOnChain) {
+                                                       Set<Integer> allGroupOnChain) {
         if (CollectionUtils.isEmpty(allGroupOnChain)) {
             return;
         }
@@ -574,9 +572,9 @@ public class GroupService {
      * update status.
      */
     @Transactional
-    public void updateGroupNodeCount(int chainId,int groupId, int nodeCount) {
+    public void updateGroupNodeCount(int chainId, int groupId, int nodeCount) {
         log.debug("start updateGroupNodeCount groupId:{} nodeCount:{}", groupId, nodeCount);
-        this.tbGroupMapper.updateNodeCount(chainId,groupId, nodeCount);
+        this.tbGroupMapper.updateNodeCount(chainId, groupId, nodeCount);
         log.debug("end updateGroupNodeCount groupId:{} nodeCount:{}", groupId, nodeCount);
 
     }
@@ -607,21 +605,20 @@ public class GroupService {
                 remoteChainPath, nodeIndex, generateGroupId);
         // path pattern: /NODES_ROOT/chain_name/[ip]/node[index]
         // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0
-        String localNodePath = pathService.getNodeRoot(chainName, tbFront.getFrontIp(),tbFront.getHostIndex()).toString();
+        String localNodePath = pathService.getNodeRoot(chainName, tbFront.getFrontIp(), tbFront.getHostIndex()).toString();
         // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0/conf/group.1001.*
         Path localDst = Paths.get(String.format("%s/conf/", localNodePath, generateGroupId));
         try {
-            if (Files.notExists(localDst)){
+            if (Files.notExists(localDst)) {
                 Files.createDirectories(localDst);
             }
             // copy group config files to local node's conf dir
-            deployShellService.scp(ScpTypeEnum.DOWNLOAD,  tbFront.getSshUser(),
+            deployShellService.scp(ScpTypeEnum.DOWNLOAD, tbFront.getSshUser(),
                     tbFront.getFrontIp(), tbFront.getSshPort(), remoteGroupConfSource, localDst.toAbsolutePath().toString());
         } catch (Exception e) {
-            log.error("Backup group config files:[{} to {}] error.", remoteGroupConfSource,localDst.toAbsolutePath().toString(), e);
+            log.error("Backup group config files:[{} to {}] error.", remoteGroupConfSource, localDst.toAbsolutePath().toString(), e);
         }
     }
-
 
 
     private void pullGroupStatusFile(int generateGroupId, TbFront tbFront) {
@@ -637,19 +634,19 @@ public class GroupService {
                 remoteChainPath, nodeIndex, generateGroupId);
         // path pattern: /NODES_ROOT/chain_name/[ip]/node[index]
         // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0
-        String localNodePath = pathService.getNodeRoot(chainName, tbFront.getFrontIp(),tbFront.getHostIndex()).toString();
+        String localNodePath = pathService.getNodeRoot(chainName, tbFront.getFrontIp(), tbFront.getHostIndex()).toString();
         // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0/data/group[groupId]/group.1001.*
-        Path localDst = Paths.get(String.format("%s/data/group%s/.group_status", localNodePath,generateGroupId));
+        Path localDst = Paths.get(String.format("%s/data/group%s/.group_status", localNodePath, generateGroupId));
         // create data parent directory
         try {
-            if (Files.notExists(localDst.getParent())){
+            if (Files.notExists(localDst.getParent())) {
                 Files.createDirectories(localDst.getParent());
             }
             // copy group status file to local node's conf dir
-            deployShellService.scp(ScpTypeEnum.DOWNLOAD,  tbFront.getSshUser(),
+            deployShellService.scp(ScpTypeEnum.DOWNLOAD, tbFront.getSshUser(),
                     tbFront.getFrontIp(), tbFront.getSshPort(), remoteGroupStatusSource, localDst.toAbsolutePath().toString());
         } catch (Exception e) {
-            log.error("Backup group files:[{} to {}] error.", remoteGroupStatusSource,localDst.toAbsolutePath().toString(), e);
+            log.error("Backup group files:[{} to {}] error.", remoteGroupStatusSource, localDst.toAbsolutePath().toString(), e);
         }
 
     }

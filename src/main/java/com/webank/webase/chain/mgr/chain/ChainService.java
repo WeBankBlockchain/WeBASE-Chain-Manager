@@ -189,7 +189,7 @@ public class ChainService {
 
                 //check build time
                 ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontIp, frontPort);
-                if (!Objects.equals(buildTime,clientVersionDTO.getBuildTime())) {
+                if (!Objects.equals(buildTime, clientVersionDTO.getBuildTime())) {
                     log.error("fail checkBeforeAddNewChain, frontIp:{},frontPort:{},front's buildTime not match first buildTime:{}", frontIp, frontPort, buildTime);
                     throw new BaseException(ConstantCode.BUILD_TIME_NOT_MATCH);
                 }
@@ -509,6 +509,21 @@ public class ChainService {
 
         // check front start
         return this.frontService.frontProgress(chain.getChainId());
+    }
+
+    /**
+     * @param chainId
+     * @return
+     */
+    public TbChain verifyChainId(int chainId) {
+        log.info("start exec method [verifyChainId]. chainId:{}", chainId);
+        TbChain tbChain = tbChainMapper.selectByPrimaryKey(chainId);
+        if (Objects.isNull(tbChain)) {
+            log.warn("fail exec method [verifyChainId]. not found record by chainId:{}", chainId);
+            throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
+        }
+        log.info("success exec method [verifyChainId]. result:{}", JsonTools.objToString(tbChain));
+        return tbChain;
     }
 
 }
