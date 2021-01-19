@@ -164,27 +164,56 @@ public class ChainService {
         if (tbChainMapper.countByName(chainInfo.getChainName()) > 0)
             throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS);
 
-        //check front
-        for (FrontInfo front : chainInfo.getFrontList()) {
+        Integer encryptType = null;// front's encrypt type same as chain(guomi or standard)
+        String buildTime = null;// node's build time
+        for (int i = 0; i < chainInfo.getFrontList().size(); i++) {
+            FrontInfo front = chainInfo.getFrontList().get(i);
             log.info("check front [{}:{}]", front.getFrontIp(), front.getFrontPort());
             String frontIp = front.getFrontIp();
             Integer frontPort = front.getFrontPort();
+
             // check front ip and port
             CommonUtils.checkServerConnect(frontIp, frontPort);
-            //check ssh connect
-            SshUtil.verifyHostConnect(front.getFrontIp(), front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
-            //check remote directory
-            Pair<Boolean, String> remoteChainPath = SshUtil.listRemoteFile(front.getFrontIp(), front.getRootDirOnHost(), front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
-            //check port
-            Integer[] portArray = new Integer[]{front.getChannelPort(),front.getP2pPort(),front.getJsonrpcPort()};
-            Pair<Boolean, Integer> portReachable = NetUtils.anyPortNotInUse(front.getFrontIp(),
-                    front.getSshUser(),
-                    front.getSshPort(),
-                    constantProperties.getPrivateKey(),
-                    portArray);
-            if (portReachable.getKey()) {
-                String message = String.format("Port:[%1d] is not in use on host :[%2s] failed", portReachable.getValue(), front.getFrontIp());
-                throw new BaseException(ConstantCode.CHECK_PORT_NOT_SUCCESS.getCode(), message);
+
+            //check encryptType and build time
+            if (i == 0) {
+                encryptType = frontInterface.getEncryptTypeFromSpecificFront(frontIp, frontPort);
+                ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontIp, frontPort);
+                buildTime = clientVersionDTO.getBuildTime();
+            } else {
+                //check encryptType
+                if (!Objects.equals(encryptType, frontInterface.getEncryptTypeFromSpecificFront(frontIp, frontPort))) {
+                    log.error("fail checkBeforeAddNewChain, frontIp:{},frontPort:{},front's encryptType not match first encryptType:{}", frontIp, frontPort, encryptType);
+                    throw new BaseException(ConstantCode.ENCRYPT_TYPE_NOT_MATCH);
+                }
+
+                //check build time
+                ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontIp, frontPort);
+                if (!Objects.equals(buildTime,clientVersionDTO.getBuildTime())) {
+                    log.error("fail checkBeforeAddNewChain, frontIp:{},frontPort:{},front's buildTime not match first buildTime:{}", frontIp, frontPort, buildTime);
+                    throw new BaseException(ConstantCode.BUILD_TIME_NOT_MATCH);
+                }
+            }
+
+            //check ssh
+            if (StringUtils.isNotBlank(front.getSshUser()) && Objects.nonNull(front.getSshPort())) {
+                //check ssh connect
+                SshUtil.verifyHostConnect(front.getFrontIp(), front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
+                //check port
+                Integer[] portArray = new Integer[]{front.getChannelPort(), front.getP2pPort(), front.getJsonrpcPort()};
+                Arrays.stream(portArray).forEach(port -> {
+                    if (Objects.nonNull(port)) {
+                        Pair<Boolean, Integer> portReachable = NetUtils.anyPortNotInUse(front.getFrontIp(),
+                                front.getSshUser(),
+                                front.getSshPort(),
+                                constantProperties.getPrivateKey(),
+                                port);
+                        if (portReachable.getKey()) {
+                            String message = String.format("Port:[%1d] is not in use on host :[%2s] failed", portReachable.getValue(), front.getFrontIp());
+                            throw new BaseException(ConstantCode.CHECK_PORT_NOT_SUCCESS.getCode(), message);
+                        }
+                    }
+                });
             }
         }
 

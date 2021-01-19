@@ -119,7 +119,7 @@ public class ConstantCode {
     // JSON PARSE
     public static final RetCode FAIL_PARSE_JSON = RetCode.mark(205034, "Fail to parse json");
     public static final RetCode CHAIN_ID_NOT_EXISTS = RetCode.mark(205035, "chain id not exists");
-
+    public static final RetCode BUILD_TIME_NOT_MATCH = RetCode.mark(205036, "node's build time not match");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(205100, "param exception");

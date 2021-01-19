@@ -120,25 +120,10 @@ public class FrontService {
             throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
         }
 
-        String frontIp = frontInfo.getFrontIp();
-        Integer frontPort = frontInfo.getFrontPort();
-        // check front ip and port
-        CommonUtils.checkServerConnect(frontIp, frontPort);
-
-        TbFront tbFront = new TbFront();
-        tbFront.setFrontStatus(FrontStatusEnum.RUNNING.getId());
-
-        // check front's encrypt type same as chain(guomi or standard)
-        int encryptType = frontInterface.getEncryptTypeFromSpecificFront(frontIp, frontPort);
-        if (encryptType != tbChain.getChainType()) {
-            log.error(
-                    "fail newFront, frontIp:{},frontPort:{},front's encryptType:{},"
-                            + "local encryptType not match:{}",
-                    frontIp, frontPort, encryptType, tbChain.getChainType());
-            throw new BaseException(ConstantCode.ENCRYPT_TYPE_NOT_MATCH);
-        }
         // query group list
         List<String> groupIdList = null;
+        String frontIp = frontInfo.getFrontIp();
+        Integer frontPort = frontInfo.getFrontPort();
         try {
             groupIdList = frontInterface.getGroupListFromSpecificFront(frontIp, frontPort);
         } catch (Exception e) {
@@ -155,6 +140,10 @@ public class FrontService {
         if (count > 0) {
             throw new BaseException(ConstantCode.FRONT_EXISTS);
         }
+
+        TbFront tbFront = new TbFront();
+        tbFront.setChainName(tbChain.getChainName());
+        tbFront.setFrontStatus(FrontStatusEnum.RUNNING.getId());
         // copy attribute
         BeanUtils.copyProperties(frontInfo, tbFront);
         tbFront.setNodeId(syncStatus.getNodeId());

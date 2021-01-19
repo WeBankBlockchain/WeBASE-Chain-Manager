@@ -36,9 +36,9 @@ public class ChainInfo {
     List<FrontInfo> frontList;
 
     @ApiModelProperty(value = "共识机制", example = "pbft")
-    private String consensusType = "pbft";
+    private String consensusType;
 
     @ApiModelProperty(value = "存储方式", example = "rocksdb")
-    private String storageType = "rocksdb";
+    private String storageType;
 
 }

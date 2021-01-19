@@ -31,7 +31,7 @@ public class NetUtils {
         return Pair.of(false, 0);
     }
 
-    public static Pair<Boolean, Integer> anyPortNotInUse(String ip, String sshUser,int sshPort,String privateKey, Integer[] portArray) {
+    public static Pair<Boolean, Integer> anyPortNotInUse(String ip, String sshUser,int sshPort,String privateKey, int ... portArray) {
         if (ArrayUtils.isEmpty(portArray)) {
             return Pair.of(false, 0);
         }
