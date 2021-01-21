@@ -185,6 +185,25 @@ public class ContractController extends BaseController {
     }
 
 
+    @PostMapping(value = "/deployByContractId")
+    public BaseResponse deployByContractId(@RequestBody @Valid ReqDeployByContractIdVO deployInputParam,
+                                       BindingResult result) throws BaseException {
+        checkBindResult(result);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start queryContract startTime:{} deployInputParam:{}", startTime.toEpochMilli(),
+                JsonTools.toJSONString(deployInputParam));
+
+        TbContract tbContract = contractService.deployByContractId(deployInputParam);
+        baseResponse.setData(tbContract);
+
+        log.info("end deployContract useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+
+        return baseResponse;
+    }
+
+
     /**
      * send transaction.
      */

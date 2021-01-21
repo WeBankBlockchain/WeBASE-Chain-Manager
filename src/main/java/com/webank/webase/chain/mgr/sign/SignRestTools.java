@@ -48,6 +48,9 @@ public class SignRestTools {
 
     public static final String URI_USER_LIST = "%s/user/list/%s/%s/%s";
     public static final String URI_USER_NEW = "%s/user/newUser";
+    public static final String URI_USER_INFO = "%s/user/%s/userInfo";
+    public static final String URI_SIGN = "%s/sign";
+
 
     @Autowired private ConstantProperties constantProperties;
     @Autowired private RestTemplate restTemplate;

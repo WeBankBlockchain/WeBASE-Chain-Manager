@@ -62,6 +62,8 @@ public class FrontRestTools {
     public static final String URI_TRANS_TOTAL = "web3/transaction-total";
     public static final String URI_TRANS_BY_HASH = "web3/transaction/%1s";
     public static final String URI_TRANS_RECEIPT = "web3/transactionReceipt/%1s";
+    public static final String URI_SIGNED_TRANSACTION = "trans/signed-transaction";
+    public static final String URI_QUERY_TRANSACTION = "trans/query-transaction";
     public static final String URI_CODE = "web3/code/%1s/%2s";
     public static final String URI_GROUP_PLIST = "web3/groupList";
     public static final String URI_NODEID_LIST = "web3/nodeIdList";
@@ -87,6 +89,7 @@ public class FrontRestTools {
     public static final String URI_CHARGING_GET_TXGASDATA = "charging/getTxGasData";
     public static final String URI_CHARGING_DELETE_DATA = "charging/deleteData";
 
+
     public static final String URI_SYS_CONFIG_LIST = "sys/config/list";
     public static final String URI_SYS_CONFIG = "sys/config";
     public static final String URI_CONSENSUS_LIST = "precompiled/consensus/list";
@@ -103,7 +106,8 @@ public class FrontRestTools {
                     URI_CONTRACT_STATUS_MANAGE, URI_CERT, URI_ENCRYPT_TYPE,
                     URI_CHARGING_GET_NETWORK_DATA, URI_CHARGING_GET_TXGASDATA,
                     URI_CHARGING_DELETE_DATA, URI_CHAIN, FRONT_PERFORMANCE_RATIO,
-                    FRONT_PERFORMANCE_CONFIG, URI_CHECK_NODE_PROCESS, URI_GET_GROUP_SIZE_INFOS);
+                    FRONT_PERFORMANCE_CONFIG, URI_CHECK_NODE_PROCESS, URI_GET_GROUP_SIZE_INFOS,
+                    URI_SIGNED_TRANSACTION,URI_QUERY_TRANSACTION);
 
 
     @Qualifier(value = "genericRestTemplate")

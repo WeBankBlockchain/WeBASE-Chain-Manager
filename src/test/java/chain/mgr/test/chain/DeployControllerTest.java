@@ -55,7 +55,6 @@ public class DeployControllerTest {
         ChainInfo param = new ChainInfo();
         param.setChainId(1001);
         param.setChainName("aaa");
-        param.setChainType(0);
         param.setDescription("test");
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post( "/chain/new").

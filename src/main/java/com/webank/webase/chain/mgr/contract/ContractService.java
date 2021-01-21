@@ -29,9 +29,17 @@ import com.webank.webase.chain.mgr.method.MethodService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
+import com.webank.webase.chain.mgr.sign.UserService;
+import com.webank.webase.chain.mgr.sign.rsp.RspUserInfo;
+import com.webank.webase.chain.mgr.trans.TransService;
+import com.webank.webase.chain.mgr.util.ContractAbiUtil;
+import com.webank.webase.chain.mgr.util.EncoderUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.web3j.abi.datatypes.Address;
+import org.fisco.bcos.web3j.abi.datatypes.Type;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,6 +57,8 @@ public class ContractService {
     @Autowired
     private TbContractMapper tbContractMapper;
     @Autowired
+    private ContractManager contractManager;
+    @Autowired
     private FrontInterfaceService frontInterface;
     @Autowired
     private FrontService frontService;
@@ -56,6 +66,11 @@ public class ContractService {
     private TransactionRestTools transactionRestTools;
     @Autowired
     private MethodService methodService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private TransService transService;
+
 
     /**
      * compile contract.
@@ -244,6 +259,72 @@ public class ContractService {
         return tbContract;
     }
 
+
+    /**
+     * deploy by contractId.
+     *
+     * @param req
+     * @return
+     */
+    public TbContract deployByContractId(ReqDeployByContractIdVO req) {
+        log.debug("start deployByContractId. param:{}", JsonTools.objToString(req));
+
+        // check sign user id
+        String signUserId = req.getSignUserId();
+        RspUserInfo rspUserInfo = userService.checkSignUserId(signUserId);
+        if (rspUserInfo == null) {
+            throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
+        }
+        // check parameters
+        TbContract tbContract = contractManager.verifyContractId(req.getContractId());
+        // check contract
+        verifyContractNotDeploy(tbContract.getChainId(), tbContract.getContractId(), tbContract.getGroupId());
+
+        List<Object> params = req.getConstructorParams();
+        AbiDefinition abiDefinition = null;
+        try {
+            abiDefinition = ContractAbiUtil.getAbiDefinition(tbContract.getContractAbi());
+        } catch (Exception e) {
+            log.error("abi parse error. abi:{}", tbContract.getContractAbi());
+            throw new BaseException(ConstantCode.ABI_PARSE_ERROR);
+        }
+        List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
+        if (funcInputTypes.size() != params.size()) {
+            log.warn("deploy fail. funcInputTypes:{}, params:{}", funcInputTypes, params);
+            throw new BaseException(ConstantCode.IN_FUNCPARAM_ERROR);
+        }
+        // Constructor encode
+        String encodedConstructor = "";
+        if (funcInputTypes.size() > 0) {
+            List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
+            encodedConstructor = EncoderUtil.encodeConstructor(finalInputs);
+        }
+        // data sign
+        String data = tbContract.getBytecodeBin() + encodedConstructor;
+        String signMsg = transService.signMessage(tbContract.getChainId(), tbContract.getGroupId(), req.getSignUserId(), rspUserInfo.getEncryptType(), "", data);
+        if (StringUtils.isBlank(signMsg)) {
+            throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
+        }
+        // send transaction
+        TransactionReceipt receipt = frontInterface.sendSignedTransaction(tbContract.getChainId(), tbContract.getGroupId(), signMsg, true);
+        String contractAddress = receipt.getContractAddress();
+        if (StringUtils.isBlank(contractAddress)
+                || Address.DEFAULT.getValue().equals(contractAddress)) {
+            log.error("fail deploy, receipt:{}", JsonTools.toJSONString(receipt));
+            throw new BaseException(ConstantCode.CONTRACT_DEPLOY_FAIL);
+        }
+
+        //update
+        tbContract.setContractAddress(contractAddress);
+        tbContract.setContractStatus(ContractStatus.DEPLOYED.getValue());
+        tbContract.setDeployTime(new Date());
+        tbContractMapper.updateByPrimaryKeySelective(tbContract);
+
+        log.debug("end deployByContractId. contractId:{}  contractAddress:{}", tbContract.getContractId(), contractAddress);
+        return getByContractId(tbContract.getContractId());
+
+    }
+
     /**
      * deploy contract.
      */
@@ -340,6 +421,7 @@ public class ContractService {
         return frontRsp;
     }
 
+
     /**
      * contract manage.
      */
@@ -420,6 +502,8 @@ public class ContractService {
         }
         return contract;
     }
+
+
 
     /**
      * contract name can not be repeated.
@@ -504,6 +588,7 @@ public class ContractService {
     public boolean update(TbContract tbContract) {
         return this.tbContractMapper.updateByPrimaryKeySelective(tbContract) == 1;
     }
+
 
 
 }

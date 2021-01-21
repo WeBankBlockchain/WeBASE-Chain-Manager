@@ -36,4 +36,15 @@ public enum EncryptTypeEnum {
         }
         throw new BaseException(ConstantCode.ENCRYPT_TYPE_NOT_MATCH);
     }
+
+    public static boolean isInclude(int type) {
+        boolean include = false;
+        for (EncryptTypeEnum e : EncryptTypeEnum.values()) {
+            if (e.getType() == type) {
+                include = true;
+                break;
+            }
+        }
+        return include;
+    }
 }

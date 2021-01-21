@@ -29,6 +29,7 @@ import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import lombok.extern.log4j.Log4j2;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
+import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
@@ -42,6 +43,8 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -194,7 +197,6 @@ public class FrontInterfaceService {
     }
 
     /**
-     *
      * @param nodeIp
      * @param frontPort
      * @return
@@ -246,6 +248,18 @@ public class FrontInterfaceService {
                                                                      Integer frontPort, Integer groupId, String transHash) {
         String uri = String.format(FrontRestTools.URI_TRANS_RECEIPT, transHash);
         return getFromSpecificFront(groupId, frontIp, frontPort, uri, TransactionReceipt.class);
+    }
+
+
+    /**
+     * get client version.
+     */
+    public NodeVersion.Version getClientVersion(Integer chainId, Integer groupId) {
+        log.debug("start getClientVersion. groupId:{}", groupId);
+        NodeVersion.Version clientVersionDTO = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_CLIENT_VERSION, NodeVersion.Version.class);
+        log.debug("end getClientVersion. clientVersionDTO:{}", JsonTools.objToString(clientVersionDTO));
+        return clientVersionDTO;
     }
 
     /**
@@ -477,6 +491,27 @@ public class FrontInterfaceService {
                 deleteToSpecificFront(groupId, frontIp, frontPort, uri, null, Object.class);
         log.debug("end deleteLogData. frontRsp:{}", JsonTools.toJSONString(frontRsp));
         return frontRsp;
+    }
+
+
+    public TransactionReceipt sendSignedTransaction(Integer chainId, Integer groupId,
+                                                    String signMsg, Boolean sync) {
+        Instant startTime = Instant.now();
+        Map<String, Object> params = new HashMap<>();
+        params.put("groupId", groupId);
+        params.put("signedStr", signMsg);
+        params.put("sync", sync);
+        TransactionReceipt receipt = frontRestTools.postForEntity(chainId, groupId,
+                FrontRestTools.URI_SIGNED_TRANSACTION, params, TransactionReceipt.class);
+        log.info("sendSignedTransaction to front useTime: {}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return receipt;
+    }
+
+    public Object sendQueryTransaction(Integer chainId, Integer groupId, Object params) {
+        Object result = frontRestTools.postForEntity(chainId, groupId,
+                FrontRestTools.URI_QUERY_TRANSACTION, params, Object.class);
+        return result;
     }
 
     public Object getNodeMonitorInfo(String frontIp, Integer frontPort, Integer groupId,

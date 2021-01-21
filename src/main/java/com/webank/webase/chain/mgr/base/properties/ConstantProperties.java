@@ -16,6 +16,7 @@ package com.webank.webase.chain.mgr.base.properties;
 import static java.io.File.separator;
 
 import java.io.File;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -42,6 +43,12 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @ConfigurationProperties(prefix = ConstantProperties.CONSTANT_PREFIX)
 public class ConstantProperties {
+    public static final BigInteger GAS_PRICE = new BigInteger("100000000");
+    public static final BigInteger GAS_LIMIT = new BigInteger("100000000");
+    public static final BigInteger INITIAL_WEI_VALUE = new BigInteger("0");
+    public static final BigInteger LIMIT_VALUE = new BigInteger("1000");
+
+
     // constant
     public static final String CONSTANT_PREFIX = "constant";
     public static final String PREFIX_RESULT_CODE = "0x";

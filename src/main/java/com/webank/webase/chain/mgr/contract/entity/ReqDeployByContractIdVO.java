@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2014-2019  the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.webank.webase.chain.mgr.sign.req;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+package com.webank.webase.chain.mgr.contract.entity;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.List;
+
 /**
- * import private key entity
- * @author marsli
+ * receive contract info entity.
  */
 @Data
-public class ReqNewUser {
-	@NotBlank
-	private String signUserId;
-	@NotBlank
-	private String appId;
-	@NotNull
-	private Integer encryptType;
-//	@NotNull
-	private String privateKey;
+public class ReqDeployByContractIdVO {
+
+    @NotBlank
+    private String signUserId;
+    @NotNull
+    private Integer contractId;
+    private List<Object> constructorParams;
 }
+
