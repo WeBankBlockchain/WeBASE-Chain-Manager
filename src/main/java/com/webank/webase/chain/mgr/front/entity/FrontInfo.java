@@ -31,8 +31,8 @@ public class FrontInfo {
     @NotBlank
     private String frontIp;
 
-    @ApiModelProperty(value = "主机所属公司 ID", example = "10", required = true)
-    @Positive(message = "External company id error.")
+    @ApiModelProperty(value = "主机所属公司 ID", example = "10")
+//    @Positive(message = "External company id error.")
     private int extCompanyId;
 
     @ApiModelProperty(value = "主机所属组织名称", required = true)
@@ -44,7 +44,7 @@ public class FrontInfo {
     private int extAgencyId;
 
     @ApiModelProperty(value = "主机ID", example = "10", required = true)
-    @Positive(message = "External host id error.")
+//    @Positive(message = "External host id error.")
     private int extHostId;
 
     @ApiModelProperty(value = "主机 SSH 免密账号，默认 root", example = "root")
