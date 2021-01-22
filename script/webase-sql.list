@@ -4,4 +4,5 @@ source webase-ddl.sql;
 source webase-dml.sql;
 
 # dev-0.5
+source webase-ddl-0.5.sql
 source webase-dml-0.5.sql

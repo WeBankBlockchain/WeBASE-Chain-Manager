@@ -27,6 +27,10 @@ public class FrontInfo {
     @ApiModelProperty(value = "链id")
     private Integer chainId;
 
+    @ApiModelProperty(value = "k8s节点peerName", example = "127.0.0.2", required = true)
+    @NotBlank
+    private String frontPeerName;
+
     @ApiModelProperty(value = "front的ip地址", example = "127.0.0.2", required = true)
     @NotBlank
     private String frontIp;

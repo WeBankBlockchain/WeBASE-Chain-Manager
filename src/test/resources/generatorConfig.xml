@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+
+    <!-- 加载 mbg.properties 文件  -->
+    <properties resource="mbg.properties"/>
+
+    <context id="mbg_schema" targetRuntime="MyBatis3" defaultModelType="flat">
+
+
+        <!-- 生成的实体类（Bean）自动继承 java.io.Serializable interface. -->
+        <plugin type="org.mybatis.generator.plugins.SerializablePlugin"/>
+
+        <!-- ################################## 扩展插件列表 ################################## -->
+        <!-- 生成的实体类（Bean）增加 Lombok 注解. -->
+        <plugin type="com.github.yuanmomo.mybatis.mbg.plugin.LombokPlugin">
+            <property name="data" value="true"/>
+            <property name="hashEquals" value="true"/>
+            <property name="toString" value="true"/>
+            <property name="noArgConstructor" value="true"/>
+        </plugin>
+
+        <!-- 在 Provider 类增加 All Columns 属性 . -->
+        <plugin type="com.github.yuanmomo.mybatis.mbg.plugin.allfields.AllColumnsFieldsPlugin"/>
+
+        <!-- 在 Mapper 接口增加 batchInsert 方法 -->
+        <plugin type="com.github.yuanmomo.mybatis.mbg.plugin.batch.MySqlBatchInsertPlugin">
+            <property name="methodName" value="batchInsert"/>
+        </plugin>
+
+        <!-- 支持动态表名插件 -->
+        <plugin type="com.github.yuanmomo.mybatis.mbg.plugin.dynamic.DynamicTableNamePlugin"/>
+
+
+        <!-- 简化生成类. -->
+        <!--        <plugin type="com.github.yuanmomo.mybatis.mbg.plugin.SimplePlugin"/>-->
+
+        <!-- 在 Mapper 接口增加 getOneByExample 方法 -->
+        <!-- 如果启用了《简化生成类》插件，该插件不生效 -->
+        <plugin type="com.github.yuanmomo.mybatis.mbg.plugin.getone.MapperAddGetOneByExamplePlugin">
+            <property name="methodName" value="getOneByExample"/>
+        </plugin>
+
+        <!-- 增加分页支持 -->
+        <!-- 如果启用了《简化生成类》插件，该插件不生效 -->
+        <plugin type="com.github.yuanmomo.mybatis.mbg.plugin.PaginationPlugin"/>
+
+
+        <!-- 在生成的注解中去掉日期，防止生成后，因为日志变更导致需要 git 提交 -->
+        <commentGenerator>
+            <property name="suppressDate" value="true"/>
+        </commentGenerator>
+
+        <!-- jdbc 配置 -->
+        <jdbcConnection driverClass="${driver}" connectionURL="${url}"
+                        userId="${username}" password="${password}"/>
+
+        <!-- Java 类型转换的配置 -->
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+        <!-- 生成的 Java Bean 配置 -->
+        <javaModelGenerator targetPackage="${mbg.modelPackage}"
+                            targetProject="${mbg.targetProject}"/>
+
+        <!-- 生成基于 Annotation 的 Mapper 接口和 Provider 类 -->
+        <javaClientGenerator type="ANNOTATEDMAPPER"
+                             targetPackage="${mbg.javaClientPackage}" targetProject="${mbg.targetProject}">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <!-- 表配置，包含多张表，这里只是一张示范表 -->
+        <table tableName="tb_chain" domainObjectName="TbChain">
+        </table>
+        <table tableName="tb_contract" domainObjectName="TbContract">
+            <generatedKey column="contract_id" sqlStatement="MySql" identity="true"/>
+        </table>
+        <table tableName="tb_front" domainObjectName="TbFront">
+            <generatedKey column="front_id" sqlStatement="MySql" identity="true"/>
+        </table>
+        <table tableName="tb_front_group_map" domainObjectName="TbFrontGroupMap">
+            <generatedKey column="map_id" sqlStatement="MySql" identity="true"/>
+        </table>
+        <table tableName="tb_group" domainObjectName="TbGroup">
+        </table>
+        <table tableName="tb_method" domainObjectName="TbMethod">
+            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+        </table>
+        <table tableName="tb_node" domainObjectName="TbNode">
+        </table>
+        <!-- ... 多张表配置 ... -->
+    </context>
+</generatorConfiguration>
