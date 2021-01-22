@@ -125,11 +125,11 @@ public class ChainService {
 
         // chainType
         FrontInfo frontInfo = chainInfo.getFrontList().get(0);
-        Integer chainType = frontInterface.getEncryptTypeFromSpecificFront(frontInfo.getFrontIp(), frontInfo.getFrontPort());
+        Integer chainType = frontInterface.getEncryptTypeFromSpecificFront(frontInfo.getFrontPeerName(),frontInfo.getFrontIp(), frontInfo.getFrontPort());
         tbChain.setChainType(chainType.byteValue());
 
         //chain version
-        ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontInfo.getFrontIp(), frontInfo.getFrontPort());
+        ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontInfo.getFrontPeerName(),frontInfo.getFrontIp(), frontInfo.getFrontPort());
         tbChain.setVersion(clientVersionDTO.getVersion());
 
         // save chain info
@@ -169,6 +169,7 @@ public class ChainService {
         for (int i = 0; i < chainInfo.getFrontList().size(); i++) {
             FrontInfo front = chainInfo.getFrontList().get(i);
             log.info("check front [{}:{}]", front.getFrontIp(), front.getFrontPort());
+            String frontPeerName = front.getFrontPeerName();
             String frontIp = front.getFrontIp();
             Integer frontPort = front.getFrontPort();
 
@@ -177,18 +178,18 @@ public class ChainService {
 
             //check encryptType and build time
             if (i == 0) {
-                encryptType = frontInterface.getEncryptTypeFromSpecificFront(frontIp, frontPort);
-                ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontIp, frontPort);
+                encryptType = frontInterface.getEncryptTypeFromSpecificFront(frontPeerName,frontIp, frontPort);
+                ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontPeerName,frontIp, frontPort);
                 buildTime = clientVersionDTO.getBuildTime();
             } else {
                 //check encryptType
-                if (!Objects.equals(encryptType, frontInterface.getEncryptTypeFromSpecificFront(frontIp, frontPort))) {
+                if (!Objects.equals(encryptType, frontInterface.getEncryptTypeFromSpecificFront(frontPeerName,frontIp, frontPort))) {
                     log.error("fail checkBeforeAddNewChain, frontIp:{},frontPort:{},front's encryptType not match first encryptType:{}", frontIp, frontPort, encryptType);
                     throw new BaseException(ConstantCode.ENCRYPT_TYPE_NOT_MATCH);
                 }
 
                 //check build time
-                ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontIp, frontPort);
+                ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontPeerName,frontIp, frontPort);
                 if (!Objects.equals(buildTime, clientVersionDTO.getBuildTime())) {
                     log.error("fail checkBeforeAddNewChain, frontIp:{},frontPort:{},front's buildTime not match first buildTime:{}", frontIp, frontPort, buildTime);
                     throw new BaseException(ConstantCode.BUILD_TIME_NOT_MATCH);

@@ -137,7 +137,7 @@ public class NodeController extends BaseController {
         }
 
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        BigInteger blockNumber = frontInterfaceService.getBlockNumberFromSpecificFront(
+        BigInteger blockNumber = frontInterfaceService.getBlockNumberFromSpecificFront(tbFront.getFrontPeerName(),
                 tbFront.getFrontIp(), tbFront.getFrontPort(), groupId);
         baseResponse.setData(blockNumber);
 
@@ -166,7 +166,7 @@ public class NodeController extends BaseController {
         }
 
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        Block blockInfo = frontInterfaceService.getBlockByNumberFromSpecificFront(
+        Block blockInfo = frontInterfaceService.getBlockByNumberFromSpecificFront(tbFront.getFrontPeerName(),
                 tbFront.getFrontIp(), tbFront.getFrontPort(), groupId, blockNumber);
         baseResponse.setData(blockInfo);
 
@@ -196,7 +196,7 @@ public class NodeController extends BaseController {
 
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         TransactionCount transactionCount =
-                frontInterfaceService.getTotalTransactionCountFromSpecificFront(
+                frontInterfaceService.getTotalTransactionCountFromSpecificFront(tbFront.getFrontPeerName(),
                         tbFront.getFrontIp(), tbFront.getFrontPort(), groupId);
         baseResponse.setData(transactionCount);
 
@@ -225,7 +225,7 @@ public class NodeController extends BaseController {
         }
 
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        Transaction transaction = frontInterfaceService.getTransactionByHashFromSpecificFront(
+        Transaction transaction = frontInterfaceService.getTransactionByHashFromSpecificFront(tbFront.getFrontPeerName(),
                 tbFront.getFrontIp(), tbFront.getFrontPort(), groupId, transHash);
         baseResponse.setData(transaction);
 
@@ -255,7 +255,7 @@ public class NodeController extends BaseController {
 
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         TransactionReceipt transactionReceipt =
-                frontInterfaceService.getTransactionReceiptFromSpecificFront(tbFront.getFrontIp(),
+                frontInterfaceService.getTransactionReceiptFromSpecificFront(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
                         tbFront.getFrontPort(), groupId, transHash);
         baseResponse.setData(transactionReceipt);
 

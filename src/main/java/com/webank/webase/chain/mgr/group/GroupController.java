@@ -226,7 +226,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object result = frontInterfaceService.getConsensusList(tbFront.getFrontIp(),
+        Object result = frontInterfaceService.getConsensusList(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, pageSize, pageNumber);
 
         log.info("end getConsensusList useTime:{}",
@@ -253,7 +253,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object res = frontInterfaceService.setConsensusStatus(tbFront.getFrontIp(),
+        Object res = frontInterfaceService.setConsensusStatus(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
                 tbFront.getFrontPort(), consensusParam);
 
         log.info("end setConsensusStatus useTime:{}",
@@ -281,7 +281,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object result = frontInterfaceService.getSysConfigList(tbFront.getFrontIp(),
+        Object result = frontInterfaceService.getSysConfigList(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, pageSize, pageNumber);
 
         log.info("end getSysConfigList useTime:{}",
@@ -308,7 +308,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object res = frontInterfaceService.setSysConfigByKey(tbFront.getFrontIp(),
+        Object res = frontInterfaceService.setSysConfigByKey(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
                 tbFront.getFrontPort(), reqSetSysConfig);
 
         log.info("end setSysConfigByKey useTime:{}",
@@ -340,7 +340,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object result = frontInterfaceService.getNetWorkData(tbFront.getFrontIp(),
+        Object result = frontInterfaceService.getNetWorkData(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, pageSize, pageNumber, beginDate, endDate);
 
         log.info("end getNetWorkData useTime:{}",
@@ -374,7 +374,7 @@ public class GroupController extends BaseController {
         }
 
         Object result =
-                frontInterfaceService.getTxGasData(tbFront.getFrontIp(), tbFront.getFrontPort(),
+                frontInterfaceService.getTxGasData(tbFront.getFrontPeerName(),tbFront.getFrontIp(), tbFront.getFrontPort(),
                         groupId, pageSize, pageNumber, beginDate, endDate, transHash);
 
         log.info("end getTxGasData useTime:{}",
@@ -402,7 +402,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object result = frontInterfaceService.deleteLogData(tbFront.getFrontIp(),
+        Object result = frontInterfaceService.deleteLogData(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, type, keepEndDate);
 
         log.info("end deleteData useTime:{}",
@@ -432,7 +432,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object result = frontInterfaceService.getConsensusList(tbFront.getFrontIp(),
+        Object result = frontInterfaceService.getConsensusList(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
                 tbFront.getFrontPort(), newGroupId, pageSize, pageNumber);
 
         log.info("end getConsensusList useTime:{}",

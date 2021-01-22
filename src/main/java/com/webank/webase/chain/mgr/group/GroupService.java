@@ -112,7 +112,7 @@ public class GroupService {
         // request front to generate
         GenerateGroupInfo generateGroupInfo = new GenerateGroupInfo();
         BeanUtils.copyProperties(req, generateGroupInfo);
-        frontInterface.generateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(),
+        frontInterface.generateGroup(tbFront.getFrontPeerName(),tbFront.getFrontIp(), tbFront.getFrontPort(),
                 generateGroupInfo);
 
         // fetch group config file
@@ -163,7 +163,7 @@ public class GroupService {
             // request front to generate
             GenerateGroupInfo generateGroupInfo = new GenerateGroupInfo();
             BeanUtils.copyProperties(req, generateGroupInfo);
-            frontInterface.generateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(),
+            frontInterface.generateGroup(tbFront.getFrontPeerName(),tbFront.getFrontIp(), tbFront.getFrontPort(),
                     generateGroupInfo);
 
             if (tbChain.getDeployType() == DeployTypeEnum.API.getType()) {
@@ -203,7 +203,7 @@ public class GroupService {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
         // request front to operate
-        Object groupHandleResult = frontInterface.operateGroup(tbFront.getFrontIp(),
+        Object groupHandleResult = frontInterface.operateGroup(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, type);
 
         // refresh
@@ -232,7 +232,7 @@ public class GroupService {
                 throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
             }
             // request front to start
-            frontInterface.operateGroup(tbFront.getFrontIp(), tbFront.getFrontPort(), groupId,
+            frontInterface.operateGroup(tbFront.getFrontPeerName(),tbFront.getFrontIp(), tbFront.getFrontPort(), groupId,
                     "start");
         }
         // refresh
@@ -341,12 +341,13 @@ public class GroupService {
             }
             // get group from chain
             for (TbFront front : frontList) {
+                String frontPeerName = front.getFrontPeerName();
                 String frontIp = front.getFrontIp();
                 int frontPort = front.getFrontPort();
                 // query group list
                 List<String> groupIdList;
                 try {
-                    groupIdList = frontInterface.getGroupListFromSpecificFront(frontIp, frontPort);
+                    groupIdList = frontInterface.getGroupListFromSpecificFront(frontPeerName,frontIp, frontPort);
                 } catch (Exception ex) {
                     log.error("fail getGroupListFromSpecificFront frontId:{}.", front.getFrontId(), ex);
                     continue;
@@ -356,17 +357,17 @@ public class GroupService {
                     allGroupSet.add(gId);
                     // peer in group
                     List<String> groupPeerList =
-                            frontInterface.getGroupPeersFromSpecificFront(frontIp, frontPort, gId);
+                            frontInterface.getGroupPeersFromSpecificFront(frontPeerName,frontIp, frontPort, gId);
                     // save group
                     saveGroup(gId, chainId, groupPeerList.size(), "synchronous",
                             GroupType.SYNC.getValue());
                     frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), gId);
                     // save new peers
-                    savePeerList(chainId, frontIp, frontPort, gId, groupPeerList);
+                    savePeerList(chainId, frontPeerName,frontIp, frontPort, gId, groupPeerList);
                     // remove invalid peers
                     removeInvalidPeer(chainId, gId, groupPeerList);
                     // refresh: add sealer and observer no matter validity
-                    frontService.refreshSealerAndObserverInNodeList(frontIp, frontPort,
+                    frontService.refreshSealerAndObserverInNodeList(frontPeerName,frontIp, frontPort,
                             front.getChainId(), gId);
                 }
             }
@@ -422,12 +423,12 @@ public class GroupService {
     /**
      * save new peers.
      */
-    private void savePeerList(int chainId, String frontIp, Integer frontPort, int groupId,
+    private void savePeerList(int chainId,String frontPeerName, String frontIp, Integer frontPort, int groupId,
                               List<String> groupPeerList) {
         // get all local nodes
         List<TbNode> localNodeList = nodeService.queryByGroupId(chainId, groupId);
         // get peers on chain
-        PeerInfo[] peerArr = frontInterface.getPeersFromSpecificFront(frontIp, frontPort, groupId);
+        PeerInfo[] peerArr = frontInterface.getPeersFromSpecificFront(frontPeerName,frontIp, frontPort, groupId);
         List<PeerInfo> peerList = Arrays.asList(peerArr);
         // save new nodes
         for (String nodeId : groupPeerList) {

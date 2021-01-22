@@ -34,6 +34,7 @@ import com.webank.webase.chain.mgr.sign.rsp.RspUserInfo;
 import com.webank.webase.chain.mgr.trans.TransService;
 import com.webank.webase.chain.mgr.util.ContractAbiUtil;
 import com.webank.webase.chain.mgr.util.EncoderUtil;
+import com.webank.webase.chain.mgr.util.HttpEntityUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
@@ -42,6 +43,8 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -89,9 +92,12 @@ public class ContractService {
 
         Map<String, Object> params = new HashMap<>();
         params.put("contractZipBase64", inputParam.getContractZipBase64());
+
+        HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(tbFront.getFrontPeerName());
+        HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, params);
         List<RspContractCompile> compileInfos = frontInterface.postToSpecificFront(
                 Integer.MIN_VALUE, tbFront.getFrontIp(), tbFront.getFrontPort(),
-                FrontRestTools.URI_MULTI_CONTRACT_COMPILE, params, List.class);
+                FrontRestTools.URI_MULTI_CONTRACT_COMPILE, httpEntity, List.class);
 
         log.debug("end compileContract.");
         return compileInfos;
@@ -361,9 +367,13 @@ public class ContractService {
         params.put("bytecodeBin", inputParam.getBytecodeBin());
         params.put("funcParam", inputParam.getConstructorParams());
 
+        //httpEntity
+        HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(tbFront.getFrontPeerName());
+        HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, params);
+
         // deploy
         String contractAddress = frontInterface.postToSpecificFront(groupId, tbFront.getFrontIp(),
-                tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_DEPLOY, params, String.class);
+                tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_DEPLOY, httpEntity, String.class);
         if (StringUtils.isBlank(contractAddress)) {
             log.error("fail deploy, contractAddress is empty");
             throw new BaseException(ConstantCode.CONTRACT_DEPLOY_FAIL);
@@ -413,10 +423,14 @@ public class ContractService {
         params.put("funcName", inputParam.getFuncName());
         params.put("funcParam", inputParam.getFuncParam());
 
+        //httpEntity
+        HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(tbFront.getFrontPeerName());
+        HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, params);
+
         // send transaction
         Object frontRsp = frontInterface.postToSpecificFront(inputParam.getGroupId(),
                 tbFront.getFrontIp(), tbFront.getFrontPort(), FrontRestTools.URI_SEND_TRANSACTION,
-                params, Object.class);
+                httpEntity, Object.class);
         log.debug("end sendTransaction. frontRsp:{}", JsonTools.toJSONString(frontRsp));
         return frontRsp;
     }
@@ -443,10 +457,14 @@ public class ContractService {
         params.put("signUserId", inputParam.getSignUserId());
         params.put("grantAddress", inputParam.getGrantAddress());
 
+        //httpEntity
+        HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(tbFront.getFrontPeerName());
+        HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, params);
+
         // send transaction
         Object contractStatusManageResult =
                 frontInterface.postToSpecificFront(inputParam.getGroupId(), tbFront.getFrontIp(),
-                        tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_STATUS_MANAGE, params,
+                        tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_STATUS_MANAGE, httpEntity,
                         Object.class);
 
         log.debug("end statusManage. contractStatusManageResult:{}",

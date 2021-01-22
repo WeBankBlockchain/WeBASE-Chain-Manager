@@ -122,16 +122,17 @@ public class FrontService {
 
         // query group list
         List<String> groupIdList = null;
+        String frontPeerName = frontInfo.getFrontPeerName();
         String frontIp = frontInfo.getFrontIp();
         Integer frontPort = frontInfo.getFrontPort();
         try {
-            groupIdList = frontInterface.getGroupListFromSpecificFront(frontIp, frontPort);
+            groupIdList = frontInterface.getGroupListFromSpecificFront(frontPeerName,frontIp, frontPort);
         } catch (Exception e) {
             log.error("fail newFront, frontIp:{},frontPort:{}", frontIp, frontPort);
             throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
         }
         // check front not exist
-        SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontIp, frontPort,
+        SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontPeerName,frontIp, frontPort,
                 Integer.valueOf(groupIdList.get(0)));
         FrontParam param = new FrontParam();
         param.setChainId(chainId);
@@ -160,10 +161,10 @@ public class FrontService {
             Integer group = Integer.valueOf(groupId);
             // peer in group
             List<String> groupPeerList =
-                    frontInterface.getGroupPeersFromSpecificFront(frontIp, frontPort, group);
+                    frontInterface.getGroupPeersFromSpecificFront(frontPeerName,frontIp, frontPort, group);
             // get peers on chain
             PeerInfo[] peerArr =
-                    frontInterface.getPeersFromSpecificFront(frontIp, frontPort, group);
+                    frontInterface.getPeersFromSpecificFront(frontPeerName,frontIp, frontPort, group);
             List<PeerInfo> peerList = Arrays.asList(peerArr);
             // add group
             groupService.saveGroup(group, chainId, groupPeerList.size(), "synchronous",
@@ -179,7 +180,7 @@ public class FrontService {
                 nodeService.addNodeInfo(chainId, group, newPeer);
             }
             // add sealer(consensus node) and observer in nodeList
-            refreshSealerAndObserverInNodeList(frontIp, frontPort, chainId, group);
+            refreshSealerAndObserverInNodeList(frontPeerName,frontIp, frontPort, chainId, group);
         }
 
         // clear cache
@@ -192,14 +193,14 @@ public class FrontService {
      *
      * @param groupId
      */
-    public void refreshSealerAndObserverInNodeList(String frontIp, int frontPort, int chainId,
+    public void refreshSealerAndObserverInNodeList(String frontPeerName,String frontIp, int frontPort, int chainId,
                                                    int groupId) {
         log.debug("start refreshSealerAndObserverInNodeList frontIp:{}, frontPort:{}, groupId:{}",
                 frontIp, frontPort, groupId);
         List<String> sealerList =
-                frontInterface.getSealerListFromSpecificFront(frontIp, frontPort, groupId);
+                frontInterface.getSealerListFromSpecificFront(frontPeerName,frontIp, frontPort, groupId);
         List<String> observerList =
-                frontInterface.getObserverListFromSpecificFront(frontIp, frontPort, groupId);
+                frontInterface.getObserverListFromSpecificFront(frontPeerName,frontIp, frontPort, groupId);
         List<PeerInfo> sealerAndObserverList = new ArrayList<>();
         sealerList.stream().forEach(nodeId -> sealerAndObserverList.add(new PeerInfo(nodeId)));
         observerList.stream().forEach(nodeId -> sealerAndObserverList.add(new PeerInfo(nodeId)));
@@ -253,7 +254,7 @@ public class FrontService {
             map.put("contrastEndDate", String.valueOf(contrastEndDate));
         }
 
-        Object rspObj = frontInterface.getNodeMonitorInfo(tbFront.getFrontIp(),
+        Object rspObj = frontInterface.getNodeMonitorInfo(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, map);
         log.debug("end getNodeMonitorInfo. rspObj:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
@@ -291,7 +292,7 @@ public class FrontService {
             map.put("contrastEndDate", String.valueOf(contrastEndDate));
         }
 
-        Object rspObj = frontInterface.getPerformanceRatio(tbFront.getFrontIp(),
+        Object rspObj = frontInterface.getPerformanceRatio(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
                 tbFront.getFrontPort(), map);
         log.debug("end getPerformanceRatio. rspObj:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
@@ -310,7 +311,7 @@ public class FrontService {
         }
 
         Object rspObj =
-                frontInterface.getPerformanceConfig(tbFront.getFrontIp(), tbFront.getFrontPort());
+                frontInterface.getPerformanceConfig(tbFront.getFrontPeerName(),tbFront.getFrontIp(), tbFront.getFrontPort());
         log.debug("end getPerformanceConfig. frontRsp:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
     }
@@ -328,7 +329,7 @@ public class FrontService {
         }
 
         Object rspObj =
-                frontInterface.checkNodeProcess(tbFront.getFrontIp(), tbFront.getFrontPort());
+                frontInterface.checkNodeProcess(tbFront.getFrontPeerName(),tbFront.getFrontIp(), tbFront.getFrontPort());
         log.debug("end checkNodeProcess. response:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
     }
@@ -346,7 +347,7 @@ public class FrontService {
         }
 
         Object rspObj =
-                frontInterface.getGroupSizeInfos(tbFront.getFrontIp(), tbFront.getFrontPort());
+                frontInterface.getGroupSizeInfos(tbFront.getFrontPeerName(),tbFront.getFrontIp(), tbFront.getFrontPort());
         log.debug("end getGroupSizeInfos. response:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
     }

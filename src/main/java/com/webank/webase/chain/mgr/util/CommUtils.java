@@ -62,4 +62,6 @@ public class CommUtils {
         log.info("success exec method [getResultData]. data:{}", JsonTools.objToString(response.getData()));
         return t;
     }
+
+
 }
