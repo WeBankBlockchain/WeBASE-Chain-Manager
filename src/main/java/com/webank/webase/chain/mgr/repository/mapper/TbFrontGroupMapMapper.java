@@ -26,13 +26,13 @@ public interface TbFrontGroupMapMapper {
     @SelectProvider(type = TbFrontGroupMapSqlProvider.class, method = "countByParam")
     int countByParam(MapListParam param);
 
-    @Select({ "select a.map_id as map_id, a.chain_id as chain_id, a.group_id as group_id, a.front_id as front_id, " + "b.front_ip as front_ip,b.front_port as front_port,b.front_peer_name ad front_peer_name from tb_front_group_map a left join tb_front b " + "on(a.front_id=b.front_id) left join tb_group c " + "on(a.chain_id=c.chain_id and a.group_id=c.group_id) left join tb_chain d " + "on(a.chain_id=d.chain_id) where a.group_id = #{groupId} " })
+    @Select({ "select a.map_id as map_id, a.chain_id as chain_id, a.group_id as group_id, a.front_id as front_id, " + "b.front_ip as front_ip,b.front_port as front_port,b.front_peer_name as front_peer_name from tb_front_group_map a left join tb_front b " + "on(a.front_id=b.front_id) left join tb_group c " + "on(a.chain_id=c.chain_id and a.group_id=c.group_id) left join tb_chain d " + "on(a.chain_id=d.chain_id) where a.group_id = #{groupId} " })
     List<FrontGroup> selectByGroupId(@Param("groupId") int groupId);
 
-    @Select({ "select a.map_id as map_id, a.chain_id as chain_id, a.group_id as group_id, a.front_id as front_id," + "b.front_ip as front_ip,b.front_port as front_port,b.front_peer_name ad front_peer_name from tb_front_group_map a left join tb_front b " + "on(a.front_id=b.front_id) left join tb_group c " + "on(a.chain_id=c.chain_id and a.group_id=c.group_id) left join tb_chain d " + "on(a.chain_id=d.chain_id) where a.group_id = #{groupId}  and a.chain_id = #{chainId} " })
+    @Select({ "select a.map_id as map_id, a.chain_id as chain_id, a.group_id as group_id, a.front_id as front_id," + "b.front_ip as front_ip,b.front_port as front_port,b.front_peer_name as front_peer_name from tb_front_group_map a left join tb_front b " + "on(a.front_id=b.front_id) left join tb_group c " + "on(a.chain_id=c.chain_id and a.group_id=c.group_id) left join tb_chain d " + "on(a.chain_id=d.chain_id) where a.group_id = #{groupId}  and a.chain_id = #{chainId} " })
     List<FrontGroup> selectByChainIdAndGroupId(@Param("chainId") int chainId, @Param("groupId") int groupId);
 
-    @Select({ "select a.map_id as map_id, a.chain_id as chain_id, a.group_id as group_id, a.front_id as front_id," + "b.front_ip as front_ip,b.front_port as front_port,b.front_peer_name ad front_peer_name from tb_front_group_map a left join tb_front b " + "on(a.front_id=b.front_id) left join tb_group c " + "on(a.chain_id=c.chain_id and a.group_id=c.group_id) left join tb_chain d " + "on(a.chain_id=d.chain_id) where a.chain_id = #{chainId} " })
+    @Select({ "select a.map_id as map_id, a.chain_id as chain_id, a.group_id as group_id, a.front_id as front_id," + "b.front_ip as front_ip,b.front_port as front_port,b.front_peer_name as front_peer_name from tb_front_group_map a left join tb_front b " + "on(a.front_id=b.front_id) left join tb_group c " + "on(a.chain_id=c.chain_id and a.group_id=c.group_id) left join tb_chain d " + "on(a.chain_id=d.chain_id) where a.chain_id = #{chainId} " })
     List<FrontGroup> selectByChainId(@Param("chainId") int chainId);
 
     @Delete({ "delete from tb_front_group_map where chain_id = #{chainId}" })

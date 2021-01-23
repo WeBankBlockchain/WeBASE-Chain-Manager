@@ -66,6 +66,26 @@ public class ContractController extends BaseController {
         return baseResponse;
     }
 
+
+    /**
+     * @param contractId
+     * @return
+     * @throws BaseException
+     * @throws IOException
+     */
+    @PostMapping(value = "/compile/{contractId}")
+    public BaseResponse compileByContractId(@PathVariable("contractId") Integer contractId) throws BaseException {
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start compileByContractId startTime:{} contractId:{}", startTime.toEpochMilli(), contractId);
+
+        TbContract contract = contractService.compileByContractId(contractId);
+        baseResponse.setData(contract);
+
+        log.info("end compileContract useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
+        return baseResponse;
+    }
+
     /**
      * add new contract info.
      */
@@ -187,7 +207,7 @@ public class ContractController extends BaseController {
 
     @PostMapping(value = "/deployByContractId")
     public BaseResponse deployByContractId(@RequestBody @Valid ReqDeployByContractIdVO deployInputParam,
-                                       BindingResult result) throws BaseException {
+                                           BindingResult result) throws BaseException {
         checkBindResult(result);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();

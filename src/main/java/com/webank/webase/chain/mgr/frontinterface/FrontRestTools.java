@@ -69,6 +69,7 @@ public class FrontRestTools {
     public static final String FRONT_PERFORMANCE_RATIO = "performance";
     public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
     public static final String URI_MULTI_CONTRACT_COMPILE = "contract/multiContractCompile";
+    public static final String URI_CONTRACT_COMPILE = "contract/contractCompile";
     public static final String URI_CONTRACT_DEPLOY = "contract/deployWithSign";
     public static final String URI_SEND_TRANSACTION = "trans/handleWithSign";
     public static final String URI_CHAIN = "chain";
@@ -96,7 +97,7 @@ public class FrontRestTools {
                     URI_CHARGING_GET_NETWORK_DATA, URI_CHARGING_GET_TXGASDATA,
                     URI_CHARGING_DELETE_DATA, URI_CHAIN, FRONT_PERFORMANCE_RATIO,
                     FRONT_PERFORMANCE_CONFIG, URI_CHECK_NODE_PROCESS, URI_GET_GROUP_SIZE_INFOS,
-                    URI_SIGNED_TRANSACTION, URI_QUERY_TRANSACTION);
+                    URI_SIGNED_TRANSACTION, URI_QUERY_TRANSACTION,URI_CONTRACT_COMPILE);
 
 
     @Qualifier(value = "genericRestTemplate")

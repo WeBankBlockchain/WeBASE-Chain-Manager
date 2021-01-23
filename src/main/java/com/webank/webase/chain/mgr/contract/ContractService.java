@@ -104,6 +104,38 @@ public class ContractService {
     }
 
     /**
+     * @param contractId
+     * @return
+     */
+    public TbContract compileByContractId(int contractId) {
+        log.debug("start compileByContractId contractId:{}", contractId);
+        //check contractId
+        TbContract contract = contractManager.verifyContractId(contractId);
+        //check contract status
+        verifyContractNotDeploy(contract.getChainId(), contract.getContractId(), contract.getGroupId());
+        //check contractSource
+        if (StringUtils.isBlank(contract.getContractSource()))
+            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("contract source is empty"));
+        //request front for compile
+        RspContractCompileDto restRsp = frontInterface.compileSingleContractFile(contract.getChainId(), contract.getGroupId(), contract.getContractName(), contract.getContractSource());
+        if (Objects.isNull(restRsp))
+            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("compile result is null"));
+
+        //update
+        if(StringUtils.isAnyBlank(restRsp.getBytecodeBin(),restRsp.getContractAbi())){
+            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach(restRsp.getErrors()));
+        }
+        contract.setBytecodeBin(restRsp.getBytecodeBin());
+        contract.setContractAbi(restRsp.getContractAbi());
+        tbContractMapper.updateByPrimaryKeySelective(contract);
+
+        TbContract result = tbContractMapper.selectByPrimaryKey(contractId);
+        log.debug("success compileByContractId contractId:{} result:{}", contractId, JsonTools.objToString(result));
+        return result;
+    }
+
+
+    /**
      * add new contract data.
      */
     public TbContract saveContract(Contract contract) throws BaseException {
@@ -522,7 +554,6 @@ public class ContractService {
     }
 
 
-
     /**
      * contract name can not be repeated.
      */
@@ -606,7 +637,6 @@ public class ContractService {
     public boolean update(TbContract tbContract) {
         return this.tbContractMapper.updateByPrimaryKeySelective(tbContract) == 1;
     }
-
 
 
 }
