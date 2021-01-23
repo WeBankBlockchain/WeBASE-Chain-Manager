@@ -13,35 +13,6 @@
  */
 package com.webank.webase.chain.mgr.front;
 
-import java.io.IOException;
-import java.sql.Time;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tomcat.util.buf.ByteBufferUtils;
-import org.fisco.bcos.web3j.utils.Bytes;
-import org.springframework.aop.framework.AopContext;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
@@ -71,8 +42,24 @@ import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import com.webank.webase.chain.mgr.util.NumberUtil;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * service of web3.
@@ -81,9 +68,12 @@ import lombok.extern.log4j.Log4j2;
 @Service
 public class FrontService {
 
-    @Autowired private TbChainMapper tbChainMapper;
-    @Autowired private TbFrontMapper tbFrontMapper;
-    @Autowired private TbFrontGroupMapMapper tbFrontGroupMapMapper;
+    @Autowired
+    private TbChainMapper tbChainMapper;
+    @Autowired
+    private TbFrontMapper tbFrontMapper;
+    @Autowired
+    private TbFrontGroupMapMapper tbFrontGroupMapMapper;
     @Autowired
     private GroupService groupService;
     @Autowired
@@ -99,12 +89,16 @@ public class FrontService {
     private ResetGroupListTask resetGroupListTask;
     @Autowired
     private FrontService frontService;
-    @Autowired private DockerOptions dockerOptions;
-    @Autowired private PathService pathService;
-    @Autowired private ConstantProperties constantProperties;
+    @Autowired
+    private DockerOptions dockerOptions;
+    @Autowired
+    private PathService pathService;
+    @Autowired
+    private ConstantProperties constantProperties;
 
     @Qualifier(value = "deployAsyncScheduler")
-    @Autowired private ThreadPoolTaskScheduler threadPoolTaskScheduler;
+    @Autowired
+    private ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
     /**
      * add new front
@@ -126,13 +120,13 @@ public class FrontService {
         String frontIp = frontInfo.getFrontIp();
         Integer frontPort = frontInfo.getFrontPort();
         try {
-            groupIdList = frontInterface.getGroupListFromSpecificFront(frontPeerName,frontIp, frontPort);
+            groupIdList = frontInterface.getGroupListFromSpecificFront(frontPeerName, frontIp, frontPort);
         } catch (Exception e) {
             log.error("fail newFront, frontIp:{},frontPort:{}", frontIp, frontPort);
             throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
         }
         // check front not exist
-        SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontPeerName,frontIp, frontPort,
+        SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontPeerName, frontIp, frontPort,
                 Integer.valueOf(groupIdList.get(0)));
         FrontParam param = new FrontParam();
         param.setChainId(chainId);
@@ -161,13 +155,13 @@ public class FrontService {
             Integer group = Integer.valueOf(groupId);
             // peer in group
             List<String> groupPeerList =
-                    frontInterface.getGroupPeersFromSpecificFront(frontPeerName,frontIp, frontPort, group);
+                    frontInterface.getGroupPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
             // get peers on chain
             PeerInfo[] peerArr =
-                    frontInterface.getPeersFromSpecificFront(frontPeerName,frontIp, frontPort, group);
+                    frontInterface.getPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
             List<PeerInfo> peerList = Arrays.asList(peerArr);
             // add group
-            groupService.saveGroup(group, chainId, groupPeerList.size(), "synchronous",
+            groupService.saveGroup(null, group, chainId, groupPeerList.size(), "synchronous",
                     GroupType.SYNC.getValue());
             // save front group map
             frontGroupMapService.newFrontGroup(chainId, tbFront.getFrontId(), group);
@@ -180,7 +174,7 @@ public class FrontService {
                 nodeService.addNodeInfo(chainId, group, newPeer);
             }
             // add sealer(consensus node) and observer in nodeList
-            refreshSealerAndObserverInNodeList(frontPeerName,frontIp, frontPort, chainId, group);
+            refreshSealerAndObserverInNodeList(frontPeerName, frontIp, frontPort, chainId, group);
         }
 
         // clear cache
@@ -193,14 +187,14 @@ public class FrontService {
      *
      * @param groupId
      */
-    public void refreshSealerAndObserverInNodeList(String frontPeerName,String frontIp, int frontPort, int chainId,
+    public void refreshSealerAndObserverInNodeList(String frontPeerName, String frontIp, int frontPort, int chainId,
                                                    int groupId) {
         log.debug("start refreshSealerAndObserverInNodeList frontIp:{}, frontPort:{}, groupId:{}",
                 frontIp, frontPort, groupId);
         List<String> sealerList =
-                frontInterface.getSealerListFromSpecificFront(frontPeerName,frontIp, frontPort, groupId);
+                frontInterface.getSealerListFromSpecificFront(frontPeerName, frontIp, frontPort, groupId);
         List<String> observerList =
-                frontInterface.getObserverListFromSpecificFront(frontPeerName,frontIp, frontPort, groupId);
+                frontInterface.getObserverListFromSpecificFront(frontPeerName, frontIp, frontPort, groupId);
         List<PeerInfo> sealerAndObserverList = new ArrayList<>();
         sealerList.stream().forEach(nodeId -> sealerAndObserverList.add(new PeerInfo(nodeId)));
         observerList.stream().forEach(nodeId -> sealerAndObserverList.add(new PeerInfo(nodeId)));
@@ -254,7 +248,7 @@ public class FrontService {
             map.put("contrastEndDate", String.valueOf(contrastEndDate));
         }
 
-        Object rspObj = frontInterface.getNodeMonitorInfo(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
+        Object rspObj = frontInterface.getNodeMonitorInfo(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, map);
         log.debug("end getNodeMonitorInfo. rspObj:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
@@ -292,7 +286,7 @@ public class FrontService {
             map.put("contrastEndDate", String.valueOf(contrastEndDate));
         }
 
-        Object rspObj = frontInterface.getPerformanceRatio(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
+        Object rspObj = frontInterface.getPerformanceRatio(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), map);
         log.debug("end getPerformanceRatio. rspObj:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
@@ -311,7 +305,7 @@ public class FrontService {
         }
 
         Object rspObj =
-                frontInterface.getPerformanceConfig(tbFront.getFrontPeerName(),tbFront.getFrontIp(), tbFront.getFrontPort());
+                frontInterface.getPerformanceConfig(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort());
         log.debug("end getPerformanceConfig. frontRsp:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
     }
@@ -329,7 +323,7 @@ public class FrontService {
         }
 
         Object rspObj =
-                frontInterface.checkNodeProcess(tbFront.getFrontPeerName(),tbFront.getFrontIp(), tbFront.getFrontPort());
+                frontInterface.checkNodeProcess(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort());
         log.debug("end checkNodeProcess. response:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
     }
@@ -347,7 +341,7 @@ public class FrontService {
         }
 
         Object rspObj =
-                frontInterface.getGroupSizeInfos(tbFront.getFrontPeerName(),tbFront.getFrontIp(), tbFront.getFrontPort());
+                frontInterface.getGroupSizeInfos(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort());
         log.debug("end getGroupSizeInfos. response:{}", JsonTools.toJSONString(rspObj));
         return rspObj;
     }
@@ -373,7 +367,7 @@ public class FrontService {
         return this.tbFrontMapper.getByChainIdAndNodeId(chainId, nodeId);
     }
 
-    public TbFront getByChainIdAndGroupId(Integer chainId, Integer groupId ) {
+    public TbFront getByChainIdAndGroupId(Integer chainId, Integer groupId) {
         if (chainId == null || groupId == null) {
             return null;
         }
@@ -481,7 +475,6 @@ public class FrontService {
     }
 
     /**
-     *
      * @param chainId
      * @param nodeId
      * @param optionType
@@ -530,7 +523,6 @@ public class FrontService {
 
 
     /**
-     *
      * @param groupId
      * @return
      */
@@ -556,7 +548,6 @@ public class FrontService {
 
 
     /**
-     *
      * @param chainId
      * @param groupIdSet
      * @return
@@ -579,10 +570,9 @@ public class FrontService {
     }
 
     /**
-     *
      * @param chainId
      */
-    public int frontProgress(int chainId){
+    public int frontProgress(int chainId) {
         // check host init
         int frontFinishCount = 0;
         List<TbFront> frontList = this.tbFrontMapper.selectByChainId(chainId);
@@ -590,16 +580,16 @@ public class FrontService {
             return NumberUtil.PERCENTAGE_FINISH;
         }
         for (TbFront front : frontList) {
-            if(FrontStatusEnum.isRunning(front.getFrontStatus())){
-                frontFinishCount ++;
+            if (FrontStatusEnum.isRunning(front.getFrontStatus())) {
+                frontFinishCount++;
             }
         }
         // check front init finish ?
-        if (frontFinishCount == frontList.size()){
+        if (frontFinishCount == frontList.size()) {
             // init success
             return NumberUtil.PERCENTAGE_FINISH;
         }
-        return NumberUtil.percentage(frontFinishCount,frontList.size());
+        return NumberUtil.percentage(frontFinishCount, frontList.size());
     }
 
 }

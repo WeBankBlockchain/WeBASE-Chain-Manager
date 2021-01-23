@@ -1,37 +1,17 @@
 /**
  * Copyright 2014-2019 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 package com.webank.webase.chain.mgr.group;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
@@ -52,8 +32,19 @@ import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
-
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Controller for processing group information.
@@ -80,7 +71,7 @@ public class GroupController extends BaseController {
      */
     @PostMapping("/generate/{nodeId}")
     public BaseResponse generateToSingleNode(@PathVariable("nodeId") String nodeId,
-            @RequestBody @Valid ReqGenerateGroup req, BindingResult result) throws BaseException {
+                                             @RequestBody @Valid ReqGenerateGroup req, BindingResult result) throws BaseException {
         checkBindResult(result);
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
@@ -98,13 +89,13 @@ public class GroupController extends BaseController {
      */
     @PostMapping("/generate")
     public BaseResponse generateGroup(@RequestBody @Valid ReqGenerateGroup req,
-            BindingResult result) throws BaseException {
+                                      BindingResult result) throws BaseException {
         checkBindResult(result);
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start generateGroup startTime:{} groupId:{}", startTime.toEpochMilli(),
                 req.getGenerateGroupId());
-        if (req.getGenerateGroupId() == ConstantProperties.DEFAULT_GROUP_ID){
+        if (Objects.equals(ConstantProperties.DEFAULT_GROUP_ID, req.getGenerateGroupId())) {
             throw new BaseException(ConstantCode.CANNOT_USE_DEFAULT_GROUP_ID);
         }
         TbGroup tbGroup = groupService.generateGroup(req);
@@ -119,8 +110,8 @@ public class GroupController extends BaseController {
      */
     @GetMapping("/operate/{chainId}/{groupId}/{nodeId}/{type}")
     public Object operateGroup(@PathVariable("chainId") Integer chainId,
-            @PathVariable("nodeId") String nodeId, @PathVariable("groupId") Integer groupId,
-            @PathVariable("type") String type) throws BaseException {
+                               @PathVariable("nodeId") String nodeId, @PathVariable("groupId") Integer groupId,
+                               @PathVariable("type") String type) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start operateGroup startTime:{} groupId:{}", startTime.toEpochMilli(), groupId);
         Object groupHandleResult = groupService.operateGroup(chainId, nodeId, groupId, type);
@@ -167,7 +158,7 @@ public class GroupController extends BaseController {
      */
     @GetMapping("/general/{chainId}/{groupId}")
     public BaseResponse getGroupGeneral(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId) throws BaseException {
+                                        @PathVariable("groupId") Integer groupId) throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start getGroupGeneral startTime:{} groupId:{}", startTime.toEpochMilli(),
@@ -212,9 +203,9 @@ public class GroupController extends BaseController {
      */
     @GetMapping("getConsensusList/{chainId}/{groupId}/{nodeId}")
     public Object getConsensusList(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
-            @RequestParam(defaultValue = "10") Integer pageSize,
-            @RequestParam(defaultValue = "1") Integer pageNumber) {
+                                   @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+                                   @RequestParam(defaultValue = "10") Integer pageSize,
+                                   @RequestParam(defaultValue = "1") Integer pageNumber) {
 
         Instant startTime = Instant.now();
         log.info("start getConsensusList startTime:{}", startTime.toEpochMilli());
@@ -226,7 +217,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object result = frontInterfaceService.getConsensusList(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
+        Object result = frontInterfaceService.getConsensusList(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, pageSize, pageNumber);
 
         log.info("end getConsensusList useTime:{}",
@@ -239,7 +230,7 @@ public class GroupController extends BaseController {
      */
     @PostMapping(value = "setConsensusStatus")
     public Object setConsensusStatus(@RequestBody @Valid ConsensusParam consensusParam,
-            BindingResult result) throws BaseException {
+                                     BindingResult result) throws BaseException {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start setConsensusStatus startTime:{} consensusParam:{}",
@@ -253,7 +244,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object res = frontInterfaceService.setConsensusStatus(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
+        Object res = frontInterfaceService.setConsensusStatus(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), consensusParam);
 
         log.info("end setConsensusStatus useTime:{}",
@@ -263,13 +254,12 @@ public class GroupController extends BaseController {
 
     /**
      * getSysConfigList.
-     * 
      */
     @GetMapping("getSysConfigList/{chainId}/{groupId}/{nodeId}")
     public Object getSysConfigList(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
-            @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(defaultValue = "1") int pageNumber) {
+                                   @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+                                   @RequestParam(defaultValue = "10") int pageSize,
+                                   @RequestParam(defaultValue = "1") int pageNumber) {
 
         Instant startTime = Instant.now();
         log.info("start getSysConfigList startTime:{}", startTime.toEpochMilli());
@@ -281,7 +271,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object result = frontInterfaceService.getSysConfigList(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
+        Object result = frontInterfaceService.getSysConfigList(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, pageSize, pageNumber);
 
         log.info("end getSysConfigList useTime:{}",
@@ -294,7 +284,7 @@ public class GroupController extends BaseController {
      */
     @PostMapping(value = "setSysConfig")
     public Object setSysConfigByKey(@RequestBody @Valid ReqSetSysConfig reqSetSysConfig,
-            BindingResult result) throws BaseException {
+                                    BindingResult result) throws BaseException {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start setSysConfigByKey startTime:{} reqSetSysConfig:{}",
@@ -308,7 +298,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object res = frontInterfaceService.setSysConfigByKey(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
+        Object res = frontInterfaceService.setSysConfigByKey(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), reqSetSysConfig);
 
         log.info("end setSysConfigByKey useTime:{}",
@@ -318,17 +308,16 @@ public class GroupController extends BaseController {
 
     /**
      * getNetWorkData.
-     * 
      */
     @GetMapping("/charging/getNetWorkData/{chainId}/{groupId}/{nodeId}")
     public Object getNetWorkData(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
-            @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(defaultValue = "1") int pageNumber,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime endDate) {
+                                 @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+                                 @RequestParam(defaultValue = "10") int pageSize,
+                                 @RequestParam(defaultValue = "1") int pageNumber,
+                                 @RequestParam(required = false) @DateTimeFormat(
+                                         iso = ISO.DATE_TIME) LocalDateTime beginDate,
+                                 @RequestParam(required = false) @DateTimeFormat(
+                                         iso = ISO.DATE_TIME) LocalDateTime endDate) {
 
         Instant startTime = Instant.now();
         log.info("start getNetWorkData startTime:{}", startTime.toEpochMilli());
@@ -340,7 +329,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object result = frontInterfaceService.getNetWorkData(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
+        Object result = frontInterfaceService.getNetWorkData(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, pageSize, pageNumber, beginDate, endDate);
 
         log.info("end getNetWorkData useTime:{}",
@@ -350,18 +339,17 @@ public class GroupController extends BaseController {
 
     /**
      * getNetWorkData.
-     * 
      */
     @GetMapping("/charging/getTxGasData/{chainId}/{groupId}/{nodeId}")
     public Object getTxGasData(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
-            @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(defaultValue = "1") int pageNumber,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(required = false) String transHash) {
+                               @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+                               @RequestParam(defaultValue = "10") int pageSize,
+                               @RequestParam(defaultValue = "1") int pageNumber,
+                               @RequestParam(required = false) @DateTimeFormat(
+                                       iso = ISO.DATE_TIME) LocalDateTime beginDate,
+                               @RequestParam(required = false) @DateTimeFormat(
+                                       iso = ISO.DATE_TIME) LocalDateTime endDate,
+                               @RequestParam(required = false) String transHash) {
 
         Instant startTime = Instant.now();
         log.info("start getTxGasData startTime:{}", startTime.toEpochMilli());
@@ -374,7 +362,7 @@ public class GroupController extends BaseController {
         }
 
         Object result =
-                frontInterfaceService.getTxGasData(tbFront.getFrontPeerName(),tbFront.getFrontIp(), tbFront.getFrontPort(),
+                frontInterfaceService.getTxGasData(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort(),
                         groupId, pageSize, pageNumber, beginDate, endDate, transHash);
 
         log.info("end getTxGasData useTime:{}",
@@ -384,13 +372,12 @@ public class GroupController extends BaseController {
 
     /**
      * delete charging Data.
-     * 
      */
     @DeleteMapping("/charging/deleteData/{chainId}/{groupId}/{nodeId}")
     public Object deleteData(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
-            @RequestParam(required = true) int type, @RequestParam(required = true) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime keepEndDate) {
+                             @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+                             @RequestParam(required = true) int type, @RequestParam(required = true) @DateTimeFormat(
+            iso = ISO.DATE_TIME) LocalDateTime keepEndDate) {
 
         Instant startTime = Instant.now();
         log.info("start deleteData startTime:{}", startTime.toEpochMilli());
@@ -402,7 +389,7 @@ public class GroupController extends BaseController {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object result = frontInterfaceService.deleteLogData(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
+        Object result = frontInterfaceService.deleteLogData(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, type, keepEndDate);
 
         log.info("end deleteData useTime:{}",
@@ -423,16 +410,16 @@ public class GroupController extends BaseController {
         Instant startTime = Instant.now();
         log.info("start consensus list startTime:{}", startTime.toEpochMilli());
 
-        int newGroupId  = groupId == null || groupId <=0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId ;
+        int newGroupId = groupId == null || groupId <= 0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
 
         // get front
-        TbFront tbFront = frontService.getByChainIdAndGroupId(chainId,newGroupId);
+        TbFront tbFront = frontService.getByChainIdAndGroupId(chainId, newGroupId);
         if (tbFront == null) {
             log.error("fail getConsensusList node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        Object result = frontInterfaceService.getConsensusList(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
+        Object result = frontInterfaceService.getConsensusList(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), newGroupId, pageSize, pageNumber);
 
         log.info("end getConsensusList useTime:{}",

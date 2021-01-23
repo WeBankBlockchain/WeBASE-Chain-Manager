@@ -28,9 +28,9 @@ import lombok.NoArgsConstructor;
 public class ReqGenerateGroup {
     @NotNull
     private Integer chainId;
-    @NotNull
+//    @NotNull
     private Integer generateGroupId;
-    @NotNull
+//    @NotNull
     private BigInteger timestamp;
     private List<String> nodeList;
     private List<Integer> orgIdList;

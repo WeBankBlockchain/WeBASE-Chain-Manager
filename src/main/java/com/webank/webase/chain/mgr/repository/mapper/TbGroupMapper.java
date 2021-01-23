@@ -21,6 +21,9 @@ import org.apache.ibatis.annotations.SelectProvider;
 
 public interface TbGroupMapper {
 
+    @Select({ "select max(group_id) from tb_group  where chain_id = #{chainId}" })
+    int getMaxGroup(@Param("chainId") int chainId);
+
     @Delete({ "delete from tb_group  where chain_id = #{chainId}" })
     int deleteByChainId(@Param("chainId") int chainId);
 
