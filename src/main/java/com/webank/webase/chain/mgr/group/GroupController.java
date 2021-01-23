@@ -198,6 +198,7 @@ public class GroupController extends BaseController {
         return pagesponse;
     }
 
+
     /**
      * get node consensus list.
      */
@@ -425,5 +426,17 @@ public class GroupController extends BaseController {
         log.info("end getConsensusList useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
         return result;
+    }
+
+
+    @GetMapping("page/{chainId}")
+    public BasePageResponse queryGroupByPage(@PathVariable("chainId") Integer chainId,
+                                             @RequestParam(defaultValue = "10") Integer pageSize,
+                                             @RequestParam(defaultValue = "1") Integer pageNumber) {
+        Instant startTime = Instant.now();
+        log.info("start queryGroupByPage startTime:{} chainId:{} pageNumber:{} pageSize:{}", startTime.toEpochMilli(), chainId, pageSize, pageNumber);
+        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, pageSize, pageNumber);
+        log.info("end queryGroupByPage useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
+        return basePageResponse;
     }
 }

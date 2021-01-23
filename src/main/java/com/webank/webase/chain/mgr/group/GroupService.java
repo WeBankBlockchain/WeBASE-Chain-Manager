@@ -14,6 +14,7 @@
 package com.webank.webase.chain.mgr.group;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.enums.DeployTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
@@ -37,10 +38,7 @@ import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
 import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
-import com.webank.webase.chain.mgr.repository.bean.TbChain;
-import com.webank.webase.chain.mgr.repository.bean.TbFront;
-import com.webank.webase.chain.mgr.repository.bean.TbGroup;
-import com.webank.webase.chain.mgr.repository.bean.TbNode;
+import com.webank.webase.chain.mgr.repository.bean.*;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
@@ -145,7 +143,7 @@ public class GroupService {
         //set groupId
         Integer generateGroupId = req.getGenerateGroupId();
         if (Objects.isNull(generateGroupId)) {
-            generateGroupId = tbGroupMapper.getMaxGroup(req.getChainId())+1;
+            generateGroupId = tbGroupMapper.getMaxGroup(req.getChainId()) + 1;
         }
         checkGroupIdExisted(chainId, generateGroupId);
 
@@ -672,4 +670,30 @@ public class GroupService {
 
     }
 
+    /**
+     * @param chainId
+     * @param pageSize
+     * @param pageNumber
+     * @return
+     */
+    public BasePageResponse queryGroupByPage(Integer chainId, Integer pageSize, Integer pageNumber) {
+        // check id
+        chainService.verifyChainId(chainId);
+        //reset all local group
+        resetGroupList();
+        //param
+        TbGroupExample example = new TbGroupExample();
+        example.setStart(Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).filter(p -> p >= 0).orElse(1));
+        example.setCount(pageSize);
+        TbGroupExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+
+        //query
+        BasePageResponse basePageResponse = new BasePageResponse(ConstantCode.SUCCESS);
+        basePageResponse.setTotalCount(Integer.parseInt(String.valueOf(tbGroupMapper.countByExample(example))));
+        if (basePageResponse.getTotalCount() > 0) {
+            basePageResponse.setData(tbGroupMapper.selectByExample(example));
+        }
+        return basePageResponse;
+    }
 }
