@@ -21,6 +21,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 /**
  * import private key entity
@@ -34,12 +35,16 @@ public class ReqNewUser {
     private String signUserName;
     @ApiModelProperty(value = "用户id", example = "1SSSaFN1NXH9tfb5")
     private String signUserId;
-	@ApiModelProperty(value = "所属应用id", example = "group_1_1", required = true)
+    @ApiModelProperty(value = "所属链Id", example = "1", required = true)
+    @Positive(message = "chain id error.")
+    private Integer chainId;
+	@ApiModelProperty(value = "所属应用id（群组名称或群组id）", example = "group_1_1", required = true)
     @NotBlank
     private String appId;
-	@ApiModelProperty(value = "链加密类型（0-ECDS，1-国密）", example = "0", required = true)
-    @NotNull
+	@ApiModelProperty(value = "链加密类型（0-ECDS，1-国密）", example = "0")
+//    @NotNull
     private Integer encryptType;
 	@ApiModelProperty(value = "私钥（导入私钥时用）")
     private String privateKey="";
+    private String description;
 }

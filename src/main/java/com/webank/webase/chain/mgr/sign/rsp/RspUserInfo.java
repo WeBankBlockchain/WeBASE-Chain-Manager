@@ -20,7 +20,6 @@ import lombok.Data;
 
 /**
  * RspUserInfoVo.
- * 
  */
 @Data
 public class RspUserInfo {
@@ -30,6 +29,7 @@ public class RspUserInfo {
     private String publicKey;
     // not return privateKey
     private String privateKey;
+    private String signUserName;
     private String description;
     private Integer encryptType;
 }

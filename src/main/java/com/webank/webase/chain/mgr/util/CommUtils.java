@@ -1,6 +1,7 @@
 package com.webank.webase.chain.mgr.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;

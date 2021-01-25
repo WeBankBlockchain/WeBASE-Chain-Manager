@@ -204,7 +204,9 @@ public class ConstantCode {
     public static final RetCode ABI_PARSE_ERROR = RetCode.mark(205260, "abi parse error");
     public static final RetCode INVALID_ENCRYPT_TYPE = RetCode.mark(205261, "invalid encrypt type");
     public static final RetCode FUNCTION_NOT_EXISTS = RetCode.mark(205262, "function is not exists");
-
+    public static final RetCode FOUND_TOO_MANY_DATA_BY_APP_ID = RetCode.mark(205263, "found too many group by appId");
+    public static final RetCode INVALID_APP_ID = RetCode.mark(205264, "invalid appId");
+    public static final RetCode REST_REQUEST_FAIL = RetCode.mark(205265, "rest server request not success");
 
 
 }

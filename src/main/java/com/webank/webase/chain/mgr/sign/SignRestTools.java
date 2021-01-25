@@ -1,11 +1,11 @@
 /**
  * Copyright 2014-2020 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -14,28 +14,22 @@
 
 package com.webank.webase.chain.mgr.sign;
 
-import java.util.Objects;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-
-import lombok.extern.log4j.Log4j2;
+import java.util.Objects;
 
 /**
  * about http request for WeBASE-Transaction.
@@ -46,25 +40,27 @@ public class SignRestTools {
 
     public static final String SIGN_BASE_URL = "http://%s/WeBASE-Sign";
 
-    public static final String URI_USER_LIST = "%s/user/list/%s/%s/%s";
+    public static final String URI_USER_LIST = "%s/user/list/%s/%s/%s?signUserIdList=%s";
     public static final String URI_USER_NEW = "%s/user/newUser";
     public static final String URI_USER_INFO = "%s/user/%s/userInfo";
     public static final String URI_SIGN = "%s/sign";
 
 
-    @Autowired private ConstantProperties constantProperties;
-    @Autowired private RestTemplate restTemplate;
+    @Autowired
+    private ConstantProperties constantProperties;
+    @Autowired
+    private RestTemplate restTemplate;
 
     /**
      *
      * @return
      */
-    public String getBaseUrl(){
+    public String getBaseUrl() {
         String webaseSignAddress = constantProperties.getWebaseSignAddress();
         if (StringUtils.isBlank(webaseSignAddress)) {
             return null;
         }
-        return String.format(SIGN_BASE_URL,webaseSignAddress );
+        return String.format(SIGN_BASE_URL, webaseSignAddress);
     }
 
     /**
