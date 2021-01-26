@@ -109,6 +109,7 @@ public class ChainService {
     /**
      * add new chain
      */
+    @Transactional
     public TbChain newChain(ChainInfo chainInfo) {
         log.info("start newChain chainInfo:{}", chainInfo);
         //check before new chain
