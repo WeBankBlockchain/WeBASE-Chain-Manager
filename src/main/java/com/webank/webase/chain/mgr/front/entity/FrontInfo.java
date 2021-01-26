@@ -27,8 +27,7 @@ public class FrontInfo {
     @ApiModelProperty(value = "链id")
     private Integer chainId;
 
-    @ApiModelProperty(value = "k8s节点peerName", example = "127.0.0.2", required = true)
-    @NotBlank
+    @ApiModelProperty(value = "k8s节点peerName", example = "abc.abc.abc")
     private String frontPeerName;
 
     @ApiModelProperty(value = "front的ip地址", example = "127.0.0.2", required = true)
@@ -51,10 +50,10 @@ public class FrontInfo {
 //    @Positive(message = "External host id error.")
     private int extHostId;
 
-    @ApiModelProperty(value = "主机 SSH 免密账号，默认 root", example = "root")
+    @ApiModelProperty(value = "主机 SSH 免密账号", example = "root")
     private String sshUser;
 
-    @ApiModelProperty(value = "主机 SSH 端口，默认 22", example = "22")
+    @ApiModelProperty(value = "主机 SSH 端口", example = "22")
     private Integer sshPort;
 
     @ApiModelProperty(value = "front的端口号", example = "5002", required = true)

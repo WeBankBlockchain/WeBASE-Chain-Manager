@@ -67,7 +67,7 @@ public class UserService {
         example.setCount(pageSize);
         TbUserExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(tbGroup.getChainId());
-        criteria.andGroupIdEqualTo(tbGroup.getChainId());
+        criteria.andGroupIdEqualTo(tbGroup.getGroupId());
         List<TbUser> userList = userMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(userList)) {
             log.info("finish exec method[getUserListByAppId], not found record");
@@ -87,7 +87,10 @@ public class UserService {
             userList.stream()
                     .filter(user -> user.getSignUserId().equals(rspUserInfo.getSignUserId()))
                     .findFirst()
-                    .ifPresent(u -> rspUserInfo.setSignUserName(u.getUserName()));
+                    .ifPresent(u -> {
+                        rspUserInfo.setSignUserName(u.getUserName());
+                        rspUserInfo.setDescription(u.getDescription());
+                    });
         }
 
         //return
@@ -136,6 +139,7 @@ public class UserService {
         BaseResponse restResponse = signRestTools.postToSign(url, reqNewUser, BaseResponse.class);
         RspUserInfo rspUserInfo = CommUtils.getResultData(restResponse, RspUserInfo.class);
         rspUserInfo.setSignUserName(reqNewUser.getSignUserName());
+        rspUserInfo.setDescription(tbUser.getDescription());
         log.debug("restResponse:{}", JsonTools.objToString(rspUserInfo));
         return rspUserInfo;
     }
