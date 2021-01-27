@@ -111,6 +111,8 @@ public class GroupService {
             log.error("fail generateToSingleNode node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
+        TbChain tbChain = chainService.verifyChainId(chainId);
+
         // request front to generate
         GenerateGroupInfo generateGroupInfo = new GenerateGroupInfo();
         BeanUtils.copyProperties(req, generateGroupInfo);
@@ -118,7 +120,9 @@ public class GroupService {
                 generateGroupInfo);
 
         // fetch group config file
-        this.pullAllGroupFiles(generateGroupId, tbFront);
+        if (tbChain.getDeployType() == DeployTypeEnum.API.getType()) {
+            this.pullAllGroupFiles(generateGroupId, tbFront);
+        }
 
         // save group
         TbGroup tbGroup = saveGroup(req.getTimestamp(), generateGroupId, chainId, req.getNodeList().size(),
@@ -220,6 +224,7 @@ public class GroupService {
             log.error("fail operateGroup node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
+        TbChain tbChain = chainService.verifyChainId(chainId);
         // request front to operate
         Object groupHandleResult = frontInterface.operateGroup(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, type);
@@ -227,7 +232,9 @@ public class GroupService {
         // refresh
         resetGroupList();
 
-        this.pullGroupStatusFile(groupId, tbFront);
+        if (tbChain.getDeployType() == DeployTypeEnum.API.getType()) {
+            this.pullGroupStatusFile(groupId, tbFront);
+        }
 
         // return
         return groupHandleResult;
