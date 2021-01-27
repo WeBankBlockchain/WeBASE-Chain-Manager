@@ -1,5 +1,4 @@
 # 接口说明
-
 [TOC]
 
 ## 1 区块链管理模块
@@ -18,43 +17,98 @@
 
 ***1）入参表***
 
-| 序号 | 输入参数    | 类型   | 可为空 | 备注                       |
-| ---- | ----------- | ------ | ------ | -------------------------- |
-| 1    | chainId     | int    | 否     | 链编号                     |
-| 2    | chainName   | string | 否     | 链名称                     |
-| 3    | chainType   | int    | 否     | 链类型（0-非国密，1-国密） |
-| 4    | description | string | 是     | 备注                       |
+| 序号 | 输入参数      | 类型   | 可为空 | 备注                                 |
+| ---- | ------------- | ------ | ------ | --------------------- |
+| 1    | chainId       | int    | 否     | 链编号        |
+| 2    | chainName     | string | 否     | 链名称      |
+| 3    | consensusType | String | 是     | 共识机制，如：pbft     |
+| 4    | storageType   | String | 是     | 存储方式，如：rocksdb  |
+| 5    | description   | string | 是     | 备注   |
+| 6    | frontList     | List   | 否     |front信息（要添加所有节点的front|
+| 6.1  | frontIp  | string | 否     | front的ip地址     |
+| 6.2  | frontPort  | Integer | 否     | front的端口号      |
+| 6.3  | extAgencyId  | Integer | 否     | 节点所属组织 ID     |
+| 6.4  | agency  | string | 否     | 节点所属组织名称     |
+| 6.5  | frontPeerName  | string | 是     | k8s节点peerName    |
+| 6.6  | extCompanyId  | Integer | 是     | 主机所属公司 ID     |
+| 6.7  | extHostId  | Integer | 是     | 主机ID     |
+| 6.8  | sshUser  | string | 是   | 主机 SSH 免密账号，如：root     |
+| 6.9  | sshPort  | Integer | 是   | 主机 SSH 端口，如：22     |
+| 6.10  | jsonrpcPort  | Integer | 是   | JSON-RPC 端口，如：8545    |
+| 6.11  | p2pPort  | Integer | 是   | P2P 端口，如：30300    |
+| 6.11  | channelPort  | Integer | 是   | channel 端口，如：20200    |
+
 
 ***2）入参示例***
-
 ```
 http://127.0.0.1:5005/WeBASE-Chain-Manager/chain/new
 ```
 
+* 只输入必填参数：
 ```
 {
-    "chainId": 100001,
-    "chainName": "链一",
-    "chainType": 0,
-    "description": "test"
+  "chainId": 1,
+  "chainName": "chain1",
+  "frontList": [
+    {
+      "agency": "org1",
+      "extAgencyId": 10,
+      "frontPeerName": "abc.abc.abc",
+      "frontIp": "127.0.0.3",
+      "frontPort": 5002
+    }
+  ]
 }
 ```
+
+* 输入所有参数：
+```
+{
+  "chainId": 0,
+  "chainName": "ccc1",
+  "consensusType": "pbft",
+  "description": "dddddesc",
+  "frontList": [
+    {
+      "agency": "aaaorg",
+      "channelPort": 20200,
+      "extAgencyId": 10,
+      "extCompanyId": 10,
+      "extHostId": 10,
+      "frontIp": "127.0.0.3",
+      "frontPort": 5002,
+      "frontPeerName": "abc.abc.abc",
+      "jsonrpcPort": 8545,
+      "p2pPort": 30300,
+      "sshPort": 22,
+      "sshUser": "root"
+    }
+  ],
+  "storageType": "rocksdb"
+}
+```
+
 
 #### 1.1.3 返回参数
 
 ***1）出参表***
 
-| 序号 | 输出参数    | 类型          |      | 备注                       |
-| ---- | ----------- | ------------- | ---- | -------------------------- |
+| 序号 | 输出参数    | 类型          | 可空  | 备注                       |
+| ---- | ----------- | ------------- | ---- | ----------------------- |
 | 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
-| 2    | message     | String        | 否   | 描述                       |
-| 3    |             | Object        |      | 节点信息对象               |
-| 3.1  | chainId     | int           | 否   | 链编号                     |
-| 3.2  | chainName   | string        | 否   | 链名称                     |
+| 2    | message     | String        | 否   | 描述                   |
+| 3    | data         | Object       |      | 信息对象              |
+| 3.1  | chainId     | int           | 否   | 链编号                    |
+| 3.2  | chainName   | string        | 否   | 链名称                    |
 | 3.3  | chainType   | int           | 否   | 链类型（0-非国密，1-国密） |
-| 3.4  | description | string        | 是   | 备注                       |
+| 3.4  | description | string        | 是   | 备注                   |
 | 3.5  | createTime  | LocalDateTime | 否   | 落库时间                   |
 | 3.6  | modifyTime  | LocalDateTime | 否   | 修改时间                   |
+| 3.7  | version  | string | 否   | 节点客户端版本                   |
+| 3.8    | consensusType | String | 是     | 共识机制，如：pbft     |
+| 3.9    | storageType   | String | 是     | 存储方式，如：rocksdb  |
+| 3.10    | chainStatus   | int | 否     | 链状态，0-初始化，1-部署中，2-部署失败，3-运行，4-重启中，5-升级中，6-升级失败  |
+| 3.11    | deployType   | int | 否     | 部署方式，0-手动部署，1-接口部署  |
 
 ***2）出参示例***
 
@@ -65,13 +119,23 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/chain/new
     "code": 0,
     "message": "success",
     "data": {
-        "chainId": 100001,
-        "chainName": "链一",
+        "progress": 0,
+        "chainId": 1,
+        "chainName": "chain1",
         "chainType": 0,
-        "description": "test"
-        "createTime": "2019-02-14 17:47:00",
-        "modifyTime": "2019-03-15 11:14:29"
-    }
+        "description": null,
+        "createTime": 1611568826000,
+        "modifyTime": 1611568826000,
+        "version": "2.7.1",
+        "consensusType": null,
+        "storageType": null,
+        "chainStatus": 3,
+        "webaseSignAddr": "127.0.0.1:5004",
+        "deployType": 0,
+        "remark": ""
+    },
+    "attachment": null,
+    "success": true
 }
 ```
 
@@ -214,6 +278,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/chain/100001
 
 ## 2 前置管理模块
 
+
 ### 2.1 新增节点前置信息
 
 #### 2.1.1 传输协议规范
@@ -231,10 +296,18 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/chain/100001
 | 序号 | 输入参数    | 类型   | 可为空 | 备注         |
 | ---- | ----------- | ------ | ------ | ------------ |
 | 1    | chainId     | int    | 否     | 链编号       |
-| 2    | frontIp     | string | 否     | 前置ip       |
-| 3    | frontPort   | int    | 否     | 前置服务端口 |
-| 4    | agency      | string | 否     | 所属机构     |
-| 5    | description | string | 是     | 备注         |
+| 2  | frontIp  | string | 否     | front的ip地址     |
+| 3  | frontPort  | Integer | 否     | front的端口号      |
+| 4  | extAgencyId  | Integer | 否     | 节点所属组织 ID     |
+| 5  | agency  | string | 否     | 节点所属组织名称     |
+| 6  | frontPeerName  | string | 是     | k8s节点peerName    |
+| 7  | extCompanyId  | Integer | 是     | 主机所属公司 ID     |
+| 8  | extHostId  | Integer | 是     | 主机ID     |
+| 9  | sshUser  | string | 是   | 主机 SSH 免密账号，如：root     |
+| 10  | sshPort  | Integer | 是   | 主机 SSH 端口，如：22     |
+| 11  | jsonrpcPort  | Integer | 是   | JSON-RPC 端口，如：8545    |
+| 12  | p2pPort  | Integer | 是   | P2P 端口，如：30300    |
+| 13  | channelPort  | Integer | 是   | channel 端口，如：20200    |
 
 ***2）入参示例***
 
@@ -245,10 +318,11 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/new
 ```
 {
     "chainId": 100001,
-    "frontIp": "127.0.0.1",
-    "frontPort": 5002,
-    "agency": "abc",
-    "description": "test"
+    "agency": "org1",
+    "extAgencyId": 10,
+    "frontPeerName": "abc.abc.abc",
+    "frontIp": "127.0.0.2",
+    "frontPort": 5002
 }
 ```
 
@@ -257,19 +331,28 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/new
 ***1）出参表***
 
 | 序号 | 输出参数    | 类型          |      | 备注                       |
-| ---- | ----------- | ------------- | ---- | -------------------------- |
+| ---- | ----------- | ------------- | ---- | ---------- |
 | 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
-| 2    | message     | String        | 否   | 描述                       |
-| 3    |             | Object        |      | 节点信息对象               |
-| 3.1  | frontId     | int           | 否   | 前置编号                   |
-| 3.2  | chainId     | int           | 否   | 链编号                     |
-| 3.3  | nodeId      | string        | 否   | 前置对应的节点编号         |
-| 3.4  | frontIp     | string        | 否   | 前置ip                     |
-| 3.5  | frontPort   | int           | 否   | 前置端口                   |
-| 3.6  | agency      | string        | 否   | 所属机构                   |
-| 3.7  | description | string        | 是   | 备注                       |
-| 3.8  | createTime  | LocalDateTime | 否   | 落库时间                   |
-| 3.9  | modifyTime  | LocalDateTime | 否   | 修改时间                   |
+| 2    | message     | String        | 否   | 描述               |
+| 3    |             | Object        |      | 信息对象             |
+| 3.1  | frontId     | int           | 否   | 前置编号                 |
+| 3.2  | chainId     | int           | 否   | 链编号                   |
+| 3.3  | frontPeerName   | string | 是     | k8s节点peerName    |
+| 3.4  | nodeId      | string        | 否   | 前置对应的节点编号         |
+| 3.5  | frontIp  | string | 否     | front的ip地址     |
+| 3.6  | frontPort  | Integer | 否     | front的端口号      |
+| 3.7  | agency      | string        | 否   | 所属机构                   |
+| 3.8  | extAgencyId  | Integer | 否     | 节点所属组织 ID     |
+| 3.9  | extCompanyId  | Integer | 是     | 主机所属公司 ID     |
+| 3.10  | extHostId  | Integer | 是     | 主机ID     |
+| 3.11  | sshUser  | string | 是   | 主机 SSH 免密账号，如：root     |
+| 3.12  | sshPort  | Integer | 是   | 主机 SSH 端口，如：22     |
+| 3.13  | jsonrpcPort  | Integer | 是   | JSON-RPC 端口，如：8545    |
+| 3.14  | p2pPort  | Integer | 是   | P2P 端口，如：30300    |
+| 3.15  | channelPort  | Integer | 是   | channel 端口，如：20200    |
+| 3.16 | description | string        | 是   | 备注                       |
+| 3.17 | createTime  | LocalDateTime | 否   | 落库时间                   |
+| 3.18 | modifyTime  | LocalDateTime | 否   | 修改时间                   |
 
 ***2）出参示例***
 
@@ -280,16 +363,35 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/new
     "code": 0,
     "message": "success",
     "data": {
-        "frontId": 200001,
-        "chainId": 100001,
-        "nodeId": "78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2",
-        "frontIp": "127.0.0.1",
+        "frontId": 200029,
+        "chainId": 1,
+        "frontPeerName": "abc.abc.abcc",
+        "nodeId": "53060c93c5c7bfdc2b35ffae766e5e9f0ca16340f8e4ed09421cbbdb86cc974d57eb6460d41c33a71634f033a898d92486dd5081e2db1672bd426fff6e4af5f8",
+        "frontIp": "127.0.02",
         "frontPort": 5002,
-        "agency": "aa",
-        "description": "test"
-        "createTime": "2019-02-14 17:47:00",
-        "modifyTime": "2019-03-15 11:14:29"
-    }
+        "agency": "org1",
+        "description": null,
+        "createTime": 1611716211476,
+        "modifyTime": 1611716211476,
+        "frontStatus": 1,
+        "version": null,
+        "containerName": null,
+        "jsonrpcPort": null,
+        "p2pPort": null,
+        "channelPort": null,
+        "chainName": "chain1",
+        "extCompanyId": 0,
+        "extAgencyId": 10,
+        "extHostId": 0,
+        "hostIndex": null,
+        "sshUser": null,
+        "sshPort": null,
+        "dockerPort": null,
+        "rootOnHost": null,
+        "nodeRootOnHost": null
+    },
+    "attachment": null,
+    "success": true
 }
 ```
 
@@ -297,11 +399,13 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/new
 
 ```
 {
-    "code": 102000,
+    "code": 105000,
     "message": "system exception",
     "data": {}
 }
 ```
+
+
 
 ### 2.2 获取所有前置列表 
 
@@ -339,15 +443,24 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/find
 | 3     | totalCount  | Int           | 否   | 总记录数                   |
 | 4     | data        | List          | 否   | 组织列表                   |
 | 4.1   |             | Object        |      | 节点信息对象               |
-| 4.1.1 | frontId     | int           | 否   | 前置编号                   |
-| 4.1.2 | chainId     | int           | 否   | 链编号                     |
-| 4.1.3 | nodeId      | string        | 否   | 前置对应的节点编号         |
-| 4.1.4 | frontIp     | string        | 否   | 前置ip                     |
-| 4.1.5 | frontPort   | int           | 否   | 前置端口                   |
-| 4.1.6 | agency      | string        | 否   | 所属机构                   |
-| 4.1.7 | description | string        | 是   | 备注                       |
-| 4.1.8 | createTime  | LocalDateTime | 否   | 落库时间                   |
-| 4.1.9 | modifyTime  | LocalDateTime | 否   | 修改时间                   |
+| 4.1.1  | frontId     | int           | 否   | 前置编号                 |
+| 4.1.2  | chainId     | int           | 否   | 链编号                   |
+| 4.1.3  | frontPeerName   | string | 是     | k8s节点peerName    |
+| 4.1.4  | nodeId      | string        | 否   | 前置对应的节点编号  |
+| 4.1.5  | frontIp  | string | 否     | front的ip地址     |
+| 4.1.6  | frontPort  | Integer | 否     | front的端口号      |
+| 4.1.7  | agency      | string        | 否   | 所属机构       |
+| 4.1.8  | extAgencyId  | Integer | 否     | 节点所属组织 ID     |
+| 4.1.9  | extCompanyId  | Integer | 是     | 主机所属公司 ID     |
+| 4.1.10  | extHostId  | Integer | 是     | 主机ID     |
+| 4.1.11  | sshUser  | string | 是   | 主机 SSH 免密账号，如：root     |
+| 4.1.12  | sshPort  | Integer | 是   | 主机 SSH 端口，如：22     |
+| 4.1.13  | jsonrpcPort  | Integer | 是   | JSON-RPC 端口，如：8545    |
+| 4.1.14  | p2pPort  | Integer | 是   | P2P 端口，如：30300    |
+| 4.1.15  | channelPort  | Integer | 是   | channel 端口，如：20200    |
+| 4.1.16 | description | string        | 是   | 备注   |
+| 4.1.17 | createTime  | LocalDateTime | 否   | 落库时间                  |
+| 4.1.18 | modifyTime  | LocalDateTime | 否   | 修改时间   |
 
 ***2）出参示例***
 
@@ -355,22 +468,39 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/find
 
 ```
 {
-    "code": 0,
-    "message": "success",
-    "data": [
-        {
-            "frontId": 200001,
-            "chainId": 100001,
-            "nodeId": "78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2",
-            "frontIp": "127.0.0.1",
-            "frontPort": 5002,
-            "agency": "aa",
-            "description": "test"
-            "createTime": "2019-06-04 20:49:42",
-            "modifyTime": "2019-06-04 20:49:42"
-        }
-    ],
-    "totalCount": 1
+  "code": 0,
+  "message": "success",
+  "data": [
+    {
+      "frontId": 200029,
+      "chainId": 1,
+      "frontPeerName": "abc.abc.abcc",
+      "nodeId": "53060c93c5c7bfdc2b35ffae766e5e9f0ca16340f8e4ed09421cbbdb86cc974d57eb6460d41c33a71634f033a898d92486dd5081e2db1672bd426fff6e4af5f8",
+      "frontIp": "106.53.99.131",
+      "frontPort": 5002,
+      "agency": "org1",
+      "description": null,
+      "createTime": 1611716211000,
+      "modifyTime": 1611716211000,
+      "frontStatus": 1,
+      "version": "",
+      "containerName": "",
+      "jsonrpcPort": null,
+      "p2pPort": null,
+      "channelPort": null,
+      "chainName": "chain1",
+      "extCompanyId": 0,
+      "extAgencyId": 10,
+      "extHostId": 0,
+      "hostIndex": 0,
+      "sshUser": null,
+      "sshPort": null,
+      "dockerPort": null,
+      "rootOnHost": null,
+      "nodeRootOnHost": ""
+    }
+  ],
+  "totalCount": 1
 }
 ```
 
@@ -378,7 +508,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/find
 
 ```
 {
-   "code": 102000,
+   "code": 105000,
    "message": "system exception",
    "data": {}
 }
@@ -987,6 +1117,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate/78e467957af3d0f77e19b9
 }
 ```
 
+
 ### 3.2 批量生成新群组
 
 ​	向新群组下所有节点请求生成新群组配置信息，节点和前置一一对应，节点编号可以从前置列表获取。适用于新群组下的节点属于同一个链管理服务（节点对应前置都要添加到链管理服务）。**群组生成后，需对应调用3.4的批量启动。** 
@@ -1004,12 +1135,13 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate/78e467957af3d0f77e19b9
 ***1）入参表***
 
 | 序号 | 输入参数        | 类型         | 可为空 | 备注                                 |
-| ---- | --------------- | ------------ | ------ | ------------------------------------ |
-| 1    | chainId         | int          | 否     | 链编号                               |
-| 2    | generateGroupId | int          | 否     | 生成的群组编号                       |
-| 3    | timestamp       | BigInteger   | 否     | 创世块时间（单位：ms）               |
-| 4    | nodeList        | List<String> | 否     | 节点编号列表（新群组的所有节点编号） |
-| 5    | description     | string       | 是     | 备注                                 |
+| ---- | --------- | -------- | ------ | ----------------------- |
+| 1    | chainId         | int          | 否     | 链编号           |
+| 2    | generateGroupId | int          | 是     | 生成的群组编号   |
+| 3    | timestamp       | BigInteger   | 是     | 创世块时间（单位：ms）|
+| 4    | nodeList        | List<String> | 是     | 节点编号列表（新群组的所有节点编号；另外，nodeList与orgIdList不能同时为空） |
+| 5    | orgIdList        | List<Integer> | 是     | 节点所属结构编号列表（nodeList与orgIdList不能同时为空）|
+| 6    | description     | string       | 是     | 备注                             |
 
 ***2）入参示例***
 
@@ -1017,15 +1149,25 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate/78e467957af3d0f77e19b9
 http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 ```
 
+* 只输入必填参数
 ```
 {
-    "chainId": 100001,
-    "generateGroupId": 2,
-    "timestamp": 1574853659000,
-    "nodeList": [
-       "78e467957af3d0f77e19b952a740ba8c53ac76913df7dbd48d7a0fe27f4c902b55e8543e1c4f65b4a61695c3b490a5e8584149809f66e9ffc8c05b427e9d3ca2"
-    ],
-    "description": "description"
+  "chainId": 1,
+  "description": "test",
+  "nodeList": [],
+  "orgIdList": [10]
+}
+```
+
+* 输入所有参数
+```
+{
+  "chainId": 1,
+  "generateGroupId": 12,
+  "timestamp": 1611624853047,
+  "description": "test",
+  "nodeList": [],
+  "orgIdList": [10]
 }
 ```
 
@@ -1033,7 +1175,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 
 ***1）出参表***
 
-| 序号 | 输出参数    | 类型          |      | 备注                       |
+| 序号 | 输出参数    | 类型          |  可空    | 备注                       |
 | ---- | ----------- | ------------- | ---- | -------------------------- |
 | 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
 | 2    | message     | String        | 否   | 描述                       |
@@ -1043,9 +1185,11 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
 | 3.3  | groupName   | String        | 否   | 群组名称                   |
 | 3.4  | nodeCount   | int           | 否   | 节点数量                   |
 | 3.5  | description | String        | 是   | 描述                       |
-| 3.6  | createTime  | LocalDateTime | 否   | 落库时间                   |
-| 3.7  | modifyTime  | LocalDateTime | 否   | 修改时间                   |
-
+| 3.6  | groupType | int        | 否  | 群组类型(1-同步的，2-手动创建的)         |
+| 3.7  | groupTimestamp | String        | 否  |创世块时间（单位：ms）       |
+| 3.8  | createTime  | LocalDateTime | 否   | 落库时间                   |
+| 3.9  | modifyTime  | LocalDateTime | 否   | 修改时间                   |
+| 4  | attachment  | String | 是  |接口请求失败时的错误信息|
 ***2）出参示例***
 
 - 成功：
@@ -1055,14 +1199,21 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
     "code": 0,
     "message": "success",
     "data": {
-        "groupId": 2,
-        "chainId": 100001,
-        "groupName": "group2",
+        "groupId": 12,
+        "chainId": 1,
+        "groupName": "chain_1_group_12",
+        "groupStatus": null,
         "nodeCount": 1,
         "description": "test",
-        "createTime": "2019-02-14 17:33:50",
-        "modifyTime": "2019-03-15 09:36:17"
-    }
+        "groupType": 2,
+        "createTime": 1611624961357,
+        "modifyTime": 1611624961357,
+        "groupTimestamp": "1611624853047",
+        "epochSealerNum": null,
+        "nodeIdList": null
+    },
+    "attachment": null,
+    "success": true
 }
 ```
 
@@ -1075,6 +1226,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate
     "data": {}
 }
 ```
+
 
 ### 3.3 动态操作群组
 
@@ -1941,6 +2093,137 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c
 }
 ```
 
+
+
+### 3.15 分页查询群组列表
+
+#### 3.15.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址：**/group/page/{chainId}?pageNumber=1&pageSize=10**
+- 请求方式：GET
+- 返回格式：JSON
+
+#### 3.15.2 请求参数
+
+***1）入参表***
+| 序号 | 输入参数   | 类型   | 可为空 | 备注       |
+| ---- | ---------- | ------ | ------ | -------- |
+| 1    | chainId    | Int    | 否     | 链编号     |
+| 3    | pageSize   | Int    | 否     | 每页记录数,默认10 |
+| 4    | pageNumber | Int    | 否     | 当前页码，默认1   |
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/group/page/1?pageNumber=2&pageSize=3
+```
+
+#### 3.15.3 返回参数 
+
+***1）出参表***
+
+| 序号  | 输出参数    | 类型          |      | 备注                       |
+| ----- | ----------- | ------------- | ---- | -------------------- |
+| 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message     | String        | 否   | 描述                  |
+| 3    | data        | Object        | 否   | 返回信息列表               |
+| 3.1  |      | Object        | 否   | 返回信息实体               |
+| 3.1.1  | groupId     | int           | 否   | 群组编号              |
+| 3.1.2  | chainId     | int           | 否   | 链编号          |
+| 3.1.3  | groupName   | String        | 否   | 群组名称           |
+| 3.1.4  | nodeCount   | int           | 否   | 节点数量           |
+| 3.1.5  | description | String        | 是   | 描述           |
+| 3.1.6  | groupType | int        | 否  | 群组类型(1-同步的，2-手动创建的) |
+| 3.1.7  | groupTimestamp | String        | 是  |创世块时间（单位：ms）  |
+| 3.1.8  | createTime  | LocalDateTime | 否   | 落库时间        |
+| 3.1.9  | modifyTime  | LocalDateTime | 否   | 修改时间       |
+| 4  | attachment  | String | 是  |接口请求失败时的错误信息|
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "data": [
+        {
+            "groupId": 4,
+            "chainId": 1,
+            "groupName": "chain_1_group_4",
+            "groupStatus": 1,
+            "nodeCount": 1,
+            "description": "synchronous",
+            "groupType": 1,
+            "createTime": 1611568827000,
+            "modifyTime": 1611642306000,
+            "groupTimestamp": "null",
+            "epochSealerNum": 0,
+            "nodeIdList": null
+        },
+        {
+            "groupId": 5,
+            "chainId": 1,
+            "groupName": "chain_1_group_5",
+            "groupStatus": 1,
+            "nodeCount": 1,
+            "description": "synchronous",
+            "groupType": 1,
+            "createTime": 1611568827000,
+            "modifyTime": 1611642306000,
+            "groupTimestamp": "null",
+            "epochSealerNum": 0,
+            "nodeIdList": null
+        },
+        {
+            "groupId": 6,
+            "chainId": 1,
+            "groupName": "chain_1_group_6",
+            "groupStatus": 1,
+            "nodeCount": 1,
+            "description": "synchronous",
+            "groupType": 1,
+            "createTime": 1611568827000,
+            "modifyTime": 1611642306000,
+            "groupTimestamp": "null",
+            "epochSealerNum": 0,
+            "nodeIdList": null
+        }
+    ],
+    "totalCount": 11
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 102000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## 4 节点管理模块
 
 ### 4.1 查询节点信息列表
@@ -2768,6 +3051,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/contractList
 | 5.1.14 | description     | String        | 是     | 备注                                            |
 | 5.1.15 | createTime      | LocalDateTime | 否     | 创建时间                                        |
 | 5.1.16 | modifyTime | LocalDateTime | 是 | 修改时间 |
+
 ***2）出参示例***
 
 * 成功：
@@ -3232,6 +3516,636 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/statusManage
   "data": null
 }
 ```
+
+
+### 5.8 根据合约编号编译合约
+
+​	合约保存到chain-manager之后，在未部署之前都可以根据合约编号进行编译
+
+#### 5.8.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/contract/compile/{contractId}**
+- 请求方式：POST
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 5.8.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数        | 类型   | 可为空 | 备注   |
+| ---- | --------------- | ------ | ------ | ------ |
+| 1    | contractId         | Int    | 否     | 合约编号|
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/contract/compile/400029
+```
+
+
+#### 5.8.3 返回参数
+
+***1）出参表***
+
+| 序号 | 输出参数 | 类型   |    可空  | 备注                       |
+| ---- | -------- | ------ | ---- | ------------------------ |
+| 1      | code      | Int    | 否     | 返回码，0：成功 其它：失败 |
+| 2      | message         | String        | 否     | 描述     |
+| 3      | data            |  Object    | 否  | 返回信息实体|
+| 3.1  | contractId      | int   | 否     | 合约编号  |
+| 3.2  | contractPath    | String  | 否    | 合约所在目录   |
+| 3.3  | contractName    | String   | 否     | 合约名称        |
+| 3.4 | chainId | int | 否 | 链编号 |
+| 3.5  | groupId       | Int    | 否     | 所属群组编号   |
+| 3.6  | contractStatus      | int  | 否     | 1未部署，2已部署|
+| 3.7  | contractType    | Int | 否  | 合约类型(0-普通合约，1-系统合约)|
+| 3.8  | contractSource  | String   | 否     | 合约源码  |
+| 3.9  | contractAbi     | String    | 是   | 编译合约生成的abi文件内容 |
+| 3.10 | contractBin     | String  | 是   | 合约运行时binary，用于合约解析|
+| 3.11 | bytecodeBin | String  | 是   | 合约bytecode binary，用于部署合约|
+| 3.12 | contractAddress | String   | 是| 合约地址 |
+| 3.13 | deployTime      | LocalDateTime | 是     | 部署时间  |
+| 3.14 | description     | String        | 是     | 备注  |
+| 3.15 | createTime      | LocalDateTime | 否     | 创建时间 |
+| 3.16 | modifyTime | LocalDateTime | 是 | 修改时间 |
+| 6 | attachment | String | 是 | 错误信息 |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "contractId": 400029,
+    "contractPath": "myPath",
+    "contractName": "Ok",
+    "chainId": 1,
+    "groupId": 1,
+    "contractAddress": null,
+    "deployTime": null,
+    "contractStatus": 1,
+    "contractType": 0,
+    "description": null,
+    "createTime": 1611654176000,
+    "modifyTime": 1611654176000,
+    "contractSource": "cHJhZ21hIHNvbGlkaXR5IF4wLjQuMjsNCmNvbnRyYWN0IE9rew0KICAgIA0KICAgIHN0cnVjdCBBY2NvdW50ew0KICAgICAgICBhZGRyZXNzIGFjY291bnQ7DQogICAgICAgIHVpbnQgYmFsYW5jZTsNCiAgICB9DQogICAgDQogICAgc3RydWN0ICBUcmFuc2xvZyB7DQogICAgICAgIHN0cmluZyB0aW1lOw0KICAgICAgICBhZGRyZXNzIGZyb207DQogICAgICAgIGFkZHJlc3MgdG87DQogICAgICAgIHVpbnQgYW1vdW50Ow0KICAgIH0NCiAgICANCiAgICBBY2NvdW50IGZyb207DQogICAgQWNjb3VudCB0bzsNCiAgICANCiAgICBUcmFuc2xvZ1tdIGxvZzsNCg0KICAgIGZ1bmN0aW9uIE9rKCl7DQogICAgICAgIGZyb20uYWNjb3VudD0weDE7DQogICAgICAgIGZyb20uYmFsYW5jZT0xMDAwMDAwMDAwMDsNCiAgICAgICAgdG8uYWNjb3VudD0weDI7DQogICAgICAgIHRvLmJhbGFuY2U9MDsNCg0KICAgIH0NCiAgICBmdW5jdGlvbiBnZXQoKWNvbnN0YW50IHJldHVybnModWludCl7DQogICAgICAgIHJldHVybiB0by5iYWxhbmNlOw0KICAgIH0NCiAgICBmdW5jdGlvbiB0cmFucyh1aW50IG51bSl7DQogICAgCWZyb20uYmFsYW5jZT1mcm9tLmJhbGFuY2UtbnVtOw0KICAgIAl0by5iYWxhbmNlKz1udW07DQogICAgDQogICAgCWxvZy5wdXNoKFRyYW5zbG9nKCIyMDE3MDQxMyIsZnJvbS5hY2NvdW50LHRvLmFjY291bnQsbnVtKSk7DQogICAgfQ0KDQoNCg0KfQ==",
+    "contractAbi": "[{\"constant\":false,\"inputs\":[{\"name\":\"num\",\"type\":\"uint256\"}],\"name\":\"trans\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"get\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"}]",
+    "contractBin": null,
+    "bytecodeBin": "608060405234801561001057600080fd5b5060016000800160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506402540be40060006001018190555060028060000160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550600060026001018190555061035f806100c26000396000f30060806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806366c99139146100515780636d4ce63c1461007e575b600080fd5b34801561005d57600080fd5b5061007c600480360381019080803590602001909291905050506100a9565b005b34801561008a57600080fd5b50610093610281565b6040518082815260200191505060405180910390f35b80600060010154036000600101819055508060026001016000828254019250508190555060046080604051908101604052806040805190810160405280600881526020017f323031373034313300000000000000000000000000000000000000000000000081525081526020016000800160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001600260000160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001838152509080600181540180825580915050906001820390600052602060002090600402016000909192909190915060008201518160000190805190602001906101e292919061028e565b5060208201518160010160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555060408201518160020160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506060820151816003015550505050565b6000600260010154905090565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106102cf57805160ff19168380011785556102fd565b828001600101855582156102fd579182015b828111156102fc5782518255916020019190600101906102e1565b5b50905061030a919061030e565b5090565b61033091905b8082111561032c576000816000905550600101610314565b5090565b905600a165627a7a7230582066a9a0e9f95b9ab7c8f0b6249c23b4b1b98ea9db2b2ac8fa66eab6ac2c5810730029"
+  },
+  "attachment": null,
+  "success": true
+}
+```
+
+- 失败：
+
+```
+{
+  "code": 205002,
+  "message": "not fount any front",
+  "data": null
+}
+```
+
+
+
+
+
+
+### 5.9 根据合约编号部署合约
+
+​	合约保存到chain-manager并且编译之后，可以根据合约编号部署该合约
+
+#### 5.9.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/contract/deployByContractId**
+- 请求方式：POST
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 5.9.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数        | 类型   | 可为空 | 备注   |
+| ---- | --------------- | ------ | ------ | ------ |
+| 1    | contractId         | Int    | 否     | 合约编号|
+| 2    | signUserId         | String    | 否  | 私钥用户id|
+| 3    | constructorParams  | List<Object>   | 是  |合约初始化入参|
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/contract/deployByContractId
+```
+
+```
+{
+  "constructorParams": [],
+  "contractId": 400029,
+  "signUserId": "1SSSaFN1NXH9tfac"
+}
+```
+
+
+#### 5.9.3 返回参数
+
+***1）出参表***
+
+| 序号 | 输出参数 | 类型   |    可空  | 备注                       |
+| ---- | -------- | ------ | ---- | ------------------------ |
+| 1      | code      | Int    | 否     | 返回码，0：成功 其它：失败 |
+| 2      | message         | String        | 否     | 描述     |
+| 3      | data            |  Object    | 否  | 返回信息实体|
+| 5.1.1  | contractId      | int   | 否     | 合约编号  |
+| 5.1.2  | contractPath    | String  | 否    | 合约所在目录   |
+| 5.1.3  | contractName    | String   | 否     | 合约名称        |
+| 5.1.4 | chainId | int | 否 | 链编号 |
+| 5.1.5  | groupId       | Int    | 否     | 所属群组编号   |
+| 5.1.6  | contractStatus      | int  | 否     | 1未部署，2已部署|
+| 5.1.7  | contractType    | Int | 否  | 合约类型(0-普通合约，1-系统合约)|
+| 5.1.8  | contractSource  | String   | 否     | 合约源码  |
+| 5.1.9  | contractAbi     | String    | 是   | 编译合约生成的abi文件内容 |
+| 5.1.10 | contractBin     | String  | 是   | 合约运行时binary，用于合约解析|
+| 5.1.11 | bytecodeBin | String  | 是   | 合约bytecode binary，用于部署合约|
+| 5.1.12 | contractAddress | String   | 是| 合约地址 |
+| 5.1.13 | deployTime      | LocalDateTime | 是     | 部署时间  |
+| 5.1.14 | description     | String        | 是     | 备注  |
+| 5.1.15 | createTime      | LocalDateTime | 否     | 创建时间 |
+| 5.1.16 | modifyTime | LocalDateTime | 是 | 修改时间 |
+| 6 | attachment | String | 是 | 错误信息 |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "contractId": 400029,
+        "contractPath": "myPath",
+        "contractName": "Ok",
+        "chainId": 1,
+        "groupId": 1,
+        "contractAddress": "0xc8b5b216584bf2fda209d09ae2a090d7d4e5d3cc",
+        "deployTime": 1611714428000,
+        "contractStatus": 2,
+        "contractType": 0,
+        "description": null,
+        "createTime": 1611654176000,
+        "modifyTime": 1611654176000,
+        "contractSource": "cHJhZ21hIHNvbGlkaXR5IF4wLjQuMjsNCmNvbnRyYWN0IE9rew0KICAgIA0KICAgIHN0cnVjdCBBY2NvdW50ew0KICAgICAgICBhZGRyZXNzIGFjY291bnQ7DQogICAgICAgIHVpbnQgYmFsYW5jZTsNCiAgICB9DQogICAgDQogICAgc3RydWN0ICBUcmFuc2xvZyB7DQogICAgICAgIHN0cmluZyB0aW1lOw0KICAgICAgICBhZGRyZXNzIGZyb207DQogICAgICAgIGFkZHJlc3MgdG87DQogICAgICAgIHVpbnQgYW1vdW50Ow0KICAgIH0NCiAgICANCiAgICBBY2NvdW50IGZyb207DQogICAgQWNjb3VudCB0bzsNCiAgICANCiAgICBUcmFuc2xvZ1tdIGxvZzsNCg0KICAgIGZ1bmN0aW9uIE9rKCl7DQogICAgICAgIGZyb20uYWNjb3VudD0weDE7DQogICAgICAgIGZyb20uYmFsYW5jZT0xMDAwMDAwMDAwMDsNCiAgICAgICAgdG8uYWNjb3VudD0weDI7DQogICAgICAgIHRvLmJhbGFuY2U9MDsNCg0KICAgIH0NCiAgICBmdW5jdGlvbiBnZXQoKWNvbnN0YW50IHJldHVybnModWludCl7DQogICAgICAgIHJldHVybiB0by5iYWxhbmNlOw0KICAgIH0NCiAgICBmdW5jdGlvbiB0cmFucyh1aW50IG51bSl7DQogICAgCWZyb20uYmFsYW5jZT1mcm9tLmJhbGFuY2UtbnVtOw0KICAgIAl0by5iYWxhbmNlKz1udW07DQogICAgDQogICAgCWxvZy5wdXNoKFRyYW5zbG9nKCIyMDE3MDQxMyIsZnJvbS5hY2NvdW50LHRvLmFjY291bnQsbnVtKSk7DQogICAgfQ0KDQoNCg0KfQ==",
+        "contractAbi": "[{\"constant\":false,\"inputs\":[{\"name\":\"num\",\"type\":\"uint256\"}],\"name\":\"trans\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"get\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"}]",
+        "contractBin": null,
+        "bytecodeBin": "608060405234801561001057600080fd5b5060016000800160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506402540be40060006001018190555060028060000160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550600060026001018190555061035f806100c26000396000f30060806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806366c99139146100515780636d4ce63c1461007e575b600080fd5b34801561005d57600080fd5b5061007c600480360381019080803590602001909291905050506100a9565b005b34801561008a57600080fd5b50610093610281565b6040518082815260200191505060405180910390f35b80600060010154036000600101819055508060026001016000828254019250508190555060046080604051908101604052806040805190810160405280600881526020017f323031373034313300000000000000000000000000000000000000000000000081525081526020016000800160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001600260000160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001838152509080600181540180825580915050906001820390600052602060002090600402016000909192909190915060008201518160000190805190602001906101e292919061028e565b5060208201518160010160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555060408201518160020160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506060820151816003015550505050565b6000600260010154905090565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106102cf57805160ff19168380011785556102fd565b828001600101855582156102fd579182015b828111156102fc5782518255916020019190600101906102e1565b5b50905061030a919061030e565b5090565b61033091905b8082111561032c576000816000905550600101610314565b5090565b905600a165627a7a7230582066a9a0e9f95b9ab7c8f0b6249c23b4b1b98ea9db2b2ac8fa66eab6ac2c5810730029"
+    },
+    "attachment": null,
+    "success": true
+}
+```
+
+- 失败：
+
+```
+{
+  "code": 205002,
+  "message": "not fount any front",
+  "data": null
+}
+```
+
+
+
+
+### 5.10 根据合约编号发交易
+
+​	通过chain-manager部署合约之后，可以根据合约编号发送交易来调用该合约函数
+
+#### 5.10.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/trans/sendByContractId**
+- 请求方式：POST
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 5.10.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数        | 类型   | 可为空 | 备注   |
+| ---- | --------------- | ------ | ------ | ------ |
+| 1    | contractId     | Int    | 否     | 合约编号|
+| 2    | signUserId   | String    | 否  | 私钥用户id|
+| 3    | funcName  | String   | 否  |合约函数名称|
+| 4   | funcParam  | List<Object>   | 是  |合约函数入参|
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/trans/sendByContractId
+```
+
+```
+{
+  "contractId": 400029,
+  "funcName": "trans",
+  "funcParam": [2],
+  "signUserId": "1SSSaFN1NXH9tfac"
+}
+```
+
+
+#### 5.10.3 返回参数
+
+***1）出参表***
+
+
+| 序号 | 输出参数    | 类型          |   可否空     | 备注                                       |
+|------|-------------|---------------|--------|-------------------------------|
+| 1    | code         | Int            | 否     | 返回码，0：成功 其它：失败 |
+| 2    | message      | String         | 否     | 描述                       |
+| 3    | data         | object         | 是     | 返回信息实体         |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "constant": false,
+        "queryInfo": null,
+        "transactionHash": "0xc11e5e8c6bad2f85776c1f2034792ed9339961ac9b07239d45d38a6ca38fa2b7",
+        "blockHash": "0xa8ca227ce42241d4d9645be6cb9a32f9739d80a39abf2b0fd13e515c7e4580ed",
+        "blockNumber": 20,
+        "gasUsed": 149266,
+        "status": "0x0",
+        "from": "0x06d48b8447ce02ade289412992252cbb59cdfd99",
+        "to": "0xc8b5b216584bf2fda209d09ae2a090d7d4e5d3cc",
+        "input": "0x66c991390000000000000000000000000000000000000000000000000000000000000002",
+        "output": "0x"
+    },
+    "attachment": null,
+    "success": true
+}
+```
+
+- 失败：
+
+```
+{
+  "code": 205002,
+  "message": "not fount any front",
+  "data": null
+}
+```
+
+
+
+
+
+
+
+
+## 6 私钥用户管理模块
+
+### 6.1 新建私钥用户
+
+​	创建或者导入一个私钥用户，该用户可以用来部署和调用合约
+
+​	场景1：privateKey字段入参为空，由服务器生成新的私钥
+
+​	场景2：privateKey字段入参不为空，直接保存该私钥。
+
+#### 6.1.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/user/newUser**
+- 请求方式：POST
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 6.1.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数        | 类型         | 可为空 | 备注                                 |
+| ---- | --------- | ----- | ---- | ----------------------- |
+| 1    | chainId         | int          | 否     | 链编号    |
+| 2    | appId | String | 否 | 应用id（群组唯一标志，可取group_name字段值）|
+| 3    | encryptType       | int   | 是     | 链加密类型（0-ECDS，1-国密），如不传则从front查询|
+| 4    | signUserId        | String| 是  |用户唯一编号，如不传如则自动产生 |
+| 5    | signUserName     | string       | 否     | 用户名称|
+| 6    | privateKey       | string   | 是     | 私钥base64（此字段不为空就保存到db,否则生成新的私钥）|
+| 7    | description       | BigInteger   | 是     | 备注|
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/user/newUser
+```
+
+* 只输必填参数
+```
+{
+  "appId": "chain_1_group_10",
+  "chainId": 1,
+  "signUserName": "testUserLosi"
+}
+```
+
+* 输入所有参数
+```
+{
+  "appId": "chain_1_group_10",
+  "chainId": 1,
+  "description": "test new User",
+  "encryptType": 0,
+  "signUserId": "1SSSaFN1NXH9tfa5",
+  "signUserName": "testUserBob"
+}
+```
+
+* 导入私钥
+```
+{
+  "appId": "chain_1_group_10",
+  "chainId": 1,
+  "description": "test new User",
+  "encryptType": 0,
+  "signUserId": "1SSSaFN1NXH9tfac",
+  "signUserName": "testUserBob1",
+  "privateKey":"Y2QzZmQ1NDMxMTdjZWNjNTZiMzhhN2ZjNTUyYzYwYzBjNTZkZTc3NDFjMDg4OTBlYTlmZjMyMDJhMTAzY2Q0NA=="
+}
+```
+
+
+
+#### 6.1.3 返回参数
+
+***1）出参表***
+
+| 序号 | 输出参数    | 类型          |   可空   | 备注                       |
+| ---- | ----------- | ------------- | ---- | -------------------------- |
+| 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message     | String        | 否   | 错误信息                   |
+| 3    | data        | Object        | 否   | 返回信息对象               |
+| 3.1  | appId       | String       | 否   | 应用编号（群组唯一标志）|
+| 3.2  | chainId     | int           | 否   | 链编号                    |
+| 3.3  | address   | String           | 否   | 用户地址              |
+| 3.4  | publicKey | String        |   否   | 公钥                  |
+| 3.5  | signUserName | String        |   否   | 用户名称               |
+| 3.6  | description  | String |  是   | 描述                 |
+| 3.7  | encryptType  | int | 否   | 链加密类型（0-ECDS，1-国密）      |
+| 4    | attachment  | String |  是  | 错误信息                |
+
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "signUserId": "1SSSaFN1NXH9tfa5",
+        "appId": "chain_1_group_10",
+        "address": "0xca6a924f713c13c39b477de97c9315ec9d3062e0",
+        "publicKey": "0497f11ec7ce57d276988625c40abd01048fbf80842e15210efb166b4d527dd5cdcd3df99c9c4429c51bff8b4bbffaf8fa418b73b61417f2ab171fef08ff455cf1",
+        "privateKey": "",
+        "signUserName": "testUserBob",
+        "description": null,
+        "encryptType": 0
+    },
+    "attachment": null,
+    "success": true
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 105000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
+
+
+### 6.2  修改用户备注
+
+​ 允许修改私钥用户的备注信息
+
+#### 6.2.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/user/update**
+- 请求方式：PATCH
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 6.2.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数        | 类型         | 可为空 | 备注                                 |
+| ---- | --------- | ----- | ---- | ----------------------- |
+| 1    | signUserId        | String       | 否     | 链编号    |
+| 2    | description       | String   | 是     | 备注|
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/user/update
+```
+
+```
+{
+  "signUserId": "1SSSaFN1NXH9tfa5",
+  "description": "test new User"
+}
+```
+
+
+#### 6.2.3 返回参数
+
+***1）出参表***
+
+| 序号 | 输出参数    | 类型          |   可空   | 备注                       |
+| ---- | ----------- | ------------- | ---- | -------------------------- |
+| 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message     | String        | 否   | 错误信息                   |
+| 3    | data        | Object        | 是   | 信息对象               |
+| 4    | attachment  | String | 是   | 错误信息                |
+
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "data": null,
+    "attachment": null,
+    "success": true
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 105000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
+
+
+### 6.3  分页查询私钥用户信息
+
+​  能够根据appid分页查询当前应用（群组）下的私钥用户列表
+
+#### 6.3.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/user/list/{appId}/{pageNumber}/{pageSize}**
+- 请求方式：GET
+- 返回格式：JSON
+
+#### 6.3.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数        | 类型       | 可为空 | 备注    |
+| ---- | --------- | ----- | ---- | ----------------------- |
+| 1    | appId        | String       | 否     | 应用id    |
+| 2    | pageNumber     | Integer   | 否     | 页码|
+| 3    | pageSize       | Integer   | 否     | 每页记录数|
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/user/list/chain_1_group_10/1/10
+```
+
+
+
+#### 6.3.3 返回参数
+
+***1）出参表***
+
+| 序号 | 输出参数    | 类型          |   可空   | 备注                       |
+| ---- | ----------- | ------------- | ---- | -------------------------- |
+| 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message     | String        | 否   | 错误信息                   |
+| 3    | totalCount  | Integer       | 否   | 总记录数               |
+| 4    | data        | List<Object>   | 否   | 返回信息列表 |
+| 4.1    |         | Object   | 否   | 返回信息实体 |
+| 4.1.1  | appId       | String       | 否   | 应用编号（群组唯一标志）|
+| 4.1.2  | chainId     | int           | 否   | 链编号                    |
+|4.1.3  | address   | String           | 否   | 用户地址              |
+| 4.1.4  | publicKey | String        |   否   | 公钥                  |
+| 4.1.5  | signUserName | String        |   否   | 用户名称               |
+| 4.1.6  | description  | String |  是   | 描述                 |
+| 4.1.7  | encryptType  | int | 否   | 链加密类型（0-ECDS，1-国密）      |
+| 5    | attachment  | String | 是   | 错误信息                |
+
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "data": [
+        {
+            "signUserId": "1SSSaFN1NXH9tfa5",
+            "appId": "chain_1_group_10",
+            "address": "0xca6a924f713c13c39b477de97c9315ec9d3062e0",
+            "publicKey": "0497f11ec7ce57d276988625c40abd01048fbf80842e15210efb166b4d527dd5cdcd3df99c9c4429c51bff8b4bbffaf8fa418b73b61417f2ab171fef08ff455cf1",
+            "privateKey": "",
+            "signUserName": "testUserBob",
+            "description": null,
+            "encryptType": 0
+        },
+        {
+            "signUserId": "1SSS10SSS6fe9d91746ef43a3b6e9335db0c86a5d",
+            "appId": "chain_1_group_10",
+            "address": "0x30d64594b66b8cfd03189e305f117f572f02b265",
+            "publicKey": "048424666a32ae72acb264b82cb17b4d8495d230648e9b547031699dc45395020260b028d3f47ceddb695adad3afdaaa349c81f29d9826c7555262536fc438dd79",
+            "privateKey": "",
+            "signUserName": "testUserLosi",
+            "description": null,
+            "encryptType": 0
+        }
+    ],
+    "totalCount": 2
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 105000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## 附录 
 

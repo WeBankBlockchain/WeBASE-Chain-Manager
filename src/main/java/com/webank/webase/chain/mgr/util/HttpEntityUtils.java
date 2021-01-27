@@ -43,7 +43,7 @@ public class HttpEntityUtils {
      */
     public static HttpEntity buildHttpEntity(HttpHeaders httpHeaders, Object param) {
         if (Objects.isNull(httpHeaders)) {
-            httpHeaders = new HttpHeaders();
+            httpHeaders = instantiateHttpHeaders();
         }
         if (Objects.isNull(httpHeaders.getContentType())) {
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -62,11 +62,20 @@ public class HttpEntityUtils {
      * @return
      */
     public static HttpHeaders buildHttpHeaderByHost(String host) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpHeaders headers = instantiateHttpHeaders();
         if (StringUtils.isNotBlank(host)) {
             headers.set(HttpHeaders.HOST, host);
         }
+        return headers;
+    }
+
+    /**
+     * @return
+     */
+    public static HttpHeaders instantiateHttpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");//支持自定义请求头
+        headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
 

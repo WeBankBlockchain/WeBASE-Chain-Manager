@@ -81,10 +81,12 @@ public class FrontInterfaceService {
         RestTemplate restTemplate = frontRestTools.caseRestemplate(uri);
         String url = String.format(cproperties.getFrontUrl(), frontIp, frontPort, uri);
         log.debug("requestSpecificFront. url:{}", url);
+        log.debug("requestSpecificFront. entity:{}",JsonTools.objToString(entity));
 
         try {
 //            HttpEntity entity = FrontRestTools.buildHttpEntity(httpHeaders,param);// build entity
             ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);
+            log.debug("url:{} response:{}",url,JsonTools.objToString(response));
             return response.getBody();
         } catch (ResourceAccessException e) {
             log.error("requestSpecificFront. ResourceAccessException:{}", e);

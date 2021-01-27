@@ -290,13 +290,15 @@ public class FrontRestTools {
                 }
 
                 FrontGroup frontGroup = pair.getRight();
-                HttpHeaders headers = new HttpHeaders();
+                HttpHeaders headers = HttpEntityUtils.instantiateHttpHeaders();
                 if (Objects.nonNull(frontGroup) && StringUtils.isNotBlank(frontGroup.getFrontPeerName())) {
                     headers.set(HttpHeaders.HOST, frontGroup.getFrontPeerName());
                 }
                 HttpEntity entity = HttpEntityUtils.buildHttpEntity(headers, param);// build entity
-
+                log.debug("restful request. url:{}", url);
+                log.debug("restful request. entity:{}",JsonTools.objToString(entity));
                 ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);
+                log.debug("response:{}",JsonTools.objToString(response));
                 return response.getBody();
             } catch (ResourceAccessException ex) {
                 log.warn("fail restTemplateExchange", ex);
