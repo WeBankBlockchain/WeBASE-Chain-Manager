@@ -32,10 +32,10 @@ import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
-import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.TbFrontExample;
 import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMap;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
@@ -128,13 +128,8 @@ public class FrontService {
         // check front not exist
         SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontPeerName, frontIp, frontPort,
                 Integer.valueOf(groupIdList.get(0)));
-        FrontParam param = new FrontParam();
-        param.setChainId(chainId);
-        param.setNodeId(syncStatus.getNodeId());
-        int count = this.tbFrontMapper.countByParam(param);
-        if (count > 0) {
-            throw new BaseException(ConstantCode.FRONT_EXISTS);
-        }
+        requireNotFoundFront(chainId, syncStatus.getNodeId());
+        requireNotFoundFront(frontIp, frontPort, frontPeerName);
 
         TbFront tbFront = new TbFront();
         tbFront.setChainName(tbChain.getChainName());
@@ -201,16 +196,17 @@ public class FrontService {
         log.debug("refreshSealerAndObserverInNodeList sealerList:{},observerList:{}", sealerList,
                 observerList);
         sealerAndObserverList.stream().forEach(peerInfo -> {
-            NodeParam checkParam = new NodeParam();
-            checkParam.setChainId(chainId);
-            checkParam.setGroupId(groupId);
-            checkParam.setNodeId(peerInfo.getNodeId());
-            int existedNodeCount = nodeService.countOfNode(checkParam);
-            log.debug("addSealerAndObserver peerInfo:{},existedNodeCount:{}", peerInfo,
-                    existedNodeCount);
-            if (existedNodeCount == 0) {
-                nodeService.addNodeInfo(chainId, groupId, peerInfo);
-            }
+//            NodeParam checkParam = new NodeParam();
+//            checkParam.setChainId(chainId);
+//            checkParam.setGroupId(groupId);
+//            checkParam.setNodeId(peerInfo.getNodeId());
+//            int existedNodeCount = nodeService.countOfNode(checkParam);
+//            log.debug("addSealerAndObserver peerInfo:{},existedNodeCount:{}", peerInfo,
+//                    existedNodeCount);
+//            if (existedNodeCount == 0) {
+//                nodeService.addNodeInfo(chainId, groupId, peerInfo);
+//            }
+            nodeService.addNodeInfo(chainId, groupId, peerInfo);
         });
         log.debug("end addSealerAndObserver");
     }
@@ -590,6 +586,45 @@ public class FrontService {
             return NumberUtil.PERCENTAGE_FINISH;
         }
         return NumberUtil.percentage(frontFinishCount, frontList.size());
+    }
+
+    /**
+     * @param frontIp
+     * @param frontPort
+     * @param frontPeerName
+     */
+    public void requireNotFoundFront(String frontIp, int frontPort, String frontPeerName) {
+        log.info("start exec method[requireNotFoundFront] frontIp:{} frontPort:{} frontPeerName:{}", frontIp, frontPort, frontPeerName);
+
+        TbFrontExample example = new TbFrontExample();
+        TbFrontExample.Criteria criteria = example.createCriteria();
+        criteria.andFrontIpEqualTo(frontIp);
+        criteria.andFrontPortEqualTo(frontPort);
+        criteria.andFrontPeerNameEqualTo(frontPeerName);
+        long count = this.tbFrontMapper.countByExample(example);
+        if (count > 0) {
+            log.warn("fail exec method[requireNotFoundFront],found front record by frontIp:{} frontPort:{} frontPeerName:{}", frontIp, frontPort, frontPeerName);
+            throw new BaseException(ConstantCode.FRONT_EXISTS);
+        }
+        log.info("finish exec method[requireNotFoundFront] frontIp:{} frontPort:{} frontPeerName:{}", frontIp, frontPort, frontPeerName);
+
+    }
+
+    /**
+     * @param chainId
+     * @param nodeId
+     */
+    public void requireNotFoundFront(int chainId, String nodeId) {
+        log.info("start exec method[requireNotFoundFront] chainId:{} nodeId:{}", chainId, nodeId);
+        FrontParam param = new FrontParam();
+        param.setChainId(chainId);
+        param.setNodeId(nodeId);
+        int count = this.tbFrontMapper.countByParam(param);
+        if (count > 0) {
+            log.warn("fail exec method[requireNotFoundFront],found front record by chainId:{} nodeId:{}", chainId, nodeId);
+            throw new BaseException(ConstantCode.FRONT_EXISTS);
+        }
+        log.info("finish exec method[requireNotFoundFront] chainId:{} nodeId:{}", chainId, nodeId);
     }
 
 }

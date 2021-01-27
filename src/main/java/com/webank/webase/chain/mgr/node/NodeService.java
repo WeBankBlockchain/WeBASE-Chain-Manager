@@ -13,21 +13,6 @@
  */
 package com.webank.webase.chain.mgr.node;
 
-import java.math.BigInteger;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
@@ -46,8 +31,21 @@ import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ValidateUtil;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigInteger;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * services for node data.
@@ -56,8 +54,10 @@ import lombok.extern.log4j.Log4j2;
 @Service
 public class NodeService {
 
-    @Autowired private TbNodeMapper tbNodeMapper;
-    @Autowired private TbGroupMapper tbGroupMapper;
+    @Autowired
+    private TbNodeMapper tbNodeMapper;
+    @Autowired
+    private TbGroupMapper tbGroupMapper;
     @Autowired
     private FrontInterfaceService frontInterface;
 
@@ -69,6 +69,14 @@ public class NodeService {
      */
     public void addNodeInfo(Integer chainId, Integer groupId, PeerInfo peerInfo)
             throws BaseException {
+
+        //add db
+        TbNode tbNode = this.tbNodeMapper.selectByPrimaryKey(peerInfo.getNodeId(), chainId, groupId);
+        if (Objects.nonNull(tbNode)) {
+            log.info("finish exec method[addNodeInfo]. jump over, found record by node:{} chain:{} group:{}", peerInfo.getNodeId(), chainId, groupId);
+            return;
+        }
+
         String nodeIp = null;
         Integer nodeP2PPort = null;
 
@@ -80,7 +88,7 @@ public class NodeService {
         String nodeName = groupId + "_" + peerInfo.getNodeId();
 
         // add row
-        TbNode tbNode = new TbNode();
+        tbNode = new TbNode();
         tbNode.setNodeId(peerInfo.getNodeId());
         tbNode.setChainId(chainId);
         tbNode.setGroupId(groupId);
@@ -399,4 +407,6 @@ public class NodeService {
         // move
         SshUtil.mvDirOnRemote(ip, src_nodeRootOnHost, dst_nodeDeletedRootOnHost, sshUser, sshPort, privateKey);
     }
+
+
 }
