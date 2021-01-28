@@ -18,7 +18,7 @@ package com.webank.webase.chain.mgr.base.enums;
  */
 public enum ContractStatus {
 
-    NOTDEPLOYED((byte)1), DEPLOYED((byte)2), DEPLOYMENTFAILED((byte)3);
+    NOTDEPLOYED((byte)1), DEPLOYED((byte)2), DEPLOYMENTFAILED((byte)3), COMPILED((byte)4), COMPILE_FAILED((byte)5);
 
     private byte value;
 

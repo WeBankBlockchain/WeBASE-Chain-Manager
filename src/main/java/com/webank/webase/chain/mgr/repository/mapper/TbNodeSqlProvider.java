@@ -1,12 +1,14 @@
 package com.webank.webase.chain.mgr.repository.mapper;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.jdbc.SQL;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
+import com.webank.webase.chain.mgr.repository.bean.TbNodeExample;
 import com.webank.webase.chain.mgr.repository.bean.TbNodeExample.Criteria;
 import com.webank.webase.chain.mgr.repository.bean.TbNodeExample.Criterion;
-import com.webank.webase.chain.mgr.repository.bean.TbNodeExample;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.jdbc.SQL;
+
 import java.util.List;
 import java.util.Map;
 
@@ -67,6 +69,10 @@ public class TbNodeSqlProvider {
         }
         if (StringUtils.isNotBlank(param.getFlagSortedByTime())) {
             sql.ORDER_BY(String.format("modify_time %s", param.getFlagSortedByTime()));
+        }
+        if (CollectionUtils.isNotEmpty(param.getNodeIds())) {
+            String whereSql = StringUtils.join(param.getNodeIds(), ",").replaceAll(",", "','");
+            sql.WHERE(String.format("node_id in('%s')", whereSql));
         }
         return sql;
     }

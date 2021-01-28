@@ -21,6 +21,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.util.Set;
+
 @Data
 @NoArgsConstructor
 @ToString(callSuper = true)
@@ -30,4 +32,5 @@ public class NodeParam extends BaseQueryParam {
     private String nodeId;
     private Integer p2pPort;
     private String nodeIp;
+    private Set<String> nodeIds;
 }

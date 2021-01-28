@@ -116,18 +116,41 @@ public class ContractService {
         //check contractSource
         if (StringUtils.isBlank(contract.getContractSource()))
             throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("contract source is empty"));
-        //request front for compile
-        RspContractCompileDto restRsp = frontInterface.compileSingleContractFile(contract.getChainId(), contract.getGroupId(), contract.getContractName(), contract.getContractSource());
-        if (Objects.isNull(restRsp))
-            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("compile result is null"));
 
-        //update
-        if(StringUtils.isAnyBlank(restRsp.getBytecodeBin(),restRsp.getContractAbi())){
-            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach(restRsp.getErrors()));
+        //request front for compile
+        RspContractCompileDto restRsp = null;
+        try {
+            restRsp = frontInterface.compileSingleContractFile(contract.getChainId(), contract.getGroupId(), contract.getContractName(), contract.getContractSource());
+
+            if (Objects.isNull(restRsp))
+                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("compile result is null"));
+
+            if (StringUtils.isAnyBlank(restRsp.getBytecodeBin(), restRsp.getContractAbi()))
+                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach(restRsp.getErrors()));
+
+        } catch (BaseException baseException) {
+            contract.setModifyTime(new Date());
+            contract.setContractStatus(ContractStatus.COMPILE_FAILED.getValue());
+            String message = baseException.getRetCode().getMessage();
+            String attachment = baseException.getRetCode().getAttachment();
+            contract.setDescription(StringUtils.isBlank(message) ? attachment : message);
+            tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
+            throw baseException;
+        } catch (Exception ex) {
+            log.error("compile not success", ex);
+            contract.setModifyTime(new Date());
+            contract.setContractStatus(ContractStatus.COMPILE_FAILED.getValue());
+            contract.setDescription(ex.getMessage());
+            tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
+            throw ex;
         }
+
+        //success
         contract.setBytecodeBin(restRsp.getBytecodeBin());
         contract.setContractAbi(restRsp.getContractAbi());
-        tbContractMapper.updateByPrimaryKeySelective(contract);
+        contract.setContractStatus(ContractStatus.COMPILED.getValue());
+        contract.setDescription("");
+        tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
 
         TbContract result = tbContractMapper.selectByPrimaryKey(contractId);
         log.debug("success compileByContractId contractId:{} result:{}", contractId, JsonTools.objToString(result));

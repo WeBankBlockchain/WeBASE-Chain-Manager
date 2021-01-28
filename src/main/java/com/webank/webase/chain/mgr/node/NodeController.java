@@ -1,33 +1,17 @@
 /**
  * Copyright 2014-2019 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 package com.webank.webase.chain.mgr.node;
-
-import java.math.BigInteger;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-
-import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
-import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
@@ -42,8 +26,22 @@ import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
+import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
+import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Controller for node data.
@@ -63,7 +61,7 @@ public class NodeController extends BaseController {
     @GetMapping(value = "/all")
     public BaseResponse allNode() throws BaseException {
         Instant startTime = Instant.now();
-        log.info( "start get all node startTime:{} ", startTime.toEpochMilli());
+        log.info("start get all node startTime:{} ", startTime.toEpochMilli());
 
         // param
         List<TbNode> nodeList = nodeService.qureyNodeList(new NodeParam());
@@ -79,18 +77,19 @@ public class NodeController extends BaseController {
      */
     @GetMapping(value = "/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}")
     public BasePageResponse queryNodeList(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId,
-            @PathVariable("pageNumber") Integer pageNumber,
-            @PathVariable("pageSize") Integer pageSize,
-            @RequestParam(value = "nodeId", required = false) String nodeId) throws BaseException {
+                                          @PathVariable("groupId") Integer groupId,
+                                          @PathVariable("pageNumber") Integer pageNumber,
+                                          @PathVariable("pageSize") Integer pageSize,
+                                          @RequestParam(value = "agencyId", required = false) Integer agencyId,
+                                          @RequestParam(value = "nodeId", required = false) String nodeId) throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info(
-                "start queryNodeList startTime:{} groupId:{} pageNumber:{} pageSize:{} nodeName:{}",
-                startTime.toEpochMilli(), groupId, pageNumber, pageSize, nodeId);
+                "start queryNodeList startTime:{} groupId:{} pageNumber:{} pageSize:{} agencyId:{} nodeId:{}",
+                startTime.toEpochMilli(), groupId, pageNumber, pageSize, agencyId, nodeId);
 
 
-        int newGroupId  = groupId == null || groupId <=0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId ;
+        int newGroupId = groupId == null || groupId <= 0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
 
         // check node status before query
         nodeService.checkAndUpdateNodeStatus(chainId);
@@ -101,6 +100,15 @@ public class NodeController extends BaseController {
         queryParam.setGroupId(newGroupId);
         queryParam.setNodeId(nodeId);
         queryParam.setPageSize(pageSize);
+        if (Objects.nonNull(agencyId)) {
+            List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
+            if (CollectionUtils.isNotEmpty(frontList)) {
+                Set<String> nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
+                queryParam.setNodeIds(nodeIds);
+            }
+
+        }
+
         Integer count = nodeService.countOfNode(queryParam);
         if (count != null && count > 0) {
             Integer start =
@@ -123,7 +131,7 @@ public class NodeController extends BaseController {
      */
     @GetMapping("/getBlockNumber/{chainId}/{groupId}/{nodeId}")
     public BaseResponse getBlockNumber(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId)
+                                       @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId)
             throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getBlockNumber startTime:{} chainId:{} groupId:{}",
@@ -152,8 +160,8 @@ public class NodeController extends BaseController {
      */
     @GetMapping("/getBlockByNumber/{chainId}/{groupId}/{nodeId}/{blockNumber}")
     public BaseResponse getBlockByNumber(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
-            @PathVariable("blockNumber") BigInteger blockNumber) throws BaseException {
+                                         @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+                                         @PathVariable("blockNumber") BigInteger blockNumber) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getBlockByNumber startTime:{} groupId:{} blockNumber:{}",
                 startTime.toEpochMilli(), groupId, blockNumber);
@@ -181,7 +189,7 @@ public class NodeController extends BaseController {
      */
     @GetMapping("/getTotalTransactionCount/{chainId}/{groupId}/{nodeId}")
     public BaseResponse getTotalTransactionCount(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId)
+                                                 @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId)
             throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTotalTransactionCount startTime:{} chainId:{} groupId:{}",
@@ -211,8 +219,8 @@ public class NodeController extends BaseController {
      */
     @GetMapping("/getTransactionByHash/{chainId}/{groupId}/{nodeId}/{transHash}")
     public BaseResponse getTransactionByHash(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
-            @PathVariable("transHash") String transHash) throws BaseException {
+                                             @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+                                             @PathVariable("transHash") String transHash) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTransactionByHash startTime:{} groupId:{} blockNumber:{}",
                 startTime.toEpochMilli(), groupId, transHash);
@@ -240,8 +248,8 @@ public class NodeController extends BaseController {
      */
     @GetMapping("/getTransactionReceipt/{chainId}/{groupId}/{nodeId}/{transHash}")
     public BaseResponse getTransactionReceipt(@PathVariable("chainId") Integer chainId,
-            @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
-            @PathVariable("transHash") String transHash) throws BaseException {
+                                              @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+                                              @PathVariable("transHash") String transHash) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTransactionReceipt startTime:{} groupId:{} blockNumber:{}",
                 startTime.toEpochMilli(), groupId, transHash);
@@ -255,7 +263,7 @@ public class NodeController extends BaseController {
 
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         TransactionReceipt transactionReceipt =
-                frontInterfaceService.getTransactionReceiptFromSpecificFront(tbFront.getFrontPeerName(),tbFront.getFrontIp(),
+                frontInterfaceService.getTransactionReceiptFromSpecificFront(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                         tbFront.getFrontPort(), groupId, transHash);
         baseResponse.setData(transactionReceipt);
 
