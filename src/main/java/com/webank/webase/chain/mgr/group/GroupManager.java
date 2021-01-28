@@ -8,6 +8,7 @@ import com.webank.webase.chain.mgr.repository.bean.TbGroupExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,5 +47,31 @@ public class GroupManager {
         }
         log.info("success exec method [verifyAppId]. result:{}", JsonTools.objToString(tbGroup));
         return tbGroup;
+    }
+
+    /**
+     * @param groupName
+     */
+    public void requireGroupNameNotFound(String groupName) {
+        log.info("start exec method[requireGroupNameNotFound] groupName:{}", groupName);
+        if (StringUtils.isBlank(groupName)) {
+            log.warn("fail exec method [requireGroupNameNotFound]. groupName is empty");
+            throw new BaseException(ConstantCode.GROUP_NAME_EMPTY);
+        }
+
+        //param
+        TbGroupExample example = new TbGroupExample();
+        TbGroupExample.Criteria criteria = example.createCriteria();
+        criteria.andGroupNameEqualTo(groupName);
+
+        //query
+        long count = tbGroupMapper.countByExample(example);
+        log.info("count:{}", count);
+        if (count > 0) {
+            log.warn("fail exec method [requireGroupNameNotFound]. found group record by groupName:{}", groupName);
+            throw new BaseException(ConstantCode.DUPLICATE_GROUP_NAME);
+        }
+
+        log.info("finish exec method[listGroupByAgencyId] groupName:{}", groupName);
     }
 }

@@ -44,6 +44,7 @@ import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -92,6 +93,8 @@ public class GroupService {
     private PathService pathService;
     @Autowired
     private DeployShellService deployShellService;
+    @Autowired
+    private GroupManager groupManager;
 
     /**
      * generate group to single node.
@@ -99,6 +102,7 @@ public class GroupService {
      * @param req info
      * @return
      */
+    @Transactional
     public TbGroup generateToSingleNode(String nodeId, ReqGenerateGroup req) {
         // check id
         Integer chainId = req.getChainId();
@@ -113,6 +117,10 @@ public class GroupService {
         }
         TbChain tbChain = chainService.verifyChainId(chainId);
 
+        // save group
+        TbGroup tbGroup = saveGroup(req.getGroupName(), req.getTimestamp(), generateGroupId, chainId, req.getNodeList().size(),
+                req.getDescription(), GroupType.MANUAL.getValue());
+
         // request front to generate
         GenerateGroupInfo generateGroupInfo = new GenerateGroupInfo();
         BeanUtils.copyProperties(req, generateGroupInfo);
@@ -123,10 +131,6 @@ public class GroupService {
         if (tbChain.getDeployType() == DeployTypeEnum.API.getType()) {
             this.pullAllGroupFiles(generateGroupId, tbFront);
         }
-
-        // save group
-        TbGroup tbGroup = saveGroup(req.getTimestamp(), generateGroupId, chainId, req.getNodeList().size(),
-                req.getDescription(), GroupType.MANUAL.getValue());
         return tbGroup;
     }
 
@@ -136,6 +140,7 @@ public class GroupService {
      * @param req info
      * @return
      */
+    @Transactional
     public TbGroup generateGroup(ReqGenerateGroup req) {
         //reset all local group
         resetGroupList();
@@ -173,6 +178,11 @@ public class GroupService {
             req.setNodeList(new ArrayList<>(nodeIdSet));
         }
 
+
+        // save group
+        TbGroup tbGroup = saveGroup(req.getGroupName(), timestamp, generateGroupId, chainId, req.getNodeList().size(),
+                req.getDescription(), GroupType.MANUAL.getValue());
+
         for (String nodeId : req.getNodeList()) {
             // get front
             TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
@@ -193,9 +203,6 @@ public class GroupService {
                 this.pullAllGroupFiles(generateGroupId, tbFront);
             }
         }
-        // save group
-        TbGroup tbGroup = saveGroup(timestamp, generateGroupId, chainId, req.getNodeList().size(),
-                req.getDescription(), GroupType.MANUAL.getValue());
 
         // if create by orgIdList, then start up group
         if (CollectionUtils.isNotEmpty(req.getOrgIdList())) {
@@ -269,13 +276,18 @@ public class GroupService {
      * save group id
      */
     @Transactional
-    public TbGroup saveGroup(BigInteger timestamp, int groupId, int chainId, int nodeCount, String description,
+    public TbGroup saveGroup(String groupName, BigInteger timestamp, int groupId, int chainId, int nodeCount, String description,
                              int groupType) {
         if (groupId == 0) {
             return null;
         }
         // save group id
-        String groupName = String.format("chain_%s_group_%s", chainId, groupId);
+        if (StringUtils.isBlank(groupName)) {
+            groupName = String.format("chain_%s_group_%s", chainId, groupId);
+        } else {
+            groupManager.requireGroupNameNotFound(groupName);
+        }
+
         TbGroup exists = this.tbGroupMapper.selectByPrimaryKey(groupId, chainId);
         if (exists == null) {
             TbGroup tbGroup = new TbGroup(timestamp, groupId, chainId, groupName, nodeCount, description, groupType);
@@ -384,7 +396,7 @@ public class GroupService {
                     List<String> groupPeerList =
                             frontInterface.getGroupPeersFromSpecificFront(frontPeerName, frontIp, frontPort, gId);
                     // save group
-                    saveGroup(null, gId, chainId, groupPeerList.size(), "synchronous",
+                    saveGroup("", null, gId, chainId, groupPeerList.size(), "synchronous",
                             GroupType.SYNC.getValue());
                     frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), gId);
                     // save new peers
@@ -698,9 +710,9 @@ public class GroupService {
         //query by agencyId
         if (Objects.nonNull(agencyId)) {
             List<Integer> groupIdList = listGroupIdByAgencyId(agencyId);
-            if(CollectionUtils.isEmpty(groupIdList)){
+            if (CollectionUtils.isEmpty(groupIdList)) {
                 criteria.andGroupIdEqualTo(-10);
-            }else {
+            } else {
                 criteria.andGroupIdIn(groupIdList);
             }
         }
