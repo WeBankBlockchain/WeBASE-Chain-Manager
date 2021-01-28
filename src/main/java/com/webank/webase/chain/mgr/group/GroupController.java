@@ -431,11 +431,12 @@ public class GroupController extends BaseController {
 
     @GetMapping("page/{chainId}")
     public BasePageResponse queryGroupByPage(@PathVariable("chainId") Integer chainId,
+                                             @RequestParam(name = "agency", required = false) Integer agencyId,
                                              @RequestParam(defaultValue = "10") Integer pageSize,
                                              @RequestParam(defaultValue = "1") Integer pageNumber) {
         Instant startTime = Instant.now();
-        log.info("start queryGroupByPage startTime:{} chainId:{} pageNumber:{} pageSize:{}", startTime.toEpochMilli(), chainId, pageSize, pageNumber);
-        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, pageSize, pageNumber);
+        log.info("start queryGroupByPage startTime:{} chainId:{} agencyId:{} pageNumber:{} pageSize:{}", startTime.toEpochMilli(), chainId, agencyId,pageSize, pageNumber);
+        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId,pageSize, pageNumber);
         log.info("end queryGroupByPage useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
         return basePageResponse;
     }

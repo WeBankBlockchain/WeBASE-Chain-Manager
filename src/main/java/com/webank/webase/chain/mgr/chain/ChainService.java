@@ -35,6 +35,7 @@ import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
+import com.webank.webase.chain.mgr.repository.bean.TbChainExample;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;

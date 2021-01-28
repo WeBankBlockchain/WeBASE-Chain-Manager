@@ -627,4 +627,17 @@ public class FrontService {
         log.info("finish exec method[requireNotFoundFront] chainId:{} nodeId:{}", chainId, nodeId);
     }
 
+    /**
+     * @param agencyId
+     * @return
+     */
+    public List<TbFront> listFrontByAgency(int agencyId) {
+        log.debug("start exec method [listFrontByAgency]. agencyId:{}", agencyId);
+        TbFrontExample example = new TbFrontExample();
+        TbFrontExample.Criteria criteria = example.createCriteria();
+        criteria.andExtAgencyIdEqualTo(agencyId);
+        List<TbFront> frontList = tbFrontMapper.selectByExample(example);
+        log.debug("success exec method [listFrontByAgency]. agencyId:{} result:{}", agencyId, JsonTools.objToString(frontList));
+        return frontList;
+    }
 }

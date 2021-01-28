@@ -683,7 +683,7 @@ public class GroupService {
      * @param pageNumber
      * @return
      */
-    public BasePageResponse queryGroupByPage(Integer chainId, Integer pageSize, Integer pageNumber) {
+    public BasePageResponse queryGroupByPage(Integer chainId, Integer agencyId, Integer pageSize, Integer pageNumber) {
         // check id
         chainService.verifyChainId(chainId);
         //reset all local group
@@ -695,6 +695,15 @@ public class GroupService {
         TbGroupExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(chainId);
 
+        //query by agencyId
+        if (Objects.nonNull(agencyId)) {
+            List<Integer> groupIdList = listGroupIdByAgencyId(agencyId);
+            if (CollectionUtils.isNotEmpty(groupIdList)) {
+                criteria.andGroupIdIn(groupIdList);
+            }
+        }
+
+
         //query
         BasePageResponse basePageResponse = new BasePageResponse(ConstantCode.SUCCESS);
         basePageResponse.setTotalCount(Integer.parseInt(String.valueOf(tbGroupMapper.countByExample(example))));
@@ -702,5 +711,46 @@ public class GroupService {
             basePageResponse.setData(tbGroupMapper.selectByExample(example));
         }
         return basePageResponse;
+    }
+
+
+    /**
+     * @param agencyId
+     * @return
+     */
+    public List<Integer> listGroupIdByAgencyId(int agencyId) {
+        log.info("start exec method[listGroupIdByAgencyId] agencyId:{}", agencyId);
+
+        //list frontId
+        List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
+        if (CollectionUtils.isEmpty(frontList)) {
+            log.info("finish exec method[listGroupIdByAgencyId] not found front record by agencyId:{}", agencyId);
+            return Collections.EMPTY_LIST;
+        }
+        List<Integer> frontIdList = frontList.stream().map(front -> front.getFrontId()).collect(Collectors.toList());
+
+        //list group
+        List<Integer> groupIdList = frontGroupMapService.listGroupByFronts(frontIdList);
+        log.info("success exec method[listGroupIdByAgencyId] agencyId:{} result:{}", agencyId, JsonTools.objToString(groupIdList));
+        return groupIdList;
+    }
+
+    /**
+     * @param agencyId
+     * @return
+     */
+    public List<TbGroup> listGroupByAgencyId(int agencyId) {
+        log.info("start exec method[listGroupByAgencyId] agencyId:{}", agencyId);
+        //list groupId
+        List<Integer> groupIdList = listGroupIdByAgencyId(agencyId);
+        if (CollectionUtils.isEmpty(groupIdList)) return Collections.EMPTY_LIST;
+        //param
+        TbGroupExample example = new TbGroupExample();
+        TbGroupExample.Criteria criteria = example.createCriteria();
+        criteria.andGroupIdIn(groupIdList);
+        //query group list
+        List<TbGroup> groupList = tbGroupMapper.selectByExample(example);
+        log.info("success exec method[listGroupIdByAgencyId] agencyId:{} result:{}", agencyId, JsonTools.objToString(groupList));
+        return groupList;
     }
 }
