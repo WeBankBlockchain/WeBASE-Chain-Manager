@@ -698,7 +698,9 @@ public class GroupService {
         //query by agencyId
         if (Objects.nonNull(agencyId)) {
             List<Integer> groupIdList = listGroupIdByAgencyId(agencyId);
-            if (CollectionUtils.isNotEmpty(groupIdList)) {
+            if(CollectionUtils.isEmpty(groupIdList)){
+                criteria.andGroupIdEqualTo(-10);
+            }else {
                 criteria.andGroupIdIn(groupIdList);
             }
         }
