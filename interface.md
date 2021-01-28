@@ -412,7 +412,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/new
 #### 2.2.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/front/find?chainId={chainId}&frontId={frontId}&groupId={groupId}**
+- 请求地址：**/front/find?chainId={chainId}&frontId={frontId}&groupId={groupId}?agencyId={agencyId}**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -425,11 +425,12 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/new
 | 1    | chainId  | Int  | 是     | 链编号       |
 | 2    | frontId  | Int  | 是     | 前置编号     |
 | 3    | groupId  | Int  | 是     | 所属群组编号 |
+| 4    | agencyId  | Int  | 是     | 所属机构编号 |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/front/find
+http://localhost:5005/WeBASE-Chain-Manager/front/find?agencyId=10
 ```
 
 #### 2.2.3 返回参数 
@@ -1140,7 +1141,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate/78e467957af3d0f77e19b9
 | 2    | generateGroupId | int          | 是     | 生成的群组编号   |
 | 3    | timestamp       | BigInteger   | 是     | 创世块时间（单位：ms）|
 | 4    | nodeList        | List<String> | 是     | 节点编号列表（新群组的所有节点编号；另外，nodeList与orgIdList不能同时为空） |
-| 5    | orgIdList        | List<Integer> | 是     | 节点所属结构编号列表（nodeList与orgIdList不能同时为空）|
+| 5    | orgIdList        | List<Integer> | 是     | 节点所属机构编号列表（nodeList与orgIdList不能同时为空）|
 | 6    | description     | string       | 是     | 备注                             |
 
 ***2）入参示例***
@@ -2100,7 +2101,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c
 #### 3.15.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/group/page/{chainId}?pageNumber=1&pageSize=10**
+- 请求地址：**/group/page/{chainId}?pageNumber=1&pageSize=10&agency=10**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -2110,6 +2111,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c
 | 序号 | 输入参数   | 类型   | 可为空 | 备注       |
 | ---- | ---------- | ------ | ------ | -------- |
 | 1    | chainId    | Int    | 否     | 链编号     |
+| 2    | agency    | Int    | 是     | 机构id     |
 | 3    | pageSize   | Int    | 否     | 每页记录数,默认10 |
 | 4    | pageNumber | Int    | 否     | 当前页码，默认1   |
 
@@ -2231,7 +2233,7 @@ http://localhost:5005/WeBASE-Chain-Manager/group/page/1?pageNumber=2&pageSize=3
 #### 4.1.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/node/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}?nodeId={nodeId}**
+- 请求地址：**/node/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}?nodeId={nodeId}&agencyId={agencyId}**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -2246,11 +2248,12 @@ http://localhost:5005/WeBASE-Chain-Manager/group/page/1?pageNumber=2&pageSize=3
 | 3    | pageSize   | Int    | 否     | 每页记录数 |
 | 4    | pageNumber | Int    | 否     | 当前页码   |
 | 5    | nodeId     | String | 是     | 节点Id     |
+| 6    | agencyId     | String | 是     | 机构Id     |
 
 ***2）入参示例***
 
 ```
-http://127.0.0.1:5005/WeBASE-Chain-Manager/node/nodeList/100001/300001/1/10?nodeId=
+http://127.0.0.1:5005/WeBASE-Chain-Manager/node/nodeList/100001/300001/1/10?agencyId=10&nodeId=
 ```
 
 #### 4.1.3 返回参数 
@@ -2936,7 +2939,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/save
 | 3.3  | contractName    | String        | 否   | 合约名称                                |
 | 3.4  | chainId         | Int           | 否   | 链编号                                  |
 | 3.5  | groupId         | Int           | 否   | 所属群组编号                            |
-| 3.6  | contractStatus  | Int           | 否   | 1未部署，2已部署                        |
+| 3.6  | contractStatus  | Int           | 否   | 1未部署，2已部署,3部署失败，4编译成功，5编译失败                      |
 | 3.7  | contractType    | Int           | 否   | 合约类型(0-普通合约，1-系统合约，默认0) |
 | 3.8  | contractSource  | String        | 否   | 合约源码                                |
 | 3.9  | contractAbi     | String        | 是   | 编译合约生成的abi文件内容               |
@@ -3040,7 +3043,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/contractList
 | 5.1.3  | contractName    | String        | 否     | 合约名称                                        |
 | 5.1.4 | chainId | int | 否 | 链编号 |
 | 5.1.5  | groupId       | Int           | 否     | 所属群组编号                                    |
-| 5.1.6  | contractStatus      | int           | 否     | 1未部署，2已部署                        |
+| 5.1.6  | contractStatus      | int           | 否     | 1未部署，2已部署,3部署失败，4编译成功，5编译失败                         |
 | 5.1.7  | contractType    | Int           | 否     | 合约类型(0-普通合约，1-系统合约)                |
 | 5.1.8  | contractSource  | String        | 否     | 合约源码                                        |
 | 5.1.9  | contractAbi     | String        | 是     | 编译合约生成的abi文件内容                       |
@@ -3130,7 +3133,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/400003
 | 3.3  | contractName    | String        | 否     | 合约名称                                        |
 | 3.4 | chainId | int | 否 | 链编号 |
 | 3.5  | groupId         | Int           | 否     | 所属群组编号                                    |
-| 3.6  | contractStatus  | int           | 否     | 1未部署，2已部署                        |
+| 3.6  | contractStatus  | int           | 否     | 1未部署，2已部署,3部署失败，4编译成功，5编译失败                         |
 | 3.7  | contractType    | Int           | 否     | 合约类型(0-普通合约，1-系统合约)                |
 | 3.8  | contractSource  | String        | 否     | 合约源码                                        |
 | 3.9  | contractAbi     | String        | 是     | 编译合约生成的abi文件内容                       |
@@ -3257,7 +3260,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/deploy
 | 3.3  | contractName    | String        | 否     | 合约名称                                        |
 | 3.4 | chainId | int | 否 | 链编号 |
 | 3.5  | groupId         | Int           | 否     | 所属群组编号                                    |
-| 3.6  | contractStatus  | int           | 否     | 1未部署，2已部署                        |
+| 3.6  | contractStatus  | int           | 否     | 1未部署，2已部署,3部署失败，4编译成功，5编译失败                      |
 | 3.7  | contractType    | Int           | 否     | 合约类型(0-普通合约，1-系统合约)                |
 | 3.8  | contractSource  | String        | 否     | 合约源码                                        |
 | 3.9  | contractAbi     | String        | 是     | 编译合约生成的abi文件内容                       |
@@ -4126,6 +4129,121 @@ http://localhost:5005/WeBASE-Chain-Manager/user/list/chain_1_group_10/1/10
 
 
 
+## 7 机构管理模块
+
+### 7.1 查询机构下的所有资源
+
+​	根据机构编号获取机构下的所有链、前置、群组、合约等信息。
+
+#### 7.1.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/agency/{agencyId}/owned**
+- 请求方式：GET
+- 返回格式：JSON
+
+#### 7.1.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数        | 类型         | 可为空 | 备注    |
+| ---- | --------- | ----- | ---- | ----------------------- |
+| 1    | agencyId         | int          | 否     | 机构编号    |
+
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/agency/10/owned
+```
+
+
+#### 7.1.3 返回参数
+
+***1）出参表***
+
+| 序号 | 输出参数    | 类型          |   可空   | 备注                       |
+| ---- | ----------- | ------------- | ---- | -------------------------- |
+| 1    | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message     | String        | 否   | 错误信息                   |
+| 3    | data        | Object        | 否   | 返回信息对象               |
+| 3.1  | chainIdList  | List<Integer>  | 是   |链编号列表|
+| 3.2       | groupList     | List<Object>           | 是  | 群组列表                    |
+| 3.2.1   |    | Object           |是   | 群组信息对象              |
+| 3.2.1.1  | chainId | Int        |  是   |所属链编号                 |
+| 3.2.1.2  | groupId | Int        |  是   |群组编号                  |
+| 3.2.1.3  | groupName | String        |  是   |群组名称                 |
+| 3.3       | frontList     | List<Object>           | 是  | 前置列表                    |
+| 3.3.1   |    | Object           |是   | 前置信息对象              |
+| 3.3.1.1  | chainId | Int        |  是   |所属链编号                 |
+| 3.3.1.2  | frontId | Int        |  是   |前置编号                  |
+| 3.3.1.3  | nodeId | String        |  是   |节点id                 |
+| 3.4       | contractList     | List<Object>           | 是  | 合约列表                    |
+| 3.4.1   |    | Object           |是   | 合约信息对象              |
+| 3.4.1.1  | chainId | Int        |  是   |所属链编号                 |
+| 3.4.1.2  | groupId | Int        |  是   |群组编号                  |
+| 3.4.1.3  | contractId | Int        |  是   |合约编号                 |
+| 3.4.1.4  | contractPath | String        |  是   |合约路径                 |
+| 3.4.1.5  | contractName | String        |  是   |合约名称                 |
+| 4    | attachment  | String |  是  | 错误信息                |
+
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "chainIdList": [
+            1
+        ],
+        "groupList": [
+            {
+                "chainId": 1,
+                "groupId": 1,
+                "groupName": "chain_1_group_1"
+            },
+            {
+                "chainId": 1,
+                "groupId": 2,
+                "groupName": "chain_1_group_2"
+            }
+        ],
+        "frontList": [
+            {
+                "chainId": 1,
+                "frontId": 200036,
+                "nodeId": "53060c93c5c7bfdc2b35ffae766e5e9f0ca16340f8e4ed09421cbbdb86cc974d57eb6460d41c33a71634f033a898d92486dd5081e2db1672bd426fff6e4af5f8"
+            }
+        ],
+        "contractList": [
+            {
+                "chainId": 1,
+                "groupId": 1,
+                "contractId": 400030,
+                "contractPath": "myPath",
+                "contractName": "Ok"
+            }
+        ]
+    },
+    "attachment": null,
+    "success": true
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 105000,
+    "message": "system exception",
+    "data": {}
+}
+```
 
 
 
