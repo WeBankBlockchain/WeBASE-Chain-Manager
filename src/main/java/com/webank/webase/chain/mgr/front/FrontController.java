@@ -1,11 +1,11 @@
 /**
  * Copyright 2014-2019 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -13,26 +13,6 @@
  */
 package com.webank.webase.chain.mgr.front;
 
-
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
@@ -44,8 +24,18 @@ import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
-
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * front controller
@@ -84,17 +74,19 @@ public class FrontController extends BaseController {
      */
     @GetMapping(value = "/find")
     public BasePageResponse queryFrontList(
+            @RequestParam(value = "agencyId", required = false) Integer agencyId,
             @RequestParam(value = "chainId", required = false) Integer chainId,
             @RequestParam(value = "frontId", required = false) Integer frontId,
             @RequestParam(value = "groupId", required = false) Integer groupId)
             throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
-        log.info("start queryFrontList startTime:{} frontId:{} groupId:{}",
-                startTime.toEpochMilli(), frontId, groupId);
+        log.info("start queryFrontList startTime:{} agencyId:{} chainId:{} frontId:{} groupId:{}",
+                startTime.toEpochMilli(), agencyId, chainId, frontId, groupId);
 
         // query front info
         FrontParam param = new FrontParam();
+        param.setAgencyId(agencyId);
         param.setChainId(chainId);
         param.setFrontId(frontId);
         param.setGroupId(groupId);
@@ -131,16 +123,16 @@ public class FrontController extends BaseController {
 
     @GetMapping(value = "/mointorInfo/{frontId}")
     public BaseResponse getChainMoinntorInfo(@PathVariable("frontId") Integer frontId,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
-            @RequestParam(required = false, defaultValue = "1") int gap,
-            @RequestParam(required = false, defaultValue = "1") int groupId) throws BaseException {
+                                             @RequestParam(required = false) @DateTimeFormat(
+                                                     iso = ISO.DATE_TIME) LocalDateTime beginDate,
+                                             @RequestParam(required = false) @DateTimeFormat(
+                                                     iso = ISO.DATE_TIME) LocalDateTime endDate,
+                                             @RequestParam(required = false) @DateTimeFormat(
+                                                     iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
+                                             @RequestParam(required = false) @DateTimeFormat(
+                                                     iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
+                                             @RequestParam(required = false, defaultValue = "1") int gap,
+                                             @RequestParam(required = false, defaultValue = "1") int groupId) throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info(
@@ -163,15 +155,15 @@ public class FrontController extends BaseController {
      */
     @GetMapping(value = "/ratio/{frontId}")
     public BaseResponse getPerformanceRatio(@PathVariable("frontId") Integer frontId,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
-            @RequestParam(value = "gap", required = false, defaultValue = "1") int gap)
+                                            @RequestParam(required = false) @DateTimeFormat(
+                                                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
+                                            @RequestParam(required = false) @DateTimeFormat(
+                                                    iso = ISO.DATE_TIME) LocalDateTime endDate,
+                                            @RequestParam(required = false) @DateTimeFormat(
+                                                    iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
+                                            @RequestParam(required = false) @DateTimeFormat(
+                                                    iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
+                                            @RequestParam(value = "gap", required = false, defaultValue = "1") int gap)
             throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);

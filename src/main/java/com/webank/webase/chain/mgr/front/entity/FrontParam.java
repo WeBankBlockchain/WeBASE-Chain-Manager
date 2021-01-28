@@ -25,6 +25,7 @@ public class FrontParam {
     private Integer chainId;
     private String nodeId;
     private Integer groupId;
+    private Integer agencyId;
     private String frontIp;
     private Integer frontPort;
 }
