@@ -210,6 +210,16 @@ public class ConstantCode {
     public static final RetCode GROUP_NAME_EMPTY = RetCode.mark(205266, "group name empty");
     public static final RetCode DUPLICATE_GROUP_NAME = RetCode.mark(205267, "duplicate group name");
     public static final RetCode NOT_FOUND_GROUP_BY_ID_AND_CHAIN = RetCode.mark(205268, "not found group by chain and groupId");
+    public static final RetCode GET_LIST_MANAGER_FAIL = RetCode.mark(205269, "get list of manager on chain fail");
+    public static final RetCode CRUD_TABLE_KEY_LENGTH_ERROR = RetCode.mark(205270, "table key length error");
+    public static final RetCode CRUD_PARSE_CONDITION_ENTRY_FIELD_JSON_ERROR = RetCode.mark(205271, "crud's param parse json error");
+    public static final RetCode PRECOMPILED_COMMON_TRANSFER_JSON_FAIL = RetCode.mark(205272, "precompiled common transfer to json fail");
+    public static final RetCode TX_RECEIPT_OUTPUT_PARSE_JSON_FAIL = RetCode.mark(205273, "transaction receipt fail and parse output fail");
+    public static final RetCode TX_RECEIPT_OUTPUT_NULL = RetCode.mark(205274, "transaction receipt fail and output is null");
+    public static final RetCode TX_RECEIPT_CODE_ERROR = RetCode.mark(205275, "transaction receipt status return error");
+    public static final RetCode BOTH_NODE_AND_AGENCY_EMPTY = RetCode.mark(205276, "node and agency cannot both be empty");
+    public static final RetCode INVALID_NODE_TYPE = RetCode.mark(205277,"invalid node type: sealer, observer, remove ");
+
 
 
 }

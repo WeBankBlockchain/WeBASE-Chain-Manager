@@ -35,4 +35,5 @@ public class TransResultDto {
     private String to;
     private String input;
     private String output;
+    private String message;
 }

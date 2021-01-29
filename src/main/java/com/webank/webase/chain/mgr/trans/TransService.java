@@ -15,6 +15,7 @@ package com.webank.webase.chain.mgr.trans;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.PrecompiledTypes;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
@@ -22,13 +23,14 @@ import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.tools.Web3Tools;
 import com.webank.webase.chain.mgr.contract.ContractManager;
 import com.webank.webase.chain.mgr.contract.entity.ContractFunction;
-import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
+import com.webank.webase.chain.mgr.precompiledapi.PrecompiledCommonInfo;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.sign.UserService;
 import com.webank.webase.chain.mgr.sign.req.EncodeInfo;
 import com.webank.webase.chain.mgr.sign.rsp.RspUserInfo;
 import com.webank.webase.chain.mgr.trans.entity.ReqSendByContractIdVO;
+import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
 import com.webank.webase.chain.mgr.util.ContractAbiUtil;
 import com.webank.webase.chain.mgr.util.EncoderUtil;
 import lombok.extern.log4j.Log4j2;
@@ -75,51 +77,23 @@ public class TransService {
      * @return
      */
     public TransResultDto send(ReqSendByContractIdVO req) {
-
-        // check sign user id
-        String signUserId = req.getSignUserId();
-        RspUserInfo rspUserInfo = userService.checkSignUserId(signUserId);
-        if (rspUserInfo == null) {
-            log.error("checkSignUserId fail.");
-            throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
-        }
-
+        log.info("start exec method[send]. param:{}", JsonTools.objToString(req));
         //check contractId
         TbContract tbContract = contractManager.verifyContractId(req.getContractId());
-        int chainId = tbContract.getChainId();
-        int groupId  = tbContract.getGroupId();
 
-        // check param ,get function of abi
-        List<Object> functionAbi = Arrays.asList(Web3Tools.getAbiDefinition(req.getFuncName(), tbContract.getContractAbi()));
-        ContractFunction contractFunction = buildContractFunction(functionAbi, req.getFuncName(), req.getFuncParam());
+        //handle transaction
+        int chain = tbContract.getChainId();
+        int group = tbContract.getGroupId();
+        String user = req.getSignUserId();
+        String address = tbContract.getContractAddress();
+        String abi = tbContract.getContractAbi();
+        String funcName = req.getFuncName();
+        List<Object> funcParam = req.getFuncParam();
+        TransResultDto restRsp = handleTransaction(chain, group, user, address, abi, funcName, funcParam);
 
-        // encode function
-        Function function = new Function(req.getFuncName(), contractFunction.getFinalInputs(),
-                contractFunction.getFinalOutputs());
-        String encodedFunction = getEncoderUtil(rspUserInfo.getEncryptType()).encode(function);
+        log.info("finish exec method[send]. restRsp:{}", JsonTools.objToString(restRsp));
+        return restRsp;
 
-        TransResultDto transResultDto = new TransResultDto();
-        String contractAddress = tbContract.getContractAddress();
-        if (contractFunction.getConstant()) {
-            Object response =
-                    sendQueryTransaction(encodedFunction, contractAddress, req.getFuncName(),
-                            JsonTools.toJSONString(functionAbi), chainId, groupId);
-            transResultDto.setQueryInfo(JsonTools.objToString(response));
-            transResultDto.setConstant(true);
-        } else {
-            // data sign
-            String signMsg = signMessage(chainId, groupId, signUserId, rspUserInfo.getEncryptType(),
-                    contractAddress, encodedFunction);
-            if (StringUtils.isBlank(signMsg)) {
-                throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
-            }
-            // send transaction
-            TransactionReceipt receipt =
-                    frontInterface.sendSignedTransaction(chainId, groupId, signMsg, true);
-            BeanUtils.copyProperties(receipt, transResultDto);
-            transResultDto.setConstant(false);
-        }
-        return transResultDto;
     }
 
     public Object sendQueryTransaction(String encodeStr, String contractAddress, String funcName,
@@ -244,7 +218,6 @@ public class TransService {
     }
 
 
-
     /**
      * get EncoderUtil.
      */
@@ -254,4 +227,77 @@ public class TransService {
         }
         return encoderMap.get(encryptType);
     }
+
+
+    /**
+     * send tx with sign for precomnpiled contract
+     *
+     * @param precompiledType enum of precompiled contract
+     * @param funcName        precompiled contract function name
+     */
+    public TransResultDto transHandleWithSignForPrecompile(int chainId, int groupId, String signUserId,
+                                                   PrecompiledTypes precompiledType, String funcName, List<Object> funcParams) {
+
+        // get address and abi of precompiled contract
+        String contractAddress = PrecompiledCommonInfo.getAddress(precompiledType);
+        String abiStr = PrecompiledCommonInfo.getAbi(precompiledType);
+
+        // trans handle
+        return handleTransaction(chainId, groupId, signUserId, contractAddress, abiStr, funcName, funcParams);
+    }
+
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param signUserId
+     * @param contractAddress
+     * @param contractAbi
+     * @param funName
+     * @param funcParams
+     * @return
+     */
+    private TransResultDto handleTransaction(int chainId, int groupId, String signUserId, String contractAddress,
+                                             String contractAbi, String funName, List<Object> funcParams) {
+        log.debug("start exec method[handleTransaction],chainId:{} groupId:{} signUserId:{}" +
+                        " contractAddress:{} contractAbi:{} funcName:{} funcParams:{}", chainId, groupId,
+                signUserId, contractAddress, contractAbi, funName, JsonTools.objToString(funcParams));
+        //checkSignUserId
+        RspUserInfo rspUserInfo = userService.checkSignUserId(signUserId);
+        if (rspUserInfo == null) {
+            log.error("checkSignUserId fail.");
+            throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
+        }
+
+        // check param ,get function of abi
+        List<Object> functionAbi = Arrays.asList(Web3Tools.getAbiDefinition(funName, contractAbi));
+        ContractFunction contractFunction = buildContractFunction(functionAbi, funName, funcParams);
+
+        // encode function
+        Function function = new Function(funName, contractFunction.getFinalInputs(), contractFunction.getFinalOutputs());
+        String encodedFunction = getEncoderUtil(rspUserInfo.getEncryptType()).encode(function);
+
+        //send transaction
+        TransResultDto transResultDto = new TransResultDto();
+        if (contractFunction.getConstant()) {
+            Object response = sendQueryTransaction(encodedFunction, contractAddress, funName, JsonTools.toJSONString(functionAbi), chainId, groupId);
+            transResultDto.setQueryInfo(JsonTools.objToString(response));
+            transResultDto.setConstant(true);
+        } else {
+            // data sign
+            String signMsg = signMessage(chainId, groupId, signUserId, rspUserInfo.getEncryptType(),
+                    contractAddress, encodedFunction);
+            if (StringUtils.isBlank(signMsg)) {
+                throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
+            }
+            // send transaction
+            TransactionReceipt receipt = frontInterface.sendSignedTransaction(chainId, groupId, signMsg, true);
+            BeanUtils.copyProperties(receipt, transResultDto);
+            transResultDto.setConstant(false);
+        }
+
+        log.debug("finish exec method[handleTransaction], result:{}", JsonTools.objToString(transResultDto));
+        return transResultDto;
+    }
+
 }
