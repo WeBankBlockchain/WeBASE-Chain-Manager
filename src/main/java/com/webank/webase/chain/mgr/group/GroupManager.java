@@ -22,7 +22,7 @@ public class GroupManager {
     private TbGroupMapper tbGroupMapper;
 
     /**
-     * appId统一取值group_name
+     * appId值等于group_name
      *
      * @param appId
      * @return

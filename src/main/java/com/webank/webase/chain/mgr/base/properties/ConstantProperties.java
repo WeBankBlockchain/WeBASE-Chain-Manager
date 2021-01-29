@@ -53,6 +53,7 @@ public class ConstantProperties {
     public static final String CONSTANT_PREFIX = "constant";
     public static final String PREFIX_RESULT_CODE = "0x";
     public static final String SEPARATOR = "SSS";
+    public static final String ADMIN_USER_FORMAT = "admin_%s";
 
     private String groupInvalidGrayscaleValue; // y:year, M:month, d:day of month, h:hour, m:minute,
                                                // n:forever valid

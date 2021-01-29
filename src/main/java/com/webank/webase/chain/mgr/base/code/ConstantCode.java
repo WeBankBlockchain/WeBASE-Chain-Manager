@@ -209,6 +209,7 @@ public class ConstantCode {
     public static final RetCode REST_REQUEST_FAIL = RetCode.mark(205265, "rest server request not success");
     public static final RetCode GROUP_NAME_EMPTY = RetCode.mark(205266, "group name empty");
     public static final RetCode DUPLICATE_GROUP_NAME = RetCode.mark(205267, "duplicate group name");
+    public static final RetCode NOT_FOUND_GROUP_BY_ID_AND_CHAIN = RetCode.mark(205268, "not found group by chain and groupId");
 
 
 }

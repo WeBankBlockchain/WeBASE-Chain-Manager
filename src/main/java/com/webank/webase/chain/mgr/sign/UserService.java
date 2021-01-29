@@ -14,6 +14,7 @@ import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.bean.TbUser;
 import com.webank.webase.chain.mgr.repository.bean.TbUserExample;
+import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbUserMapper;
 import com.webank.webase.chain.mgr.sign.req.EncodeInfo;
 import com.webank.webase.chain.mgr.sign.req.ReqNewUser;
@@ -42,6 +43,8 @@ public class UserService {
     private SignRestTools signRestTools;
     @Autowired
     private GroupManager groupManager;
+    @Autowired
+    private TbGroupMapper groupMapper;
     @Autowired
     private UserManager userManager;
     @Autowired
@@ -203,5 +206,39 @@ public class UserService {
         String signUserId = String.join(ConstantProperties.SEPARATOR, String.valueOf(chainId), String.valueOf(groupId), uuid);
         log.info("userId:{}", signUserId);
         return signUserId;
+    }
+
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @return
+     */
+    @Transactional
+    public TbUser createAdminIfNonexistence(int chainId, int groupId) {
+        log.info("start exec method [createAdminIfNonexistence], chain:{} group:{}", chainId, groupId);
+
+        //query group
+        TbGroup group = groupMapper.selectByPrimaryKey(groupId, chainId);
+        if (Objects.isNull(group))
+            throw new BaseException(ConstantCode.NOT_FOUND_GROUP_BY_ID_AND_CHAIN);
+
+        //query user
+        String adminUserName = String.format(ConstantProperties.ADMIN_USER_FORMAT, group.getGroupName());
+        TbUser adminUser = userManager.queryByChainAndGroupAndName(chainId, groupId, adminUserName);
+        if (Objects.nonNull(adminUser)) return adminUser;
+
+        //new user param
+        ReqNewUser reqNewUser = new ReqNewUser();
+        reqNewUser.setAppId(group.getGroupName());
+        reqNewUser.setChainId(chainId);
+        reqNewUser.setSignUserName(adminUserName);
+        reqNewUser.setDescription("admin user");
+
+        //new user
+        newUser(reqNewUser);
+
+        log.info("success exec method [createAdminIfNonexistence], chain:{} group:{}", chainId, groupId);
+        return userManager.queryByChainAndGroupAndName(chainId, groupId, adminUserName);
     }
 }

@@ -2,7 +2,7 @@ package com.webank.webase.chain.mgr.sign;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.repository.bean.TbGroup;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.repository.bean.TbUser;
 import com.webank.webase.chain.mgr.repository.bean.TbUserExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
@@ -11,9 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -28,15 +26,33 @@ public class UserManager {
      * @param chainId
      * @param groupId
      * @param userName
+     * @return
      */
-    public void requireUserNameNotFound(int chainId, int groupId, String userName) {
-        log.info("start method[requireUserNameNotFound] chain:{} group:{} user:{}", chainId, groupId, userName);
+    public TbUser queryByChainAndGroupAndName(int chainId, int groupId, String userName) {
+        log.info("start method[queryByChainAndGroupAndName] chain:{} group:{} user:{}", chainId, groupId, userName);
+        //param
         TbUserExample example = new TbUserExample();
         TbUserExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(chainId);
         criteria.andGroupIdEqualTo(groupId);
         criteria.andUserNameEqualTo(userName);
-        if (userMapper.getOneByExample(example).isPresent()) {
+
+        //query
+        TbUser tbUser = userMapper.getOneByExample(example).orElse(null);
+        log.info("success method[queryByChainAndGroupAndName] chain:{} group:{} user:{} result:{}", chainId, groupId, userName, JsonTools.objToString(tbUser));
+        return tbUser;
+    }
+
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param userName
+     */
+    public void requireUserNameNotFound(int chainId, int groupId, String userName) {
+        log.info("start method[requireUserNameNotFound] chain:{} group:{} user:{}", chainId, groupId, userName);
+        TbUser tbUser = queryByChainAndGroupAndName(chainId, groupId, userName);
+        if (Objects.nonNull(tbUser)) {
             log.warn("fail exec [requireUserNameNotFound],found record by userName:{}", userName);
             throw new BaseException(ConstantCode.USER_EXISTS);
         }
