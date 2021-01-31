@@ -28,6 +28,7 @@ import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
 import com.webank.webase.chain.mgr.group.entity.ReqSetSysConfig;
 import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
+import com.webank.webase.chain.mgr.precompiledapi.PrecompiledService;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
@@ -64,6 +65,8 @@ public class GroupController extends BaseController {
     private FrontInterfaceService frontInterfaceService;
     @Autowired
     private FrontService frontService;
+    @Autowired
+    private PrecompiledService precompiledService;
 
 
     /**
@@ -230,27 +233,26 @@ public class GroupController extends BaseController {
      * set node consensus status.
      */
     @PostMapping(value = "setConsensusStatus")
-    public Object setConsensusStatus(@RequestBody @Valid ConsensusParam consensusParam,
-                                     BindingResult result) throws BaseException {
+    public BaseResponse setConsensusStatus(@RequestBody @Valid ConsensusParam consensusParam,
+                                           BindingResult result) throws BaseException {
         checkBindResult(result);
         Instant startTime = Instant.now();
         log.info("start setConsensusStatus startTime:{} consensusParam:{}",
                 startTime.toEpochMilli(), JsonTools.toJSONString(consensusParam));
+//
+//        // get front
+//        TbFront tbFront = frontService.getByChainIdAndNodeId(consensusParam.getChainId(),
+//                consensusParam.getReqNodeId());
+//        if (tbFront == null) {
+//            log.error("fail setConsensusStatus node front not exists.");
+//            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+//        }
 
-        // get front
-        TbFront tbFront = frontService.getByChainIdAndNodeId(consensusParam.getChainId(),
-                consensusParam.getReqNodeId());
-        if (tbFront == null) {
-            log.error("fail setConsensusStatus node front not exists.");
-            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
-        }
-
-        Object res = frontInterfaceService.setConsensusStatus(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
-                tbFront.getFrontPort(), consensusParam);
+        precompiledService.setConsensusStatus(consensusParam);
 
         log.info("end setConsensusStatus useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
-        return res;
+        return BaseResponse.success(null);
     }
 
     /**
@@ -435,8 +437,8 @@ public class GroupController extends BaseController {
                                              @RequestParam(defaultValue = "10") Integer pageSize,
                                              @RequestParam(defaultValue = "1") Integer pageNumber) {
         Instant startTime = Instant.now();
-        log.info("start queryGroupByPage startTime:{} chainId:{} agencyId:{} pageNumber:{} pageSize:{}", startTime.toEpochMilli(), chainId, agencyId,pageSize, pageNumber);
-        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId,pageSize, pageNumber);
+        log.info("start queryGroupByPage startTime:{} chainId:{} agencyId:{} pageNumber:{} pageSize:{}", startTime.toEpochMilli(), chainId, agencyId, pageSize, pageNumber);
+        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId, pageSize, pageNumber);
         log.info("end queryGroupByPage useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
         return basePageResponse;
     }

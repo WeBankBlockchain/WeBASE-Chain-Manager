@@ -27,6 +27,7 @@ import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
+import com.webank.webase.chain.mgr.repository.bean.TbNodeExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
 import com.webank.webase.chain.mgr.util.SshUtil;
@@ -409,4 +410,24 @@ public class NodeService {
     }
 
 
+    /**
+     *
+     * @param chainId
+     * @param nodeId
+     * @return
+     */
+    public TbNode requireNodeExist(int chainId, String nodeId) {
+        log.debug("start exec method[requireNodeExist] chainId:{} chainId:{}", chainId, nodeId);
+        TbNodeExample example = new TbNodeExample();
+        TbNodeExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        criteria.andNodeIdEqualTo(nodeId);
+
+        TbNode tbNode = tbNodeMapper.getOneByExample(example).orElse(null);
+        if (Objects.isNull(tbNode)) {
+            log.warn("fail exec method[requireNodeExist]. not found node record by chainId:{} nodeId:{}", chainId, nodeId);
+            throw new BaseException(ConstantCode.INVALID_NODE_ID);
+        }
+        return tbNode;
+    }
 }

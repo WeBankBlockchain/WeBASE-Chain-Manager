@@ -13,36 +13,209 @@
  */
 package com.webank.webase.chain.mgr.precompiledapi;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.PrecompiledTypes;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
+import com.webank.webase.chain.mgr.group.GroupService;
+import com.webank.webase.chain.mgr.node.NodeService;
+import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.sign.UserService;
+import com.webank.webase.chain.mgr.trans.TransService;
+import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
+import com.webank.webase.chain.mgr.util.CommUtils;
+import com.webank.webase.chain.mgr.util.PrecompiledUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.fisco.bcos.web3j.precompile.consensus.Consensus.FUNC_ADDOBSERVER;
+import static org.fisco.bcos.web3j.precompile.consensus.Consensus.FUNC_ADDSEALER;
+import static org.fisco.bcos.web3j.precompile.permission.Permission.FUNC_REMOVE;
 
 
 /**
  * Precompiled common service including management of CNS, node consensus status, CRUD based on
  * PrecompiledWithSignService
  */
+@Slf4j
 @Service
 public class PrecompiledService {
+
     @Autowired
-    private PrecompiledWithSignService precompiledWithSignService;
+    private TransService transService;
+    @Autowired
+    private FrontInterfaceService frontInterfaceService;
+    @Autowired
+    private FrontService frontService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private GroupService groupService;
+    @Autowired
+    private NodeService nodeService;
+
+
+    public void setConsensusStatus(ConsensusParam consensusParam) {
+        log.info("start exec method[setConsensusStatus] param:{}", JsonTools.objToString(consensusParam));
+        //reset group list
+        groupService.resetGroupList();
+
+        //check params
+        Set<String> nodeIds = checkBeforeSetConsensusStatus(consensusParam);
+
+        //get signUserId
+        int chainId = consensusParam.getChainId();
+        int groupId = consensusParam.getGroupId();
+        String signUserId = consensusParam.getSignUserId();
+        if (StringUtils.isBlank(signUserId))
+            signUserId = userService.createAdminIfNonexistence(chainId, groupId).getSignUserId();
+
+        //setConsensusStatus
+        for (String nodeId : nodeIds) {
+            switch (consensusParam.getNodeType()) {
+                case PrecompiledUtils.NODE_TYPE_SEALER:
+                    addSealer(chainId, groupId, signUserId, nodeId);
+                case PrecompiledUtils.NODE_TYPE_OBSERVER:
+                    addObserver(chainId, groupId, signUserId, nodeId);
+                case PrecompiledUtils.NODE_TYPE_REMOVE:
+                    removeNode(chainId, groupId, signUserId, nodeId);
+                default:
+                    log.debug("end nodeManageControl invalid node type");
+                    throw new BaseException(ConstantCode.INVALID_NODE_TYPE);
+            }
+        }
+
+    }
 
 
     /**
-     * Consensus config related
+     * consensus: add sealer through webase-sign
      */
-    public String addSealer(int groupId, String signUserId, String nodeId) {
-        String res = precompiledWithSignService.addSealer(groupId, signUserId, nodeId);
-        return res;
+    public void addSealer(int chainId, int groupId, String signUserId, String nodeId) {
+        // params
+        List<Object> funcParams = new ArrayList<>();
+        funcParams.add(nodeId);
+
+        //send transaction
+        TransResultDto transResultDto = transService.transHandleWithSignForPrecompile(chainId, groupId, signUserId,
+                PrecompiledTypes.CONSENSUS, FUNC_ADDSEALER, funcParams);
+
+        //check trans's result
+        CommUtils.handleTransResultDto(transResultDto);
     }
 
-    public String addObserver(int groupId, String signUserId, String nodeId) {
-        String res = precompiledWithSignService.addObserver(groupId, signUserId, nodeId);
-        return res;
+    /**
+     * consensus: add observer through webase-sign
+     */
+    public void addObserver(int chainId, int groupId, String signUserId, String nodeId) {
+        // params
+        List<Object> funcParams = new ArrayList<>();
+        funcParams.add(nodeId);
+
+        //send transaction
+        TransResultDto transResultDto = transService.transHandleWithSignForPrecompile(chainId, groupId, signUserId,
+                PrecompiledTypes.CONSENSUS, FUNC_ADDOBSERVER, funcParams);
+
+        //check trans's result
+        CommUtils.handleTransResultDto(transResultDto);
     }
 
-    public String removeNode(int groupId, String signUserId, String nodeId) {
-        String res = precompiledWithSignService.removeNode(groupId, signUserId, nodeId);
-        return res;
+
+    /**
+     * consensus: remove node from list through webase-sign
+     */
+    public void removeNode(int chainId, int groupId, String signUserId, String nodeId) {
+        // params
+        List<Object> funcParams = new ArrayList<>();
+        funcParams.add(nodeId);
+        TransResultDto transResultDto = null;
+        try {
+            transResultDto = transService.transHandleWithSignForPrecompile(chainId, groupId, signUserId,
+                    PrecompiledTypes.CONSENSUS, FUNC_REMOVE, funcParams);
+        } catch (RuntimeException e) {
+            log.info("catch runtimeException", e);
+            // firstly remove node that sdk connected to the node, return the request that present
+            // susscces
+            // because the exception is throwed by getTransactionReceipt, we need ignore it.
+            if (!e.getMessage().contains("Don't send requests to this group")) {
+                throw e;
+            }
+        }
+
+        //check trans's result
+        CommUtils.handleTransResultDto(transResultDto);
     }
 
+
+    /**
+     * @param consensusParam
+     * @return
+     */
+    public Set<String> checkBeforeSetConsensusStatus(ConsensusParam consensusParam) {
+        log.info("start exec method[checkBeforeSetConsensusStatus]. param:{}", JsonTools.objToString(consensusParam));
+
+        //get nodeIds
+        Set<String> nodeIds = SetUtils.hashSet(consensusParam.getNodeId());
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            if (Objects.isNull(consensusParam.getAgencyId())) {
+                log.warn("fail exec method[checkBeforeSetConsensusStatus]. nodeId and agencyId param both empty");
+                throw new BaseException(ConstantCode.BOTH_NODE_AND_AGENCY_EMPTY);
+            }
+            List<TbFront> frontList = frontService.listFrontByAgency(consensusParam.getAgencyId());
+            nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
+        }
+        if (CollectionUtils.isEmpty(nodeIds))
+            throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
+
+        //check nodeId exist
+        int chainId = consensusParam.getChainId();
+        int groupId = consensusParam.getGroupId();
+        nodeIds.stream().forEach(node -> nodeService.requireNodeExist(chainId, node));
+
+        //check nodeId by nodeType:sealer
+        if (PrecompiledUtils.NODE_TYPE_SEALER.equals(consensusParam.getNodeType())) {
+            //add sealer
+            List<String> sealerList = frontInterfaceService.getSealerList(chainId, groupId);
+            Set<String> existSealers = nodeIds.stream().filter(nodeId -> sealerList.contains(nodeId)).collect(Collectors.toSet());
+            if (CollectionUtils.isNotEmpty(existSealers)) {
+                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("already  exist sealers:%s", JsonTools.objToString(existSealers))));
+            }
+        }
+
+        //check nodeId by nodeType:observer
+        if (PrecompiledUtils.NODE_TYPE_OBSERVER.equals(consensusParam.getNodeType())) {
+            //add observer
+            List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
+            Set<String> existObservers = nodeIds.stream().filter(nodeId -> observerList.contains(nodeId)).collect(Collectors.toSet());
+            if (CollectionUtils.isNotEmpty(existObservers)) {
+                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("already  exist observer:%s", JsonTools.objToString(existObservers))));
+            }
+        }
+
+        //check nodeId by nodeType:remove
+        if (PrecompiledUtils.NODE_TYPE_REMOVE.equals(consensusParam.getNodeType())) {
+            //add observer
+            List<String> groupPeers = frontInterfaceService.getGroupPeers(chainId, groupId);
+            Set<String> notExistNodes = nodeIds.stream().filter(nodeId -> !groupPeers.contains(nodeId)).collect(Collectors.toSet());
+            if (CollectionUtils.isNotEmpty(notExistNodes)) {
+                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("not  exist node:%s", JsonTools.objToString(notExistNodes))));
+            }
+        }
+
+        log.info("success exec method[checkBeforeSetConsensusStatus]. result:{}", JsonTools.objToString(nodeIds));
+        return nodeIds;
+    }
 }
