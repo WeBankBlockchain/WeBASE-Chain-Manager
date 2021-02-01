@@ -90,7 +90,7 @@ public class CommUtils {
                 try {
                     String codeMsgFromOutput = getJsonStr(receipt.getOutput());
                     String resultMsg = PrecompiledUtils.handleReceiptOutput(codeMsgFromOutput);
-                    if (!"success".equals(resultMsg)) {
+                    if (!String.valueOf(Success).equals(resultMsg)) {
                         throw new BaseException(ConstantCode.TX_RECEIPT_CODE_ERROR.attach(resultMsg));
                     }
                 } catch (IOException e) {

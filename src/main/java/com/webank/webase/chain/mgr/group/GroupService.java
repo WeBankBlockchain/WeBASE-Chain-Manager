@@ -40,6 +40,7 @@ import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.repository.bean.*;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import lombok.extern.log4j.Log4j2;
@@ -83,6 +84,8 @@ public class GroupService {
     private FrontGroupMapCache frontGroupMapCache;
     @Autowired
     private FrontGroupMapService frontGroupMapService;
+    @Autowired
+    private TbFrontGroupMapMapper tbFrontGroupMapMapper;
     @Autowired
     private NodeService nodeService;
     @Autowired
@@ -376,8 +379,13 @@ public class GroupService {
                 // removeAllGroup(chainId);
                 continue;
             }
+
             // get group from chain
             for (TbFront front : frontList) {
+
+                //remove old front-group-map
+                tbFrontGroupMapMapper.deleteByFrontId(front.getFrontId());
+
                 String frontPeerName = front.getFrontPeerName();
                 String frontIp = front.getFrontIp();
                 int frontPort = front.getFrontPort();
@@ -398,7 +406,13 @@ public class GroupService {
                     // save group
                     saveGroup("", null, gId, chainId, groupPeerList.size(), "synchronous",
                             GroupType.SYNC.getValue());
-                    frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), gId);
+
+                    //save front-group
+                    List<String> sealerList = frontInterface.getSealerListFromSpecificFront(frontPeerName, frontIp, frontPort, gId);
+                    if(sealerList.contains(front.getNodeId())){
+                        frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), gId);
+                    }
+
                     // save new peers
                     savePeerList(chainId, frontPeerName, frontIp, frontPort, gId, groupPeerList);
                     // remove invalid peers
@@ -407,6 +421,7 @@ public class GroupService {
                     frontService.refreshSealerAndObserverInNodeList(frontPeerName, frontIp, frontPort,
                             front.getChainId(), gId);
                 }
+
             }
 
             // check group status

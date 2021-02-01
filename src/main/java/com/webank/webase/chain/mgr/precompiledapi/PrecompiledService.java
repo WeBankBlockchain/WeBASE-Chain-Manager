@@ -30,15 +30,11 @@ import com.webank.webase.chain.mgr.util.CommUtils;
 import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.fisco.bcos.web3j.precompile.consensus.Consensus.FUNC_ADDOBSERVER;
@@ -68,6 +64,9 @@ public class PrecompiledService {
     private NodeService nodeService;
 
 
+    /**
+     * @param consensusParam
+     */
     public void setConsensusStatus(ConsensusParam consensusParam) {
         log.info("start exec method[setConsensusStatus] param:{}", JsonTools.objToString(consensusParam));
         //reset group list
@@ -88,16 +87,21 @@ public class PrecompiledService {
             switch (consensusParam.getNodeType()) {
                 case PrecompiledUtils.NODE_TYPE_SEALER:
                     addSealer(chainId, groupId, signUserId, nodeId);
+                    break;
                 case PrecompiledUtils.NODE_TYPE_OBSERVER:
                     addObserver(chainId, groupId, signUserId, nodeId);
+                    break;
                 case PrecompiledUtils.NODE_TYPE_REMOVE:
                     removeNode(chainId, groupId, signUserId, nodeId);
+                    break;
                 default:
                     log.debug("end nodeManageControl invalid node type");
                     throw new BaseException(ConstantCode.INVALID_NODE_TYPE);
             }
         }
 
+        //reset group list
+        groupService.resetGroupList();
     }
 
 
@@ -168,7 +172,9 @@ public class PrecompiledService {
         log.info("start exec method[checkBeforeSetConsensusStatus]. param:{}", JsonTools.objToString(consensusParam));
 
         //get nodeIds
-        Set<String> nodeIds = SetUtils.hashSet(consensusParam.getNodeId());
+        Set<String> nodeIds = new HashSet<>();
+        nodeIds.add(consensusParam.getNodeId());
+        nodeIds.removeAll(Collections.singleton(null));
         if (CollectionUtils.isEmpty(nodeIds)) {
             if (Objects.isNull(consensusParam.getAgencyId())) {
                 log.warn("fail exec method[checkBeforeSetConsensusStatus]. nodeId and agencyId param both empty");
@@ -177,6 +183,8 @@ public class PrecompiledService {
             List<TbFront> frontList = frontService.listFrontByAgency(consensusParam.getAgencyId());
             nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
         }
+        //check nodeIds
+        nodeIds.removeAll(Collections.singleton(null));
         if (CollectionUtils.isEmpty(nodeIds))
             throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
 

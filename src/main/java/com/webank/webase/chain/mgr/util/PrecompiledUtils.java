@@ -209,7 +209,7 @@ public class PrecompiledUtils {
 
         if (code == Success) {
             // if success, return raw (permissionService needed)
-            return result;
+            return String.valueOf(Success);
         } else {
             // else throw exception by code and msg
             throw new BaseException(code, msg);
