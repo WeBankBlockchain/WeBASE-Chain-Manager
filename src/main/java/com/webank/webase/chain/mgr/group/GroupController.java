@@ -439,7 +439,7 @@ public class GroupController extends BaseController {
         Instant startTime = Instant.now();
         log.info("start queryGroupByPage startTime:{} chainId:{} agencyId:{} pageNumber:{} pageSize:{}", startTime.toEpochMilli(), chainId, agencyId, pageSize, pageNumber);
         BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId, pageSize, pageNumber);
-        log.info("end queryGroupByPage useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
+        log.info("end queryGroupByPage useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(),JsonTools.objToString(basePageResponse));
         return basePageResponse;
     }
 
