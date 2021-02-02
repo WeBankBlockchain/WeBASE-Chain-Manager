@@ -60,6 +60,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * services for group data.
@@ -382,10 +383,6 @@ public class GroupService {
 
             // get group from chain
             for (TbFront front : frontList) {
-
-                //remove old front-group-map
-                tbFrontGroupMapMapper.deleteByFrontId(front.getFrontId());
-
                 String frontPeerName = front.getFrontPeerName();
                 String frontIp = front.getFrontIp();
                 int frontPort = front.getFrontPort();
@@ -409,8 +406,11 @@ public class GroupService {
 
                     //save front-group
                     List<String> sealerList = frontInterface.getSealerListFromSpecificFront(frontPeerName, frontIp, frontPort, gId);
-                    if(sealerList.contains(front.getNodeId())){
+                    if (sealerList.contains(front.getNodeId())) {
                         frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), gId);
+                    } else {
+                        //remove old front-group-map
+                        tbFrontGroupMapMapper.deleteByChainIdAndFrontIdAndGroupId(chainId, front.getFrontId(), gId);
                     }
 
                     // save new peers
@@ -756,7 +756,7 @@ public class GroupService {
             log.info("finish exec method[listGroupIdByAgencyId] not found front record by agencyId:{}", agencyId);
             return Collections.EMPTY_LIST;
         }
-        List<Integer> frontIdList = frontList.stream().map(front -> front.getFrontId()).collect(Collectors.toList());
+        List<Integer> frontIdList = frontList.stream().map(front -> front.getFrontId()).distinct().collect(Collectors.toList());
 
         //list group
         List<Integer> groupIdList = frontGroupMapService.listGroupByFronts(frontIdList);

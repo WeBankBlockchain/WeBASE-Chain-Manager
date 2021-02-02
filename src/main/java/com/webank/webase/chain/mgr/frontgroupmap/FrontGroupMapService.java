@@ -124,7 +124,7 @@ public class FrontGroupMapService {
         //query
         List<TbFrontGroupMap> frontGroupMapList = tbFrontGroupMapMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(frontGroupMapList)) return Collections.EMPTY_LIST;
-        List<Integer> groupIdList = frontGroupMapList.stream().map(map -> map.getGroupId()).collect(Collectors.toList());
+        List<Integer> groupIdList = frontGroupMapList.stream().map(map -> map.getGroupId()).distinct().collect(Collectors.toList());
         log.info("success exec method[listGroupByFronts], frontIdList:{} result:{}", JsonTools.objToString(frontIdList), JsonTools.objToString(groupIdList));
         return groupIdList;
     }

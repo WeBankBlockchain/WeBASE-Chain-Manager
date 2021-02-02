@@ -44,6 +44,9 @@ public interface TbFrontGroupMapMapper {
     @Delete({ "delete from tb_front_group_map  where chain_id = #{chainId} and group_id = #{groupId}" })
     int deleteByGroupId(@Param("chainId") int chainId, @Param("groupId") int groupId);
 
+    @Delete({ "delete from tb_front_group_map where chain_id = #{chainId} and front_id = #{frontId} and group_id = #{groupId}" })
+    int deleteByChainIdAndFrontIdAndGroupId(@Param("chainId") int chainId, @Param("frontId") int frontId, @Param("groupId") int groupId);
+
     @Select({ "select * from tb_front_group_map where chain_id = #{chainId} and front_id = #{frontId} and group_id = #{groupId}" })
     TbFrontGroupMap selectByChainIdAndFrontIdAndGroupId(@Param("chainId") int chainId, @Param("frontId") int frontId, @Param("groupId") int groupId);
 
