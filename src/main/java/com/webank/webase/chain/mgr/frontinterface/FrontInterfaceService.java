@@ -307,6 +307,15 @@ public class FrontInterfaceService {
         return consensusStatus;
     }
 
+
+    public List<String> getNodeIdList(Integer chainId, Integer groupId) {
+        log.debug("start getNodeIdList. groupId:{}", groupId);
+        List<String> nodeIdList = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_NODEID_LIST, List.class);
+        log.debug("end getNodeIdList. nodeIdList:{}", JsonTools.toJSONString(nodeIdList));
+        return nodeIdList;
+    }
+
     /**
      * get syncStatus
      */
@@ -363,6 +372,7 @@ public class FrontInterfaceService {
         log.debug("end operateGroup");
         return groupHandleResult;
     }
+
 
     public Object getConsensusList(String peerName, String frontIp, Integer frontPort, Integer groupId,
                                    Integer pageSize, Integer pageNumber) {

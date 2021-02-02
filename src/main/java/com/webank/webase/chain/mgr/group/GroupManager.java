@@ -39,12 +39,13 @@ public class GroupManager {
             log.info("is too many data match by appId:{}", appId);
             throw new BaseException(ConstantCode.FOUND_TOO_MANY_DATA_BY_APP_ID);
         }
-        tbGroup = groupList.get(0);
 
-        if (Objects.isNull(tbGroup)) {
+        if (CollectionUtils.size(groupList) ==0) {
             log.warn("fail exec method [verifyAppId]. not found record by  appId:{}", appId);
             throw new BaseException(ConstantCode.INVALID_APP_ID);
         }
+
+        tbGroup = groupList.get(0);
         log.info("success exec method [verifyAppId]. result:{}", JsonTools.objToString(tbGroup));
         return tbGroup;
     }

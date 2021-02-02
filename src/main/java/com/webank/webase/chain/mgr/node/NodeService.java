@@ -27,7 +27,6 @@ import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
-import com.webank.webase.chain.mgr.repository.bean.TbNodeExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
 import com.webank.webase.chain.mgr.util.SshUtil;
@@ -411,23 +410,20 @@ public class NodeService {
 
 
     /**
-     *
      * @param chainId
      * @param nodeId
      * @return
      */
-    public TbNode requireNodeExist(int chainId, String nodeId) {
-        log.debug("start exec method[requireNodeExist] chainId:{} chainId:{}", chainId, nodeId);
-        TbNodeExample example = new TbNodeExample();
-        TbNodeExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chainId);
-        criteria.andNodeIdEqualTo(nodeId);
+    public void requireNodeIdValid(int chainId, int groupId, String nodeId) {
+        log.debug("start exec method[requireNodeExist] chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);
 
-        TbNode tbNode = tbNodeMapper.getOneByExample(example).orElse(null);
-        if (Objects.isNull(tbNode)) {
-            log.warn("fail exec method[requireNodeExist]. not found node record by chainId:{} nodeId:{}", chainId, nodeId);
+        List<String> nodeIdList = frontInterface.getNodeIdList(chainId, groupId);
+        if (CollectionUtils.isEmpty(nodeIdList))
+            throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR.attach("query node list,but result is empty"));
+
+        if (!nodeIdList.contains(nodeId)) {
+            log.warn("fail exec method[requireNodeExist]. not found nodeId:{} but found:{}", nodeId, JsonTools.objToString(nodeIdList));
             throw new BaseException(ConstantCode.INVALID_NODE_ID);
         }
-        return tbNode;
     }
 }

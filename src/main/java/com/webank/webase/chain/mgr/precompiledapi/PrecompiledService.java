@@ -191,7 +191,7 @@ public class PrecompiledService {
         //check nodeId exist
         int chainId = consensusParam.getChainId();
         int groupId = consensusParam.getGroupId();
-        nodeIds.stream().forEach(node -> nodeService.requireNodeExist(chainId, node));
+        nodeIds.stream().forEach(node -> nodeService.requireNodeIdValid(chainId, groupId, node));
 
         //check nodeId by nodeType:sealer
         if (PrecompiledUtils.NODE_TYPE_SEALER.equals(consensusParam.getNodeType())) {
