@@ -26,6 +26,7 @@ import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
+import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
@@ -81,18 +82,24 @@ public class NodeController extends BaseController {
                                           @PathVariable("pageNumber") Integer pageNumber,
                                           @PathVariable("pageSize") Integer pageSize,
                                           @RequestParam(value = "agencyId", required = false) Integer agencyId,
-                                          @RequestParam(value = "nodeId", required = false) String nodeId) throws BaseException {
+                                          @RequestParam(value = "nodeId", required = false) String nodeId,
+                                          @RequestParam(value = "nodeType", required = false) String nodeType) throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info(
-                "start queryNodeList startTime:{} groupId:{} pageNumber:{} pageSize:{} agencyId:{} nodeId:{}",
-                startTime.toEpochMilli(), groupId, pageNumber, pageSize, agencyId, nodeId);
-
+                "start queryNodeList startTime:{} groupId:{} pageNumber:{} pageSize:{} agencyId:{} nodeId:{} nodeType:{}",
+                startTime.toEpochMilli(), groupId, pageNumber, pageSize, agencyId, nodeId,nodeType);
 
         int newGroupId = groupId == null || groupId <= 0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
 
         // check node status before query
         nodeService.checkAndUpdateNodeStatus(chainId);
+
+
+        if(PrecompiledUtils.NODE_TYPE_REMOVE.equals(nodeType)){
+            //TODO
+        }
+
 
         // param
         NodeParam queryParam = new NodeParam();
@@ -106,7 +113,6 @@ public class NodeController extends BaseController {
                 Set<String> nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
                 queryParam.setNodeIds(nodeIds);
             }
-
         }
 
         Integer count = nodeService.countOfNode(queryParam);
