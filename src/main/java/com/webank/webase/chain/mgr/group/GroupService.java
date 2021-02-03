@@ -60,7 +60,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * services for group data.
@@ -710,7 +709,7 @@ public class GroupService {
      * @param pageNumber
      * @return
      */
-    public BasePageResponse queryGroupByPage(Integer chainId, Integer agencyId, Integer pageSize, Integer pageNumber) {
+    public BasePageResponse queryGroupByPage(Integer chainId, Integer agencyId, Integer pageSize, Integer pageNumber, Byte status) {
         // check id
         chainService.verifyChainId(chainId);
         //reset all local group
@@ -721,6 +720,9 @@ public class GroupService {
         example.setCount(pageSize);
         TbGroupExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(chainId);
+        if (Objects.nonNull(status)) {
+            criteria.andGroupStatusEqualTo(status);
+        }
 
         //query by agencyId
         if (Objects.nonNull(agencyId)) {

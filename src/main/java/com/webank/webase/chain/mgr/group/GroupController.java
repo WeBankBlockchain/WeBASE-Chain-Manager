@@ -411,7 +411,7 @@ public class GroupController extends BaseController {
                                    @RequestParam(defaultValue = "1") Integer pageNumber) {
 
         Instant startTime = Instant.now();
-        log.info("start consensus list startTime:{}", startTime.toEpochMilli());
+        log.info("sta   rt consensus list startTime:{}", startTime.toEpochMilli());
 
         int newGroupId = groupId == null || groupId <= 0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
 
@@ -435,11 +435,12 @@ public class GroupController extends BaseController {
     public BasePageResponse queryGroupByPage(@PathVariable("chainId") Integer chainId,
                                              @RequestParam(name = "agency", required = false) Integer agencyId,
                                              @RequestParam(defaultValue = "10") Integer pageSize,
-                                             @RequestParam(defaultValue = "1") Integer pageNumber) {
+                                             @RequestParam(defaultValue = "1") Integer pageNumber,
+                                             @RequestParam(name = "status", required = false) Byte status) {
         Instant startTime = Instant.now();
-        log.info("start queryGroupByPage startTime:{} chainId:{} agencyId:{} pageNumber:{} pageSize:{}", startTime.toEpochMilli(), chainId, agencyId, pageSize, pageNumber);
-        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId, pageSize, pageNumber);
-        log.info("end queryGroupByPage useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(),JsonTools.objToString(basePageResponse));
+        log.info("start queryGroupByPage startTime:{} chainId:{} agencyId:{} pageNumber:{} pageSize:{} status:{}", startTime.toEpochMilli(), chainId, agencyId, pageSize, pageNumber, status);
+        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId, pageSize, pageNumber,status);
+        log.info("end queryGroupByPage useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(basePageResponse));
         return basePageResponse;
     }
 

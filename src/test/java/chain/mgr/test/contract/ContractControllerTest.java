@@ -209,7 +209,7 @@ public class ContractControllerTest {
         ReqDeployByContractIdVO deployInputParam = new ReqDeployByContractIdVO();
         deployInputParam.setSignUserId(signUserId);
         deployInputParam.setContractId(contractId);
-        deployInputParam.setConstructorParams(Arrays.asList());
+//        deployInputParam.setConstructorParams(Arrays.asList());
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders
                 .post("/contract/deployByContractId").content(JsonTools.toJSONString(deployInputParam))

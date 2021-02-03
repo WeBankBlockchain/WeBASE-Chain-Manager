@@ -93,6 +93,9 @@ public class TransService {
         if (CollectionUtils.isEmpty(funcParam) && StringUtils.isNotBlank(req.getFuncParamJson())) {
             funcParam = JsonTools.toJavaObjectList(req.getFuncParamJson(), Object.class);
         }
+        if (CollectionUtils.isEmpty(funcParam))
+            funcParam = Arrays.asList();
+
         TransResultDto restRsp = handleTransaction(chain, group, user, address, abi, funcName, funcParam);
 
         log.info("finish exec method[send]. restRsp:{}", JsonTools.objToString(restRsp));
