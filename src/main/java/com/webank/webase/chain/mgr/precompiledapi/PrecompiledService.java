@@ -16,6 +16,7 @@ package com.webank.webase.chain.mgr.precompiledapi;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.PrecompiledTypes;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
@@ -34,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,6 +64,8 @@ public class PrecompiledService {
     private GroupService groupService;
     @Autowired
     private NodeService nodeService;
+    @Autowired
+    private ConstantProperties constantProperties;
 
 
     /**
@@ -201,6 +205,16 @@ public class PrecompiledService {
             if (CollectionUtils.isNotEmpty(existSealers)) {
                 throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("already  exist sealers:%s", JsonTools.objToString(existSealers))));
             }
+
+            //check blockNumber
+            BigInteger blockNumberOfChain = frontInterfaceService.getLatestBlockNumber(chainId, groupId);
+            for (String nodeId : nodeIds) {
+                BigInteger blockNumberOfNode = nodeService.getBlockNumberOfNodeOnChain(chainId, groupId, nodeId);
+                if (blockNumberOfChain.subtract(blockNumberOfNode).compareTo(constantProperties.getMaxBlockDifferenceOfNewSealer()) > 0) {
+                    throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("found nodeId:%s blockNumberOfNode:%d blockNumberOfChain:%d ", nodeId, blockNumberOfNode, blockNumberOfChain)));
+                }
+            }
+
         }
 
         //check nodeId by nodeType:observer

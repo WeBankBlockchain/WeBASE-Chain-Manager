@@ -40,6 +40,9 @@ constant:
   maxRequestFail: 3
   sleepWhenHttpMaxFail: 60000
 
+  ### change node type
+  maxBlockDifferenceOfNewSealer: 5  # The maximum allowable block difference of the new consensus node
+
 
   ## 部署配置
   dockerRepository: fiscoorg/fisco-webase

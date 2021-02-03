@@ -302,7 +302,7 @@ public class NodeService {
     /**
      * get latest number of peer on chain.
      */
-    private BigInteger getBlockNumberOfNodeOnChain(int chainId, int groupId, String nodeId) {
+    public BigInteger getBlockNumberOfNodeOnChain(int chainId, int groupId, String nodeId) {
         SyncStatus syncStatus = frontInterface.getSyncStatus(chainId, groupId);
         if (nodeId.equals(syncStatus.getNodeId())) {
             return syncStatus.getBlockNumber();

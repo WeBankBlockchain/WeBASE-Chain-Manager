@@ -64,6 +64,9 @@ public class ConstantProperties {
     private Integer maxRequestFail = 3;
     private Long sleepWhenHttpMaxFail = 60000L; // default 1min
 
+    // about node type
+    private BigInteger maxBlockDifferenceOfNewSealer = new BigInteger("5");
+
 
     //************************8 add by deploy
     public static final int DEFAULT_GROUP_ID = 1;
