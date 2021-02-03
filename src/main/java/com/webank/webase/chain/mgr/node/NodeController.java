@@ -38,10 +38,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -88,16 +85,35 @@ public class NodeController extends BaseController {
         Instant startTime = Instant.now();
         log.info(
                 "start queryNodeList startTime:{} groupId:{} pageNumber:{} pageSize:{} agencyId:{} nodeId:{} nodeType:{}",
-                startTime.toEpochMilli(), groupId, pageNumber, pageSize, agencyId, nodeId,nodeType);
+                startTime.toEpochMilli(), groupId, pageNumber, pageSize, agencyId, nodeId, nodeType);
 
         int newGroupId = groupId == null || groupId <= 0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
 
         // check node status before query
         nodeService.checkAndUpdateNodeStatus(chainId);
 
+        //nodeId of agency
+        Set<String> nodeIdsOfAgency = new HashSet<>();
+        if (Objects.nonNull(agencyId)) {
+            List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
+            if (CollectionUtils.isNotEmpty(frontList)) {
+                Set<String> nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
+                nodeIdsOfAgency.addAll(nodeIds);
+            }
+        }
 
-        if(PrecompiledUtils.NODE_TYPE_REMOVE.equals(nodeType)){
-            //TODO
+        if (PrecompiledUtils.NODE_TYPE_REMOVE.equals(nodeType)) {
+            List<String> nodeIds = nodeService.getNodeIdsByType(chainId, groupId, nodeType);
+            if (CollectionUtils.isEmpty(nodeIds)) {
+                log.info("nodeIds of remove type is empty,result:{}", JsonTools.objToString(pagesponse));
+                return pagesponse;
+            }
+
+            List<>
+            if (CollectionUtils.isNotEmpty(nodeIdsOfAgency)) {
+
+            }
+            pagesponse.setData(nodeIds;);
         }
 
 
@@ -107,13 +123,7 @@ public class NodeController extends BaseController {
         queryParam.setGroupId(newGroupId);
         queryParam.setNodeId(nodeId);
         queryParam.setPageSize(pageSize);
-        if (Objects.nonNull(agencyId)) {
-            List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
-            if (CollectionUtils.isNotEmpty(frontList)) {
-                Set<String> nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
-                queryParam.setNodeIds(nodeIds);
-            }
-        }
+
 
         Integer count = nodeService.countOfNode(queryParam);
         if (count != null && count > 0) {
@@ -131,6 +141,7 @@ public class NodeController extends BaseController {
                 JsonTools.toJSONString(pagesponse));
         return pagesponse;
     }
+
 
     /**
      * get block number.

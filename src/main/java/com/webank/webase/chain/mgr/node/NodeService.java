@@ -29,6 +29,7 @@ import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
+import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ValidateUtil;
 import lombok.extern.log4j.Log4j2;
@@ -46,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * services for node data.
@@ -425,5 +428,31 @@ public class NodeService {
             log.warn("fail exec method[requireNodeExist]. not found nodeId:{} but found:{}", nodeId, JsonTools.objToString(nodeIdList));
             throw new BaseException(ConstantCode.INVALID_NODE_ID);
         }
+    }
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param nodeType
+     * @return
+     */
+    public List<String> getNodeIdsByType(int chainId, int groupId, String nodeType) {
+        if (PrecompiledUtils.NODE_TYPE_SEALER.equals(nodeType)) {
+            return frontInterface.getSealerList(chainId, groupId);
+        }
+        if (PrecompiledUtils.NODE_TYPE_OBSERVER.equals(nodeType)) {
+            return frontInterface.getObserverList(chainId, groupId);
+        }
+        if (PrecompiledUtils.NODE_TYPE_REMOVE.equals(nodeType)) {
+            List<String> sealerList = frontInterface.getSealerList(chainId, groupId);
+            List<String> observerList = frontInterface.getObserverList(chainId, groupId);
+            List<String> nodeIdList = frontInterface.getNodeIdList(chainId, groupId);
+            List<String> sealerOrObserverList = Stream.of(sealerList, observerList).flatMap(x -> x.stream()).collect(Collectors.toList());
+            List<String> nodesOfRemoveType = nodeIdList.stream().filter(node -> !sealerOrObserverList.contains(node)).distinct().collect(Collectors.toList());
+            log.info("nodesOfRemoveType:{}", JsonTools.objToString(nodesOfRemoveType));
+        }
+        log.warn("fail exec method[getNodeIds]. not support nodeType:{}", nodeType);
+
+        return new ArrayList<>();
     }
 }
