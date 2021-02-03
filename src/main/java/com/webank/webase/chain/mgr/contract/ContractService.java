@@ -36,6 +36,7 @@ import com.webank.webase.chain.mgr.util.ContractAbiUtil;
 import com.webank.webase.chain.mgr.util.EncoderUtil;
 import com.webank.webase.chain.mgr.util.HttpEntityUtils;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
@@ -342,6 +343,9 @@ public class ContractService {
         verifyContractNotDeploy(tbContract.getChainId(), tbContract.getContractId(), tbContract.getGroupId());
 
         List<Object> params = req.getConstructorParams();
+        if (CollectionUtils.isEmpty(params) && StringUtils.isNotBlank(req.getConstructorParamsJson())) {
+            params = JsonTools.toJavaObjectList(req.getConstructorParamsJson(), Object.class);
+        }
         AbiDefinition abiDefinition = null;
         try {
             abiDefinition = ContractAbiUtil.getAbiDefinition(tbContract.getContractAbi());

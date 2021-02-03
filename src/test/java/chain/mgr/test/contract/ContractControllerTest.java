@@ -51,10 +51,11 @@ public class ContractControllerTest {
 
     private MockMvc mockMvc;
     private Integer chainId = 1;
-    private String nodeId = "53060c93c5c7bfdc2b35ffae766e5e9f0ca16340f8e4ed09421cbbdb86cc974d57eb6460d41c33a71634f033a898d92486dd5081e2db1672bd426fff6e4af5f8";
+    private String nodeId = "51b04e53c1ea3f779462713f2b7979c5c46a4b31a3b94556a04f0c76473920b34704618e3f392ef619938fac6852465b31fc3d061d8cbf1e7862a11d92858441";
     private Integer groupId = 1;
-    private String signUserId = null;
-    private Integer contractId = 400027;
+    private String appId = "chain_1_group_1";
+    private String signUserId = "KKgQkyOsjrrc";
+    private Integer contractId = 400031;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -88,8 +89,9 @@ public class ContractControllerTest {
         ReqNewUser param = new ReqNewUser();
         param.setSignUserId(signUserId);
         param.setSignUserName("tttttt");
-        param.setAppId(String.valueOf(groupId));
-        param.setEncryptType(0);
+        param.setChainId(chainId);
+        param.setAppId(appId);
+//        param.setEncryptType(0);
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post("/user/newUser")
                 .content(JsonTools.toJSONString(param)).contentType(MediaType.APPLICATION_JSON));
@@ -225,7 +227,8 @@ public class ContractControllerTest {
         param.setContractId(contractId);
         param.setSignUserId(signUserId);
         param.setFuncName("trans");
-        param.setFuncParam(Arrays.asList(2));
+//        param.setFuncParam(Arrays.asList(2));
+        param.setFuncParamJson(JsonTools.objToString(Arrays.asList(4)));
 
         ResultActions resultActions =
                 mockMvc.perform(MockMvcRequestBuilders.post("/trans/sendByContractId")

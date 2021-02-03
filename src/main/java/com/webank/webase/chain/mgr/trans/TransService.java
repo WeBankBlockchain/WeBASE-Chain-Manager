@@ -34,6 +34,7 @@ import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
 import com.webank.webase.chain.mgr.util.ContractAbiUtil;
 import com.webank.webase.chain.mgr.util.EncoderUtil;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.TypeReference;
 import org.fisco.bcos.web3j.abi.datatypes.Function;
@@ -89,6 +90,9 @@ public class TransService {
         String abi = tbContract.getContractAbi();
         String funcName = req.getFuncName();
         List<Object> funcParam = req.getFuncParam();
+        if (CollectionUtils.isEmpty(funcParam) && StringUtils.isNotBlank(req.getFuncParamJson())) {
+            funcParam = JsonTools.toJavaObjectList(req.getFuncParamJson(), Object.class);
+        }
         TransResultDto restRsp = handleTransaction(chain, group, user, address, abi, funcName, funcParam);
 
         log.info("finish exec method[send]. restRsp:{}", JsonTools.objToString(restRsp));

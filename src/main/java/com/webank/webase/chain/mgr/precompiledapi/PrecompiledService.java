@@ -211,7 +211,7 @@ public class PrecompiledService {
             for (String nodeId : nodeIds) {
                 BigInteger blockNumberOfNode = nodeService.getBlockNumberOfNodeOnChain(chainId, groupId, nodeId);
                 if (blockNumberOfChain.subtract(blockNumberOfNode).compareTo(constantProperties.getMaxBlockDifferenceOfNewSealer()) > 0) {
-                    throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("found nodeId:%s blockNumberOfNode:%d blockNumberOfChain:%d ", nodeId, blockNumberOfNode, blockNumberOfChain)));
+                    throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("New consensus node block height difference is too large:found nodeId:%s blockNumberOfNode:%d blockNumberOfChain:%d ", nodeId, blockNumberOfNode, blockNumberOfChain)));
                 }
             }
 

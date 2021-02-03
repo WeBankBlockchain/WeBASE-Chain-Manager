@@ -32,5 +32,6 @@ public class ReqDeployByContractIdVO {
     @NotNull
     private Integer contractId;
     private List<Object> constructorParams;
+    private String constructorParamsJson;
 }
 

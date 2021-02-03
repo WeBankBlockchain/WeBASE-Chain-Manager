@@ -15,4 +15,5 @@ public class ReqSendByContractIdVO {
     @NotBlank
     private String funcName;
     private List<Object> funcParam;
+    private String funcParamJson;
 }
