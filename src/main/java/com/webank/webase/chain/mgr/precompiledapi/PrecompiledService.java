@@ -245,8 +245,11 @@ public class PrecompiledService {
         int chainId = param.getChainId();
         int groupId = param.getGroupId();
         List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
-        if (CollectionUtils.isEmpty(observerList))
-            throw new BaseException(ConstantCode.NOT_FOUND_OBSERVER_NODE);
+        if (CollectionUtils.isEmpty(observerList)) {
+            log.info("finish exec method[checkBeforeAddObserver]. checkBeforeAddObserver is empty");
+            return nodeIds;
+        }
+
         Set<String> nodeIdIsObserver = nodeIds.stream().filter(node -> observerList.contains(node)).collect(Collectors.toSet());
         if (CollectionUtils.isNotEmpty(nodeIdIsObserver))
             throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are observers:%s", JsonTools.objToString(nodeIdIsObserver))));
@@ -268,7 +271,7 @@ public class PrecompiledService {
         int groupId = param.getGroupId();
 
         //require nodeType is not remove
-        List<String> nodesOfRemoveType = nodeService.getNodeIds(chainId, groupId, PrecompiledUtils.NODE_TYPE_OBSERVER);
+        List<String> nodesOfRemoveType = nodeService.getNodeIds(chainId, groupId, PrecompiledUtils.NODE_TYPE_REMOVE);
         if (CollectionUtils.isEmpty(nodesOfRemoveType)) {
             log.info("finish exec method[checkBeforeAddNodeOfRemoveType]. nodesOfRemoveType is empty");
             return nodeIds;
@@ -276,7 +279,7 @@ public class PrecompiledService {
 
         Set<String> nodeIdIsRemoveType = nodeIds.stream().filter(node -> nodesOfRemoveType.contains(node)).collect(Collectors.toSet());
         if (CollectionUtils.isNotEmpty(nodeIdIsRemoveType))
-            throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are remove:%s", JsonTools.objToString(nodeIdIsRemoveType))));
+            throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are already remove:%s", JsonTools.objToString(nodeIdIsRemoveType))));
 
         log.info("success exec method[checkBeforeAddNodeOfRemoveType]. nodeIds:{}", JsonTools.objToString(nodeIds));
         return nodeIds;
