@@ -436,13 +436,26 @@ public class NodeService {
      * @param nodeType
      * @return
      */
-    public List<String> getNodeIdsByType(int chainId, int groupId, String nodeType) {
+    public List<String> getNodeIds(int chainId, int groupId, String nodeType) {
+
+        if (StringUtils.isBlank(nodeType)) {
+            List<String> nodeIdList = frontInterface.getNodeIdList(chainId, groupId);
+            log.info("allNodeId:{}", JsonTools.objToString(nodeIdList));
+            return nodeIdList;
+        }
+
         if (PrecompiledUtils.NODE_TYPE_SEALER.equals(nodeType)) {
-            return frontInterface.getSealerList(chainId, groupId);
+            List<String> sealerList = frontInterface.getSealerList(chainId, groupId);
+            log.info("nodesOfSealerType:{}", JsonTools.objToString(sealerList));
+            return sealerList;
         }
+
         if (PrecompiledUtils.NODE_TYPE_OBSERVER.equals(nodeType)) {
-            return frontInterface.getObserverList(chainId, groupId);
+            List<String> observerList = frontInterface.getObserverList(chainId, groupId);
+            log.info("nodesOfObserverType:{}", JsonTools.objToString(observerList));
+            return observerList;
         }
+
         if (PrecompiledUtils.NODE_TYPE_REMOVE.equals(nodeType)) {
             List<String> sealerList = frontInterface.getSealerList(chainId, groupId);
             List<String> observerList = frontInterface.getObserverList(chainId, groupId);
@@ -450,7 +463,9 @@ public class NodeService {
             List<String> sealerOrObserverList = Stream.of(sealerList, observerList).flatMap(x -> x.stream()).collect(Collectors.toList());
             List<String> nodesOfRemoveType = nodeIdList.stream().filter(node -> !sealerOrObserverList.contains(node)).distinct().collect(Collectors.toList());
             log.info("nodesOfRemoveType:{}", JsonTools.objToString(nodesOfRemoveType));
+            return nodesOfRemoveType;
         }
+
         log.warn("fail exec method[getNodeIds]. not support nodeType:{}", nodeType);
 
         return new ArrayList<>();

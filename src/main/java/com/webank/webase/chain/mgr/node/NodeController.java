@@ -26,7 +26,6 @@ import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
-import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
@@ -38,7 +37,10 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -92,30 +94,6 @@ public class NodeController extends BaseController {
         // check node status before query
         nodeService.checkAndUpdateNodeStatus(chainId);
 
-        //nodeId of agency
-        Set<String> nodeIdsOfAgency = new HashSet<>();
-        if (Objects.nonNull(agencyId)) {
-            List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
-            if (CollectionUtils.isNotEmpty(frontList)) {
-                Set<String> nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
-                nodeIdsOfAgency.addAll(nodeIds);
-            }
-        }
-
-        if (PrecompiledUtils.NODE_TYPE_REMOVE.equals(nodeType)) {
-            List<String> nodeIds = nodeService.getNodeIdsByType(chainId, groupId, nodeType);
-            if (CollectionUtils.isEmpty(nodeIds)) {
-                log.info("nodeIds of remove type is empty,result:{}", JsonTools.objToString(pagesponse));
-                return pagesponse;
-            }
-
-            List<>
-            if (CollectionUtils.isNotEmpty(nodeIdsOfAgency)) {
-
-            }
-            pagesponse.setData(nodeIds;);
-        }
-
 
         // param
         NodeParam queryParam = new NodeParam();
@@ -123,7 +101,14 @@ public class NodeController extends BaseController {
         queryParam.setGroupId(newGroupId);
         queryParam.setNodeId(nodeId);
         queryParam.setPageSize(pageSize);
+        if (Objects.nonNull(agencyId)) {
+            List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
+            if (CollectionUtils.isNotEmpty(frontList)) {
+                Set<String> nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
+                queryParam.setNodeIds(nodeIds);
+            }
 
+        }
 
         Integer count = nodeService.countOfNode(queryParam);
         if (count != null && count > 0) {
@@ -140,6 +125,51 @@ public class NodeController extends BaseController {
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JsonTools.toJSONString(pagesponse));
         return pagesponse;
+    }
+
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param agencyId
+     * @param nodeType
+     * @return
+     * @throws BaseException
+     */
+    @GetMapping(value = "/nodeIdList/{chainId}/{groupId}")
+    public BaseResponse queryNodeIdList(@PathVariable("chainId") Integer chainId,
+                                        @PathVariable("groupId") Integer groupId,
+                                        @RequestParam(value = "agencyId", required = false) Integer agencyId,
+                                        @RequestParam(value = "nodeType", required = false) String nodeType) throws BaseException {
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info(
+                "start queryNodeIdList startTime:{} groupId:{} agencyId:{} nodeType:{}", startTime.toEpochMilli(), groupId, agencyId, nodeType);
+
+        // check node status before query
+        nodeService.checkAndUpdateNodeStatus(chainId);
+
+        //list nodeId by type
+        List<String> nodeIds = nodeService.getNodeIds(chainId, groupId, nodeType);
+        baseResponse.setData(nodeIds);
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            log.info("finish exec method [queryNodeIdList]. not found record by chain:{} group:{} nodeType:{}", chainId, groupId, nodeType);
+            return baseResponse;
+        }
+
+        //nodeId of agency
+        if (Objects.nonNull(agencyId)) {
+            List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
+            if (CollectionUtils.isNotEmpty(frontList)) {
+                Set<String> nodeIdOfFronts = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
+                Set<String> resultNodeIds = nodeIds.stream().filter(id -> nodeIdOfFronts.contains(id)).collect(Collectors.toSet());
+                baseResponse.setData(resultNodeIds);
+            }
+        }
+
+        log.info("end queryNodeList useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(baseResponse));
+        return baseResponse;
+
     }
 
 
