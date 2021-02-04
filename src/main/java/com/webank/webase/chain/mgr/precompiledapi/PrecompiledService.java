@@ -33,6 +33,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -91,7 +92,7 @@ public class PrecompiledService {
         for (String nodeId : nodeIds) {
             switch (consensusParam.getNodeType()) {
                 case PrecompiledUtils.NODE_TYPE_SEALER:
-                    addSealer(chainId, groupId, signUserId, nodeId);
+                    addObserverAndSaveSealerTask(chainId, groupId, signUserId, nodeId);
                     break;
                 case PrecompiledUtils.NODE_TYPE_OBSERVER:
                     addObserver(chainId, groupId, signUserId, nodeId);
@@ -109,6 +110,11 @@ public class PrecompiledService {
         groupService.resetGroupList();
     }
 
+    @Transactional
+    public void addObserverAndSaveSealerTask(int chainId, int groupId, String signUserId, String nodeId) {
+
+
+    }
 
     /**
      * consensus: add sealer through webase-sign

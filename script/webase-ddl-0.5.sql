@@ -46,5 +46,6 @@ CREATE TABLE IF NOT EXISTS tb_task (
   gmt_modified datetime DEFAULT NULL COMMENT '修改时间',
   description varchar(250) DEFAULT NULL COMMENT '描述',
   remark text COMMENT '备注',
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+    UNIQUE KEY unique_chain_group_node (chain_id,group_id,node_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务信息表';

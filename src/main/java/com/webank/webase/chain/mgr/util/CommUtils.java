@@ -12,7 +12,13 @@ import org.fisco.bcos.web3j.protocol.channel.StatusCode;
 import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Formatter;
+import java.util.Locale;
 import java.util.Objects;
 
 import static org.fisco.bcos.web3j.precompile.common.PrecompiledCommon.Success;
@@ -114,6 +120,47 @@ public class CommUtils {
         } catch (NumberFormatException e) {
             return "The call function does not exist.";
         }
+    }
+
+
+    /**
+     * 得到mac地址
+     *
+     * @return
+     */
+    public static String getCurrentMAC() {
+        log.debug("start method getCurrentMAC");
+
+        try {
+            InetAddress address = InetAddress.getLocalHost();
+            NetworkInterface ni = NetworkInterface.getByInetAddress(address);
+            byte[] mac = ni.getHardwareAddress();
+            String sMAC = "";
+            Formatter formatter = new Formatter();
+            for (int i = 0; i < mac.length; i++) {
+                sMAC = formatter.format(Locale.getDefault(), "%02X%s", mac[i],
+                        (i < mac.length - 1) ? "-" : "").toString();
+            }
+
+            log.debug("success method getCurrentMAC, mac:{}", sMAC);
+            return sMAC;
+        } catch (Exception e) {
+            log.warn("fail getCurrentMAC", e);
+            throw new BaseException(ConstantCode.SYSTEM_EXCEPTION.attach(e.getMessage()));
+        }
+
+    }
+
+    /**
+     * @return
+     */
+    public static String getCurrentProcessId() {
+        log.debug("start method getCurrentProcessId");
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        String name = runtime.getName();
+        String processId = name.substring(0, name.indexOf("@"));
+        log.debug("success exec  method getCurrentProcessId, result:{}", processId);
+        return processId;
     }
 
 }
