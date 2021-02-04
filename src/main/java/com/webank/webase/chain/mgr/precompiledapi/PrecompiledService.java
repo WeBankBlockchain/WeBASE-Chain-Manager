@@ -23,7 +23,6 @@ import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
-import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.sign.UserService;
 import com.webank.webase.chain.mgr.trans.TransService;
 import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
@@ -36,7 +35,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.fisco.bcos.web3j.precompile.consensus.Consensus.FUNC_ADDOBSERVER;
@@ -175,166 +176,135 @@ public class PrecompiledService {
     public Set<String> checkBeforeSetConsensusStatus(ConsensusParam consensusParam) {
         log.info("start exec method[checkBeforeSetConsensusStatus]. param:{}", JsonTools.objToString(consensusParam));
 
-        //get nodeIds
-        Set<String> nodeIds = new HashSet<>();
-        nodeIds.add(consensusParam.getNodeId());
-        nodeIds.removeAll(Collections.singleton(null));
-        if (CollectionUtils.isEmpty(nodeIds)) {
-            if (Objects.isNull(consensusParam.getAgencyId())) {
-                log.warn("fail exec method[checkBeforeSetConsensusStatus]. nodeId and agencyId param both empty");
-                throw new BaseException(ConstantCode.BOTH_NODE_AND_AGENCY_EMPTY);
-            }
-            List<TbFront> frontList = frontService.listFrontByAgency(consensusParam.getAgencyId());
-            nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
+        String nodeType = consensusParam.getNodeType();
+        log.info("nodeType:{}", nodeType);
+
+        Set<String> nodeIds;
+        switch (nodeType) {
+            case PrecompiledUtils.NODE_TYPE_SEALER:
+                nodeIds = checkBeforeAddSealer(consensusParam);
+                break;
+            case PrecompiledUtils.NODE_TYPE_OBSERVER:
+                nodeIds = checkBeforeAddObserver(consensusParam);
+                break;
+            case PrecompiledUtils.NODE_TYPE_REMOVE:
+                nodeIds = checkBeforeAddNodeOfRemoveType(consensusParam);
+                break;
+            default:
+                throw new BaseException(ConstantCode.INVALID_NODE_TYPE);
         }
-        log.info("nodeIds:{}", JsonTools.objToString(nodeIds));
-
-        //check nodeIds
-        nodeIds.removeAll(Collections.singleton(null));
-        if (CollectionUtils.isEmpty(nodeIds))
-            throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
-
-        //check nodeId exist
-        int chainId = consensusParam.getChainId();
-        int groupId = consensusParam.getGroupId();
-        nodeIds.stream().forEach(node -> nodeService.requireNodeIdValid(chainId, groupId, node));
-
-        //check nodeId by nodeType:sealer
-        if (PrecompiledUtils.NODE_TYPE_SEALER.equals(consensusParam.getNodeType())) {
-            //add sealer
-            List<String> sealerList = frontInterfaceService.getSealerList(chainId, groupId);
-            Set<String> existSealers = nodeIds.stream().filter(nodeId -> sealerList.contains(nodeId)).collect(Collectors.toSet());
-            if (CollectionUtils.isNotEmpty(existSealers)) {
-                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("already  exist sealers:%s", JsonTools.objToString(existSealers))));
-            }
-
-            //check blockNumber
-            BigInteger blockNumberOfChain = frontInterfaceService.getLatestBlockNumber(chainId, groupId);
-            for (String nodeId : nodeIds) {
-                BigInteger blockNumberOfNode = nodeService.getBlockNumberOfNodeOnChain(chainId, groupId, nodeId);
-                if (blockNumberOfChain.subtract(blockNumberOfNode).compareTo(constantProperties.getMaxBlockDifferenceOfNewSealer()) > 0) {
-                    throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("New consensus node block height difference is too large:found nodeId:%s blockNumberOfNode:%d blockNumberOfChain:%d ", nodeId, blockNumberOfNode, blockNumberOfChain)));
-                }
-            }
-
-        }
-
-        //check nodeId by nodeType:observer
-        if (PrecompiledUtils.NODE_TYPE_OBSERVER.equals(consensusParam.getNodeType())) {
-            //add observer
-            List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
-            Set<String> existObservers = nodeIds.stream().filter(nodeId -> observerList.contains(nodeId)).collect(Collectors.toSet());
-            if (CollectionUtils.isNotEmpty(existObservers)) {
-                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("already  exist observer:%s", JsonTools.objToString(existObservers))));
-            }
-        }
-
-        //check nodeId by nodeType:remove
-        if (PrecompiledUtils.NODE_TYPE_REMOVE.equals(consensusParam.getNodeType())) {
-            //remove
-            List<String> groupPeers = frontInterfaceService.getGroupPeers(chainId, groupId);
-            Set<String> notExistNodes = nodeIds.stream().filter(nodeId -> !groupPeers.contains(nodeId)).collect(Collectors.toSet());
-            if (CollectionUtils.isNotEmpty(notExistNodes)) {
-                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("not  exist node:%s", JsonTools.objToString(notExistNodes))));
-            }
-        }
-
         log.info("success exec method[checkBeforeSetConsensusStatus]. result:{}", JsonTools.objToString(nodeIds));
         return nodeIds;
     }
-//
-//    private Set<String> checkBeforeAddSealer(ConsensusParam param) {
-//        log.info("start exec method[checkBeforeAddSealer]. param:{}", JsonTools.objToString(param));
-//
-//        //get nodeIds
-//        Set<String> nodeIds = collectNodeIdByConsensusParam(param);
-//
-//        //query observer list
-//        int chainId = param.getChainId();
-//        int groupId = param.getGroupId();
-//        List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
-//        if(){
-//
-//        }
-//
-//
-//        //require nodeId is observer
-//        if (StringUtils.isNotBlank(consensusParam.getNodeId())) {
-//
-//        }
-//
-//        //get nodeIds
-//
-//        nodeIds.add(consensusParam.getNodeId());
-//        nodeIds.removeAll(Collections.singleton(null));
-//        if (CollectionUtils.isEmpty(nodeIds)) {
-//            if (Objects.isNull(consensusParam.getAgencyId())) {
-//                log.warn("fail exec method[checkBeforeSetConsensusStatus]. nodeId and agencyId param both empty");
-//                throw new BaseException(ConstantCode.BOTH_NODE_AND_AGENCY_EMPTY);
-//            }
-//            List<TbFront> frontList = frontService.listFrontByAgency(consensusParam.getAgencyId());
-//            nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
-//        }
-//        log.info("nodeIds:{}", JsonTools.objToString(nodeIds));
-//
-//        //check nodeIds
-//        nodeIds.removeAll(Collections.singleton(null));
-//        if (CollectionUtils.isEmpty(nodeIds))
-//            throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
-//
-//        //check nodeId exist
-//        int chainId = consensusParam.getChainId();
-//        int groupId = consensusParam.getGroupId();
-//        nodeIds.stream().forEach(node -> nodeService.requireNodeIdValid(chainId, groupId, node));
-//
-//        //check nodeId by nodeType:sealer
-//        if (PrecompiledUtils.NODE_TYPE_SEALER.equals(consensusParam.getNodeType())) {
-//            //add sealer
-//            List<String> sealerList = frontInterfaceService.getSealerList(chainId, groupId);
-//            Set<String> existSealers = nodeIds.stream().filter(nodeId -> sealerList.contains(nodeId)).collect(Collectors.toSet());
-//            if (CollectionUtils.isNotEmpty(existSealers)) {
-//                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("already  exist sealers:%s", JsonTools.objToString(existSealers))));
-//            }
-//
-//            //check blockNumber
-//            BigInteger blockNumberOfChain = frontInterfaceService.getLatestBlockNumber(chainId, groupId);
-//            for (String nodeId : nodeIds) {
-//                BigInteger blockNumberOfNode = nodeService.getBlockNumberOfNodeOnChain(chainId, groupId, nodeId);
-//                if (blockNumberOfChain.subtract(blockNumberOfNode).compareTo(constantProperties.getMaxBlockDifferenceOfNewSealer()) > 0) {
-//                    throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("New consensus node block height difference is too large:found nodeId:%s blockNumberOfNode:%d blockNumberOfChain:%d ", nodeId, blockNumberOfNode, blockNumberOfChain)));
-//                }
-//            }
-//
-//        }
-//    }
-//
-//    /**
-//     * @param param
-//     * @return
-//     */
-//    private Set<String> collectNodeIdByConsensusParam(ConsensusParam param) {
-//        log.info("start exec method[collectNodeIdByConsensusParam]. param:{}", JsonTools.objToString(param));
-//
-//        //get nodeIds
-//        Set<String> nodeIds = new HashSet<>();
-//        if (Objects.nonNull(param)) {
-//            List<TbFront> frontList = frontService.listFrontByAgency(param.getAgencyId());
-//            nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
-//        } else if (StringUtils.isNotBlank(param.getNodeId())) {
-//            nodeIds.add(param.getNodeId());
-//        }
-//        //check nodeIds
-//        nodeIds.removeAll(Collections.singleton(null));
-//        log.info("nodeIds:{}", JsonTools.objToString(nodeIds));
-//        if (CollectionUtils.isEmpty(nodeIds))
-//            throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
-//
-//        //check nodeId exist
-//        int chainId = param.getChainId();
-//        int groupId = param.getGroupId();
-//        nodeIds.stream().forEach(node -> nodeService.requireNodeIdValid(chainId, groupId, node));
-//
-//        log.info("success exec method[collectNodeIdByConsensusParam]. param:{}", JsonTools.objToString(param));
-//        return nodeIds;
-//    }
+
+
+    /**
+     * @param param
+     * @return
+     */
+    private Set<String> checkBeforeAddSealer(ConsensusParam param) {
+        log.info("start exec method[checkBeforeAddSealer]. param:{}", JsonTools.objToString(param));
+
+        //check nodeId exist
+        Set<String> nodeIds = checkNodeIdByConsensusParam(param);
+
+        //require nodeId is observer
+        int chainId = param.getChainId();
+        int groupId = param.getGroupId();
+        List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
+        if (CollectionUtils.isEmpty(observerList))
+            throw new BaseException(ConstantCode.NOT_FOUND_OBSERVER_NODE);
+        Set<String> nodeIdIsNotObserver = nodeIds.stream().filter(node -> !observerList.contains(node)).collect(Collectors.toSet());
+        if (CollectionUtils.isNotEmpty(nodeIdIsNotObserver))
+            throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are not observers:%s", JsonTools.objToString(nodeIdIsNotObserver))));
+
+        //check blockNumber
+        BigInteger blockNumberOfChain = frontInterfaceService.getLatestBlockNumber(chainId, groupId);
+        for (String nodeId : nodeIds) {
+            BigInteger blockNumberOfNode = nodeService.getBlockNumberOfNodeOnChain(chainId, groupId, nodeId);
+            if (blockNumberOfChain.subtract(blockNumberOfNode).compareTo(constantProperties.getMaxBlockDifferenceOfNewSealer()) > 0) {
+                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("New consensus node block height difference is too large:found nodeId:%s blockNumberOfNode:%d blockNumberOfChain:%d ", nodeId, blockNumberOfNode, blockNumberOfChain)));
+            }
+        }
+
+        log.info("success exec method[checkBeforeAddSealer]. result:{}", JsonTools.objToString(nodeIds));
+        return nodeIds;
+    }
+
+    /**
+     * @param param
+     * @return
+     */
+    private Set<String> checkBeforeAddObserver(ConsensusParam param) {
+        log.info("start exec method[checkBeforeAddObserver]. param:{}", JsonTools.objToString(param));
+
+        //check nodeId exist
+        Set<String> nodeIds = checkNodeIdByConsensusParam(param);
+
+        //require nodeId is observer
+        int chainId = param.getChainId();
+        int groupId = param.getGroupId();
+        List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
+        if (CollectionUtils.isEmpty(observerList))
+            throw new BaseException(ConstantCode.NOT_FOUND_OBSERVER_NODE);
+        Set<String> nodeIdIsObserver = nodeIds.stream().filter(node -> observerList.contains(node)).collect(Collectors.toSet());
+        if (CollectionUtils.isNotEmpty(nodeIdIsObserver))
+            throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are observers:%s", JsonTools.objToString(nodeIdIsObserver))));
+
+        log.info("success exec method[checkBeforeAddObserver]. nodeIds:{}", JsonTools.objToString(nodeIds));
+        return nodeIds;
+    }
+
+
+    /**
+     * @param param
+     * @return
+     */
+    private Set<String> checkBeforeAddNodeOfRemoveType(ConsensusParam param) {
+        log.info("start exec method[checkBeforeAddNodeOfRemoveType]. param:{}", JsonTools.objToString(param));
+        //check nodeId exist
+        Set<String> nodeIds = checkNodeIdByConsensusParam(param);
+        int chainId = param.getChainId();
+        int groupId = param.getGroupId();
+
+        //require nodeType is not remove
+        List<String> nodesOfRemoveType = nodeService.getNodeIds(chainId, groupId, PrecompiledUtils.NODE_TYPE_OBSERVER);
+        if (CollectionUtils.isEmpty(nodesOfRemoveType)) {
+            log.info("finish exec method[checkBeforeAddNodeOfRemoveType]. nodesOfRemoveType is empty");
+            return nodeIds;
+        }
+
+        Set<String> nodeIdIsRemoveType = nodeIds.stream().filter(node -> nodesOfRemoveType.contains(node)).collect(Collectors.toSet());
+        if (CollectionUtils.isNotEmpty(nodeIdIsRemoveType))
+            throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are remove:%s", JsonTools.objToString(nodeIdIsRemoveType))));
+
+        log.info("success exec method[checkBeforeAddNodeOfRemoveType]. nodeIds:{}", JsonTools.objToString(nodeIds));
+        return nodeIds;
+
+    }
+
+
+    /**
+     * @param param
+     * @return
+     */
+    private Set<String> checkNodeIdByConsensusParam(ConsensusParam param) {
+        log.info("start exec method[checkNodeIdByConsensusParam]. param:{}", JsonTools.objToString(param));
+
+        //check nodeId exist
+        int chainId = param.getChainId();
+        int groupId = param.getGroupId();
+        List<String> nodeIdList = param.getNodeIdList();
+        if (CollectionUtils.isEmpty(nodeIdList)) {
+            if (StringUtils.isBlank(param.getNodeId())) {
+                throw new BaseException(ConstantCode.NODE_PARAM_EMPTY);
+            }
+            nodeIdList.add(param.getNodeId());
+        }
+        nodeIdList.stream().forEach(node -> nodeService.requireNodeIdValid(chainId, groupId, node));
+
+        Set<String> nodeIds = nodeIdList.stream().collect(Collectors.toSet());
+        log.info("success exec method[checkNodeIdByConsensusParam]. result:{}", JsonTools.objToString(nodeIds));
+        return nodeIds;
+    }
 }

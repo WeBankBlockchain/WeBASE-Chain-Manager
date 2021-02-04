@@ -239,14 +239,6 @@ public class GroupController extends BaseController {
         Instant startTime = Instant.now();
         log.info("start setConsensusStatus startTime:{} consensusParam:{}",
                 startTime.toEpochMilli(), JsonTools.toJSONString(consensusParam));
-//
-//        // get front
-//        TbFront tbFront = frontService.getByChainIdAndNodeId(consensusParam.getChainId(),
-//                consensusParam.getReqNodeId());
-//        if (tbFront == null) {
-//            log.error("fail setConsensusStatus node front not exists.");
-//            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
-//        }
 
         precompiledService.setConsensusStatus(consensusParam);
 

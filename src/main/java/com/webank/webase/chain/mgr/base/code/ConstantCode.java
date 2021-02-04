@@ -217,10 +217,11 @@ public class ConstantCode {
     public static final RetCode TX_RECEIPT_OUTPUT_PARSE_JSON_FAIL = RetCode.mark(205273, "transaction receipt fail and parse output fail");
     public static final RetCode TX_RECEIPT_OUTPUT_NULL = RetCode.mark(205274, "transaction receipt fail and output is null");
     public static final RetCode TX_RECEIPT_CODE_ERROR = RetCode.mark(205275, "transaction receipt status return error");
-    public static final RetCode BOTH_NODE_AND_AGENCY_EMPTY = RetCode.mark(205276, "node and agency cannot both be empty");
+    public static final RetCode NODE_PARAM_EMPTY = RetCode.mark(205276, "nodeId input is empty");
     public static final RetCode INVALID_NODE_TYPE = RetCode.mark(205277,"invalid node type: sealer, observer, remove ");
     public static final RetCode INVALID_NODE_ID = RetCode.mark(205278,"invalid node id");
     public static final RetCode SET_CONSENSUS_STATUS_FAIL = RetCode.mark(205279,"set consensus status not success");
+    public static final RetCode NOT_FOUND_OBSERVER_NODE = RetCode.mark(205280,"not found observer nodes");
 
 
 

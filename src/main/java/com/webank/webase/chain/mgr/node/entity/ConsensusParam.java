@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -42,8 +43,9 @@ public class ConsensusParam {
     @ApiModelProperty(value = "私钥用户id,如果不传就用默认的", example = "sealer/observer/remove", required = true)
     private String signUserId;
     //    @NotBlank
-    @ApiModelProperty(value = "被设置的节点（nodeId和agencyId不能同时为空）", example = "120j7c93c5c7bfdc2b35ffae766e5e9f0ca16340f8e4ed09421cbbdb46cc974d57e76h60d41c33a71634f033a898d92486dd5081e2db1672bd426fff6e4bgh7k")
+    @ApiModelProperty(value = "需要更改状态的节点", example = "120j7c93c5c7bfdc2b35ffae766e5e9f0ca16340f8e4ed09421cbbdb46cc974d57e76h60d41c33a71634f033a898d92486dd5081e2db1672bd426fff6e4bgh7k")
     private String nodeId;
-    @ApiModelProperty(value = "机构Id,该机构下的所有节点同时被设置（nodeId和agencyId不能同时为空）", example = "10")
-    private Integer agencyId;
+    @ApiModelProperty(value = "需要更改状态的节点列表(此字段为后面追加，与nodeId不能同时为空)")
+    private List<String> nodeIdList;
+
 }

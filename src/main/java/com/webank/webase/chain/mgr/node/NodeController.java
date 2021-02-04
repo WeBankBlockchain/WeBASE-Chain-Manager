@@ -146,9 +146,6 @@ public class NodeController extends BaseController {
         log.info(
                 "start queryNodeIdList startTime:{} groupId:{} agencyId:{} nodeType:{}", startTime.toEpochMilli(), groupId, agencyId, nodeType);
 
-        // check node status before query
-        nodeService.checkAndUpdateNodeStatus(chainId);
-
         //list nodeId by type
         List<String> nodeIds = nodeService.getNodeIds(chainId, groupId, nodeType);
         baseResponse.setData(nodeIds);
