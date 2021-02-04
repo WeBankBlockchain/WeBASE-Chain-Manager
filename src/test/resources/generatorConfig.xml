@@ -91,6 +91,9 @@
         </table>
         <table tableName="tb_node" domainObjectName="TbNode">
         </table>
+        <table tableName="tb_task" domainObjectName="TbTask">
+            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+        </table>
         <table tableName="tb_user" domainObjectName="TbUser">
             <generatedKey column="id" sqlStatement="MySql" identity="true"/>
         </table>

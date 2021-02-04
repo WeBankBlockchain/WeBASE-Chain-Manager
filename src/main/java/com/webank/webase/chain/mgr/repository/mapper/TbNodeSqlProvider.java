@@ -8,7 +8,6 @@ import com.webank.webase.chain.mgr.repository.bean.TbNodeExample.Criterion;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
-
 import java.util.List;
 import java.util.Map;
 

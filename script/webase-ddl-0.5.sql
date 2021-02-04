@@ -30,3 +30,21 @@ CREATE TABLE IF NOT EXISTS tb_user (
   UNIQUE KEY unique_sign_user_id (sign_user_id),
   UNIQUE KEY unique_chain_group_user (chain_id,group_id,user_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='密钥用户信息表';
+
+
+
+
+CREATE TABLE IF NOT EXISTS tb_task (
+  id int(11) NOT NULL AUTO_INCREMENT COMMENT '任务自增编号',
+  task_type tinyint(8) NOT NULL DEFAULT '1' COMMENT '任务类型（1：将节点类型变更为sealer）',
+  task_status tinyint(8) NOT NULL DEFAULT '0' COMMENT '状态（0-未开始，1-准备开始，2-处理中，3-成功，4-失败）',
+  chain_id int(11)  NOT NULL NULL COMMENT '链 ID',
+  group_id int(11)  NOT NULL COMMENT '所属群组编号',
+  node_id varchar(250) NOT NULL  COMMENT '节点编号',
+  current_handler_host varchar(250) COMMENT '当前处理的机器',
+  gmt_create datetime DEFAULT NULL COMMENT '创建时间',
+  gmt_modified datetime DEFAULT NULL COMMENT '修改时间',
+  description varchar(250) DEFAULT NULL COMMENT '描述',
+  remark text COMMENT '备注',
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务信息表';
