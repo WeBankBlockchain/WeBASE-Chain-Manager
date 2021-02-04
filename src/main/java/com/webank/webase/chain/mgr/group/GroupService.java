@@ -393,6 +393,11 @@ public class GroupService {
                     log.error("fail getGroupListFromSpecificFront frontId:{}.", front.getFrontId(), ex);
                     continue;
                 }
+
+                if (CollectionUtils.isEmpty(groupIdList)) {
+                    log.info("jump over. not found group by frontPeerName:{}, frontIp:{}, frontPort:{}.", frontPeerName, frontIp, frontPort);
+                    continue;
+                }
                 for (String groupId : groupIdList) {
                     Integer gId = Integer.valueOf(groupId);
                     allGroupSet.add(gId);
@@ -408,7 +413,7 @@ public class GroupService {
                     if (sealerList.contains(front.getNodeId())) {
                         frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), gId);
                     } else {
-                        //remove old front-group-map
+                        //remove old front-group-map(just save sealer's front map)
                         tbFrontGroupMapMapper.deleteByChainIdAndFrontIdAndGroupId(chainId, front.getFrontId(), gId);
                     }
 
@@ -420,6 +425,13 @@ public class GroupService {
                     frontService.refreshSealerAndObserverInNodeList(frontPeerName, frontIp, frontPort,
                             front.getChainId(), gId);
                 }
+
+                //remove front-group-map by invalid group
+                List<Integer> groupOnMapList = frontGroupMapService.getGroupByChainAndFront(chainId, front.getFrontId());
+                if (CollectionUtils.isEmpty(groupOnMapList)) continue;
+                groupOnMapList.stream()
+                        .filter(g -> !groupIdList.contains(String.valueOf(g)))
+                        .forEach(g -> tbFrontGroupMapMapper.deleteByChainIdAndFrontIdAndGroupId(chainId, front.getFrontId(), g));
 
             }
 

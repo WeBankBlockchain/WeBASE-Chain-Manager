@@ -24,6 +24,7 @@ import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
+import com.webank.webase.chain.mgr.chain.entity.ReqDeleteChainVo;
 import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
 import com.webank.webase.chain.mgr.deploy.resp.RespInitHost;
@@ -125,6 +126,31 @@ public class ChainController extends BaseController {
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JsonTools.toJSONString(baseResponse));
         return baseResponse;
+    }
+
+
+    /**
+     * @param param
+     * @param result
+     * @return
+     * @throws BaseException
+     */
+    @ApiOperation(value = "删除链(post请求)")
+    @PostMapping("removeChain")
+    public BaseResponse removeChain(@RequestBody @Valid ReqDeleteChainVo param, BindingResult result) throws BaseException {
+        checkBindResult(result);
+        Instant startTime = Instant.now();
+        log.info("start removeChain startTime:{} param:{}", startTime.toEpochMilli(), JsonTools.objToString(param));
+
+        // remove
+        chainService.removeChain(param.getChainId());
+
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("end removeChain useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(),
+                JsonTools.toJSONString(baseResponse));
+        return baseResponse;
+
     }
 
 

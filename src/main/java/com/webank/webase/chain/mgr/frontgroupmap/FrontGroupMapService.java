@@ -129,6 +129,29 @@ public class FrontGroupMapService {
         return groupIdList;
     }
 
+
+    /**
+     * @param chainId
+     * @param frontId
+     * @return
+     */
+    public List<Integer> getGroupByChainAndFront(int chainId, int frontId) {
+        log.info("start exec method[getGroupByChainAndFront], chainId:{} frontId:{}", chainId, frontId);
+        //param
+        TbFrontGroupMapExample example = new TbFrontGroupMapExample();
+        TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        criteria.andFrontIdEqualTo(frontId);
+
+        //query
+        List<TbFrontGroupMap> frontGroupMapList = tbFrontGroupMapMapper.selectByExample(example);
+        if (CollectionUtils.isEmpty(frontGroupMapList)) return Collections.EMPTY_LIST;
+        List<Integer> groupIdList = frontGroupMapList.stream().map(map -> map.getGroupId()).distinct().collect(Collectors.toList());
+
+        log.info("success exec method[listGroupByFronts], chainId:{} frontId:{} result:{}", chainId, frontId, JsonTools.objToString(groupIdList));
+        return groupIdList;
+
+    }
 //    @Transactional(propagation = Propagation.REQUIRED)
 //    public void updateFrontMapStatus(int chainId,int frontId, GroupStatus status) {
 //        // update status

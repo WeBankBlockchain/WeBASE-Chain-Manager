@@ -436,20 +436,25 @@ public class FrontService {
         }
         Set<Integer> deleteHostId = new HashSet<>();
         for (TbFront front : frontList) {
-            // remote docker container
-            this.dockerOptions.stop(front.getFrontIp(),
-                    front.getDockerPort(), front.getSshUser(),
-                    front.getSshPort(), front.getContainerName());
 
             // delete on remote host
             if (deleteHostId.contains(front.getExtHostId())) {
                 continue;
             }
 
-            // move chain config files
-            ChainService.mvChainOnRemote(front.getFrontIp(), front.getRootOnHost(), front.getChainName(),
-                    front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
-            deleteHostId.add(front.getExtHostId());
+            if (Objects.nonNull(front.getDockerPort()) && StringUtils.isNotBlank(front.getContainerName())) {
+                // remote docker container
+                this.dockerOptions.stop(front.getFrontIp(),
+                        front.getDockerPort(), front.getSshUser(),
+                        front.getSshPort(), front.getContainerName());
+
+
+                // move chain config files
+                ChainService.mvChainOnRemote(front.getFrontIp(), front.getRootOnHost(), front.getChainName(),
+                        front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
+                deleteHostId.add(front.getExtHostId());
+            }
+
         }
 
         // remove front

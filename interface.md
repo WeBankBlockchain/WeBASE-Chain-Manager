@@ -1051,7 +1051,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/getGroupSizeInfos/200001
 | 2    | generateGroupId | int          | 否     | 生成的群组编号                       |
 | 3    | timestamp       | BigInteger   | 否     | 创世块时间（单位：ms）               |
 | 4    | nodeList        | List<String> | 否     | 节点编号列表（新群组的所有节点编号） |
-| 5    | description     | string       | 是     | 备注                                 |
+| 5    | description     | string       | 是     | 备注   |
+| 6    | groupName     | string   | 是   | 群组名称（如果为空，则自动生成。不能重复）|
 
 ***2）入参示例***
 
@@ -1142,7 +1143,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/generate/78e467957af3d0f77e19b9
 | 3    | timestamp       | BigInteger   | 是     | 创世块时间（单位：ms）|
 | 4    | nodeList        | List<String> | 是     | 节点编号列表（新群组的所有节点编号；另外，nodeList与orgIdList不能同时为空） |
 | 5    | orgIdList        | List<Integer> | 是     | 节点所属机构编号列表（nodeList与orgIdList不能同时为空）|
-| 6    | description     | string       | 是     | 备注                             |
+| 6    | description     | string       | 是     | 备 |
+| 7    | groupName     | string   | 是   | 群组名称（如果为空，则自动生成。不能重复）|
 
 ***2）入参示例***
 
@@ -1645,10 +1647,13 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getConsensusList/1001/1/413c788
 | ---- | ---------- | ------ | ------ | ---------------------------------------- |
 | 1    | chainId    | Int    | 否     | 链编号                                   |
 | 2    | groupId    | Int    | 否     | 群组编号                                 |
-| 3    | signUserId | String | 否     | WeBASE-Sign签名用户编号                  |
-| 4    | nodeId     | String | 否     | 要切换状态节点Id                         |
+| 3    | signUserId | String | 是     | WeBASE-Sign签名用户编号                  |
+| 4    | nodeId     | String | 是 | 要切换状态节点Id                         |
 | 5    | nodeType   | String | 否     | 要设置的节点类型：observer/sealer/remove |
-| 6    | reqNodeId  | String | 否     | 调用前置对应的节点Id                     |
+| 6    | reqNodeId  | String | 是     | 调用前置对应的节点Id  |
+| 7    | nodeIdList  | List<String> | 是否     | 需要更改状态的节点列表(此字段为追加字段，与nodeId不能同时为空) |
+
+
 
 ***2）入参示例***
 
@@ -2114,6 +2119,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c
 | 2    | agency    | Int    | 是     | 机构id     |
 | 3    | pageSize   | Int    | 否     | 每页记录数,默认10 |
 | 4    | pageNumber | Int    | 否     | 当前页码，默认1   |
+| 5    | status | Byte    | 是     | 状态（1-正常 2-异常）  |
+
 
 
 ***2）入参示例***
@@ -2797,6 +2804,79 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTransactionReceipt/1001/1/78e
     "data": {}
 }
 ```
+
+
+### 4.8 查询节点Id列表
+
+#### 4.8.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址：**/node/nodeIdList/{chainId}/{groupId}?agencyId={agencyId}&nodeType={nodeType}**
+- 请求方式：GET
+- 返回格式：JSON
+
+#### 4.8.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数   | 类型   | 可为空 | 备注       |
+| ---- | ---------- | ------ | ------ | ---------- |
+| 1    | chainId    | int    | 否     | 链编号     |
+| 2    | groupId    | int    | 否     | 群组编号   |
+| 3    | agencyId   | int | 是     | 机构Id     |
+| 4    | nodeTypes   | List<String> | 是 | 节点类型:sealer、observer、remove |
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/node/nodeIdList/1/1?nodeTypes=sealer&nodeTypes=observer
+```
+
+#### 4.8.3 返回参数 
+
+***1）出参表***
+
+| 序号   | 输出参数    | 类型          |      | 备注                       |
+| ------ | ----------- | ------------- | ---- | -------------------------- |
+| 1      | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2      | message     | String        | 否   | 描述                       |
+| 3      | totalCount  | Int           | 否   | 总记录数                   |
+| 4      | data        | List          | 是   | 节点列表                   |
+|   | String     | int           | 是| 节点Id                     |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": [
+    "c96ef7ecee3fb4fe222a9b3232a27d1317c34b511c4ec299ca2b4a1df073934bf8857043a8294191bec20b11419a865dfa28246ac470c8750d230774e68d0043",
+    "85432afdc4d5ee38497c16719f84c1ada3f145e08f01d19cbc5558d6d4da3ee6dd329fdfffbd65e932668130eece0ac0abaf7f70b5a7d0dbe95a3e0780ac968e",
+    "51b04e53c1ea3f779462713f2b7979c5c46a4b31a3b94556a04f0c76473920b34704618e3f392ef619938fac6852465b31fc3d061d8cbf1e7862a11d92858441",
+    "55947971d91dab6c27230f78692b52ec3cb8029eacc218aa54df62262859de1a08f82e1330d5e47777256e9a608148d696d453b8e94db0805d4378d91b25957d",
+    "0667bba36709e4690f770d09418cd1ae911f9af1279cede49ae199ccb9153e23b36b9389dac02b179260a7d0e1275c0339d292ece4df3a07899d6e27d9230e9e"
+  ],
+  "attachment": null,
+  "success": true
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 102000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
+
+
+
 
 ## 5 合约管理模块  
 
@@ -3643,6 +3723,7 @@ http://localhost:5005/WeBASE-Chain-Manager/contract/compile/400029
 | 1    | contractId         | Int    | 否     | 合约编号|
 | 2    | signUserId         | String    | 否  | 私钥用户id|
 | 3    | constructorParams  | List<Object>   | 是  |合约初始化入参|
+| 4    | constructorParamsJson  | String   | 是  |合约初始化入参Json,当`constructorParams`为空时，取此字段|
 
 
 ***2）入参示例***
@@ -3753,6 +3834,7 @@ http://localhost:5005/WeBASE-Chain-Manager/contract/deployByContractId
 | 2    | signUserId   | String    | 否  | 私钥用户id|
 | 3    | funcName  | String   | 否  |合约函数名称|
 | 4   | funcParam  | List<Object>   | 是  |合约函数入参|
+| 5    | funcParamJson  | String   | 是  |合约函数入参Json,当`funcParam`为空时，取此字段|
 
 
 ***2）入参示例***
