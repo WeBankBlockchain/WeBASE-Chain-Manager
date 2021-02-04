@@ -327,13 +327,23 @@ public class FrontRestTools {
     public static void errorFormat(JsonNode error) {
         log.error("http request fail. error:{}", JsonTools.toJSONString(error));
         String errorMessage = error.get("errorMessage").asText();
-        if (StringUtils.isBlank(errorMessage)) {
-            throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
-        }
-        if (errorMessage.contains("code")) {
-            JsonNode errorInside = JsonTools.stringToJsonNode(errorMessage).get("error");
-            throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
-                    errorInside.get("message").asText());
+        try {
+            if (StringUtils.isBlank(errorMessage)) {
+                throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
+            }
+            JsonNode errorJson = JsonTools.stringToJsonNode(errorMessage);
+            if (errorMessage.contains("code") && errorJson != null) {
+                if (errorMessage.contains("error")) {
+                    JsonNode errorInside = errorJson.get("error");
+                    throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
+                            errorInside.get("message").asText());
+                } else {
+                    throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
+                            errorJson.get("msg").asText());
+                }
+            }
+        } catch (NullPointerException e) {
+            throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
         }
         throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
     }
