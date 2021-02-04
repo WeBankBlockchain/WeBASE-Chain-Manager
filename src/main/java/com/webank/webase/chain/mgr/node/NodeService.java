@@ -430,6 +430,27 @@ public class NodeService {
         }
     }
 
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param nodeTypes
+     * @return
+     */
+    public List<String> getNodeIdByTypes(int chainId, int groupId, List<String> nodeTypes) {
+
+        if (CollectionUtils.isEmpty(nodeTypes))
+            return getNodeIds(chainId, groupId, null);
+
+
+        List<String> nodeIds = new ArrayList<>();
+        for (String type : nodeTypes) {
+            nodeIds.addAll(getNodeIds(chainId, groupId, type));
+        }
+
+        return nodeIds.stream().distinct().collect(Collectors.toList());
+    }
+
     /**
      * @param chainId
      * @param groupId

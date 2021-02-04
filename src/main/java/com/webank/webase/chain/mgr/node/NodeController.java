@@ -129,10 +129,11 @@ public class NodeController extends BaseController {
 
 
     /**
+     *
      * @param chainId
      * @param groupId
      * @param agencyId
-     * @param nodeType
+     * @param nodeTypes
      * @return
      * @throws BaseException
      */
@@ -140,17 +141,17 @@ public class NodeController extends BaseController {
     public BaseResponse queryNodeIdList(@PathVariable("chainId") Integer chainId,
                                         @PathVariable("groupId") Integer groupId,
                                         @RequestParam(value = "agencyId", required = false) Integer agencyId,
-                                        @RequestParam(value = "nodeType", required = false) String nodeType) throws BaseException {
+                                        @RequestParam(value = "nodeTypes", required = false) List<String> nodeTypes) throws BaseException {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info(
-                "start queryNodeIdList startTime:{} groupId:{} agencyId:{} nodeType:{}", startTime.toEpochMilli(), groupId, agencyId, nodeType);
+                "start queryNodeIdList startTime:{} groupId:{} agencyId:{} nodeType:{}", startTime.toEpochMilli(), groupId, agencyId, JsonTools.objToString(nodeTypes));
 
         //list nodeId by type
-        List<String> nodeIds = nodeService.getNodeIds(chainId, groupId, nodeType);
+        List<String> nodeIds = nodeService.getNodeIdByTypes(chainId, groupId, nodeTypes);
         baseResponse.setData(nodeIds);
         if (CollectionUtils.isEmpty(nodeIds)) {
-            log.info("finish exec method [queryNodeIdList]. not found record by chain:{} group:{} nodeType:{}", chainId, groupId, nodeType);
+            log.info("finish exec method [queryNodeIdList]. not found record by chain:{} group:{} nodeType:{}", chainId, groupId,  JsonTools.objToString(nodeTypes));
             return baseResponse;
         }
 
