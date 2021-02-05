@@ -130,6 +130,30 @@ public class ContractController extends BaseController {
 
 
     /**
+     * remove contract
+     *
+     * @param param
+     * @param result
+     * @return
+     * @throws BaseException
+     */
+    @PostMapping(value = "remove")
+    public BaseResponse deleteContract(@RequestBody @Valid ReqContractVO param, BindingResult result) throws BaseException {
+        checkBindResult(result);
+
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start deleteContract startTime:{} param:{}", startTime.toEpochMilli(), JsonTools.objToString(param));
+
+        contractService.deleteByContractId(param.getContractId());
+
+        log.info("end deleteContract useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return baseResponse;
+    }
+
+
+    /**
      * qurey contract info list.
      */
     @PostMapping(value = "/contractList")

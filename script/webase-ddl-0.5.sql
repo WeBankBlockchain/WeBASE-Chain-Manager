@@ -16,6 +16,10 @@ ALTER TABLE tb_chain MODIFY COLUMN storage_type varchar(16) CHARACTER SET utf8 C
 
 
 
+--add 2021.02.05--
+ALTER TABLE tb_node ADD COLUMN node_type varchar(64) DEFAULT 'sealer' COMMENT '节点类型（sealer、observer、remove）' AFTER node_name;
+
+
 CREATE TABLE IF NOT EXISTS tb_user (
   id int(11) NOT NULL AUTO_INCREMENT COMMENT '用户自增编号',
   sign_user_id varchar(64) NOT NULL COMMENT '用于唯一id',
@@ -33,7 +37,7 @@ CREATE TABLE IF NOT EXISTS tb_user (
 
 
 
-
+--add 2021.02.05--
 CREATE TABLE IF NOT EXISTS tb_task (
   id int(11) NOT NULL AUTO_INCREMENT COMMENT '任务自增编号',
   task_type tinyint(8) NOT NULL DEFAULT '1' COMMENT '任务类型（1：将节点类型变更为sealer）',

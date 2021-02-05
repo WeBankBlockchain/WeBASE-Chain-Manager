@@ -211,41 +211,57 @@ public class ContractService {
         return getByContractId(tbContract.getContractId());
     }
 
+
+    /**
+     * @param contractId
+     * @throws BaseException
+     */
+    public void deleteByContractId(int contractId) throws BaseException {
+        log.info("start deleteByContractId contractId:{}", contractId);
+        TbContract tbContract = contractManager.verifyContractId(contractId);
+        deleteContract(tbContract.getChainId(), tbContract.getContractId(), tbContract.getGroupId());
+        log.info("finish deleteByContractId contractId:{}", contractId);
+
+    }
+
     /**
      * delete contract by contractId.
      */
     public void deleteContract(int chainId, int contractId, int groupId) throws BaseException {
-        log.debug("start deleteContract contractId:{} groupId:{}", contractId, groupId);
+        log.info("start deleteContract contractId:{} groupId:{}", contractId, groupId);
         // check contract id
         verifyContractNotDeploy(chainId, contractId, groupId);
         // remove
         this.tbContractMapper.deleteByPrimaryKey(contractId);
         // delete method
         methodService.deleteByContractId(contractId);
-        log.debug("end deleteContract");
+        log.info("end deleteContract");
     }
 
     /**
      * delete contract by chainId.
      */
     public void deleteContractByChainId(int chainId) throws BaseException {
-        log.debug("start deleteContractByChainId chainId:{}", chainId);
+        log.info("start deleteContractByChainId chainId:{}", chainId);
         if (chainId == 0) {
             return;
         }
         // remove
         this.tbContractMapper.deleteByChainId(chainId);
-        log.debug("end deleteContractByChainId");
+        log.info("end deleteContractByChainId");
     }
 
     /**
      * delete by groupId
      */
     public void deleteByGroupId(int chainId, int groupId) {
+        log.info("start deleteByGroupId chainId:{} groupId:{}", chainId, groupId);
+
         if (chainId == 0 || groupId == 0) {
             return;
         }
         this.tbContractMapper.deleteByChainIdAndGroupId(chainId, groupId);
+        log.info("finish deleteByGroupId chainId:{} groupId:{}", chainId, groupId);
     }
 
     /**

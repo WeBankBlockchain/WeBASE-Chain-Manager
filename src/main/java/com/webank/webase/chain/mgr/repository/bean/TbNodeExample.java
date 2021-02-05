@@ -513,6 +513,76 @@ public class TbNodeExample {
             return (Criteria) this;
         }
 
+        public Criteria andNodeTypeIsNull() {
+            addCriterion("node_type is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeIsNotNull() {
+            addCriterion("node_type is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeEqualTo(String value) {
+            addCriterion("node_type =", value, "nodeType");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeNotEqualTo(String value) {
+            addCriterion("node_type <>", value, "nodeType");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeGreaterThan(String value) {
+            addCriterion("node_type >", value, "nodeType");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeGreaterThanOrEqualTo(String value) {
+            addCriterion("node_type >=", value, "nodeType");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeLessThan(String value) {
+            addCriterion("node_type <", value, "nodeType");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeLessThanOrEqualTo(String value) {
+            addCriterion("node_type <=", value, "nodeType");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeLike(String value) {
+            addCriterion("node_type like", value, "nodeType");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeNotLike(String value) {
+            addCriterion("node_type not like", value, "nodeType");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeIn(List<String> values) {
+            addCriterion("node_type in", values, "nodeType");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeNotIn(List<String> values) {
+            addCriterion("node_type not in", values, "nodeType");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeBetween(String value1, String value2) {
+            addCriterion("node_type between", value1, value2, "nodeType");
+            return (Criteria) this;
+        }
+
+        public Criteria andNodeTypeNotBetween(String value1, String value2) {
+            addCriterion("node_type not between", value1, value2, "nodeType");
+            return (Criteria) this;
+        }
+
         public Criteria andNodeIpIsNull() {
             addCriterion("node_ip is null");
             return (Criteria) this;

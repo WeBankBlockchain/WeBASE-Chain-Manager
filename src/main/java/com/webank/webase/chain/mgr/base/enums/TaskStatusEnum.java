@@ -8,17 +8,17 @@ public enum TaskStatusEnum {
     FAIL(4),//失败
     ;
 
-    private int value;
+    private byte value;
 
-    private TaskStatusEnum(Integer groupType) {
-        this.value = groupType;
+    private TaskStatusEnum(int status) {
+        this.value = (byte)status;
     }
 
-    public int getValue() {
+    public byte getValue() {
         return this.value;
     }
 
-    public static boolean isInclude(int key) {
+    public static boolean isInclude(byte key) {
         boolean include = false;
         for (TaskStatusEnum e : TaskStatusEnum.values()) {
             if (e.getValue() == key) {
