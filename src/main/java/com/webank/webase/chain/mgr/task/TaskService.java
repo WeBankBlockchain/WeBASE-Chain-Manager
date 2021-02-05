@@ -1,10 +1,8 @@
 package com.webank.webase.chain.mgr.task;
 
 import com.webank.webase.chain.mgr.base.enums.TaskStatusEnum;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.base.enums.TaskTypeEnum;
 import com.webank.webase.chain.mgr.repository.bean.TbTask;
-import com.webank.webase.chain.mgr.repository.bean.TbTaskExample;
-import com.webank.webase.chain.mgr.repository.mapper.TbTaskMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,39 +15,22 @@ import java.util.List;
 @Service
 public class TaskService {
     @Autowired
-    private TbTaskMapper taskMapper;
+    private TaskManager taskManager;
 
 
-    /**
-     * @param chain
-     * @param group
-     * @param nodeId
-     * @return
-     */
-    public TbTask getByChainGroupNode(int chain, int group, String nodeId) {
-        log.debug("start exec method[getByChainGroupNode] chain:{} group:{} nodeId:{}", chain, group, nodeId);
-
-        //param
-        TbTaskExample example = new TbTaskExample();
-        TbTaskExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chain);
-        criteria.andGroupIdEqualTo(group);
-        criteria.andNodeIdEqualTo(nodeId);
-
-        //query
-        TbTask tbTask = taskMapper.getOneByExample(example).orElse(null);
-        log.debug("finish exec method[getByChainGroupNode] chain:{} group:{} nodeId:{} result:{}", chain, group, nodeId, JsonTools.objToString(tbTask));
-        return tbTask;
-    }
-
-    public synchronized void addSealerNodeFromDb() {
+    public synchronized void addSealerNodeFromDbTask() {
         log.info("start exec method[addSealerNodeFromDb] ");
 
+        //query task
         List<Byte> statusList = Arrays.asList(TaskStatusEnum.WAITING.getValue(), TaskStatusEnum.FAIL.getValue());
-        if (CollectionUtils.isEmpty(statusList)) {
-            log.info("finish addSealerNodeFromDb. statusList is empty");
+        List<TbTask> taskList = taskManager.selectTaskList(statusList, TaskTypeEnum.OBSERVER_TO_SEALER);
+        if (CollectionUtils.isEmpty(taskList)) {
+            log.info("finish addSealerNodeFromDb. taskList is empty");
             return;
         }
+
+
+
 
         log.info("start exec method[addSealerNodeFromDb] ");
     }

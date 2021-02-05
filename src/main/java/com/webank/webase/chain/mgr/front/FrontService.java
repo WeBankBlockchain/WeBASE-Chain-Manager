@@ -645,4 +645,21 @@ public class FrontService {
         log.debug("success exec method [listFrontByAgency]. agencyId:{} result:{}", agencyId, JsonTools.objToString(frontList));
         return frontList;
     }
+
+    /**
+     * @param chainId
+     * @param nodeIds
+     * @return
+     */
+    public List<TbFront> selectFrontByNodeIdListAndChain(int chainId, List<String> nodeIds) {
+        log.debug("start exec method [selectFrontByNodeIdListAndChain]. chainId:{} nodeIds:{}", chainId, JsonTools.objToString(nodeIds));
+        TbFrontExample example = new TbFrontExample();
+        TbFrontExample.Criteria criteria = example.createCriteria();
+        criteria.andNodeIdIn(nodeIds);
+        criteria.andChainIdEqualTo(chainId);
+        List<TbFront> frontList = tbFrontMapper.selectByExample(example);
+        log.debug("success exec method [selectFrontByNodeIdListAndChain]. result:{}", JsonTools.objToString(frontList));
+        return frontList;
+    }
+
 }

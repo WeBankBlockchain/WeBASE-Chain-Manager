@@ -20,10 +20,12 @@ import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.front.entity.TransactionCount;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
+import com.webank.webase.chain.mgr.node.entity.RspNodeInfoVo;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import lombok.extern.log4j.Log4j2;
@@ -31,16 +33,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -55,6 +55,8 @@ public class NodeController extends BaseController {
     private NodeService nodeService;
     @Autowired
     private FrontService frontService;
+    @Autowired
+    private FrontManager frontManager;
     @Autowired
     private FrontInterfaceService frontInterfaceService;
 
@@ -81,13 +83,13 @@ public class NodeController extends BaseController {
                                           @PathVariable("pageNumber") Integer pageNumber,
                                           @PathVariable("pageSize") Integer pageSize,
                                           @RequestParam(value = "agencyId", required = false) Integer agencyId,
-                                          @RequestParam(value = "nodeId", required = false) String nodeId,
-                                          @RequestParam(value = "nodeType", required = false) String nodeType) throws BaseException {
+                                          @RequestParam(value = "frontPeerName", required = false) String frontPeerName,
+                                          @RequestParam(value = "nodeId", required = false) String nodeId) throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info(
-                "start queryNodeList startTime:{} groupId:{} pageNumber:{} pageSize:{} agencyId:{} nodeId:{} nodeType:{}",
-                startTime.toEpochMilli(), groupId, pageNumber, pageSize, agencyId, nodeId, nodeType);
+                "start queryNodeList startTime:{} groupId:{} pageNumber:{} pageSize:{} agencyId:{} frontPeerName:{} nodeId:{}",
+                startTime.toEpochMilli(), groupId, pageNumber, pageSize, agencyId, frontPeerName, nodeId);
 
         int newGroupId = groupId == null || groupId <= 0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
 
@@ -102,7 +104,7 @@ public class NodeController extends BaseController {
         queryParam.setNodeId(nodeId);
         queryParam.setPageSize(pageSize);
         if (Objects.nonNull(agencyId)) {
-            List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
+            List<TbFront> frontList = frontManager.queryFrontByAgencyIdAndFrontPeerNameAndNodeId(agencyId, frontPeerName, nodeId);
             if (CollectionUtils.isNotEmpty(frontList)) {
                 Set<String> nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
                 queryParam.setNodeIds(nodeIds);
@@ -116,10 +118,26 @@ public class NodeController extends BaseController {
                     Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).orElse(null);
             queryParam.setStart(start);
 
-            List<TbNode> listOfnode = nodeService.qureyNodeList(queryParam);
-            pagesponse.setData(listOfnode);
+            List<TbNode> listOfNode = nodeService.qureyNodeList(queryParam);
+            List<String> nodeIdList = listOfNode.stream().map(node -> node.getNodeId()).distinct().collect(Collectors.toList());
+            List<TbFront> frontList = frontService.selectFrontByNodeIdListAndChain(chainId, nodeIdList);
+            List<RspNodeInfoVo> rspNodeInfoVoList = new ArrayList<>();
+            for (TbNode tbNode : listOfNode) {
+                RspNodeInfoVo rspNodeInfoVo = new RspNodeInfoVo();
+                BeanUtils.copyProperties(tbNode, rspNodeInfoVo);
+                if (CollectionUtils.isNotEmpty(frontList)) {
+                    String rspFrontPeerName = frontList.stream()
+                            .filter(front -> front.getNodeId().equals(tbNode.getNodeId()))
+                            .findFirst()
+                            .map(front -> front.getFrontPeerName())
+                            .orElse(null);
+                    rspNodeInfoVo.setFrontPeerName(rspFrontPeerName);
+                }
+            }
+            pagesponse.setData(listOfNode);
             pagesponse.setTotalCount(count);
         }
+
 
         log.info("end queryNodeList useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
@@ -129,7 +147,6 @@ public class NodeController extends BaseController {
 
 
     /**
-     *
      * @param chainId
      * @param groupId
      * @param agencyId
@@ -151,7 +168,7 @@ public class NodeController extends BaseController {
         List<String> nodeIds = nodeService.getNodeIdByTypes(chainId, groupId, nodeTypes);
         baseResponse.setData(nodeIds);
         if (CollectionUtils.isEmpty(nodeIds)) {
-            log.info("finish exec method [queryNodeIdList]. not found record by chain:{} group:{} nodeType:{}", chainId, groupId,  JsonTools.objToString(nodeTypes));
+            log.info("finish exec method [queryNodeIdList]. not found record by chain:{} group:{} nodeType:{}", chainId, groupId, JsonTools.objToString(nodeTypes));
             return baseResponse;
         }
 
