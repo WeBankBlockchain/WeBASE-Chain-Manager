@@ -1,20 +1,20 @@
 package com.webank.webase.chain.mgr.base.enums;
 
 public enum TaskTypeEnum {
-    OBSERVER_TO_SEALER(1),//观察者节点转共识节点
+    OBSERVER_TO_SEALER((byte)1),//观察者节点转共识节点
     ;
 
-    private int value;
+    private byte value;
 
-    private TaskTypeEnum(Integer groupType) {
+    private TaskTypeEnum(byte groupType) {
         this.value = groupType;
     }
 
-    public int getValue() {
+    public byte getValue() {
         return this.value;
     }
 
-    public static boolean isInclude(int key) {
+    public static boolean isInclude(byte key) {
         boolean include = false;
         for (TaskTypeEnum e : TaskTypeEnum.values()) {
             if (e.getValue() == key) {

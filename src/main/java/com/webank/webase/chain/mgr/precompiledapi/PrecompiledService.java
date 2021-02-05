@@ -24,6 +24,8 @@ import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
 import com.webank.webase.chain.mgr.sign.UserService;
+import com.webank.webase.chain.mgr.task.TaskManager;
+import com.webank.webase.chain.mgr.task.TaskService;
 import com.webank.webase.chain.mgr.trans.TransService;
 import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
 import com.webank.webase.chain.mgr.util.CommUtils;
@@ -68,6 +70,8 @@ public class PrecompiledService {
     private NodeService nodeService;
     @Autowired
     private ConstantProperties constantProperties;
+    @Autowired
+    private TaskManager taskManager;
 
 
     /**
@@ -113,6 +117,13 @@ public class PrecompiledService {
     @Transactional
     public void addObserverAndSaveSealerTask(int chainId, int groupId, String signUserId, String nodeId) {
 
+        // Save it to the task table, and take it out periodically by the timed task for processing
+        taskManager.saveTaskOfAddSealerNode(chainId, groupId, nodeId);
+
+        //If it is not an observer node, set it as an observer node
+        List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
+        if (CollectionUtils.isNotEmpty(observerList) && !observerList.contains(nodeId))
+            addObserver(chainId, groupId, signUserId, nodeId);
 
     }
 
