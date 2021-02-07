@@ -30,6 +30,7 @@ import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -103,7 +104,7 @@ public class NodeController extends BaseController {
         queryParam.setGroupId(newGroupId);
         queryParam.setNodeId(nodeId);
         queryParam.setPageSize(pageSize);
-        if (Objects.nonNull(agencyId)) {
+        if (Objects.nonNull(agencyId) || StringUtils.isNotBlank(frontPeerName) || StringUtils.isNotBlank(nodeId)) {
             List<TbFront> frontList = frontManager.queryFrontByAgencyIdAndFrontPeerNameAndNodeId(agencyId, frontPeerName, nodeId);
             if (CollectionUtils.isNotEmpty(frontList)) {
                 Set<String> nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
@@ -132,9 +133,10 @@ public class NodeController extends BaseController {
                             .map(front -> front.getFrontPeerName())
                             .orElse(null);
                     rspNodeInfoVo.setFrontPeerName(rspFrontPeerName);
+                    rspNodeInfoVoList.add(rspNodeInfoVo);
                 }
             }
-            pagesponse.setData(listOfNode);
+            pagesponse.setData(rspNodeInfoVoList);
             pagesponse.setTotalCount(count);
         }
 
