@@ -56,6 +56,9 @@ public class TaskService {
             }
 
         }
+
+        //remove success task
+        taskManager.removeFinishTask();
         log.info("start exec method[addSealerNodeFromDb]  useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
     }
 }

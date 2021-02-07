@@ -160,7 +160,7 @@ public class TaskManager {
         }
 
         TbTask taskRsp = updateStatusByTbTask(tbTask, taskStatusEnum, remark);
-        log.warn("finish exec method[updateStatusByPrimaryKey]. result:{}", JsonTools.objToString(taskRsp));
+        log.debug("finish exec method[updateStatusByPrimaryKey]. result:{}", JsonTools.objToString(taskRsp));
         return taskRsp;
     }
 
@@ -174,4 +174,18 @@ public class TaskManager {
         return updateStatusByPrimaryKey(taskId, taskStatusEnum, "");
     }
 
+
+    /**
+     *
+     */
+    public void removeFinishTask() {
+        log.info("start exec method[removeFinishTask] ");
+        //finish
+        TbTaskExample example = new TbTaskExample();
+        TbTaskExample.Criteria criteria = example.createCriteria();
+        criteria.andTaskStatusEqualTo(TaskStatusEnum.SUCCESS.getValue());
+
+        //remove
+        taskMapper.deleteByExample(example);
+    }
 }
