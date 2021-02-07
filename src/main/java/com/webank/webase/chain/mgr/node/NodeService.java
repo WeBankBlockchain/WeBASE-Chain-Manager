@@ -503,16 +503,23 @@ public class NodeService {
         log.info("start exec method[getNodeType]. chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);
 
         List<String> sealerList = frontInterface.getSealerList(chainId, groupId);
-        if (CollectionUtils.isNotEmpty(sealerList) && sealerList.contains(nodeId))
+        if (CollectionUtils.isNotEmpty(sealerList) && sealerList.contains(nodeId)){
+            log.info("finish exec method [getNodeType]. nodeType:{}",PrecompiledUtils.NODE_TYPE_SEALER);
             return PrecompiledUtils.NODE_TYPE_SEALER;
+        }
 
         List<String> observerList = frontInterface.getObserverList(chainId, groupId);
-        if (CollectionUtils.isNotEmpty(observerList) && observerList.contains(nodeId))
+        if (CollectionUtils.isNotEmpty(observerList) && observerList.contains(nodeId)){
+            log.info("finish exec method [getNodeType]. nodeType:{}",PrecompiledUtils.NODE_TYPE_OBSERVER);
             return PrecompiledUtils.NODE_TYPE_OBSERVER;
+        }
 
         List<String> nodeIdList = frontInterface.getNodeIdList(chainId, groupId);
-        if (CollectionUtils.isNotEmpty(nodeIdList) && nodeIdList.contains(nodeId))
+        if (CollectionUtils.isNotEmpty(nodeIdList) && nodeIdList.contains(nodeId)){
+            log.info("finish exec method [getNodeType]. nodeType:{}",PrecompiledUtils.NODE_TYPE_REMOVE);
             return PrecompiledUtils.NODE_TYPE_REMOVE;
+        }
+
 
 
         log.error("fail exec method [getNodeType].  not found record by chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);

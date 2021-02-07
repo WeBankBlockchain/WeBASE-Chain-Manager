@@ -148,15 +148,17 @@ public class PrecompiledService {
 
                 if (PrecompiledUtils.NODE_TYPE_REMOVE.equals(nodeType)) {
                     addObserverAndSaveSealerTask(param.getChainId(), param.getGroupId(), node);
+                    successNodes.add(node);
+                    continue;
                 }
 
                 if (PrecompiledUtils.NODE_TYPE_OBSERVER.equals(nodeType)) {
                     taskManager.saveTaskOfAddSealerNode(param.getChainId(), param.getGroupId(), node);
-                } else {
-                    throw new BaseException(ConstantCode.INVALID_NODE_TYPE);
+                    successNodes.add(node);
+                    continue;
                 }
+                throw new BaseException(ConstantCode.INVALID_NODE_TYPE.attach(String.format("invalid nodeType:%s", nodeType)));
 
-                successNodes.add(node);
             } catch (BaseException ex) {
                 String msg = StringUtils.isBlank(ex.getRetCode().getAttachment()) ? ex.getMessage() : ex.getRetCode().getAttachment();
                 errorMessages.add(String.format("node:%s fail:%s", node, msg));
@@ -177,12 +179,14 @@ public class PrecompiledService {
 
     @Transactional
     public void addObserverAndSaveSealerTask(int chainId, int groupId, String nodeId) {
+        log.info("start exec method[addObserverAndSaveSealerTask] chain:{} chain:{} node:{}", chainId, groupId, nodeId);
 
         checkBeforeAddObserver(chainId, groupId, SetUtils.hashSet(nodeId));
         // Save it to the task table, and take it out periodically by the timed task for processing
         taskManager.saveTaskOfAddSealerNode(chainId, groupId, nodeId);
 
         addObserver(chainId, groupId, nodeId);
+        log.info("success exec method[addObserverAndSaveSealerTask] ");
 
     }
 
@@ -341,7 +345,7 @@ public class PrecompiledService {
         //require nodeId is observer
         List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
         if (CollectionUtils.isEmpty(observerList)) {
-            log.info("finish exec method[checkBeforeAddObserver]. checkBeforeAddObserver is empty");
+            log.info("finish exec method[checkBeforeAddObserver]. observerList is empty");
             return nodeIds;
         }
 
