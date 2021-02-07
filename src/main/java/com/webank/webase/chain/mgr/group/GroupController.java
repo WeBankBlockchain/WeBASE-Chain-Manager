@@ -265,6 +265,11 @@ public class GroupController extends BaseController {
 
         RspAddSealerAsyncVO rsp = precompiledService.addSealerAsync(param);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        if (!rsp.getAllSuccessFlag()) {
+            baseResponse.setCode(ConstantCode.ADD_SEALER_ASYNC_FAIL.getCode());
+            baseResponse.setMessage(ConstantCode.ADD_SEALER_ASYNC_FAIL.getMessage());
+            baseResponse.setAttachment(JsonTools.objToString(rsp.getErrorMessages()));
+        }
         baseResponse.setData(rsp);
         log.info("end addSealerAsync useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
         return baseResponse;

@@ -159,9 +159,9 @@ public class PrecompiledService {
                 successNodes.add(node);
             } catch (BaseException ex) {
                 String msg = StringUtils.isBlank(ex.getRetCode().getAttachment()) ? ex.getMessage() : ex.getRetCode().getAttachment();
-                errorMessages.add(String.format("node:{} fail:{}", node, msg));
+                errorMessages.add(String.format("node:%s fail:%s", node, msg));
             } catch (Exception ex) {
-                errorMessages.add(String.format("node:{} fail:{}", node, ex.getMessage()));
+                errorMessages.add(String.format("node:%s fail:%s", node, ex.getMessage()));
             }
         }
 
@@ -171,11 +171,6 @@ public class PrecompiledService {
         rsp.setSuccessNodes(successNodes);
         rsp.setErrorMessages(errorMessages);
         rsp.setAllSuccessFlag(CollectionUtils.isEmpty(errorMessages));
-
-        if (!rsp.getAllSuccessFlag()) {
-            throw new BaseException(ConstantCode.ADD_SEALER_ASYNC_FAIL.attach(JsonTools.objToString(rsp)));
-        }
-
         log.info("finish exec method[checkAndAddSaveSealerTask] rsp:{}", JsonTools.objToString(rsp));
         return rsp;
     }
