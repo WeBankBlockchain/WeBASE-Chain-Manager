@@ -27,7 +27,9 @@ import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
 import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
 import com.webank.webase.chain.mgr.group.entity.ReqSetSysConfig;
 import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
+import com.webank.webase.chain.mgr.node.entity.AddSealerAsyncParam;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
+import com.webank.webase.chain.mgr.node.entity.RspAddSealerAsyncVO;
 import com.webank.webase.chain.mgr.precompiledapi.PrecompiledService;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
@@ -248,6 +250,28 @@ public class GroupController extends BaseController {
     }
 
     /**
+     * @param param
+     * @param result
+     * @return
+     * @throws BaseException
+     */
+    @PostMapping(value = "addSealerAsync")
+    public BaseResponse addSealerAsync(@RequestBody @Valid AddSealerAsyncParam param,
+                                       BindingResult result) throws BaseException {
+        checkBindResult(result);
+        Instant startTime = Instant.now();
+        log.info("start addSealerAsync startTime:{} param:{}",
+                startTime.toEpochMilli(), JsonTools.toJSONString(param));
+
+        RspAddSealerAsyncVO rsp = precompiledService.addSealerAsync(param);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        baseResponse.setData(rsp);
+        log.info("end addSealerAsync useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
+        return baseResponse;
+    }
+
+
+    /**
      * getSysConfigList.
      */
     @GetMapping("getSysConfigList/{chainId}/{groupId}/{nodeId}")
@@ -431,7 +455,7 @@ public class GroupController extends BaseController {
                                              @RequestParam(name = "status", required = false) Byte status) {
         Instant startTime = Instant.now();
         log.info("start queryGroupByPage startTime:{} chainId:{} agencyId:{} pageNumber:{} pageSize:{} status:{}", startTime.toEpochMilli(), chainId, agencyId, pageSize, pageNumber, status);
-        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId, pageSize, pageNumber,status);
+        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId, pageSize, pageNumber, status);
         log.info("end queryGroupByPage useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(basePageResponse));
         return basePageResponse;
     }

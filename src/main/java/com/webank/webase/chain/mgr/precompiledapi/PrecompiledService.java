@@ -20,18 +20,21 @@ import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
+import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
+import com.webank.webase.chain.mgr.node.entity.AddSealerAsyncParam;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
+import com.webank.webase.chain.mgr.node.entity.RspAddSealerAsyncVO;
 import com.webank.webase.chain.mgr.sign.UserService;
 import com.webank.webase.chain.mgr.task.TaskManager;
-import com.webank.webase.chain.mgr.task.TaskService;
 import com.webank.webase.chain.mgr.trans.TransService;
 import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
 import com.webank.webase.chain.mgr.util.CommUtils;
 import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -96,7 +100,7 @@ public class PrecompiledService {
         for (String nodeId : nodeIds) {
             switch (consensusParam.getNodeType()) {
                 case PrecompiledUtils.NODE_TYPE_SEALER:
-                    addObserverAndSaveSealerTask(chainId, groupId, signUserId, nodeId);
+                    addSealer(chainId, groupId, signUserId, nodeId);
                     break;
                 case PrecompiledUtils.NODE_TYPE_OBSERVER:
                     addObserver(chainId, groupId, signUserId, nodeId);
@@ -112,20 +116,88 @@ public class PrecompiledService {
 
         //reset group list
         groupService.resetGroupList();
+
+        log.info("finish exec method[setConsensusStatus]");
+
+    }
+
+
+    /**
+     * @param param
+     */
+    public RspAddSealerAsyncVO addSealerAsync(AddSealerAsyncParam param) {
+        log.info("start exec method[checkAndAddSaveSealerTask] param:{}", JsonTools.objToString(param));
+
+        //check nodeId exist
+        Set<String> nodeIds = requireAllNodeValid(param.getChainId(), param.getGroupId(), param.getNodeIdList());
+        //handle by node status
+        Set<String> sealerNodes = new HashSet<>();
+        Set<String> successNodes = new HashSet<>();
+        Set<String> errorMessages = new HashSet<>();
+        for (String node : nodeIds) {
+            try {
+                //check task
+                taskManager.requireNotFoundTaskByChainAndGroupAndNode(param.getChainId(), param.getGroupId(), node);
+
+                //handle by type
+                String nodeType = nodeService.getNodeType(param.getChainId(), param.getGroupId(), node);
+                if (PrecompiledUtils.NODE_TYPE_SEALER.equals(nodeType)) {
+                    sealerNodes.add(node);
+                    continue;
+                }
+
+                if (PrecompiledUtils.NODE_TYPE_REMOVE.equals(nodeType)) {
+                    addObserverAndSaveSealerTask(param.getChainId(), param.getGroupId(), node);
+                }
+
+                if (PrecompiledUtils.NODE_TYPE_OBSERVER.equals(nodeType)) {
+                    taskManager.saveTaskOfAddSealerNode(param.getChainId(), param.getGroupId(), node);
+                } else {
+                    throw new BaseException(ConstantCode.INVALID_NODE_TYPE);
+                }
+
+                successNodes.add(node);
+            } catch (BaseException ex) {
+                String msg = StringUtils.isBlank(ex.getRetCode().getAttachment()) ? ex.getMessage() : ex.getRetCode().getAttachment();
+                errorMessages.add(String.format("node:{} fail:{}", node, msg));
+            } catch (Exception ex) {
+                errorMessages.add(String.format("node:{} fail:{}", node, ex.getMessage()));
+            }
+        }
+
+        //response
+        RspAddSealerAsyncVO rsp = new RspAddSealerAsyncVO();
+        rsp.setSealerNodes(sealerNodes);
+        rsp.setSuccessNodes(successNodes);
+        rsp.setErrorMessages(errorMessages);
+        rsp.setAllSuccessFlag(CollectionUtils.isEmpty(errorMessages));
+
+        if (!rsp.getAllSuccessFlag()) {
+            throw new BaseException(ConstantCode.ADD_SEALER_ASYNC_FAIL.attach(JsonTools.objToString(rsp)));
+        }
+
+        log.info("finish exec method[checkAndAddSaveSealerTask] rsp:{}", JsonTools.objToString(rsp));
+        return rsp;
     }
 
     @Transactional
-    public void addObserverAndSaveSealerTask(int chainId, int groupId, String signUserId, String nodeId) {
+    public void addObserverAndSaveSealerTask(int chainId, int groupId, String nodeId) {
 
+        checkBeforeAddObserver(chainId, groupId, SetUtils.hashSet(nodeId));
         // Save it to the task table, and take it out periodically by the timed task for processing
         taskManager.saveTaskOfAddSealerNode(chainId, groupId, nodeId);
 
-        //If it is not an observer node, set it as an observer node
-        List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
-        if (CollectionUtils.isNotEmpty(observerList) && !observerList.contains(nodeId))
-            addObserver(chainId, groupId, signUserId, nodeId);
+        addObserver(chainId, groupId, nodeId);
 
     }
+
+
+    public void addSealer(int chainId, int groupId, String nodeId) {
+        //signUser
+        String signUserId = userService.createAdminIfNonexistence(chainId, groupId).getSignUserId();
+        addSealer(chainId, groupId, signUserId, nodeId);
+    }
+
 
     /**
      * consensus: add sealer through webase-sign
@@ -142,6 +214,19 @@ public class PrecompiledService {
         //check trans's result
         CommUtils.handleTransResultDto(transResultDto);
     }
+
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param nodeId
+     */
+    public void addObserver(int chainId, int groupId, String nodeId) {
+        //signUser
+        String signUserId = userService.createAdminIfNonexistence(chainId, groupId).getSignUserId();
+        addObserver(chainId, groupId, signUserId, nodeId);
+    }
+
 
     /**
      * consensus: add observer through webase-sign
@@ -187,47 +272,47 @@ public class PrecompiledService {
 
 
     /**
-     * @param consensusParam
+     * @param param
      * @return
      */
-    public Set<String> checkBeforeSetConsensusStatus(ConsensusParam consensusParam) {
-        log.info("start exec method[checkBeforeSetConsensusStatus]. param:{}", JsonTools.objToString(consensusParam));
+    public Set<String> checkBeforeSetConsensusStatus(ConsensusParam param) {
+        log.info("start exec method[checkBeforeSetConsensusStatus]. param:{}", JsonTools.objToString(param));
 
-        String nodeType = consensusParam.getNodeType();
+        String nodeType = param.getNodeType();
         log.info("nodeType:{}", nodeType);
 
-        Set<String> nodeIds;
+        //check nodeId exist
+        Set<String> nodeIds = requireAllNodeValid(param);
+
+        Set<String> successNodes;
         switch (nodeType) {
             case PrecompiledUtils.NODE_TYPE_SEALER:
-                nodeIds = checkBeforeAddSealer(consensusParam);
+                successNodes = checkBeforeAddSealer(param.getChainId(), param.getGroupId(), nodeIds);
                 break;
             case PrecompiledUtils.NODE_TYPE_OBSERVER:
-                nodeIds = checkBeforeAddObserver(consensusParam);
+                successNodes = checkBeforeAddObserver(param.getChainId(), param.getGroupId(), nodeIds);
                 break;
             case PrecompiledUtils.NODE_TYPE_REMOVE:
-                nodeIds = checkBeforeAddNodeOfRemoveType(consensusParam);
+                successNodes = checkBeforeAddNodeOfRemoveType(param.getChainId(), param.getGroupId(), nodeIds);
                 break;
             default:
                 throw new BaseException(ConstantCode.INVALID_NODE_TYPE);
         }
-        log.info("success exec method[checkBeforeSetConsensusStatus]. result:{}", JsonTools.objToString(nodeIds));
-        return nodeIds;
+        log.info("success exec method[checkBeforeSetConsensusStatus]. result:{}", JsonTools.objToString(successNodes));
+        return successNodes;
     }
 
 
     /**
-     * @param param
+     * @param chainId
+     * @param groupId
+     * @param nodeIds
      * @return
      */
-    private Set<String> checkBeforeAddSealer(ConsensusParam param) {
-        log.info("start exec method[checkBeforeAddSealer]. param:{}", JsonTools.objToString(param));
-
-        //check nodeId exist
-        Set<String> nodeIds = checkNodeIdByConsensusParam(param);
+    public Set<String> checkBeforeAddSealer(int chainId, int groupId, Set<String> nodeIds) {
+        log.info("start exec method[checkBeforeAddSealer]. chainId:{} groupId:{} nodeIds:{}", chainId, groupId, JsonTools.objToString(nodeIds));
 
         //require nodeId is observer
-        int chainId = param.getChainId();
-        int groupId = param.getGroupId();
         List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
         if (CollectionUtils.isEmpty(observerList))
             throw new BaseException(ConstantCode.NOT_FOUND_OBSERVER_NODE);
@@ -236,7 +321,8 @@ public class PrecompiledService {
             throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are not observers:%s", JsonTools.objToString(nodeIdIsNotObserver))));
 
         //check blockNumber
-        BigInteger blockNumberOfChain = frontInterfaceService.getLatestBlockNumber(chainId, groupId);
+        SyncStatus syncStatus = frontInterfaceService.getSyncStatus(chainId, groupId);
+        BigInteger blockNumberOfChain = syncStatus.getBlockNumber();
         for (String nodeId : nodeIds) {
             BigInteger blockNumberOfNode = nodeService.getBlockNumberOfNodeOnChain(chainId, groupId, nodeId);
             if (blockNumberOfChain.subtract(blockNumberOfNode).compareTo(constantProperties.getMaxBlockDifferenceOfNewSealer()) > 0) {
@@ -249,18 +335,15 @@ public class PrecompiledService {
     }
 
     /**
-     * @param param
+     * @param chainId
+     * @param groupId
+     * @param nodeIds
      * @return
      */
-    private Set<String> checkBeforeAddObserver(ConsensusParam param) {
-        log.info("start exec method[checkBeforeAddObserver]. param:{}", JsonTools.objToString(param));
-
-        //check nodeId exist
-        Set<String> nodeIds = checkNodeIdByConsensusParam(param);
+    private Set<String> checkBeforeAddObserver(int chainId, int groupId, Set<String> nodeIds) {
+        log.info("start exec method[checkBeforeAddObserver]. chainId:{} groupId:{} nodeIdList:{}", chainId, groupId, JsonTools.objToString(nodeIds));
 
         //require nodeId is observer
-        int chainId = param.getChainId();
-        int groupId = param.getGroupId();
         List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
         if (CollectionUtils.isEmpty(observerList)) {
             log.info("finish exec method[checkBeforeAddObserver]. checkBeforeAddObserver is empty");
@@ -277,15 +360,13 @@ public class PrecompiledService {
 
 
     /**
-     * @param param
+     * @param chainId
+     * @param groupId
+     * @param nodeIds
      * @return
      */
-    private Set<String> checkBeforeAddNodeOfRemoveType(ConsensusParam param) {
-        log.info("start exec method[checkBeforeAddNodeOfRemoveType]. param:{}", JsonTools.objToString(param));
-        //check nodeId exist
-        Set<String> nodeIds = checkNodeIdByConsensusParam(param);
-        int chainId = param.getChainId();
-        int groupId = param.getGroupId();
+    private Set<String> checkBeforeAddNodeOfRemoveType(int chainId, int groupId, Set<String> nodeIds) {
+        log.info("start exec method[checkBeforeAddObserver]. chainId:{} groupId:{} nodeIdList:{}", chainId, groupId, JsonTools.objToString(nodeIds));
 
         //require nodeType is not remove
         List<String> nodesOfRemoveType = nodeService.getNodeIds(chainId, groupId, PrecompiledUtils.NODE_TYPE_REMOVE);
@@ -308,12 +389,7 @@ public class PrecompiledService {
      * @param param
      * @return
      */
-    private Set<String> checkNodeIdByConsensusParam(ConsensusParam param) {
-        log.info("start exec method[checkNodeIdByConsensusParam]. param:{}", JsonTools.objToString(param));
-
-        //check nodeId exist
-        int chainId = param.getChainId();
-        int groupId = param.getGroupId();
+    public Set<String> requireAllNodeValid(ConsensusParam param) {
         List<String> nodeIdList = param.getNodeIdList();
         if (CollectionUtils.isEmpty(nodeIdList)) {
             if (StringUtils.isBlank(param.getNodeId())) {
@@ -321,10 +397,27 @@ public class PrecompiledService {
             }
             nodeIdList.add(param.getNodeId());
         }
+        return requireAllNodeValid(param.getChainId(), param.getGroupId(), nodeIdList);
+    }
+
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param nodeIdList
+     * @return
+     */
+    private Set<String> requireAllNodeValid(int chainId, int groupId, List<String> nodeIdList) {
+        log.info("start exec method[requireAllNodeValid]. chainId:{} groupId:{} nodeIdList:{}", chainId, groupId, JsonTools.objToString(nodeIdList));
+
+        if (CollectionUtils.isEmpty(nodeIdList))
+            throw new BaseException(ConstantCode.NODE_PARAM_EMPTY);
+
+        //check nodeId exist
         nodeIdList.stream().forEach(node -> nodeService.requireNodeIdValid(chainId, groupId, node));
 
         Set<String> nodeIds = nodeIdList.stream().collect(Collectors.toSet());
-        log.info("success exec method[checkNodeIdByConsensusParam]. result:{}", JsonTools.objToString(nodeIds));
+        log.info("success exec method[requireAllNodeValid]. result:{}", JsonTools.objToString(nodeIds));
         return nodeIds;
     }
 }

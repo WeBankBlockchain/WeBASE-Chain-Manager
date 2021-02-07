@@ -491,4 +491,32 @@ public class NodeService {
 
         return new ArrayList<>();
     }
+
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param nodeId
+     * @return
+     */
+    public String getNodeType(int chainId, int groupId, String nodeId) {
+        log.info("start exec method[getNodeType]. chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);
+
+        List<String> sealerList = frontInterface.getSealerList(chainId, groupId);
+        if (CollectionUtils.isNotEmpty(sealerList) && sealerList.contains(nodeId))
+            return PrecompiledUtils.NODE_TYPE_SEALER;
+
+        List<String> observerList = frontInterface.getObserverList(chainId, groupId);
+        if (CollectionUtils.isNotEmpty(observerList) && observerList.contains(nodeId))
+            return PrecompiledUtils.NODE_TYPE_OBSERVER;
+
+        List<String> nodeIdList = frontInterface.getNodeIdList(chainId, groupId);
+        if (CollectionUtils.isNotEmpty(nodeIdList) && nodeIdList.contains(nodeId))
+            return PrecompiledUtils.NODE_TYPE_REMOVE;
+
+
+        log.error("fail exec method [getNodeType].  not found record by chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);
+        return null;
+    }
+
 }

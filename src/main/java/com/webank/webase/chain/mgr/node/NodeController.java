@@ -95,8 +95,11 @@ public class NodeController extends BaseController {
         int newGroupId = groupId == null || groupId <= 0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
 
         // check node status before query
-        nodeService.checkAndUpdateNodeStatus(chainId);
-
+        try {
+            nodeService.checkAndUpdateNodeStatus(chainId);
+        } catch (Exception ex) {
+            log.error("fail to update node status for exception.", ex);
+        }
 
         // param
         NodeParam queryParam = new NodeParam();

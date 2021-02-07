@@ -12,7 +12,7 @@ public class AddSealerNodeTask {
 
     @Scheduled(fixedDelayString = "${constant.addSealerNodeCycle}")
     public void taskStart() {
-//        resetGroupList();
+        taskService.addSealerNodeFromDbTask();
     }
 
 
