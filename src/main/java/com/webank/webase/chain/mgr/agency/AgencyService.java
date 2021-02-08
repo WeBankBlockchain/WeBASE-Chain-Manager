@@ -17,10 +17,13 @@ import com.webank.webase.chain.mgr.agency.entity.RspAllOwnedDataOfAgencyVO;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.contract.ContractService;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
+import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMap;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -52,6 +56,10 @@ public class AgencyService {
     private GroupService groupService;
     @Autowired
     private ContractService contractService;
+    @Autowired
+    private FrontGroupMapService frontGroupMapService;
+    @Autowired
+    private FrontManager frontManager;
 
 
     /**
@@ -132,4 +140,28 @@ public class AgencyService {
         return result;
     }
 
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @return
+     */
+    public List<Integer> queryAgencyList(Integer chainId, Integer groupId) {
+        log.info("start exec method [queryAgencyList]. chainId:{} groupId:{}", chainId, groupId);
+        //query front-group-map
+        List<TbFrontGroupMap> frontGroupMapList = frontGroupMapService.listByChainAndGroup(chainId, groupId);
+        if (CollectionUtils.isEmpty(frontGroupMapList))
+            return Collections.EMPTY_LIST;
+
+        //query front list
+        List<Integer> frontIdList = frontGroupMapList.stream().map(map -> map.getFrontId()).distinct().collect(Collectors.toList());
+        List<TbFront> frontList = frontManager.queryFrontByIdList(frontIdList);
+        if (CollectionUtils.isEmpty(frontList))
+            return Collections.EMPTY_LIST;
+
+        //get agencyId list
+        List<Integer> agencyIdList = frontList.stream().map(f -> f.getExtAgencyId()).distinct().collect(Collectors.toList());
+        log.info("success exec method [queryAgencyList]. chainId:{} groupId:{} result:{}", chainId, groupId, JsonTools.objToString(agencyIdList));
+        return agencyIdList;
+    }
 }

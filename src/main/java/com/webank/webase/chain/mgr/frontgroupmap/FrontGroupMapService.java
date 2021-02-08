@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -100,11 +101,20 @@ public class FrontGroupMapService {
     /**
      * get map list by groupId
      */
-    public List<FrontGroup> listByGroupId(int groupId) {
-        if (groupId == 0) {
-            return null;
+    public List<TbFrontGroupMap> listByChainAndGroup(Integer chainId, Integer groupId) {
+        log.info("start exec method[listByChainAndGroup], chainId:{} groupId:{}", chainId, groupId);
+
+        //param
+        TbFrontGroupMapExample example = new TbFrontGroupMapExample();
+        TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        if (Objects.nonNull(groupId)) {
+            criteria.andGroupIdEqualTo(groupId);
         }
-        return this.tbFrontGroupMapMapper.selectByGroupId(groupId);
+
+        List<TbFrontGroupMap> frontGroupMapList = tbFrontGroupMapMapper.selectByExample(example);
+        log.info("success exec method[listByChainAndGroup], chainId:{} groupId:{} result:{}", chainId, groupId, JsonTools.objToString(frontGroupMapList));
+        return frontGroupMapList;
     }
 
 
