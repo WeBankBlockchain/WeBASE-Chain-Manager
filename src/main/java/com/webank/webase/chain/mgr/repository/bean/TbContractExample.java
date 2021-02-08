@@ -573,6 +573,66 @@ public class TbContractExample {
             return (Criteria) this;
         }
 
+        public Criteria andAgencyIdIsNull() {
+            addCriterion("agency_id is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgencyIdIsNotNull() {
+            addCriterion("agency_id is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgencyIdEqualTo(Integer value) {
+            addCriterion("agency_id =", value, "agencyId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgencyIdNotEqualTo(Integer value) {
+            addCriterion("agency_id <>", value, "agencyId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgencyIdGreaterThan(Integer value) {
+            addCriterion("agency_id >", value, "agencyId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgencyIdGreaterThanOrEqualTo(Integer value) {
+            addCriterion("agency_id >=", value, "agencyId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgencyIdLessThan(Integer value) {
+            addCriterion("agency_id <", value, "agencyId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgencyIdLessThanOrEqualTo(Integer value) {
+            addCriterion("agency_id <=", value, "agencyId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgencyIdIn(List<Integer> values) {
+            addCriterion("agency_id in", values, "agencyId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgencyIdNotIn(List<Integer> values) {
+            addCriterion("agency_id not in", values, "agencyId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgencyIdBetween(Integer value1, Integer value2) {
+            addCriterion("agency_id between", value1, value2, "agencyId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgencyIdNotBetween(Integer value1, Integer value2) {
+            addCriterion("agency_id not between", value1, value2, "agencyId");
+            return (Criteria) this;
+        }
+
         public Criteria andContractAddressIsNull() {
             addCriterion("contract_address is null");
             return (Criteria) this;

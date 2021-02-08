@@ -53,3 +53,7 @@ CREATE TABLE IF NOT EXISTS tb_task (
   PRIMARY KEY (id),
     UNIQUE KEY unique_chain_group_node (chain_id,group_id,node_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务信息表';
+
+
+--add 2021.02.08--
+ALTER TABLE tb_contract ADD COLUMN agency_id int(10) DEFAULT  NULL COMMENT '合约发起机构（合约首次保存的机构Id）' AFTER group_id;

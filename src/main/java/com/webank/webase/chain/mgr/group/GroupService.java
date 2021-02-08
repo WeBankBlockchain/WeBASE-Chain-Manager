@@ -207,14 +207,13 @@ public class GroupService {
             }
         }
 
-        // if create by orgIdList, then start up group
-        if (CollectionUtils.isNotEmpty(req.getOrgIdList())) {
-            ReqStartGroup reqStartGroup = new ReqStartGroup();
-            reqStartGroup.setChainId(req.getChainId());
-            reqStartGroup.setGenerateGroupId(generateGroupId);
-            reqStartGroup.setNodeList(req.getNodeList());
-            this.batchStartGroup(reqStartGroup);
-        }
+
+        ReqStartGroup reqStartGroup = new ReqStartGroup();
+        reqStartGroup.setChainId(req.getChainId());
+        reqStartGroup.setGenerateGroupId(generateGroupId);
+        reqStartGroup.setNodeList(req.getNodeList());
+        this.batchStartGroup(reqStartGroup);
+
         return tbGroup;
     }
 

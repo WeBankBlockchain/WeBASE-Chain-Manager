@@ -42,7 +42,7 @@ constant:
 
   ### change node type
   maxBlockDifferenceOfNewSealer: 5  # The maximum allowable block difference of the new consensus node
-  addSealerNodeCycle: 600000
+  addSealerNodeCycle: 300000
 
 
 

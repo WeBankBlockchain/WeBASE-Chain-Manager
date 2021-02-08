@@ -99,6 +99,7 @@ public class CommUtils {
                     if (!String.valueOf(Success).equals(resultMsg)) {
                         throw new BaseException(ConstantCode.TX_RECEIPT_CODE_ERROR.attach(resultMsg));
                     }
+
                 } catch (IOException e) {
                     log.error("handleTransactionReceipt getJsonStr of error tx receipt fail:[]", e);
                     throw new BaseException(ConstantCode.TX_RECEIPT_OUTPUT_PARSE_JSON_FAIL.getCode(), e.getMessage());

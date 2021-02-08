@@ -236,7 +236,7 @@ public class FrontRestTools {
             return null;
         }
         if (uri.contains(URI_CONTRACT_DEPLOY) || uri.contains(URI_MULTI_CONTRACT_COMPILE)
-                || uri.contains(URI_CHARGING_GET_TXGASDATA)) {
+                || uri.contains(URI_CHARGING_GET_TXGASDATA)||uri.contains(URI_SIGNED_TRANSACTION)) {
             return deployRestTemplate;
         }
         return genericRestTemplate;

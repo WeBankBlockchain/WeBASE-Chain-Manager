@@ -48,13 +48,13 @@ public class AgencyController extends BaseController {
      */
     @ApiOperation(value = "添加链")
     @GetMapping("/{agencyId}/owned")
-    public BaseResponse newChain(@PathVariable("agencyId") Integer agencyId) {
+    public BaseResponse owned(@PathVariable("agencyId") Integer agencyId) {
         Instant startTime = Instant.now();
-        log.info("start newChain startTime:{} agencyId:{}", startTime.toEpochMilli(), agencyId);
+        log.info("start owned startTime:{} agencyId:{}", startTime.toEpochMilli(), agencyId);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         RspAllOwnedDataOfAgencyVO data = agencyService.getAllByAgencyId(agencyId);
         baseResponse.setData(data);
-        log.info("end newChain useTime:{} result:{}",
+        log.info("end owned useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JsonTools.toJSONString(baseResponse));
         return baseResponse;
