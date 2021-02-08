@@ -87,36 +87,48 @@ public class AgencyService {
 
 
         //chainIdList
-        List<Integer> chainIdList = frontList.stream().map(front -> front.getChainId()).collect(Collectors.toList());
+        List<Integer> chainIdList = frontList.stream().map(front -> front.getChainId()).distinct().collect(Collectors.toList());
 
         //contract list
         List<RspAllOwnedDataOfAgencyVO.OwnedContract> ownedContractList = new ArrayList<>();
+        List<RspAllOwnedDataOfAgencyVO.ContractAddedByShelf> contractListAddedByShelf = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(ownedGroupList)) {
             for (Integer chainId : chainIdList) {
                 List<Integer> groupIdList = ownedGroupList.stream()
                         .filter(group -> chainId.equals(group.getChainId()))
                         .map(g -> g.getGroupId())
+                        .distinct()
                         .collect(Collectors.toList());
                 List<TbContract> contractList = contractService.qureyContractList(new ContractParam(chainId, groupIdList));
-                if (CollectionUtils.isEmpty(chainIdList)) continue;
-                contractList.stream().forEach(contract -> {
+                if (CollectionUtils.isEmpty(contractList)) continue;
+
+                //all owned contract
+                contractList.stream().distinct().forEach(contract -> {
                     RspAllOwnedDataOfAgencyVO.OwnedContract ownedContract = new RspAllOwnedDataOfAgencyVO.OwnedContract();
                     BeanUtils.copyProperties(contract, ownedContract);
                     ownedContractList.add(ownedContract);
                 });
+
+                //all contract save by current org
+                contractList.stream().distinct()
+                        .filter(c -> String.valueOf(agencyId).equals(c.getSaveByAgency()))
+                        .forEach(contract -> {
+                            RspAllOwnedDataOfAgencyVO.ContractAddedByShelf contractAddedByShelf = new RspAllOwnedDataOfAgencyVO.ContractAddedByShelf();
+                            BeanUtils.copyProperties(contract, contractAddedByShelf);
+                            contractListAddedByShelf.add(contractAddedByShelf);
+                        });
+
             }
         }
-
-
         //result data
         RspAllOwnedDataOfAgencyVO result = new RspAllOwnedDataOfAgencyVO();
         result.setChainIdList(chainIdList);
         result.setFrontList(ownedFrontList);
         result.setGroupList(ownedGroupList);
         result.setContractList(ownedContractList);
+        result.setContractListAddedByShelf(contractListAddedByShelf);
 
         log.info("success exec method [getAllByAgencyId]. agency:{} result:{}", agencyId, JsonTools.objToString(result));
         return result;
     }
-
 }

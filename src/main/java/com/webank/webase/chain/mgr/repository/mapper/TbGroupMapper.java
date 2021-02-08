@@ -45,6 +45,9 @@ public interface TbGroupMapper {
     @Select({ "select * from tb_group where chain_id = #{chainId} order by group_id asc" })
     List<TbGroup> selectByChainId(@Param("chainId") Integer chainId);
 
+    @Select({ "select * from tb_group where group_status = #{groupStatus} order by group_id asc" })
+    List<TbGroup> selectByGroupStatus(@Param("groupStatus") Byte groupStatus);
+
     @Select({ " SELECT a.group_id as group_id,a.chain_id as chain_id," + " a.node_count as node_count,b.contractCount as contract_count" + " FROM tb_group a" + " LEFT 	JOIN" + "(" + "        select group_id,count(1) contractCount" + "        from tb_contract" + "        where contract_type= 0" + "        and contract_status=2" + "        and chain_id = #{chainId}" + " GROUP BY group_id" + ")b on(a.group_id = b.group_id)" + " where a.group_id = #{groupId}" + " and a.chain_id = #{chainId}" })
     GroupGeneral getGeneral(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId);
 

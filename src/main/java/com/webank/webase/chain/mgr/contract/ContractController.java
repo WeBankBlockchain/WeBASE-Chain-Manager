@@ -17,13 +17,17 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.enums.SqlSortType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.contract.entity.*;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
+import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -35,6 +39,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Log4j2
 @RestController
@@ -43,6 +48,8 @@ public class ContractController extends BaseController {
 
     @Autowired
     private ContractService contractService;
+    @Autowired
+    private GroupService groupService;
 
     /**
      * compile deployInputParam.
@@ -165,9 +172,17 @@ public class ContractController extends BaseController {
         log.info("start contractList. startTime:{} inputParam:{}", startTime.toEpochMilli(),
                 JsonTools.toJSONString(inputParam));
 
+        //get groupId which status is normal
+        List<TbGroup> groupList = groupService.getGroupList(inputParam.getChainId(), DataStatus.NORMAL.getValue());
+        List<Integer> groupIds = null;
+        if (CollectionUtils.isNotEmpty(groupList))
+            groupIds = groupList.stream().map(g -> g.getGroupId()).distinct().collect(Collectors.toList());
+
         // param
         ContractParam queryParam = new ContractParam();
         BeanUtils.copyProperties(inputParam, queryParam);
+        queryParam.setGroupIdList(groupIds);
+
 
         int count = contractService.countOfContract(queryParam);
         if (count > 0) {

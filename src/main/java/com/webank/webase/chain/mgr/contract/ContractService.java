@@ -205,9 +205,12 @@ public class ContractService {
         // check contractName
         verifyContractNotExistByName(contract.getChainId(), contract.getGroupId(),
                 contract.getContractPath(), contract.getContractName());
+
+        Integer belongAgency = tbContract.getSaveByAgency();
         BeanUtils.copyProperties(contract, tbContract);
+        tbContract.setSaveByAgency(belongAgency);
         tbContract.setModifyTime(new Date());
-        tbContractMapper.updateByPrimaryKeySelective(tbContract);
+        tbContractMapper.updateByPrimaryKeyWithBLOBs(tbContract);
         return getByContractId(tbContract.getContractId());
     }
 
@@ -684,6 +687,4 @@ public class ContractService {
     public boolean update(TbContract tbContract) {
         return this.tbContractMapper.updateByPrimaryKeySelective(tbContract) == 1;
     }
-
-
 }

@@ -310,11 +310,13 @@ public class GroupService {
     public List<TbGroup> getGroupList(Integer chainId, Byte groupStatus) throws BaseException {
         log.debug("start getGroupList");
         try {
-            List<TbGroup> groupList = null;
-            if (groupStatus == null) {
-                groupList = this.tbGroupMapper.selectByChainId(chainId);
-            } else {
+            List<TbGroup> groupList = new ArrayList<>();
+            if (Objects.nonNull(chainId) && Objects.nonNull(groupStatus)) {
                 groupList = this.tbGroupMapper.selectByChainIdAndGroupStatus(chainId, groupStatus);
+            } else if (Objects.nonNull(chainId)) {
+                groupList = this.tbGroupMapper.selectByChainId(chainId);
+            } else if (Objects.nonNull(groupStatus)) {
+                groupList = this.tbGroupMapper.selectByGroupStatus(groupStatus);
             }
             log.debug("end getGroupList groupList:{}", JsonTools.toJSONString(groupList));
             return groupList;

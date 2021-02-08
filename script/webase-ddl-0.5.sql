@@ -56,4 +56,4 @@ CREATE TABLE IF NOT EXISTS tb_task (
 
 
 --add 2021.02.08--
-ALTER TABLE tb_contract ADD COLUMN agency_id int(10) DEFAULT  NULL COMMENT '合约发起机构（合约首次保存的机构Id）' AFTER group_id;
+ALTER TABLE tb_contract ADD COLUMN save_by_agency int(10) DEFAULT  NULL COMMENT '合约发起机构（合约首次保存的机构Id）' AFTER group_id;

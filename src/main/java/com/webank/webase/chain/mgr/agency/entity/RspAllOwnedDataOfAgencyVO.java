@@ -14,6 +14,7 @@ public class RspAllOwnedDataOfAgencyVO {
     private List<OwnedGroup> groupList;
     private List<OwnedFront> frontList;
     private List<OwnedContract> contractList;
+    private List<ContractAddedByShelf> contractListAddedByShelf;
 
     @Data
     @NoArgsConstructor
@@ -31,6 +32,10 @@ public class RspAllOwnedDataOfAgencyVO {
         private String nodeId;
     }
 
+
+    /**
+     * 当前机构能看到的合约（同一个群组的合约都能看到）
+     */
     @Data
     @NoArgsConstructor
     public static class OwnedContract {
@@ -41,4 +46,17 @@ public class RspAllOwnedDataOfAgencyVO {
         private String contractName;
     }
 
+
+    /**
+     * 由当前机构添加的合约（首次保存）
+     */
+    @Data
+    @NoArgsConstructor
+    public static class ContractAddedByShelf {
+        private Integer chainId;
+        private Integer groupId;
+        private Integer contractId;
+        private String contractPath;
+        private String contractName;
+    }
 }

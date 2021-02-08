@@ -573,63 +573,63 @@ public class TbContractExample {
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdIsNull() {
-            addCriterion("agency_id is null");
+        public Criteria andSaveByAgencyIsNull() {
+            addCriterion("save_by_agency is null");
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdIsNotNull() {
-            addCriterion("agency_id is not null");
+        public Criteria andSaveByAgencyIsNotNull() {
+            addCriterion("save_by_agency is not null");
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdEqualTo(Integer value) {
-            addCriterion("agency_id =", value, "agencyId");
+        public Criteria andSaveByAgencyEqualTo(Integer value) {
+            addCriterion("save_by_agency =", value, "saveByAgency");
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdNotEqualTo(Integer value) {
-            addCriterion("agency_id <>", value, "agencyId");
+        public Criteria andSaveByAgencyNotEqualTo(Integer value) {
+            addCriterion("save_by_agency <>", value, "saveByAgency");
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdGreaterThan(Integer value) {
-            addCriterion("agency_id >", value, "agencyId");
+        public Criteria andSaveByAgencyGreaterThan(Integer value) {
+            addCriterion("save_by_agency >", value, "saveByAgency");
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdGreaterThanOrEqualTo(Integer value) {
-            addCriterion("agency_id >=", value, "agencyId");
+        public Criteria andSaveByAgencyGreaterThanOrEqualTo(Integer value) {
+            addCriterion("save_by_agency >=", value, "saveByAgency");
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdLessThan(Integer value) {
-            addCriterion("agency_id <", value, "agencyId");
+        public Criteria andSaveByAgencyLessThan(Integer value) {
+            addCriterion("save_by_agency <", value, "saveByAgency");
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdLessThanOrEqualTo(Integer value) {
-            addCriterion("agency_id <=", value, "agencyId");
+        public Criteria andSaveByAgencyLessThanOrEqualTo(Integer value) {
+            addCriterion("save_by_agency <=", value, "saveByAgency");
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdIn(List<Integer> values) {
-            addCriterion("agency_id in", values, "agencyId");
+        public Criteria andSaveByAgencyIn(List<Integer> values) {
+            addCriterion("save_by_agency in", values, "saveByAgency");
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdNotIn(List<Integer> values) {
-            addCriterion("agency_id not in", values, "agencyId");
+        public Criteria andSaveByAgencyNotIn(List<Integer> values) {
+            addCriterion("save_by_agency not in", values, "saveByAgency");
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdBetween(Integer value1, Integer value2) {
-            addCriterion("agency_id between", value1, value2, "agencyId");
+        public Criteria andSaveByAgencyBetween(Integer value1, Integer value2) {
+            addCriterion("save_by_agency between", value1, value2, "saveByAgency");
             return (Criteria) this;
         }
 
-        public Criteria andAgencyIdNotBetween(Integer value1, Integer value2) {
-            addCriterion("agency_id not between", value1, value2, "agencyId");
+        public Criteria andSaveByAgencyNotBetween(Integer value1, Integer value2) {
+            addCriterion("save_by_agency not between", value1, value2, "saveByAgency");
             return (Criteria) this;
         }
 
