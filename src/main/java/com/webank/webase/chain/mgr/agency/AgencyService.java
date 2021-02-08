@@ -111,7 +111,7 @@ public class AgencyService {
 
                 //all contract save by current org
                 contractList.stream().distinct()
-                        .filter(c -> String.valueOf(agencyId).equals(c.getSaveByAgency()))
+                        .filter(c -> Integer.valueOf(agencyId).equals(c.getSaveByAgency()))
                         .forEach(contract -> {
                             RspAllOwnedDataOfAgencyVO.ContractAddedByShelf contractAddedByShelf = new RspAllOwnedDataOfAgencyVO.ContractAddedByShelf();
                             BeanUtils.copyProperties(contract, contractAddedByShelf);
@@ -131,4 +131,5 @@ public class AgencyService {
         log.info("success exec method [getAllByAgencyId]. agency:{} result:{}", agencyId, JsonTools.objToString(result));
         return result;
     }
+
 }

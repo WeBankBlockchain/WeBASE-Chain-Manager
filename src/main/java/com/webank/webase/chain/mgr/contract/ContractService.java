@@ -187,6 +187,7 @@ public class ContractService {
         // add to database.
         TbContract tbContract = new TbContract();
         BeanUtils.copyProperties(contract, tbContract);
+        tbContract.setSaveByAgency(contract.getAgencyId());
         Date now = new Date();
         tbContract.setCreateTime(now);
         tbContract.setModifyTime(now);
