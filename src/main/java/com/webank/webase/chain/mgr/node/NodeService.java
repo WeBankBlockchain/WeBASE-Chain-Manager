@@ -347,14 +347,14 @@ public class NodeService {
     /**
      * add sealer and observer in NodeList return: List<String> nodeIdList
      */
-    public List<PeerInfo> getSealerAndObserverList(int chainId, int groupId) {
-        log.debug("start getSealerAndObserverList groupId:{}", groupId);
-        List<String> sealerList = frontInterface.getSealerList(chainId, groupId);
-        List<String> observerList = frontInterface.getObserverList(chainId, groupId);
+    public List<PeerInfo> getSealerAndObserverListFromSpecificFront(int groupId, String peerName, String frontIp, Integer frontPort) {
+        log.debug("start getSealerAndObserverListFromSpecificFront groupId:{}", groupId);
+        List<String> sealerList = frontInterface.getSealerListFromSpecificFront(peerName, frontIp, frontPort, groupId);
+        List<String> observerList = frontInterface.getObserverListFromSpecificFront(peerName, frontIp, frontPort, groupId);
         List<PeerInfo> resList = new ArrayList<>();
         sealerList.stream().forEach(nodeId -> resList.add(new PeerInfo(nodeId)));
         observerList.stream().forEach(nodeId -> resList.add(new PeerInfo(nodeId)));
-        log.debug("end getSealerAndObserverList resList:{}", resList);
+        log.debug("end getSealerAndObserverListFromSpecificFront resList:{}", resList);
         return resList;
     }
 
@@ -503,23 +503,22 @@ public class NodeService {
         log.info("start exec method[getNodeType]. chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);
 
         List<String> sealerList = frontInterface.getSealerList(chainId, groupId);
-        if (CollectionUtils.isNotEmpty(sealerList) && sealerList.contains(nodeId)){
-            log.info("finish exec method [getNodeType]. nodeType:{}",PrecompiledUtils.NODE_TYPE_SEALER);
+        if (CollectionUtils.isNotEmpty(sealerList) && sealerList.contains(nodeId)) {
+            log.info("finish exec method [getNodeType]. nodeType:{}", PrecompiledUtils.NODE_TYPE_SEALER);
             return PrecompiledUtils.NODE_TYPE_SEALER;
         }
 
         List<String> observerList = frontInterface.getObserverList(chainId, groupId);
-        if (CollectionUtils.isNotEmpty(observerList) && observerList.contains(nodeId)){
-            log.info("finish exec method [getNodeType]. nodeType:{}",PrecompiledUtils.NODE_TYPE_OBSERVER);
+        if (CollectionUtils.isNotEmpty(observerList) && observerList.contains(nodeId)) {
+            log.info("finish exec method [getNodeType]. nodeType:{}", PrecompiledUtils.NODE_TYPE_OBSERVER);
             return PrecompiledUtils.NODE_TYPE_OBSERVER;
         }
 
         List<String> nodeIdList = frontInterface.getNodeIdList(chainId, groupId);
-        if (CollectionUtils.isNotEmpty(nodeIdList) && nodeIdList.contains(nodeId)){
-            log.info("finish exec method [getNodeType]. nodeType:{}",PrecompiledUtils.NODE_TYPE_REMOVE);
+        if (CollectionUtils.isNotEmpty(nodeIdList) && nodeIdList.contains(nodeId)) {
+            log.info("finish exec method [getNodeType]. nodeType:{}", PrecompiledUtils.NODE_TYPE_REMOVE);
             return PrecompiledUtils.NODE_TYPE_REMOVE;
         }
-
 
 
         log.error("fail exec method [getNodeType].  not found record by chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);

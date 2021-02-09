@@ -312,12 +312,12 @@ public class PrecompiledService {
         log.info("start exec method[checkBeforeAddSealer]. chainId:{} groupId:{} nodeIds:{}", chainId, groupId, JsonTools.objToString(nodeIds));
 
         //require nodeId is observer
-        List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
-        if (CollectionUtils.isEmpty(observerList))
-            throw new BaseException(ConstantCode.NOT_FOUND_OBSERVER_NODE);
-        Set<String> nodeIdIsNotObserver = nodeIds.stream().filter(node -> !observerList.contains(node)).collect(Collectors.toSet());
-        if (CollectionUtils.isNotEmpty(nodeIdIsNotObserver))
-            throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are not observers:%s", JsonTools.objToString(nodeIdIsNotObserver))));
+//        List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
+//        if (CollectionUtils.isEmpty(observerList))
+//            throw new BaseException(ConstantCode.NOT_FOUND_OBSERVER_NODE);
+//        Set<String> nodeIdIsNotObserver = nodeIds.stream().filter(node -> !observerList.contains(node)).collect(Collectors.toSet());
+//        if (CollectionUtils.isNotEmpty(nodeIdIsNotObserver))
+//            throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are not observers:%s", JsonTools.objToString(nodeIdIsNotObserver))));
 
         //check blockNumber
         SyncStatus syncStatus = frontInterfaceService.getSyncStatus(chainId, groupId);

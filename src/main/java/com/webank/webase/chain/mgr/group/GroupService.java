@@ -421,7 +421,7 @@ public class GroupService {
                     // save new peers
                     savePeerList(chainId, frontPeerName, frontIp, frontPort, gId, groupPeerList);
                     // remove invalid peers
-                    removeInvalidPeer(chainId, gId, groupPeerList);
+                    removeInvalidPeer( chainId,  gId,  frontPeerName,  frontIp,  frontPort, groupPeerList);
                     // refresh: add sealer and observer no matter validity
                     frontService.refreshSealerAndObserverInNodeList(frontPeerName, frontIp, frontPort,
                             front.getChainId(), gId);
@@ -525,7 +525,7 @@ public class GroupService {
     /**
      * remove invalid peer.
      */
-    private void removeInvalidPeer(int chainId, int groupId, List<String> groupPeerList) {
+    private void removeInvalidPeer(int chainId, int groupId, String peerName, String frontIp, Integer frontPort, List<String> groupPeerList) {
         if (groupId == 0) {
             return;
         }
@@ -537,20 +537,29 @@ public class GroupService {
         // remove node that's not in groupPeerList and not in sealer/observer list
         localNodes.stream()
                 .filter(node -> !groupPeerList.contains(node.getNodeId())
-                        && !checkSealerAndObserverListContains(chainId, groupId, node.getNodeId()))
+                        && !checkSealerAndObserverListContains(groupId, peerName, frontIp, frontPort, node.getNodeId()))
                 .forEach(n -> nodeService.deleteByNodeAndGroupId(n.getNodeId(), groupId));
     }
 
-    private boolean checkSealerAndObserverListContains(int chainId, int groupId, String nodeId) {
-        log.debug("checkSealerAndObserverListNotContains nodeId:{},groupId:{}", nodeId, groupId);
+    /**
+     * @param groupId
+     * @param peerName
+     * @param frontIp
+     * @param frontPort
+     * @param nodeId
+     * @return
+     */
+    private boolean checkSealerAndObserverListContains(int groupId, String peerName, String frontIp, Integer frontPort, String nodeId) {
+        log.debug("checkSealerAndObserverListNotContains  groupId:{} peerName:{} frontIp:{} frontPort:{} nodeId:{}", groupId, peerName, frontIp, frontPort, nodeId);
         // get sealer and observer on chain
         List<PeerInfo> sealerAndObserverList =
-                nodeService.getSealerAndObserverList(chainId, groupId);
+                nodeService.getSealerAndObserverListFromSpecificFront( groupId, peerName, frontIp, frontPort);
         for (PeerInfo peerInfo : sealerAndObserverList) {
             if (nodeId.equals(peerInfo.getNodeId())) {
                 return true;
             }
         }
+        log.debug("finish checkSealerAndObserverListNotContains  groupId:{} peerName:{} frontIp:{} frontPort:{} nodeId:{}, result: false", groupId, peerName, frontIp, frontPort, nodeId);
         return false;
     }
 
