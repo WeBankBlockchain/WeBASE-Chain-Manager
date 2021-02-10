@@ -15,6 +15,7 @@ package chain.mgr.test.user;
 
 import com.webank.webase.chain.mgr.Application;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.sign.req.ReqNewUser;
@@ -117,5 +118,12 @@ public class UserControllerTest {
                 andExpect(MockMvcResultMatchers.status().isOk()).
                 andDo(MockMvcResultHandlers.print());
         System.out.println("response:" + resultActions.andReturn().getResponse().getContentAsString());
+    }
+
+    @Test
+    public void myTest(){
+        System.out.println(DataStatus.NORMAL.getValue());
+        System.out.println(DataStatus.INVALID.getValue());
+        System.out.println("");
     }
 }

@@ -14,7 +14,6 @@
 package com.webank.webase.chain.mgr.frontgroupmap;
 
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.MapListParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMap;
 import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMapExample;
@@ -162,6 +161,12 @@ public class FrontGroupMapService {
         return groupIdList;
 
     }
+
+
+    public void removeByChainAndGroupAndNode() {
+
+    }
+
 //    @Transactional(propagation = Propagation.REQUIRED)
 //    public void updateFrontMapStatus(int chainId,int frontId, GroupStatus status) {
 //        // update status

@@ -568,6 +568,7 @@ public class GroupService {
      */
     private void checkGroupStatusAndRemoveInvalidGroup(Integer chainId,
                                                        Set<Integer> allGroupOnChain) {
+        log.info("start exec method [checkGroupStatusAndRemoveInvalidGroup] chain:{} allGroupOnChain:{}",chainId,JsonTools.objToString(allGroupOnChain));
         if (CollectionUtils.isEmpty(allGroupOnChain)) {
             return;
         }
@@ -579,7 +580,7 @@ public class GroupService {
 
         for (TbGroup localGroup : allLocalGroup) {
             int localGroupId = localGroup.getGroupId();
-            long count = allGroupOnChain.stream().filter(id -> id == localGroupId).count();
+            long count = allGroupOnChain.stream().filter(id -> id.intValue() == localGroupId).count();
             try {
                 if (count > 0) {
                     log.info("group is valid, chainId:{} localGroupId:{}", chainId, localGroupId);
