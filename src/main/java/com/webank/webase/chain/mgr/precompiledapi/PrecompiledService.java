@@ -19,6 +19,7 @@ import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
 import com.webank.webase.chain.mgr.group.GroupService;
@@ -76,6 +77,8 @@ public class PrecompiledService {
     private ConstantProperties constantProperties;
     @Autowired
     private TaskManager taskManager;
+    @Autowired
+    private FrontGroupMapService frontGroupMapService;
 
 
     /**
@@ -267,6 +270,9 @@ public class PrecompiledService {
 
         //check trans's result
         CommUtils.handleTransResultDto(transResultDto);
+
+        //remove front-group map
+        frontGroupMapService.removeByChainAndGroupAndNode(chainId, groupId, nodeId);
     }
 
 

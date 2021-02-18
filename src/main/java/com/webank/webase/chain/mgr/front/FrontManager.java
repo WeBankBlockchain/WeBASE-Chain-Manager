@@ -20,7 +20,6 @@ public class FrontManager {
     @Autowired
     private TbFrontMapper tbFrontMapper;
 
-
     /**
      * @param agencyId
      * @param frontPeerName

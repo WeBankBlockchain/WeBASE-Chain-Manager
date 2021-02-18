@@ -14,10 +14,13 @@
 package com.webank.webase.chain.mgr.frontgroupmap;
 
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.MapListParam;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMap;
 import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMapExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +39,10 @@ public class FrontGroupMapService {
 
     @Autowired
     private TbFrontGroupMapMapper tbFrontGroupMapMapper;
+    @Autowired
+    private TbFrontMapper frontMapper;
+    @Autowired
+    private FrontGroupMapCache frontGroupMapCache;
 
     /**
      * add new mapping
@@ -163,9 +170,34 @@ public class FrontGroupMapService {
     }
 
 
-    public void removeByChainAndGroupAndNode() {
+    /**
+     * @param chain
+     * @param group
+     * @param node
+     */
+    public void removeByChainAndGroupAndNode(int chain, int group, String node) {
+        log.info("start exec method[removeByChainAndGroupAndNode], chain:{},  group:{}, node:{}", chain, group, node);
+        TbFront tbFront = frontMapper.getByChainIdAndNodeId(chain, node);
+        if (Objects.isNull(tbFront)) {
+            log.info("finish exec method[removeByChainAndGroupAndNode]. not found front by chain:{}, node:{}", chain, node);
+            return;
+        }
 
+        //param
+        TbFrontGroupMapExample example = new TbFrontGroupMapExample();
+        TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chain);
+        criteria.andGroupIdEqualTo(group);
+        criteria.andFrontIdEqualTo(tbFront.getFrontId());
+
+        //delete
+        int deleteCount = tbFrontGroupMapMapper.deleteByExample(example);
+
+        // clear cache
+        frontGroupMapCache.clearMapList(tbFront.getChainId());
+        log.info("finish exec method[removeByChainAndGroupAndNode], chain:{},  group:{}, node:{} deleteCount", chain, group, node, deleteCount);
     }
+
 
 //    @Transactional(propagation = Propagation.REQUIRED)
 //    public void updateFrontMapStatus(int chainId,int frontId, GroupStatus status) {
