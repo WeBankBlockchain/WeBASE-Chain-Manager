@@ -140,7 +140,7 @@ public class PrecompiledService {
         for (String node : nodeIds) {
             try {
                 //check task
-                taskManager.requireNotFoundTaskByChainAndGroupAndNode(param.getChainId(), param.getGroupId(), node);
+//                taskManager.requireNotFoundTaskByChainAndGroupAndNode(param.getChainId(), param.getGroupId(), node);
 
                 //handle by type
                 String nodeType = nodeService.getNodeType(param.getChainId(), param.getGroupId(), node);
@@ -184,7 +184,7 @@ public class PrecompiledService {
     public void addObserverAndSaveSealerTask(int chainId, int groupId, String nodeId) {
         log.info("start exec method[addObserverAndSaveSealerTask] chain:{} chain:{} node:{}", chainId, groupId, nodeId);
 
-        checkBeforeAddObserver(chainId, groupId, SetUtils.hashSet(nodeId));
+//        checkBeforeAddObserver(chainId, groupId, SetUtils.hashSet(nodeId));
         // Save it to the task table, and take it out periodically by the timed task for processing
         taskManager.saveTaskOfAddSealerNode(chainId, groupId, nodeId);
 

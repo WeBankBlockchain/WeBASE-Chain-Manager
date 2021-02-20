@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -34,7 +35,16 @@ public class TaskManager {
         log.info("start exec method[saveTaskOfAddSealerNode] chain:{} group:{} nodeId:{}", chain, group, nodeId);
 
         //check before save
-        requireNotFoundTaskByChainAndGroupAndNode(chain, group, nodeId);
+        TbTaskExample example = new TbTaskExample();
+        TbTaskExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chain);
+        criteria.andGroupIdEqualTo(group);
+        criteria.andNodeIdEqualTo(nodeId);
+        Optional<TbTask> taskOptional = taskMapper.getOneByExample(example);
+        if (taskOptional.isPresent()) {
+            log.info("finish exec method[saveTaskOfAddSealerNode] fount task record by chain:{} group:{} nodeId:{}", chain, group, nodeId);
+            return taskOptional.get();
+        }
 
         //save
         TbTask tbTask = new TbTask();
@@ -56,8 +66,8 @@ public class TaskManager {
      * @param group
      * @param nodeId
      */
-    public void requireNotFoundTaskByChainAndGroupAndNode(int chain, int group, String nodeId) {
-        log.info("start exec method[requireNotFoundTaskByChainAndGroupAndNode] chain:{} group:{} nodeId:{}", chain, group, nodeId);
+    public void queryByChainAndGroupAndNode(int chain, int group, String nodeId) {
+        log.info("start exec method[queryByChainAndGroupAndNode] chain:{} group:{} nodeId:{}", chain, group, nodeId);
         //params
         TbTaskExample example = new TbTaskExample();
         TbTaskExample.Criteria criteria = example.createCriteria();
@@ -70,7 +80,7 @@ public class TaskManager {
         if (count > 0)
             throw new BaseException(ConstantCode.NODE_IN_TASK.attach(String.format("node:%s already in task", nodeId)));
 
-        log.info("finish exec method[requireNotFoundTaskByChainAndGroupAndNode] chain:{} group:{} nodeId:{}", chain, group, nodeId);
+        log.info("finish exec method[queryByChainAndGroupAndNode] chain:{} group:{} nodeId:{}", chain, group, nodeId);
     }
 
 

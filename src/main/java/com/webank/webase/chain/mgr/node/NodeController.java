@@ -26,8 +26,10 @@ import com.webank.webase.chain.mgr.front.entity.TransactionCount;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.RspNodeInfoVo;
+import com.webank.webase.chain.mgr.node.entity.RspSimpleNodeInfoVo;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,6 +60,8 @@ public class NodeController extends BaseController {
     private FrontService frontService;
     @Autowired
     private FrontManager frontManager;
+    @Autowired
+    private TbFrontMapper frontMapper;
     @Autowired
     private FrontInterfaceService frontInterfaceService;
 
@@ -109,11 +113,13 @@ public class NodeController extends BaseController {
         queryParam.setPageSize(pageSize);
         if (Objects.nonNull(agencyId) || StringUtils.isNotBlank(frontPeerName) || StringUtils.isNotBlank(nodeId)) {
             List<TbFront> frontList = frontManager.queryFrontByAgencyIdAndFrontPeerNameAndNodeId(agencyId, frontPeerName, nodeId);
-            if (CollectionUtils.isNotEmpty(frontList)) {
-                Set<String> nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
-                queryParam.setNodeIds(nodeIds);
+            if (CollectionUtils.isEmpty(frontList)) {
+                log.info("finish queryNodeList. not fount front by agencyId:{} frontPeerName:{} nodeId:{}", agencyId, frontPeerName, nodeId);
+                return pagesponse;
             }
 
+            Set<String> nodeIds = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
+            queryParam.setNodeIds(nodeIds);
         }
 
         Integer count = nodeService.countOfNode(queryParam);
@@ -167,25 +173,37 @@ public class NodeController extends BaseController {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info(
-                "start queryNodeIdList startTime:{} groupId:{} agencyId:{} nodeType:{}", startTime.toEpochMilli(), groupId, agencyId, JsonTools.objToString(nodeTypes));
+                "start queryNodeIdList startTime:{} chainId:{} groupId:{} agencyId:{} nodeTypes:{}", startTime.toEpochMilli(), chainId, groupId, agencyId, JsonTools.objToString(nodeTypes));
 
         //list nodeId by type
         List<String> nodeIds = nodeService.getNodeIdByTypes(chainId, groupId, nodeTypes);
-        baseResponse.setData(nodeIds);
         if (CollectionUtils.isEmpty(nodeIds)) {
-            log.info("finish exec method [queryNodeIdList]. not found record by chain:{} group:{} nodeType:{}", chainId, groupId, JsonTools.objToString(nodeTypes));
+            log.info("finish exec method [queryNodeIdList]. not found record by chain:{} group:{} nodeTypes:{}", chainId, groupId, JsonTools.objToString(nodeTypes));
             return baseResponse;
         }
 
         //nodeId of agency
+        Set<String> finalNodes = nodeIds.stream().collect(Collectors.toSet());
         if (Objects.nonNull(agencyId)) {
             List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
-            if (CollectionUtils.isNotEmpty(frontList)) {
-                Set<String> nodeIdOfFronts = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
-                Set<String> resultNodeIds = nodeIds.stream().filter(id -> nodeIdOfFronts.contains(id)).collect(Collectors.toSet());
-                baseResponse.setData(resultNodeIds);
+            if (CollectionUtils.isEmpty(frontList)) {
+                log.info("finish queryNodeIdList. not fount front by agencyId:{}", agencyId);
+                return baseResponse;
             }
+
+            Set<String> nodeIdOfFronts = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toSet());
+            finalNodes = nodeIds.stream().filter(id -> nodeIdOfFronts.contains(id)).collect(Collectors.toSet());
         }
+
+        List<TbFront> frontList = frontMapper.selectByChainId(chainId);
+        List<RspSimpleNodeInfoVo> rspList = new ArrayList<>();
+        for (String nodeId : finalNodes) {
+            RspSimpleNodeInfoVo rspNodeInfo = new RspSimpleNodeInfoVo();
+            rspNodeInfo.setNodeId(nodeId);
+            rspNodeInfo.setFrontPeerName(frontList.stream().filter(front -> nodeId.equals(front.getNodeId())).findFirst().map(fn -> fn.getFrontPeerName()).orElse(null));
+            rspList.add(rspNodeInfo);
+        }
+        baseResponse.setData(rspList);
 
         log.info("end queryNodeList useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(baseResponse));
         return baseResponse;
