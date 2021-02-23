@@ -410,11 +410,13 @@ public class GroupService {
                             GroupType.SYNC.getValue());
 
                     //save front-group
-                    List<String> sealerList = frontInterface.getSealerListFromSpecificFront(frontPeerName, frontIp, frontPort, gId);
-                    if (sealerList.contains(front.getNodeId())) {
+//                    List<String> sealerList =    frontInterface.getSealerListFromSpecificFront(frontPeerName, frontIp, frontPort, gId);
+                    List<PeerInfo> peerInfoList =   nodeService.getSealerAndObserverListFromSpecificFront( gId, frontPeerName, frontIp, frontPort);
+                    List<String> sealerAndObserverList = peerInfoList.stream().map(p -> p.getNodeId()).collect(Collectors.toList());
+                    if (sealerAndObserverList.contains(front.getNodeId())) {
                         frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), gId);
                     } else {
-                        //remove old front-group-map(just save sealer's front map)
+                        //remove old front-group-map(just save sealer's and observer's front map)
                         tbFrontGroupMapMapper.deleteByChainIdAndFrontIdAndGroupId(chainId, front.getFrontId(), gId);
                     }
 
