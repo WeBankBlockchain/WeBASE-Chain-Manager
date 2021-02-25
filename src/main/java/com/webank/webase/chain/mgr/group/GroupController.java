@@ -247,6 +247,8 @@ public class GroupController extends BaseController {
 
         precompiledService.setConsensusStatus(consensusParam);
 
+        resetGroupListTask.asyncResetGroupList();
+
         log.info("end setConsensusStatus useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
         return BaseResponse.success(null);

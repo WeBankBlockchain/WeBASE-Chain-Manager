@@ -86,7 +86,7 @@ public class PrecompiledService {
     public void setConsensusStatus(ConsensusParam consensusParam) {
         log.info("start exec method[setConsensusStatus] param:{}", JsonTools.objToString(consensusParam));
         //reset group list
-        groupService.resetGroupList();
+//        groupService.resetGroupList();
 
         //check params
         Set<String> nodeIds = checkBeforeSetConsensusStatus(consensusParam);
@@ -117,7 +117,7 @@ public class PrecompiledService {
         }
 
         //reset group list
-        groupService.resetGroupList();
+//        groupService.resetGroupList();
 
         log.info("finish exec method[setConsensusStatus]");
 
@@ -216,11 +216,11 @@ public class PrecompiledService {
         TransResultDto transResultDto = transService.transHandleWithSignForPrecompile(chainId, groupId, signUserId,
                 PrecompiledTypes.CONSENSUS, FUNC_ADDSEALER, funcParams);
 
-        //start group
-        groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
-
         //check trans's result
         CommUtils.handleTransResultDto(transResultDto);
+
+        //start group
+        groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
     }
 
 
@@ -243,6 +243,9 @@ public class PrecompiledService {
         // params
         List<Object> funcParams = new ArrayList<>();
         funcParams.add(nodeId);
+
+        //generate group.x.genesis group.x.ini
+        groupService.generateExistGroupToSingleNode(chainId, groupId, nodeId);
 
         //send transaction
         TransResultDto transResultDto = transService.transHandleWithSignForPrecompile(chainId, groupId, signUserId,

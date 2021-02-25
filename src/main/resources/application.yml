@@ -30,7 +30,7 @@ logging:
 #constants
 constant:
   ###common
-  resetGroupListCycle: 600000
+  resetGroupListCycle: 300000
   groupInvalidGrayscaleValue: 1M    # y:year, M:month, d:day of month, h:hour, m:minute, n:forever valid
 
   ###front http request
@@ -41,8 +41,8 @@ constant:
   sleepWhenHttpMaxFail: 60000
 
   ### change node type
-  maxBlockDifferenceOfNewSealer: 5  # The maximum allowable block difference of the new consensus node
-  addSealerNodeCycle: 300000
+  maxBlockDifferenceOfNewSealer: 3  # The maximum allowable block difference of the new consensus node
+  addSealerNodeCycle: 30000
 
 
 
