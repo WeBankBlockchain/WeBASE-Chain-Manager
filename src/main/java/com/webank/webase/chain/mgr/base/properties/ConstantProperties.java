@@ -53,6 +53,7 @@ public class ConstantProperties {
     public static final String SEPARATOR = "SSS";
     public static final String ADMIN_USER_FORMAT = "admin_%s";
     public static final int HTTP_SUCCESS_RESPONSE_CODE = 0;
+    public static final String ORDER_BY_CREATE_TIME_DESC = "create_time DESC";
 
     private String groupInvalidGrayscaleValue; // y:year, M:month, d:day of month, h:hour, m:minute,
     // n:forever valid

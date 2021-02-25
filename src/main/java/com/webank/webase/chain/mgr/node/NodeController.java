@@ -136,12 +136,13 @@ public class NodeController extends BaseController {
                 RspNodeInfoVo rspNodeInfoVo = new RspNodeInfoVo();
                 BeanUtils.copyProperties(tbNode, rspNodeInfoVo);
                 if (CollectionUtils.isNotEmpty(frontList)) {
-                    String rspFrontPeerName = frontList.stream()
+                    frontList.stream()
                             .filter(front -> front.getNodeId().equals(tbNode.getNodeId()))
                             .findFirst()
-                            .map(front -> front.getFrontPeerName())
-                            .orElse(null);
-                    rspNodeInfoVo.setFrontPeerName(rspFrontPeerName);
+                            .ifPresent(front -> {
+                                rspNodeInfoVo.setFrontPeerName(front.getFrontPeerName());
+                                rspNodeInfoVo.setNodeIp(front.getFrontIp());
+                            });
                     rspNodeInfoVoList.add(rspNodeInfoVo);
                 }
             }
