@@ -156,7 +156,7 @@ public class FrontService {
                     frontInterface.getPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
             List<PeerInfo> peerList = Arrays.asList(peerArr);
             // add group
-            groupService.saveGroup("", null, group, chainId, groupPeerList.size(), "synchronous",
+            groupService.saveGroup("", null, group, chainId, null, groupPeerList.size(), "synchronous",
                     GroupType.SYNC.getValue());
             // save front group map
             frontGroupMapService.newFrontGroup(chainId, tbFront.getFrontId(), group);

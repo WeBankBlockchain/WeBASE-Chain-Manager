@@ -13,7 +13,9 @@
  */
 package com.webank.webase.chain.mgr.frontinterface;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.HttpRequestTools;
@@ -81,12 +83,12 @@ public class FrontInterfaceService {
         RestTemplate restTemplate = frontRestTools.caseRestemplate(uri);
         String url = String.format(cproperties.getFrontUrl(), frontIp, frontPort, uri);
         log.debug("requestSpecificFront. url:{}", url);
-        log.debug("requestSpecificFront. entity:{}",JsonTools.objToString(entity));
+        log.debug("requestSpecificFront. entity:{}", JsonTools.objToString(entity));
 
         try {
 //            HttpEntity entity = FrontRestTools.buildHttpEntity(httpHeaders,param);// build entity
             ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);
-            log.debug("url:{} response:{}",url,JsonTools.objToString(response));
+            log.debug("url:{} response:{}", url, JsonTools.objToString(response));
             return response.getBody();
         } catch (ResourceAccessException e) {
             log.error("requestSpecificFront. ResourceAccessException:{}", e);
@@ -373,6 +375,38 @@ public class FrontInterfaceService {
         return groupHandleResult;
     }
 
+    /**
+     * @param peerName
+     * @param frontIp
+     * @param frontPort
+     * @param groupList
+     * @return
+     */
+    public Map<Integer, String> queryGroupStatus(String peerName, String frontIp, Integer frontPort, List<Integer> groupList) {
+        log.debug("start queryGroupStatus peerName:{} frontIp:{} frontPort:{} groupList:{}", peerName, frontPort, frontIp, JsonTools.objToString(groupList));
+
+        //param
+        Map<String, List<Integer>> map = new HashMap<>();
+        map.put("groupIdList", groupList);
+
+        //http entity
+        HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(peerName);
+        HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, map);
+
+        //rest request
+        Integer groupId = Integer.MAX_VALUE;
+        BaseResponse baseResponse = postToSpecificFront(groupId, frontIp, frontPort, FrontRestTools.URI_GET_GROUP_STATUS, httpEntity, BaseResponse.class);
+        if (ConstantProperties.HTTP_SUCCESS_RESPONSE_CODE != baseResponse.getCode())
+            throw new BaseException(baseResponse.getCode(), baseResponse.getMessage());
+
+        //response data
+        Map<Integer, String> restResultMap = JsonTools.stringToObj(JsonTools.objToString(baseResponse.getData()), new TypeReference<Map<Integer, String>>() {
+        });
+
+        log.debug("end operateGroup restResultMap:{}", JsonTools.objToString(restResultMap));
+        return restResultMap;
+    }
+
 
     public Object getConsensusList(String peerName, String frontIp, Integer frontPort, Integer groupId,
                                    Integer pageSize, Integer pageNumber) {
@@ -575,4 +609,6 @@ public class FrontInterfaceService {
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         return getFromSpecificFront(groupId, frontIp, frontPort, FrontRestTools.URI_GET_GROUP_SIZE_INFOS, entity, Object.class);
     }
+
+
 }

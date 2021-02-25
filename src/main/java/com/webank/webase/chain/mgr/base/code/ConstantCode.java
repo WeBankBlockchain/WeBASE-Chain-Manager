@@ -224,6 +224,7 @@ public class ConstantCode {
     public static final RetCode NOT_FOUND_OBSERVER_NODE = RetCode.mark(205280, "not found observer nodes");
     public static final RetCode NODE_IN_TASK = RetCode.mark(205281, "node is already in task");
     public static final RetCode ADD_SEALER_ASYNC_FAIL = RetCode.mark(205282, "add sealer async not success");
+    public static final RetCode NOT_FOUND_GENESIS_NODE_LIST_OF_GROUP = RetCode.mark(205283, "not found genesis node list of this group");
 
 
 }

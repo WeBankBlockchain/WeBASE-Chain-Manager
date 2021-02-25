@@ -105,6 +105,8 @@ public class GroupController extends BaseController {
         }
         TbGroup tbGroup = groupService.generateGroup(req);
         baseResponse.setData(tbGroup);
+
+        resetGroupListTask.asyncResetGroupList();
         log.info("end generateGroup useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
         return baseResponse;
@@ -120,6 +122,7 @@ public class GroupController extends BaseController {
         Instant startTime = Instant.now();
         log.info("start operateGroup startTime:{} groupId:{}", startTime.toEpochMilli(), groupId);
         Object groupHandleResult = groupService.operateGroup(chainId, nodeId, groupId, type);
+        resetGroupListTask.asyncResetGroupList();
         log.info("end operateGroup useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JsonTools.toJSONString(groupHandleResult));

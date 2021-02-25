@@ -27,7 +27,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
@@ -66,6 +69,7 @@ public class FrontRestTools {
     public static final String URI_GENERATE_GROUP = "web3/generateGroup";
     public static final String URI_OPERATE_GROUP = "web3/operateGroup/%1s";
     public static final String URI_CLIENT_VERSION = "web3/clientVersion";
+    public static final String URI_GET_GROUP_STATUS = "web3/queryGroupStatus";
     public static final String FRONT_PERFORMANCE_RATIO = "performance";
     public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
     public static final String URI_MULTI_CONTRACT_COMPILE = "contract/multiContractCompile";
@@ -97,7 +101,7 @@ public class FrontRestTools {
                     URI_CHARGING_GET_NETWORK_DATA, URI_CHARGING_GET_TXGASDATA,
                     URI_CHARGING_DELETE_DATA, URI_CHAIN, FRONT_PERFORMANCE_RATIO,
                     FRONT_PERFORMANCE_CONFIG, URI_CHECK_NODE_PROCESS, URI_GET_GROUP_SIZE_INFOS,
-                    URI_SIGNED_TRANSACTION, URI_QUERY_TRANSACTION,URI_CONTRACT_COMPILE);
+                    URI_SIGNED_TRANSACTION, URI_QUERY_TRANSACTION, URI_CONTRACT_COMPILE);
 
 
     @Qualifier(value = "genericRestTemplate")
@@ -236,7 +240,7 @@ public class FrontRestTools {
             return null;
         }
         if (uri.contains(URI_CONTRACT_DEPLOY) || uri.contains(URI_MULTI_CONTRACT_COMPILE)
-                || uri.contains(URI_CHARGING_GET_TXGASDATA)||uri.contains(URI_SIGNED_TRANSACTION)) {
+                || uri.contains(URI_CHARGING_GET_TXGASDATA) || uri.contains(URI_SIGNED_TRANSACTION)) {
             return deployRestTemplate;
         }
         return genericRestTemplate;
@@ -296,9 +300,9 @@ public class FrontRestTools {
                 }
                 HttpEntity entity = HttpEntityUtils.buildHttpEntity(headers, param);// build entity
                 log.debug("restful request. url:{}", url);
-                log.debug("restful request. entity:{}",JsonTools.objToString(entity));
+                log.debug("restful request. entity:{}", JsonTools.objToString(entity));
                 ResponseEntity<T> response = restTemplate.exchange(url, method, entity, clazz);
-                log.debug("response:{}",JsonTools.objToString(response));
+                log.debug("response:{}", JsonTools.objToString(response));
                 return response.getBody();
             } catch (ResourceAccessException ex) {
                 log.warn("fail restTemplateExchange", ex);

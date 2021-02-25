@@ -35,7 +35,6 @@ import com.webank.webase.chain.mgr.util.CommUtils;
 import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -189,6 +188,7 @@ public class PrecompiledService {
         taskManager.saveTaskOfAddSealerNode(chainId, groupId, nodeId);
 
         addObserver(chainId, groupId, nodeId);
+
         log.info("success exec method[addObserverAndSaveSealerTask] ");
 
     }
@@ -209,9 +209,15 @@ public class PrecompiledService {
         List<Object> funcParams = new ArrayList<>();
         funcParams.add(nodeId);
 
+        //generate group.x.genesis group.x.ini
+        groupService.generateExistGroupToSingleNode(chainId, groupId, nodeId);
+
         //send transaction
         TransResultDto transResultDto = transService.transHandleWithSignForPrecompile(chainId, groupId, signUserId,
                 PrecompiledTypes.CONSENSUS, FUNC_ADDSEALER, funcParams);
+
+        //start group
+        groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
 
         //check trans's result
         CommUtils.handleTransResultDto(transResultDto);
@@ -244,6 +250,9 @@ public class PrecompiledService {
 
         //check trans's result
         CommUtils.handleTransResultDto(transResultDto);
+
+        //start group
+        groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
     }
 
 
@@ -270,6 +279,9 @@ public class PrecompiledService {
 
         //check trans's result
         CommUtils.handleTransResultDto(transResultDto);
+
+        //stop
+        groupService.stopGroupIfRunning(chainId, nodeId, groupId);
 
         //remove front-group map
         frontGroupMapService.removeByChainAndGroupAndNode(chainId, groupId, nodeId);

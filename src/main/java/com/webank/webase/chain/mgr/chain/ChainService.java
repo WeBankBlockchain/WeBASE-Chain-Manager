@@ -350,7 +350,7 @@ public class ChainService {
                         reqDeploy.getStorageType(), DeployTypeEnum.API);
 
         // save group if new , default node count = 0
-        this.groupService.saveGroup("", null, ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), 0, "deploy", GroupType.DEPLOY.getValue());
+        this.groupService.saveGroup("", null, ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), null, 0, "deploy", GroupType.DEPLOY.getValue());
 
         // insert default group
         Map<String, AtomicInteger> ipIndexMap = new HashMap<>();

@@ -70,7 +70,7 @@ public class ImageService {
 
         boolean exists = dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
                 host.getSshUser(), host.getSshPort(), imageVersion);
-        log.info("check docker image:[{}] exists:[{}] on host:[{}] first.", imageVersion, host.getIp(), exists);
+        log.info("check docker image:[{}] exists:[{}] on host:[{}] first.", imageVersion, exists, host.getIp());
 
         if (!exists) {
             // only pull image when not exists remote host note
