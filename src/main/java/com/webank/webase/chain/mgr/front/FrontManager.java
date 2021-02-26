@@ -65,4 +65,43 @@ public class FrontManager {
         log.debug("success exec method [listFrontByIdList]. frontIdList:{} result:{}", JsonTools.objToString(frontIdList), JsonTools.objToString(frontList));
         return frontList;
     }
+
+    /**
+     * @param chainId
+     * @return
+     */
+    public List<TbFront> listByChain(int chainId) {
+        log.info("start exec method [listByChain]. chainId:{}", chainId);
+
+        //param
+        TbFrontExample example = new TbFrontExample();
+        TbFrontExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+
+        //query
+        List<TbFront> frontList = tbFrontMapper.selectByExample(example);
+        log.info("success exec method [listByChain]. frontList:{}", JsonTools.objToString(frontList));
+        return frontList;
+    }
+
+    /**
+     * @param chainId
+     * @param nodeIdList
+     * @return
+     */
+    public List<TbFront> listByChainAndNodeIds(int chainId, List<String> nodeIdList) {
+        log.info("start exec method [listByChainAndNodeIds]. chainId:{} nodeIds:{}", chainId, JsonTools.objToString(nodeIdList));
+
+        //param
+        TbFrontExample example = new TbFrontExample();
+        TbFrontExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        criteria.andNodeIdIn(nodeIdList);
+
+        //query
+        List<TbFront> frontList = tbFrontMapper.selectByExample(example);
+        log.info("success exec method [listByChainAndNodeIds]. frontList:{}", JsonTools.objToString(frontList));
+        return frontList;
+    }
+
 }

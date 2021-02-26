@@ -13,6 +13,7 @@
  */
 package com.webank.webase.chain.mgr.agency;
 
+import com.webank.webase.chain.mgr.agency.entity.RspAgencyVo;
 import com.webank.webase.chain.mgr.agency.entity.RspAllOwnedDataOfAgencyVO;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.contract.ContractService;
@@ -21,9 +22,9 @@ import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.group.GroupService;
+import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
-import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMap;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -52,6 +54,8 @@ public class AgencyService {
 
     @Autowired
     private FrontService frontService;
+    @Autowired
+    private NodeService nodeService;
     @Autowired
     private GroupService groupService;
     @Autowired
@@ -146,22 +150,89 @@ public class AgencyService {
      * @param groupId
      * @return
      */
-    public List<Integer> queryAgencyList(Integer chainId, Integer groupId) {
-        log.info("start exec method [queryAgencyList]. chainId:{} groupId:{}", chainId, groupId);
-        //query front-group-map
-        List<TbFrontGroupMap> frontGroupMapList = frontGroupMapService.listByChainAndGroup(chainId, groupId);
-        if (CollectionUtils.isEmpty(frontGroupMapList))
-            return Collections.EMPTY_LIST;
+    public List<RspAgencyVo> queryAgencyList(Integer chainId, Integer groupId, List<String> nodeTypes) {
+        log.info("start exec method [queryAgencyList]. chainId:{} groupId:{} nodeTypes:{}", chainId, groupId, JsonTools.objToString(nodeTypes));
+
+        //query by chain if group is null
+        if (Objects.isNull(groupId))
+            return listAgencyByChain(chainId);
+
+        List<String> nodeIdList = null;
+        if (CollectionUtils.isNotEmpty(nodeTypes)) {
+            //query by group and type
+            nodeIdList = nodeTypes.stream()
+                    .map(type -> nodeService.getNodeIds(chainId, groupId, type))
+                    .flatMap(List::stream)
+                    .distinct()
+                    .collect(Collectors.toList());
+        } else {
+            nodeIdList = nodeService.getSealerAndObserverList(chainId, groupId);
+        }
+
+        log.info("nodeIdList:{}", JsonTools.objToString(nodeIdList));
+
+        List<RspAgencyVo> agencyList = null;
+        if (CollectionUtils.isNotEmpty(nodeIdList))
+            agencyList = listAgencyByChainAndNodeIds(chainId, nodeIdList);
+
+        log.info("success exec method [queryAgencyList]. result:{}", JsonTools.objToString(agencyList));
+        return agencyList;
+    }
+
+
+    /**
+     * @param chainId
+     * @return
+     */
+    public List<RspAgencyVo> listAgencyByChain(int chainId) {
+        log.info("start exec method [listAgencyByChainAndNodeIds]. chainId:{}", chainId);
 
         //query front list
-        List<Integer> frontIdList = frontGroupMapList.stream().map(map -> map.getFrontId()).distinct().collect(Collectors.toList());
-        List<TbFront> frontList = frontManager.queryFrontByIdList(frontIdList);
+        List<TbFront> frontList = frontManager.listByChain(chainId);
+
+        //agency list
+        List<RspAgencyVo> agencyList = listAgencyFromFrontList(frontList);
+
+        log.info("success exec method [listAgencyFromFrontList]. result:{}", JsonTools.objToString(agencyList));
+        return agencyList;
+    }
+
+
+    /**
+     * @param chainId
+     * @return
+     */
+    public List<RspAgencyVo> listAgencyByChainAndNodeIds(int chainId, List<String> nodeIds) {
+        log.info("start exec method [listAgencyByChainAndNodeIds]. chainId:{} nodeIds:{}", chainId, JsonTools.objToString(nodeIds));
+
+        //query front list
+        List<TbFront> frontList = frontManager.listByChainAndNodeIds(chainId, nodeIds);
+
+        //agency list
+        List<RspAgencyVo> agencyList = listAgencyFromFrontList(frontList);
+
+        log.info("success exec method [listAgencyByChainAndNodeIds]. result:{}", JsonTools.objToString(frontList));
+        return agencyList;
+    }
+
+
+    /**
+     * @param frontList
+     * @return
+     */
+    private List<RspAgencyVo> listAgencyFromFrontList(List<TbFront> frontList) {
+        log.info("start exec method [listAgencyFromFrontList]. frontList:{}", JsonTools.objToString(frontList));
+
         if (CollectionUtils.isEmpty(frontList))
             return Collections.EMPTY_LIST;
 
-        //get agencyId list
-        List<Integer> agencyIdList = frontList.stream().map(f -> f.getExtAgencyId()).distinct().collect(Collectors.toList());
-        log.info("success exec method [queryAgencyList]. chainId:{} groupId:{} result:{}", chainId, groupId, JsonTools.objToString(agencyIdList));
-        return agencyIdList;
+        List<RspAgencyVo> agencyList = frontList.stream()
+                .distinct()
+                .map(front -> new RspAgencyVo(front.getExtAgencyId(), front.getAgency()))
+                .collect(Collectors.toList());
+        log.info("success exec method [listAgencyFromFrontList]. result:{}", JsonTools.objToString(agencyList));
+        return agencyList;
     }
+
+
 }

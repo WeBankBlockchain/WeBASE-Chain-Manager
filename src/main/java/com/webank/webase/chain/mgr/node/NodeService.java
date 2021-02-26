@@ -362,6 +362,24 @@ public class NodeService {
     /**
      * @param chainId
      * @param groupId
+     * @return
+     */
+    public List<String> getSealerAndObserverList(int chainId, int groupId) {
+        log.debug("start getSealerAndObserverList chainId:{} groupId:{}", chainId, groupId);
+        List<String> sealerList = frontInterface.getSealerList(chainId, groupId);
+        List<String> observerList = frontInterface.getObserverList(chainId, groupId);
+
+        //result
+        List<String> resList = new ArrayList<>();
+        resList.addAll(sealerList);
+        resList.addAll(observerList);
+        log.debug("end getSealerAndObserverList resList:{}", resList);
+        return resList;
+    }
+
+    /**
+     * @param chainId
+     * @param groupId
      * @param nodeId
      * @return
      */
@@ -465,19 +483,19 @@ public class NodeService {
             return nodeIdList;
         }
 
-        if (PrecompiledUtils.NODE_TYPE_SEALER.equals(nodeType)) {
+        if (PrecompiledUtils.NODE_TYPE_SEALER.equalsIgnoreCase(nodeType)) {
             List<String> sealerList = frontInterface.getSealerList(chainId, groupId);
             log.info("nodesOfSealerType:{}", JsonTools.objToString(sealerList));
             return sealerList;
         }
 
-        if (PrecompiledUtils.NODE_TYPE_OBSERVER.equals(nodeType)) {
+        if (PrecompiledUtils.NODE_TYPE_OBSERVER.equalsIgnoreCase(nodeType)) {
             List<String> observerList = frontInterface.getObserverList(chainId, groupId);
             log.info("nodesOfObserverType:{}", JsonTools.objToString(observerList));
             return observerList;
         }
 
-        if (PrecompiledUtils.NODE_TYPE_REMOVE.equals(nodeType)) {
+        if (PrecompiledUtils.NODE_TYPE_REMOVE.equalsIgnoreCase(nodeType)) {
             List<String> sealerList = frontInterface.getSealerList(chainId, groupId);
             List<String> observerList = frontInterface.getObserverList(chainId, groupId);
             List<String> nodeIdList = frontInterface.getNodeIdList(chainId, groupId);

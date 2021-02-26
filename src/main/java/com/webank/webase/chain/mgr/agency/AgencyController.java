@@ -14,20 +14,24 @@
 package com.webank.webase.chain.mgr.agency;
 
 
+import com.webank.webase.chain.mgr.agency.entity.RspAgencyVo;
 import com.webank.webase.chain.mgr.agency.entity.RspAllOwnedDataOfAgencyVO;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import io.jsonwebtoken.lang.Collections;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * chain controller
@@ -61,14 +65,19 @@ public class AgencyController extends BaseController {
     @ApiOperation(value = "查询机构列表")
     @GetMapping("/list")
     public BaseResponse queryAgencyList(@RequestParam("chainId") Integer chainId,
-                                        @RequestParam(name = "groupId", required = false) Integer groupId) {
+                                        @RequestParam(name = "groupId", required = false) Integer groupId,
+                                        @RequestParam(value = "nodeTypes", required = false) List<String> nodeTypes) {
         Instant startTime = Instant.now();
-        log.info("start queryAgencyList startTime:{} chainId:{} groupId:{}", startTime.toEpochMilli(), chainId, groupId);
+        log.info("start queryAgencyList startTime:{} chainId:{} groupId:{} nodeTypes:{}", startTime.toEpochMilli(), chainId, groupId, JsonTools.objToString(nodeTypes));
 
-        List<Integer> agencyList = agencyService.queryAgencyList(chainId, groupId);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        baseResponse.setData(agencyList);
-        log.info("end owned useTime:{} result:{}",
+        List<RspAgencyVo> agencyList = agencyService.queryAgencyList(chainId, groupId, nodeTypes);
+        if (CollectionUtils.isNotEmpty(agencyList)) {
+            baseResponse.setData(agencyList.stream().map(agency -> agency.getAgencyId()).distinct().collect(Collectors.toList()));
+        }
+
+
+        log.info("end queryAgencyList useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JsonTools.toJSONString(baseResponse));
         return baseResponse;
