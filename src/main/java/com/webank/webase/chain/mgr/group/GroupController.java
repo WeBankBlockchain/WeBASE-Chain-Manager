@@ -71,6 +71,8 @@ public class GroupController extends BaseController {
     private PrecompiledService precompiledService;
     @Autowired
     private FrontGroupMapService frontGroupMapService;
+    @Autowired
+    private GroupManager groupManager;
 
 
     /**
@@ -492,4 +494,26 @@ public class GroupController extends BaseController {
         log.info("end queryGroupDetail useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
         return baseResponse;
     }
+
+
+    /**
+     * @param param
+     * @param result
+     * @return
+     * @throws BaseException
+     */
+    @GetMapping("changeDescription")
+    public BaseResponse updateDescription(@RequestBody @Valid ReqUpdateGroupVo param,
+                                          BindingResult result) throws BaseException {
+        Instant startTime = Instant.now();
+        log.info("start updateDescription startTime:{} param:{}", startTime.toEpochMilli(), JsonTools.objToString(param));
+
+        checkBindResult(result);
+        groupManager.updateDescription(param.getChainId(), param.getGroupId(), param.getDescription());
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+
+        log.info("end updateDescription useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
+        return baseResponse;
+    }
+
 }

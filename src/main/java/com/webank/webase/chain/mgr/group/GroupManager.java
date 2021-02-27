@@ -40,7 +40,7 @@ public class GroupManager {
             throw new BaseException(ConstantCode.FOUND_TOO_MANY_DATA_BY_APP_ID);
         }
 
-        if (CollectionUtils.size(groupList) ==0) {
+        if (CollectionUtils.size(groupList) == 0) {
             log.warn("fail exec method [verifyAppId]. not found record by  appId:{}", appId);
             throw new BaseException(ConstantCode.INVALID_APP_ID);
         }
@@ -74,5 +74,34 @@ public class GroupManager {
         }
 
         log.info("finish exec method[listGroupByAgencyId] groupName:{}", groupName);
+    }
+
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param description
+     */
+    public void updateDescription(int chainId, int groupId, String description) {
+        log.info("start exec method[updateDescription] chainId:{} groupId:{} description:{}", chainId, groupId, description);
+        TbGroup tbGroup = requireGroupExist(chainId, groupId);
+        tbGroup.setDescription(description);
+        tbGroupMapper.updateByPrimaryKey(tbGroup);
+        log.info("finish exec method[updateDescription] ");
+    }
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @return
+     */
+    public TbGroup requireGroupExist(int chainId, int groupId) {
+        log.info("start exec method[requireGroupExist] chainId:{} groupId:{}", chainId, groupId);
+        TbGroup exist = tbGroupMapper.selectByPrimaryKey(groupId, chainId);
+        if (Objects.isNull(exist))
+            throw new BaseException(ConstantCode.INVALID_GROUP_ID.attach(String.format("not found group by chainId:%d groupId:%d", chainId, groupId)));
+
+        log.debug("finish exec method[requireGroupExist] result:{}", JsonTools.objToString(exist));
+        return exist;
     }
 }

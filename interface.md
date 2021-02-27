@@ -2508,6 +2508,70 @@ curl --location --request GET 'http://localhost:5005/WeBASE-Chain-Manager/group/
 
 
 
+### 3.18  修改群组描述
+
+#### 3.18.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址：**/group/changeDescription**
+- 请求方式：POST
+- 返回格式：JSON
+
+#### 3.18.2 请求参数
+
+***1）入参表***
+| 序号  | 输出参数    | 类型   | 可空    | 备注   |
+| ----- | ----------- | ---------- | ---- | ------------- |
+| 1  | chainId     | Int   | 否   | 网络Id |
+| 2  | groupId     | Int  | 否   |群组Id  |                
+| 2   | description  | String  | 否   |描述  |
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/group/changeDescription'
+```
+```
+{
+    "chainId":12,
+    "groupId":1,
+    "description":"test"
+}
+```
+
+#### 3.18.3 返回参数 
+
+***1）出参表***
+
+| 序号  | 输出参数    | 类型          |      | 备注                       |
+| ----- | ----------- | ------------- | ---- | -------------------------- |
+| 1     | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2     | message     | String        | 否   | 描述           |
+| 3     | attachment   | String   | 是   | 具体的错误信息     |
+
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+	"code": 0,
+	"message": "success",
+	"attachment": null,
+	"success": true
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 102000,
+    "message": "system exception",
+    "data": {}
+}
+```
 
 
 
