@@ -276,6 +276,74 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/chain/100001
 }
 ```
 
+
+
+### 1.4 删除链信息（post请求）
+
+#### 1.4.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址：**/chain/removeChain**
+- 请求方式：POST
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 1.4.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数 | 类型 | 可为空 | 备注   |
+| ---- | -------- | ---- | ------ | ------ |
+| 1    | chainId  | int  | 否     | 链编号 |
+
+***2）入参示例***
+
+```
+http://127.0.0.1:5005/WeBASE-Chain-Manager/chain/removeChain
+```
+```
+{
+    "chainId": 493
+}
+```
+
+
+#### 1.4.3 返回参数 
+
+***1）出参表***
+
+| 序号 | 输出参数 | 类型   |      | 备注                       |
+| ---- | -------- | ------ | ---- | -------------------------- |
+| 1    | code     | Int    | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message  | String | 否   | 描述                       |
+| 3    | data     | object | 是   | 返回信息实体（空）         |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "data": {},
+    "message": "success"
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 102000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
+
+
+
+
 ## 2 前置管理模块
 
 
@@ -422,7 +490,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/new
 
 | 序号 | 输入参数 | 类型 | 可为空 | 备注         |
 | ---- | -------- | ---- | ------ | ------------ |
-| 1    | chainId  | Int  | 是     | 链编号       |
+| 1    | chainId  | Int  | 否     | 链编号       |
 | 2    | frontId  | Int  | 是     | 前置编号     |
 | 3    | groupId  | Int  | 是     | 所属群组编号 |
 | 4    | agencyId  | Int  | 是     | 所属机构编号 |
@@ -430,7 +498,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/new
 ***2）入参示例***
 
 ```
-http://localhost:5005/WeBASE-Chain-Manager/front/find?agencyId=10
+http://localhost:5005/WeBASE-Chain-Manager/front/find?chainId=12&agencyId=10
 ```
 
 #### 2.2.3 返回参数 
@@ -1651,7 +1719,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/getConsensusList/1001/1/413c788
 | 4    | nodeId     | String | 是 | 要切换状态节点Id                         |
 | 5    | nodeType   | String | 否     | 要设置的节点类型：observer/sealer/remove |
 | 6    | reqNodeId  | String | 是     | 调用前置对应的节点Id  |
-| 7    | nodeIdList  | List<String> | 是否     | 需要更改状态的节点列表(此字段为追加字段，与nodeId不能同时为空) |
+| 7    | nodeIdList  | List<String> | 是     | 需要更改状态的节点列表(此字段为追加字段，与nodeId不能同时为空) |
 
 
 
@@ -2219,6 +2287,225 @@ http://localhost:5005/WeBASE-Chain-Manager/group/page/1?pageNumber=2&pageSize=3
 
 
 
+### 3.16 异步方式添加群组的共识节点
+
+   先将要变更类型的节点类型更改为观察者节点，并写入到db，然后定期检查块高，等该节点区块同步跟上群组的块高时，才将该节点的类型更改为共识节点
+
+#### 3.16.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/group/addSealerAsync**
+- 请求方式：POST
+- 请求头：Content-type: application/json
+- 返回格式：JSON
+
+#### 3.16.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数   | 类型   | 可为空 | 备注                                     |
+| ---- | ---------- | ------ | ------ | ------------------- |
+| 1    | chainId    | Int    | 否     | 链编号   |
+| 2    | groupId    | Int    | 否     | 群组编号  |
+| 3    | nodeIdList  | List<String> | 否  | 需要更改状态的节点列表 |
+
+
+***2）入参示例***
+
+```
+http://127.0.0.1:5005/WeBASE-Chain-Manager/group/addSealerAsync
+```
+
+```
+{
+  "chainId": 1001,
+  "groupId": 1,
+  "nodeIdList":["626e1f1df03e217a7a25361444b857ec68003482aabfb24645a67111cbd96ceedc998975e158475605e38b899bc97be7283006a0171f4ec4796972ff6ad55b1a"
+  ]
+}
+```
+
+
+#### 3.16.3 返回参数
+
+***1）出参表***
+
+| 序号 | 输出参数 | 类型   |      | 备注                       |
+| ---- | -------- | ------ | ---- | -------------------------- |
+| 1    | code     | Int    | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message  | String | 否   | 描述                       |
+| 3    | data  | Object | 是   | 描述                       |
+| 3.1  | allSuccessFlag  | boolean | 是   | 是否所有节点操作成功  |
+| 3.2  | sealerNodes  | Strint | 是   | 入参中类型已是sealer的节点  |
+| 3.3  | successNodes  | Strint | 是   | 处理成功的节点  |
+| 3.4  | errorMessages | Strint | 是   | 处理失败的节点  |
+| 4  | attachment | Strint | 是   | 失败消息  |
+
+
+
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "allSuccessFlag": true,
+        "sealerNodes": [
+            "85432afdc4d5ee38497c16719f84c1ada3f145e08f01d19cbc5558d6d4da3ee6dd329fdfffbd65e932668130eece0ac0abaf7f70b5a7d0dbe95a3e0780ac968e"
+        ],
+        "successNodes": [],
+        "errorMessages": []
+    },
+    "attachment": null,
+    "success": true
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 205282,
+    "message": "add sealer async not success",
+    "data": {
+        "allSuccessFlag": false,
+        "sealerNodes": [],
+        "successNodes": [],
+        "errorMessages": [
+            "node:85432afdc4d5ee38497c16719f84c1ada3f145e08f01d19cbc5558d6d4da3ee6dd329fdfffbd65e932668130eece0ac0abaf7f70b5a7d0dbe95a3e0780ac968e1 fail:invalid node type: sealer, observer, remove "
+        ]
+    },
+    "attachment": "[\"node:85432afdc4d5ee38497c16719f84c1ada3f145e08f01d19cbc5558d6d4da3ee6dd329fdfffbd65e932668130eece0ac0abaf7f70b5a7d0dbe95a3e0780ac968e1 fail:invalid node type: sealer, observer, remove \"]",
+    "success": false
+}
+```
+
+
+
+
+
+### 3.17 查询群组详情
+
+#### 3.17.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址：**/group/{chainId}/{groupId}/detail**
+- 请求方式：GET
+- 返回格式：JSON
+
+#### 3.17.2 请求参数
+
+***1）入参表***
+| 序号  | 输出参数    | 类型   | 可空    | 备注   |
+| ----- | ----------- | ---------- | ---- | ------------- |
+| 1  | chainId        | Int   | 否   | 网络Id |
+| 2   | groupId     | Int  | 否   |群组Id  |                    
+
+***2）入参示例***
+
+```
+curl --location --request GET 'http://localhost:5005/WeBASE-Chain-Manager/group/495/26/detail' 
+```
+
+#### 3.17.3 返回参数 
+
+***1）出参表***
+
+| 序号  | 输出参数    | 类型          |      | 备注                       |
+| ----- | ----------- | ------------- | ---- | -------------------------- |
+| 1     | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2     | message     | String        | 否   | 描述                       |
+| 3     | data        | List          | 否   | 列表       |
+| 3.1   |             | Object        |      | 信息对象  |
+| 3.1.1 | chainId     | int           | 否   | 链编号 |
+| 3.1.2 | groupId     | int           | 否   | 群组编号 |
+| 3.1.3 | groupName   | String        | 否   | 群组名称 |
+| 3.1.4 | nodeCount   | int           | 否   | 节点数量   |
+| 3.1.5 | description | String        | 是   | 描述|
+| 3.1.6 | createTime  | LocalDateTime | 否   | 落库时间       |
+| 3.1.7 | modifyTime  | LocalDateTime | 否   | 修改时间   |
+| 3.1.8 | groupTimestamp  | Long | 是   | 群组创建的时间戳   |
+| 3.1.9 | nodeIdList  | List | 是   | 最开始创建群组的节点列表   |
+| 3.1.10 |agencyList  | List | 否   | 机构列表   |
+| 3.1.10.1 |  | Object | 是   | 机构实体   |
+| 3.1.10.1.1 | agencyId | Integer | 是   | 机构编号   |
+| 3.1.10.1.2 | agencyName | String | 是   | 机构名称  |
+| 3.1.11 | nodeInfoList  | List | 否   | 节点列表   |
+| 3.1.11.1 |  | Object | 否   | 节点实体   |
+| 3.1.11.1.1 | nodeId | Integer | 否   | 节点编号   |
+| 3.1.11.1.2 | chainId | Integer | 否   | 链编号  |
+| 3.1.11.1.3 | groupId | Integer | 否   | 群组编号  |
+| 3.1.11.1.4 | nodeName | String | 否   | 节点名称  |
+| 3.1.11.1.5 | frontPeerName | String | 否   | 节点前置名称  |
+| 3.1.11.1.6 | agency | Integer | 是   | 所属机构  |
+| 3.1.11.1.7 | agencyName | String | 是   | 所属机构名称  |
+
+
+
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+	"code": 0,
+	"message": "success",
+	"data": {
+		"groupId": 26,
+		"chainId": 495,
+		"groupName": "chain_495_group_26",
+		"groupStatus": 1,
+		"nodeCount": 1,
+		"description": "86979",
+		"groupType": 2,
+		"createTime": 1614242451000,
+		"modifyTime": 1614414645000,
+		"groupTimestamp": "1614242450540",
+		"epochSealerNum": 0,
+		"nodeIdList": "[\"0731d71597f15d04d55a047f78d4eb34a10ff8d7abc793fe1176959586cd6086f50da76cc27de8341321718a8ce94dd76fcb00479b2f49d3beaae8d30e611baa\"]",
+		"agencyList": [{
+		    "agencyId": 145,
+			"agencyName": "org11"
+		}],
+		"nodeInfoList": [{
+			"nodeId": "0731d71597f15d04d55a047f78d4eb34a10ff8d7abc793fe1176959586cd6086f50da76cc27de8341321718a8ce94dd76fcb00479b2f49d3beaae8d30e611baa",
+			"chainId": 495,
+			"groupId": 26,
+			"nodeName": "26_0731d71597f15d04d55a047f78d4eb34a10ff8d7abc793fe1176959586cd6086f50da76cc27de8341321718a8ce94dd76fcb00479b2f49d3beaae8d30e611baa",
+			"nodeType": "sealer",
+			"nodeIp": null,
+			"p2pPort": null,
+			"blockNumber": 2,
+			"pbftView": 89918,
+			"nodeActive": 1,
+			"description": null,
+			"createTime": 1614242473000,
+			"modifyTime": 1614332853000,
+			"frontPeerName": "peer0.org11.d292gp0toy",
+			"agency": 145,
+			"agencyName": "org11"
+		}]
+	},
+	"attachment": null,
+	"success": true
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 102000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
 
 
 
@@ -2240,7 +2527,7 @@ http://localhost:5005/WeBASE-Chain-Manager/group/page/1?pageNumber=2&pageSize=3
 #### 4.1.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/node/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}?nodeId={nodeId}&agencyId={agencyId}**
+- 请求地址：**/node/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}?nodeId={nodeId}&agencyId={agencyId}&frontPeerName={frontPeerName}**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -2256,6 +2543,8 @@ http://localhost:5005/WeBASE-Chain-Manager/group/page/1?pageNumber=2&pageSize=3
 | 4    | pageNumber | Int    | 否     | 当前页码   |
 | 5    | nodeId     | String | 是     | 节点Id     |
 | 6    | agencyId     | String | 是     | 机构Id     |
+| 7    | frontPeerName   | String | 是     | 节点名称     |
+
 
 ***2）入参示例***
 
@@ -2282,10 +2571,12 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/nodeList/100001/300001/1/10?agen
 | 4.1.6  | nodeIp      | string        | 否   | 节点ip                     |
 | 4.1.7  | P2pPort     | int           | 否   | 节点p2p端口                |
 | 4.1.8  | description | String        | 否   | 备注                       |
-| 4.1.9  | blockNumber | BigInteger    | 否   | 节点块高                   |
-| 4.1.10 | pbftView    | BigInteger    | 否   | Pbft view                  |
-| 4.1.11 | createTime  | LocalDateTime | 否   | 落库时间                   |
-| 4.1.12 | modifyTime  | LocalDateTime | 否   | 修改时间                   |
+| 4.1.9  | blockNumber | BigInteger    | 否   | 节点块高 |
+| 4.1.10 | pbftView    | BigInteger    | 否   | Pbft view                 |
+| 4.1.11 | nodeType | String | 否 | 节点类型（sealer、observer、remove）|
+| 4.1.12 | frontPeerName | String    | 是   | 节点名称  |
+| 4.1.13 | createTime  | LocalDateTime | 否   | 落库时间                  |
+| 4.1.14 | modifyTime  | LocalDateTime | 否   | 修改时间                  |
 
 ***2）出参示例***
 
@@ -2811,7 +3102,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/getTransactionReceipt/1001/1/78e
 #### 4.8.1 传输协议规范
 
 - 网络传输协议：使用HTTP协议
-- 请求地址：**/node/nodeIdList/{chainId}/{groupId}?agencyId={agencyId}&nodeType={nodeType}**
+- 请求地址：**/node/nodeIdList/{chainId}/{groupId}?agencyId={agencyId}&nodeTypes={nodeType}**
 - 请求方式：GET
 - 返回格式：JSON
 
@@ -2839,10 +3130,11 @@ http://localhost:5005/WeBASE-Chain-Manager/node/nodeIdList/1/1?nodeTypes=sealer&
 | 序号   | 输出参数    | 类型          |      | 备注                       |
 | ------ | ----------- | ------------- | ---- | -------------------------- |
 | 1      | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
-| 2      | message     | String        | 否   | 描述                       |
-| 3      | totalCount  | Int           | 否   | 总记录数                   |
-| 4      | data        | List          | 是   | 节点列表                   |
-|   | String     | int           | 是| 节点Id                     |
+| 2      | message     | String        | 否   | 描述                          |
+| 4      | data        | List          | 是   | 返回信息列表   |
+| 4.1     | Object           | 是| 返回信息实体         |
+| 4.1.1  | frontPeerName     | String           | 是| k8s节点peerName   |
+| 4.1.2  | nodeId     | String           | 是| 节点Id   |
 
 ***2）出参示例***
 
@@ -2850,17 +3142,17 @@ http://localhost:5005/WeBASE-Chain-Manager/node/nodeIdList/1/1?nodeTypes=sealer&
 
 ```
 {
-  "code": 0,
-  "message": "success",
-  "data": [
-    "c96ef7ecee3fb4fe222a9b3232a27d1317c34b511c4ec299ca2b4a1df073934bf8857043a8294191bec20b11419a865dfa28246ac470c8750d230774e68d0043",
-    "85432afdc4d5ee38497c16719f84c1ada3f145e08f01d19cbc5558d6d4da3ee6dd329fdfffbd65e932668130eece0ac0abaf7f70b5a7d0dbe95a3e0780ac968e",
-    "51b04e53c1ea3f779462713f2b7979c5c46a4b31a3b94556a04f0c76473920b34704618e3f392ef619938fac6852465b31fc3d061d8cbf1e7862a11d92858441",
-    "55947971d91dab6c27230f78692b52ec3cb8029eacc218aa54df62262859de1a08f82e1330d5e47777256e9a608148d696d453b8e94db0805d4378d91b25957d",
-    "0667bba36709e4690f770d09418cd1ae911f9af1279cede49ae199ccb9153e23b36b9389dac02b179260a7d0e1275c0339d292ece4df3a07899d6e27d9230e9e"
-  ],
-  "attachment": null,
-  "success": true
+	"code": 0,
+	"message": "success",
+	"data": [{
+		"frontPeerName": "peer2.org11.d292gp0toy",
+		"nodeId": "846a2388047a4b81725af14da72972c21cd902cee2a741dbe2e8413ad0bb0c3eeede091ea7f0196c54c7b8e0bf432a84a64ba55a3b7f4268cef1a0c2cd25b78a"
+	}, {
+		"frontPeerName": "peer0.org11.d292gp0toy",
+		"nodeId": "0731d71597f15d04d55a047f78d4eb34a10ff8d7abc793fe1176959586cd6086f50da76cc27de8341321718a8ce94dd76fcb00479b2f49d3beaae8d30e611baa"
+	}],
+	"attachment": null,
+	"success": true
 }
 ```
 
@@ -2983,8 +3275,9 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/compile
 | 5    | contractAbi    | String | 是     | 编译合约生成的abi文件内容                  |
 | 6    | contractBin    | String | 是     | 合约运行时binary，用于合约解析             |
 | 7    | bytecodeBin    | String | 是     | 合约bytecode binary，用于部署合约          |
-| 8    | contractId     | String | 是     | 合约编号（为空时表示新增，不为空表示更新） |
-| 9    | contractPath   | String | 否     | 合约所在目录                               |
+| 8    | contractId     | int | 是     | 合约编号（为空时表示新增，不为空表示更新） |
+| 9    | contractPath   | String | 否     | 合约所在目录   |
+| 10 | agencyId   | Int | 是    | 合约发起机构（紧新增时保存）   |
 
 ***2）入参示例***
 
@@ -3001,7 +3294,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/save
   "contractName": "HelloWorld",
   "contractPath": "/",
   "contractSource": "cHJhZ21hIHNvbGlkaXR5IF4wLjQuMjsNCmNvbnRyYWN0IEhlbGxvV29ybGR7DQogICAgc3RyaW5nIG5hbWU7DQogICAgZXZlbnQgU2V0TmFtZShzdHJpbmcgbmFtZSk7DQogICAgZnVuY3Rpb24gZ2V0KCljb25zdGFudCByZXR1cm5zKHN0cmluZyl7DQogICAgICAgIHJldHVybiBuYW1lOw0KICAgIH0NCiAgICBmdW5jdGlvbiBzZXQoc3RyaW5nIG4pew0KICAgICAgICBlbWl0IFNldE5hbWUobik7DQogICAgICAgIG5hbWU9bjsNCiAgICB9DQp9",
-  "groupId": 1
+  "groupId": 1,
+  "agencyId": 23
 }
 ```
 
@@ -3029,7 +3323,9 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/save
 | 3.13 | deployTime      | LocalDateTime | 是   | 部署时间                                |
 | 3.14 | description     | String        | 是   | 备注                                    |
 | 3.15 | createTime      | LocalDateTime | 否   | 创建时间                                |
-| 3.16 | modifyTime      | LocalDateTime | 是   | 修改时间                                |
+| 3.16 | modifyTime      | LocalDateTime | 是   | 修改时间 |
+| 3.16 | agencyId   | Int | 是    | 合约发起机构（紧新增时保存）   |
+
 
 ***2）出参示例***
 
@@ -3092,7 +3388,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/contract/save
 | 3      | contractAddress    | String           | 是    | 合约地址                               |
 | 4      | pageSize        | Int           | 是    | 每页记录数                                      |
 | 5      | pageNumber      | Int           | 是    | 当前页码                                        |
-| 6      | contractStatus      | Int           | 是    | 1未部署，2已部署                        |
+| 6      | contractStatus      | Int           | 是    | 1未部署，2已部署,3部署失败，4编译成功，5编译失败                        |
 
 ***2）入参示例***
 
@@ -3903,6 +4199,143 @@ http://localhost:5005/WeBASE-Chain-Manager/trans/sendByContractId
 
 
 
+### 5.11 删除合约（DELETE）
+
+​	支持删除未部署的合约
+
+#### 5.11.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/contract/{chainId}/{groupId}/{contractId}**
+- 请求方式：DELETE
+- 返回格式：JSON
+
+#### 5.11.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数        | 类型   | 可为空 | 备注   |
+| ---- | --------------- | ------ | ------ | ------ |
+| 1    | chainId     | Int    | 否     | 链Id|
+| 2    | groupId   | Int    | 否  | 群组Id|
+| 3    | contractId  | Int   | 否  |合约Id|
+
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/contract/444/444/444
+```
+
+
+
+#### 5.11.3 返回参数
+
+***1）出参表***
+
+
+| 序号 | 输出参数    | 类型          |   可否空     | 备注                                       |
+|------|-------------|---------------|--------|-------------------------------|
+| 1    | code         | Int            | 否     | 返回码，0：成功 其它：失败 |
+| 2    | message      | String         | 否     | 描述                       |
+| 3    | data         | object         | 是     | 返回信息实体         |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "attachment": null,
+    "success": true
+}
+```
+
+- 失败：
+
+```
+{
+  "code": 205002,
+  "message": "not fount any front",
+  "data": null
+}
+```
+
+
+
+### 5.12 删除合约(POST)
+
+​	支持删除未部署的合约
+
+#### 5.12.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/contract/remove**
+- 请求头：Content-type: application/json
+- 请求方式：POSt
+- 返回格式：JSON
+
+#### 5.12.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数        | 类型   | 可为空 | 备注   |
+| ---- | --------------- | ------ | ------ | ------ |
+| 1    | contractId  | Int   | 否  |合约Id|
+
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/contract/remove
+```
+```
+{
+    "contractId": 22
+}
+```
+
+
+#### 5.12.3 返回参数
+
+***1）出参表***
+
+
+| 序号 | 输出参数    | 类型          |   可否空     | 备注                                       |
+|------|-------------|---------------|--------|-------------------------------|
+| 1    | code         | Int            | 否     | 返回码，0：成功 其它：失败 |
+| 2    | message      | String         | 否     | 描述                       |
+| 3    | data         | object         | 是     | 返回信息实体         |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "attachment": null,
+    "success": true
+}
+```
+
+- 失败：
+
+```
+{
+  "code": 205002,
+  "message": "not fount any front",
+  "data": null
+}
+```
+
+
+
 
 
 
@@ -3998,6 +4431,7 @@ http://localhost:5005/WeBASE-Chain-Manager/user/newUser
 | 3.5  | signUserName | String        |   否   | 用户名称               |
 | 3.6  | description  | String |  是   | 描述                 |
 | 3.7  | encryptType  | int | 否   | 链加密类型（0-ECDS，1-国密）      |
+| 3.8  | signUserId  | String | 否   | 私钥用户id      |
 | 4    | attachment  | String |  是  | 错误信息                |
 
 
@@ -4268,6 +4702,7 @@ http://localhost:5005/WeBASE-Chain-Manager/agency/10/owned
 | 3.4.1.3  | contractId | Int        |  是   |合约编号                 |
 | 3.4.1.4  | contractPath | String        |  是   |合约路径                 |
 | 3.4.1.5  | contractName | String        |  是   |合约名称                 |
+| 3.5  | contractListAddedByShelf | List<Object> | 是  |由本机构添加的合约列表（结构同contractList）|
 | 4    | attachment  | String |  是  | 错误信息                |
 
 
@@ -4331,7 +4766,72 @@ http://localhost:5005/WeBASE-Chain-Manager/agency/10/owned
 
 
 
+### 7.2  查询机构列表
 
+#### 7.2.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址： **/agency/list?chainId={chainId}&groupId={groupId}**
+- 请求方式：GET
+- 返回格式：JSON
+
+#### 7.2.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数   | 类型   | 可为空 | 备注                                     |
+| ---- | ---------- | ------ | ------ | ------------------- |
+| 1    | chainId    | Int    | 否     | 链编号   |
+| 2    | groupId    | Int    | 是     | 群组编号  |
+| 3    | nodeTypes    | List<String>    | 是     | 节点类型：sealer、observer、remove  |
+
+
+***2）入参示例***
+
+* 案例一：
+```
+ curl -X GET "http://localhost:5005/WeBASE-Chain-Manager/agency/list?chainId=495&groupId=5"     
+```
+
+* 案例二：
+```
+curl --location --request GET 'http://localhost:5005/WeBASE-Chain-Manager/agency/list?chainId=495&groupId=1&nodeTypes=observer,sealer'  
+```
+
+
+#### 7.2.3 返回参数
+
+***1）出参表***
+
+| 序号 | 输出参数 | 类型   |      | 备注                       |
+| ---- | -------- | ------ | ---- | -------------------------- |
+| 1    | code     | Int    | 否   | 返回码，0：成功 其它：失败 |
+| 2    | message  | String | 否   | 描述                       |
+| 3    | data  | List<Integer> | 是   | 描述             |
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+	"code": 0,
+	"message": "success",
+	"data": [146],
+	"attachment": null,
+	"success": true
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 105000,
+    "message": "system exception",
+    "data": {}
+}
+```
 
 
 

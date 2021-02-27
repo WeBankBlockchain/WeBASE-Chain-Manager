@@ -142,6 +142,8 @@ public class NodeController extends BaseController {
                             .ifPresent(front -> {
                                 rspNodeInfoVo.setFrontPeerName(front.getFrontPeerName());
                                 rspNodeInfoVo.setNodeIp(front.getFrontIp());
+                                rspNodeInfoVo.setAgency(front.getExtAgencyId());
+                                rspNodeInfoVo.setAgencyName(front.getAgency());
                             });
                     rspNodeInfoVoList.add(rspNodeInfoVo);
                 }

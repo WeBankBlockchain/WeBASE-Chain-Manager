@@ -10,4 +10,6 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 public class RspNodeInfoVo extends TbNode {
     private String frontPeerName;
+    private Integer agency;
+    private String agencyName;
 }

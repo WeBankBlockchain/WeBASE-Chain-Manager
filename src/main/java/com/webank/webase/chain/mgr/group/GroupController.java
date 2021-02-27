@@ -24,10 +24,7 @@ import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
-import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
-import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
-import com.webank.webase.chain.mgr.group.entity.ReqSetSysConfig;
-import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
+import com.webank.webase.chain.mgr.group.entity.*;
 import com.webank.webase.chain.mgr.node.entity.AddSealerAsyncParam;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
 import com.webank.webase.chain.mgr.node.entity.RspAddSealerAsyncVO;
@@ -478,4 +475,21 @@ public class GroupController extends BaseController {
     }
 
 
+    /**
+     * @param chainId
+     * @param groupId
+     * @return
+     */
+    @GetMapping("{chainId}/{groupId}/detail")
+    public BaseResponse detail(@PathVariable("chainId") Integer chainId,
+                               @PathVariable("groupId") Integer groupId) {
+        Instant startTime = Instant.now();
+        log.info("start queryGroupDetail startTime:{} chainId:{} groupId:{}", startTime.toEpochMilli(), chainId, groupId);
+
+        RspGroupDetailVo rspGroupDetailVo = groupService.queryGroupDetail(chainId, groupId);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        baseResponse.setData(rspGroupDetailVo);
+        log.info("end queryGroupDetail useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
+        return baseResponse;
+    }
 }

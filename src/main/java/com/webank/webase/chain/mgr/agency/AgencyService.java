@@ -179,7 +179,6 @@ public class AgencyService {
         return agencyList;
     }
 
-
     /**
      * @param chainId
      * @return
@@ -216,6 +215,7 @@ public class AgencyService {
     }
 
 
+
     /**
      * @param frontList
      * @return
@@ -233,6 +233,4 @@ public class AgencyService {
         log.info("success exec method [listAgencyFromFrontList]. result:{}", JsonTools.objToString(agencyList));
         return agencyList;
     }
-
-
 }

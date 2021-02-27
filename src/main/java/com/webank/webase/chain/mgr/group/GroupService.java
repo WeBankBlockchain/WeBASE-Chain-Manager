@@ -13,6 +13,7 @@
  */
 package com.webank.webase.chain.mgr.group;
 
+import com.webank.webase.chain.mgr.agency.entity.RspAgencyVo;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.enums.*;
@@ -24,6 +25,7 @@ import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.contract.ContractService;
 import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
+import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
@@ -32,8 +34,11 @@ import com.webank.webase.chain.mgr.frontinterface.entity.GenerateGroupInfo;
 import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
 import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
 import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
+import com.webank.webase.chain.mgr.group.entity.RspGroupDetailVo;
 import com.webank.webase.chain.mgr.node.NodeService;
+import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
+import com.webank.webase.chain.mgr.node.entity.RspNodeInfoVo;
 import com.webank.webase.chain.mgr.repository.bean.*;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
@@ -42,10 +47,8 @@ import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -96,6 +99,8 @@ public class GroupService {
     private DeployShellService deployShellService;
     @Autowired
     private GroupManager groupManager;
+    @Autowired
+    private FrontManager frontManager;
 
 
     /**
@@ -300,7 +305,7 @@ public class GroupService {
                 tbFront.getFrontPort(), groupId, type);
 
         // refresh   20210225 挪到controller异步调用
-       // resetGroupList();
+        // resetGroupList();
 
 
         if (tbChain.getDeployType() == DeployTypeEnum.API.getType()) {
@@ -363,6 +368,10 @@ public class GroupService {
                 throw e;
             }
             return tbGroup;
+        } else {
+            exists.setNodeCount(nodeCount);
+            exists.setModifyTime(new Date());
+            tbGroupMapper.updateByPrimaryKey(exists);
         }
         return exists;
     }
@@ -407,7 +416,6 @@ public class GroupService {
         GroupGeneral generalInfo = this.tbGroupMapper.getGeneral(chainId, groupId);
         return generalInfo;
     }
-
 
 
     /**
@@ -926,5 +934,64 @@ public class GroupService {
             operateGroup(chainId, nodeId, groupId, GroupOperateTypeEnum.STOP.getValue());
 
         log.info("finish exec method[stopGroupIfRunning] chainId:{} nodeId:{} groupId:{}", chainId, nodeId, groupId);
+    }
+
+
+    /**
+     * @param chain
+     * @param group
+     * @return
+     */
+    public RspGroupDetailVo queryGroupDetail(int chain, int group) {
+        log.info("start exec method[queryGroupDetail] chainId:{}  groupId:{}", chain, group);
+
+        // query by private key
+        TbGroup tbGroup = tbGroupMapper.selectByPrimaryKey(group, chain);
+        RspGroupDetailVo rspGroupDetailVo = new RspGroupDetailVo();
+        if (Objects.isNull(tbGroup))
+            return rspGroupDetailVo;
+        BeanUtils.copyProperties(tbGroup, rspGroupDetailVo);
+
+        //query tbNodes
+        NodeParam nodeParam = new NodeParam();
+        nodeParam.setChainId(chain);
+        nodeParam.setGroupId(group);
+        List<TbNode> tbNodes = nodeService.qureyNodeList(nodeParam);
+        log.info("tbNodes:{}", JsonTools.objToString(tbNodes));
+        if (CollectionUtils.isEmpty(tbNodes))
+            return rspGroupDetailVo;
+
+        //get node list and agency list
+        List<String> nodeIdList = tbNodes.stream().map(node -> node.getNodeId()).collect(Collectors.toList());
+        List<TbFront> frontList = frontManager.listByChainAndNodeIds(chain, nodeIdList);
+        List<RspNodeInfoVo> nodeInfoList = new ArrayList<>();
+        List<RspAgencyVo> agencyVoList = new ArrayList<>();
+        for (TbNode tbNode : tbNodes) {
+            RspNodeInfoVo rspNodeInfoVo = new RspNodeInfoVo();
+            BeanUtils.copyProperties(tbNode, rspNodeInfoVo);
+            if (CollectionUtils.isNotEmpty(frontList)) {
+                frontList.stream()
+                        .filter(front -> tbNode.getNodeId().equals(front.getNodeId()))
+                        .findFirst()
+                        .ifPresent(f -> {
+                            //add agency
+                            RspAgencyVo rspAgencyVo = new RspAgencyVo();
+                            rspAgencyVo.setAgencyId(f.getExtAgencyId());
+                            rspAgencyVo.setAgencyName(f.getAgency());
+                            agencyVoList.add(rspAgencyVo);
+
+                            //update rspNodeInfoVo
+                            rspNodeInfoVo.setAgency(f.getExtAgencyId());
+                            rspNodeInfoVo.setAgencyName(f.getAgency());
+                            rspNodeInfoVo.setFrontPeerName(f.getFrontPeerName());
+                        });
+                nodeInfoList.add(rspNodeInfoVo);
+            }
+        }
+
+        rspGroupDetailVo.setAgencyList(agencyVoList.stream().distinct().collect(Collectors.toList()));
+        rspGroupDetailVo.setNodeInfoList(nodeInfoList.stream().distinct().collect(Collectors.toList()));
+        log.info("finish exec method[queryGroupDetail] result:{}", JsonTools.objToString(rspGroupDetailVo));
+        return rspGroupDetailVo;
     }
 }
