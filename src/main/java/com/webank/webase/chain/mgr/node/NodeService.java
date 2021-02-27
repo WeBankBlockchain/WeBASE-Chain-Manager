@@ -373,8 +373,10 @@ public class NodeService {
         List<String> resList = new ArrayList<>();
         resList.addAll(sealerList);
         resList.addAll(observerList);
-        log.debug("end getSealerAndObserverList resList:{}", resList);
-        return resList;
+
+        List<String> resultList = resList.stream().distinct().collect(Collectors.toList());
+        log.debug("end getSealerAndObserverList resultList:{}", resultList);
+        return resultList;
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.webank.webase.chain.mgr.front;
 
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbFrontExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
@@ -10,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,24 +47,6 @@ public class FrontManager {
     }
 
 
-    /**
-     * @param frontIdList
-     * @return
-     */
-    public List<TbFront> queryFrontByIdList(List<Integer> frontIdList) {
-        log.info("start exec method [listFrontByIdList]. frontIdList:{}", JsonTools.objToString(frontIdList));
-
-        if (CollectionUtils.isEmpty(frontIdList))
-            return Collections.EMPTY_LIST;
-
-        TbFrontExample example = new TbFrontExample();
-        TbFrontExample.Criteria criteria = example.createCriteria();
-        criteria.andFrontIdIn(frontIdList);
-
-        List<TbFront> frontList = tbFrontMapper.selectByExample(example);
-        log.debug("success exec method [listFrontByIdList]. frontIdList:{} result:{}", JsonTools.objToString(frontIdList), JsonTools.objToString(frontList));
-        return frontList;
-    }
 
     /**
      * @param chainId
@@ -102,6 +84,66 @@ public class FrontManager {
         List<TbFront> frontList = tbFrontMapper.selectByExample(example);
         log.info("success exec method [listByChainAndNodeIds]. frontList:{}", JsonTools.objToString(frontList));
         return frontList;
+    }
+
+
+    /**
+     * @param param
+     * @return
+     */
+    public List<TbFront> listByParam(FrontParam param) {
+        log.info("start exec method [listByParam]. param:{}", JsonTools.objToString(param));
+
+        TbFrontExample example = buildExampleByParam(param);
+        List<TbFront> frontList = tbFrontMapper.selectByExample(example);
+        log.info("success exec method [listByParam]. result:{}", JsonTools.objToString(frontList));
+        return frontList;
+    }
+
+
+    /**
+     * @param param
+     * @return
+     */
+    public long countByParam(FrontParam param) {
+        log.info("start exec method [countByParam]. param:{}", JsonTools.objToString(param));
+
+        TbFrontExample example = buildExampleByParam(param);
+        long count = tbFrontMapper.countByExample(example);
+        log.info("success exec method [countByParam]. result:{}", JsonTools.objToString(count));
+        return count;
+    }
+
+
+    /**
+     * @param param
+     * @return
+     */
+    public TbFrontExample buildExampleByParam(FrontParam param) {
+        TbFrontExample example = new TbFrontExample();
+        if (Objects.isNull(param))
+            return example;
+
+        TbFrontExample.Criteria criteria = example.createCriteria();
+
+        if (Objects.nonNull(param.getChainId()))
+            criteria.andChainIdEqualTo(param.getChainId());
+
+        if (Objects.nonNull(param.getExtAgencyId()))
+            criteria.andExtAgencyIdEqualTo(param.getExtAgencyId());
+
+        if (Objects.nonNull(param.getFrontId()))
+            criteria.andFrontIdEqualTo(param.getFrontId());
+
+        if (Objects.nonNull(param.getFrontId()))
+            criteria.andFrontIdEqualTo(param.getFrontId());
+
+        if (CollectionUtils.isNotEmpty(param.getNodeIdList()))
+            criteria.andNodeIdIn(param.getNodeIdList());
+
+
+        return example;
+
     }
 
 }

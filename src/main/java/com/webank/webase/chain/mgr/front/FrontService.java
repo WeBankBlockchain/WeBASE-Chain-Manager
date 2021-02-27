@@ -99,6 +99,8 @@ public class FrontService {
     @Qualifier(value = "deployAsyncScheduler")
     @Autowired
     private ThreadPoolTaskScheduler threadPoolTaskScheduler;
+    @Autowired
+    private FrontManager frontManager;
 
     /**
      * add new front
@@ -363,22 +365,6 @@ public class FrontService {
         return this.tbFrontMapper.getByChainIdAndNodeId(chainId, nodeId);
     }
 
-    public TbFront getByChainIdAndGroupId(Integer chainId, Integer groupId) {
-        if (chainId == null || groupId == null) {
-            return null;
-        }
-
-        FrontParam param = new FrontParam();
-        param.setChainId(chainId);
-        param.setGroupId(groupId);
-        List<TbFront> frontList = this.tbFrontMapper.selectByParam(param);
-        if (CollectionUtils.isEmpty(frontList)) {
-            return null;
-        }
-        // TODO. loop
-        return frontList.get(0);
-    }
-
     /**
      * remove front by frontId
      */
@@ -615,6 +601,35 @@ public class FrontService {
 
     }
 
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param frontId
+     * @param agencyId
+     * @return
+     */
+    public List<TbFront> listFront(int chainId, int groupId, Integer frontId, Integer agencyId) {
+        log.info("start exec method[listFront] chainId:{} groupId:{} frontId:{} agencyId:{}", chainId, groupId, frontId, agencyId);
+
+        //query nodeIdList from group
+        List<String> nodeIdList = nodeService.getSealerAndObserverList(chainId, groupId);
+        if (CollectionUtils.isEmpty(nodeIdList))
+            return new ArrayList<>();
+
+        //db param
+        FrontParam param = new FrontParam();
+        param.setNodeIdList(nodeIdList);
+        param.setChainId(chainId);
+        param.setFrontId(frontId);
+        param.setExtAgencyId(agencyId);
+
+        List<TbFront> frontList = frontManager.listByParam(param);
+        log.info("success exec method[listFront] result:{}", JsonTools.objToString(frontList));
+        return frontList;
+    }
+
+
     /**
      * @param chainId
      * @param nodeId
@@ -661,5 +676,6 @@ public class FrontService {
         log.debug("success exec method [selectFrontByNodeIdListAndChain]. result:{}", JsonTools.objToString(frontList));
         return frontList;
     }
+
 
 }

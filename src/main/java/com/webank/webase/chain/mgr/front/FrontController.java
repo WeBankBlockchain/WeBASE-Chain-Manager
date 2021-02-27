@@ -23,7 +23,6 @@ import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
-import com.webank.webase.chain.mgr.repository.bean.TbFrontExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +36,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * front controller
@@ -50,6 +50,8 @@ public class FrontController extends BaseController {
     private FrontService frontService;
     @Autowired
     private TbFrontMapper tbFrontMapper;
+    @Autowired
+    private FrontManager frontManager;
 
     /**
      * add new front
@@ -76,32 +78,36 @@ public class FrontController extends BaseController {
     @GetMapping(value = "/find")
     public BasePageResponse queryFrontList(
             @RequestParam(value = "agencyId", required = false) Integer agencyId,
-            @RequestParam(value = "chainId", required = false) Integer chainId,
+            @RequestParam(value = "chainId") Integer chainId,
             @RequestParam(value = "frontId", required = false) Integer frontId,
             @RequestParam(value = "groupId", required = false) Integer groupId)
             throws BaseException {
-        BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start queryFrontList startTime:{} agencyId:{} chainId:{} frontId:{} groupId:{}",
                 startTime.toEpochMilli(), agencyId, chainId, frontId, groupId);
 
-        // query front info
-        FrontParam param = new FrontParam();
-        param.setAgencyId(agencyId);
-        param.setChainId(chainId);
-        param.setFrontId(frontId);
-        param.setGroupId(groupId);
-        int count = this.tbFrontMapper.countByParam(param);
-        pagesponse.setTotalCount(count);
-        if (count > 0) {
-            List<TbFront> list = tbFrontMapper.selectByParam(param);
-            pagesponse.setData(list);
+        BasePageResponse pageResponse = new BasePageResponse(ConstantCode.SUCCESS);
+        if (Objects.isNull(groupId)) {
+            //query from tb_Front
+            FrontParam param = new FrontParam();
+            param.setExtAgencyId(agencyId);
+            param.setChainId(chainId);
+            param.setFrontId(frontId);
+            pageResponse.setTotalCount(Long.valueOf(frontManager.countByParam(param)).intValue());
+            if (pageResponse.getTotalCount() > 0) {
+                pageResponse.setData(frontManager.listByParam(param));
+            }
+        } else {
+            List<TbFront> frontList = frontService.listFront(chainId, groupId, frontId, agencyId);
+            pageResponse.setTotalCount(frontList.size());
+            pageResponse.setData(frontId);
         }
+
 
         log.info("end queryFrontList useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JsonTools.toJSONString(pagesponse));
-        return pagesponse;
+                JsonTools.toJSONString(pageResponse));
+        return pageResponse;
     }
 
     /**

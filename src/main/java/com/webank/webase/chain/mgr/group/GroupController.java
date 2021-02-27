@@ -22,6 +22,7 @@ import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
 import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
@@ -32,10 +33,12 @@ import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
 import com.webank.webase.chain.mgr.node.entity.RspAddSealerAsyncVO;
 import com.webank.webase.chain.mgr.precompiledapi.PrecompiledService;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.TbFrontGroupMap;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -69,6 +72,8 @@ public class GroupController extends BaseController {
     private FrontService frontService;
     @Autowired
     private PrecompiledService precompiledService;
+    @Autowired
+    private FrontGroupMapService frontGroupMapService;
 
 
     /**
@@ -442,12 +447,14 @@ public class GroupController extends BaseController {
         int newGroupId = groupId == null || groupId <= 0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
 
         // get front
-        TbFront tbFront = frontService.getByChainIdAndGroupId(chainId, newGroupId);
-        if (tbFront == null) {
+        List<TbFrontGroupMap> frontGroupMapList = frontGroupMapService.listByChainAndGroup(chainId, newGroupId);
+        if (CollectionUtils.isEmpty(frontGroupMapList)) {
             log.error("fail getConsensusList node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
+        TbFrontGroupMap map = frontGroupMapList.get(0);
+        TbFront tbFront = frontService.getById(map.getFrontId());
         Object result = frontInterfaceService.getConsensusList(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), newGroupId, pageSize, pageNumber);
 

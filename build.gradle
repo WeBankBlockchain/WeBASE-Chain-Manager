@@ -54,7 +54,7 @@ List jaxb = [
 ]
 
 List lombok = [
-    "org.projectlombok:lombok:1.18.2"
+    "org.projectlombok:lombok:1.18.12"
 ]
 
 List jwt = [
