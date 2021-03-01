@@ -593,10 +593,9 @@ public class FrontService {
         criteria.andFrontPortEqualTo(frontPort);
         criteria.andFrontPeerNameEqualTo(frontPeerName);
         long count = this.tbFrontMapper.countByExample(example);
-        if (count > 0) {
-            log.warn("fail exec method[requireNotFoundFront],found front record by frontIp:{} frontPort:{} frontPeerName:{}", frontIp, frontPort, frontPeerName);
-            throw new BaseException(ConstantCode.FRONT_EXISTS);
-        }
+        if (count > 0)
+            throw new BaseException(ConstantCode.FRONT_EXISTS.attach(String.format("found front record by frontIp:%s frontPort:%s frontPeerName:%s", frontIp, frontPort, frontPeerName)));
+
         log.info("finish exec method[requireNotFoundFront] frontIp:{} frontPort:{} frontPeerName:{}", frontIp, frontPort, frontPeerName);
 
     }
@@ -639,27 +638,13 @@ public class FrontService {
         FrontParam param = new FrontParam();
         param.setChainId(chainId);
         param.setNodeId(nodeId);
-        int count = this.tbFrontMapper.countByParam(param);
-        if (count > 0) {
-            log.warn("fail exec method[requireNotFoundFront],found front record by chainId:{} nodeId:{}", chainId, nodeId);
-            throw new BaseException(ConstantCode.FRONT_EXISTS);
-        }
+        long count = frontManager.countByParam(param);
+        if (count > 0)
+            throw new BaseException(ConstantCode.FRONT_EXISTS.attach(String.format("found front record by chainId:%s nodeId:%s", chainId, nodeId)));
+
         log.info("finish exec method[requireNotFoundFront] chainId:{} nodeId:{}", chainId, nodeId);
     }
 
-    /**
-     * @param agencyId
-     * @return
-     */
-    public List<TbFront> listFrontByAgency(int agencyId) {
-        log.debug("start exec method [listFrontByAgency]. agencyId:{}", agencyId);
-        TbFrontExample example = new TbFrontExample();
-        TbFrontExample.Criteria criteria = example.createCriteria();
-        criteria.andExtAgencyIdEqualTo(agencyId);
-        List<TbFront> frontList = tbFrontMapper.selectByExample(example);
-        log.debug("success exec method [listFrontByAgency]. agencyId:{} result:{}", agencyId, JsonTools.objToString(frontList));
-        return frontList;
-    }
 
     /**
      * @param chainId

@@ -148,6 +148,30 @@ public class FrontGroupMapService {
 
     /**
      * @param chainId
+     * @param frontIdList
+     * @return
+     */
+    public List<Integer> listGroupIdByChainAndFronts(int chainId, List<Integer> frontIdList) {
+        log.info("start exec method[listGroupByFronts], chainId:{} frontIdList:{}", chainId, JsonTools.objToString(frontIdList));
+        if (CollectionUtils.isEmpty(frontIdList)) return Collections.EMPTY_LIST;
+
+        //param
+        TbFrontGroupMapExample example = new TbFrontGroupMapExample();
+        TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        criteria.andFrontIdIn(frontIdList);
+
+        //query
+        List<TbFrontGroupMap> frontGroupMapList = tbFrontGroupMapMapper.selectByExample(example);
+        if (CollectionUtils.isEmpty(frontGroupMapList)) return Collections.EMPTY_LIST;
+        List<Integer> groupIdList = frontGroupMapList.stream().map(map -> map.getGroupId()).distinct().collect(Collectors.toList());
+        log.info("success exec method[listGroupByFronts], frontIdList:{} result:{}", JsonTools.objToString(frontIdList), JsonTools.objToString(groupIdList));
+        return groupIdList;
+    }
+
+
+    /**
+     * @param chainId
      * @param frontId
      * @return
      */

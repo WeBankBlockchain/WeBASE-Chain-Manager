@@ -14,10 +14,13 @@
 package com.webank.webase.chain.mgr.contract;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.sun.javafx.PlatformUtil;
+import com.sun.media.jfxmediaimpl.HostUtils;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.tools.Web3Tools;
 import com.webank.webase.chain.mgr.contract.entity.*;
@@ -37,6 +40,7 @@ import com.webank.webase.chain.mgr.util.EncoderUtil;
 import com.webank.webase.chain.mgr.util.HttpEntityUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
@@ -48,7 +52,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -104,59 +111,71 @@ public class ContractService {
         return compileInfos;
     }
 
-    /**
-     * @param contractId
-     * @return
-     */
-    public TbContract compileByContractId(int contractId) {
-        log.debug("start compileByContractId contractId:{}", contractId);
-        //check contractId
-        TbContract contract = contractManager.verifyContractId(contractId);
-        //check contract status
-        verifyContractNotDeploy(contract.getChainId(), contract.getContractId(), contract.getGroupId());
-        //check contractSource
-        if (StringUtils.isBlank(contract.getContractSource()))
-            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("contract source is empty"));
-
-        //request front for compile
-        RspContractCompileDto restRsp = null;
-        try {
-            restRsp = frontInterface.compileSingleContractFile(contract.getChainId(), contract.getGroupId(), contract.getContractName(), contract.getContractSource());
-
-            if (Objects.isNull(restRsp))
-                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("compile result is null"));
-
-            if (StringUtils.isAnyBlank(restRsp.getBytecodeBin(), restRsp.getContractAbi()))
-                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach(restRsp.getErrors()));
-
-        } catch (BaseException baseException) {
-            contract.setModifyTime(new Date());
-            contract.setContractStatus(ContractStatus.COMPILE_FAILED.getValue());
-            String message = baseException.getRetCode().getMessage();
-            String attachment = baseException.getRetCode().getAttachment();
-            contract.setDescription(StringUtils.isBlank(message) ? attachment : message);
-            tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
-            throw baseException;
-        } catch (Exception ex) {
-            log.error("compile not success", ex);
-            contract.setModifyTime(new Date());
-            contract.setContractStatus(ContractStatus.COMPILE_FAILED.getValue());
-            contract.setDescription(ex.getMessage());
-            tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
-            throw ex;
-        }
-
-        //success
-        contract.setBytecodeBin(restRsp.getBytecodeBin());
-        contract.setContractAbi(restRsp.getContractAbi());
-        contract.setContractStatus(ContractStatus.COMPILED.getValue());
-        contract.setDescription("");
-        tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
-
-        TbContract result = tbContractMapper.selectByPrimaryKey(contractId);
-        log.debug("success compileByContractId contractId:{} result:{}", contractId, JsonTools.objToString(result));
-        return result;
-    }
+//    /**
+//     * @param contractId
+//     * @return
+//     */
+//    public TbContract compileByContractId(int contractId) {
+//        log.debug("start compileByContractId contractId:{}", contractId);
+//        //check contractId
+//        TbContract contract = contractManager.verifyContractId(contractId);
+//        //check contract status
+//        contractManager.verifyContractNotDeploy(contract.getChainId(), contract.getContractId(), contract.getGroupId());
+//        //check contractSource
+//        if (StringUtils.isBlank(contract.getContractSource()))
+//            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("contract source is empty"));
+//
+//        //request front for compile
+//        RspContractCompileDto restRsp = null;
+//        try {
+//
+//
+//            // decode
+//            byte[] contractSourceByteArr = Base64.getDecoder().decode(contract.getContractSource());
+//            Path contractFilePath = Paths.get(String.format(ConstantProperties.SOLIDITY_FILE_TEMP, contract.getContractName()));
+//            // save contract to file
+//            File contractFile = new File(contractFilePath.toUri());
+//            FileUtils.writeByteArrayToFile(contractFile, contractSourceByteArr);
+//            //get version from contract file TODO    PlatformUtil.isLinux();
+//
+//
+//
+////            restRsp = frontInterface.compileSingleContractFile(contract.getChainId(), contract.getGroupId(), contract.getContractName(), contract.getContractSource());
+//
+//            if (Objects.isNull(restRsp))
+//                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("compile result is null"));
+//
+//            if (StringUtils.isAnyBlank(restRsp.getBytecodeBin(), restRsp.getContractAbi()))
+//                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach(restRsp.getErrors()));
+//
+//        } catch (BaseException baseException) {
+//            contract.setModifyTime(new Date());
+//            contract.setContractStatus(ContractStatus.COMPILE_FAILED.getValue());
+//            String message = baseException.getRetCode().getMessage();
+//            String attachment = baseException.getRetCode().getAttachment();
+//            contract.setDescription(StringUtils.isBlank(message) ? attachment : message);
+//            tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
+//            throw baseException;
+//        } catch (Exception ex) {
+//            log.error("compile not success", ex);
+//            contract.setModifyTime(new Date());
+//            contract.setContractStatus(ContractStatus.COMPILE_FAILED.getValue());
+//            contract.setDescription(ex.getMessage());
+//            tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
+//            throw ex;
+//        }
+//
+//        //success
+//        contract.setBytecodeBin(restRsp.getBytecodeBin());
+//        contract.setContractAbi(restRsp.getContractAbi());
+//        contract.setContractStatus(ContractStatus.COMPILED.getValue());
+//        contract.setDescription("");
+//        tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
+//
+//        TbContract result = tbContractMapper.selectByPrimaryKey(contractId);
+//        log.debug("success compileByContractId contractId:{} result:{}", contractId, JsonTools.objToString(result));
+//        return result;
+//    }
 
 
     /**
@@ -181,7 +200,7 @@ public class ContractService {
      */
     private TbContract newContract(Contract contract) {
         // check contract not exist.
-        verifyContractNotExistByName(contract.getChainId(), contract.getGroupId(),
+        contractManager.verifyContractNotExistByName(contract.getChainId(), contract.getGroupId(),
                 contract.getContractName(), contract.getContractPath());
 
         // add to database.
@@ -201,10 +220,10 @@ public class ContractService {
      */
     private TbContract updateContract(Contract contract) {
         // check not deploy
-        TbContract tbContract = verifyContractNotDeploy(contract.getChainId(),
+        TbContract tbContract = contractManager.verifyContractNotDeploy(contract.getChainId(),
                 contract.getContractId(), contract.getGroupId());
         // check contractName
-        verifyContractNotExistByName(contract.getChainId(), contract.getGroupId(),
+        contractManager.verifyContractNotExistByName(contract.getChainId(), contract.getGroupId(),
                 contract.getContractPath(), contract.getContractName());
 
         Integer belongAgency = tbContract.getSaveByAgency();
@@ -234,7 +253,7 @@ public class ContractService {
     public void deleteContract(int chainId, int contractId, int groupId) throws BaseException {
         log.info("start deleteContract contractId:{} groupId:{}", contractId, groupId);
         // check contract id
-        verifyContractNotDeploy(chainId, contractId, groupId);
+        contractManager.verifyContractNotDeploy(chainId, contractId, groupId);
         // remove
         this.tbContractMapper.deleteByPrimaryKey(contractId);
         // delete method
@@ -330,16 +349,6 @@ public class ContractService {
 //        }
 //    }
 
-    /**
-     * query contract info.
-     */
-    public TbContract queryContract(ContractParam queryParam) {
-        log.debug("start queryContract. queryParam:{}", JsonTools.toJSONString(queryParam));
-        TbContract tbContract = this.tbContractMapper.getByParam(queryParam);
-        log.debug("end queryContract. queryParam:{} tbContract:{}", JsonTools.toJSONString(queryParam),
-                JsonTools.toJSONString(tbContract));
-        return tbContract;
-    }
 
 
     /**
@@ -361,7 +370,7 @@ public class ContractService {
         TbContract tbContract = contractManager.verifyContractId(req.getContractId());
 
         // check contract
-        verifyContractNotDeploy(tbContract.getChainId(), tbContract.getContractId(), tbContract.getGroupId());
+        contractManager.verifyContractNotDeploy(tbContract.getChainId(), tbContract.getContractId(), tbContract.getGroupId());
 
         List<Object> params = req.getConstructorParams();
         if (CollectionUtils.isEmpty(params) && StringUtils.isNotBlank(req.getConstructorParamsJson())) {
@@ -422,11 +431,11 @@ public class ContractService {
         int groupId = inputParam.getGroupId();
         String contractName = inputParam.getContractName();
         // check contract
-        verifyContractNotDeploy(inputParam.getChainId(), inputParam.getContractId(),
+        contractManager.verifyContractNotDeploy(inputParam.getChainId(), inputParam.getContractId(),
                 inputParam.getGroupId());
         // check contractName
-        verifyContractNameNotExist(inputParam.getChainId(), inputParam.getGroupId(),
-                inputParam.getContractPath(), contractName, inputParam.getContractId());
+//        contractManager.verifyContractNameNotExist(inputParam.getChainId(), inputParam.getGroupId(),
+//                inputParam.getContractPath(), contractName, inputParam.getContractId());
         // check front
         TbFront tbFront =
                 frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
@@ -493,7 +502,7 @@ public class ContractService {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
         // check contract deploy
-        TbContract tbContract = verifyContractDeploy(inputParam.getChainId(),
+        TbContract tbContract = contractManager.verifyContractDeploy(inputParam.getChainId(),
                 inputParam.getContractId(), inputParam.getGroupId());
 
         // transaction param
@@ -556,61 +565,6 @@ public class ContractService {
     }
 
 
-    /**
-     * verify that the contract does not exist.
-     */
-    private void verifyContractNotExistByName(int chainId, int groupId, String name, String path) {
-        TbContract contract = tbContractMapper.getContract(chainId, groupId, name, path);
-        if (Objects.nonNull(contract)) {
-            log.warn("contract is exist. groupId:{} name:{} path:{}", groupId, name, path);
-            throw new BaseException(ConstantCode.CONTRACT_EXISTS);
-        }
-    }
-
-    /**
-     * verify that the contract had not deployed.
-     */
-    private TbContract verifyContractNotDeploy(int chainId, int contractId, int groupId) {
-        TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
-        if (ContractStatus.DEPLOYED.getValue() == contract.getContractStatus()) {
-            log.info("contract had bean deployed contractId:{}", contractId);
-            throw new BaseException(ConstantCode.CONTRACT_HAS_BEAN_DEPLOYED);
-        }
-        return contract;
-    }
-
-    /**
-     * verify that the contract had bean deployed.
-     */
-    private TbContract verifyContractDeploy(int chainId, int contractId, int groupId) {
-        TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
-        if (ContractStatus.DEPLOYED.getValue() != contract.getContractStatus()) {
-            log.info("contract had bean deployed contractId:{}", contractId);
-            throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOY);
-        }
-        return contract;
-    }
-
-    /**
-     * verify that the contractId is exist.
-     */
-    private TbContract verifyContractIdExist(int chainId, int contractId, int groupId) {
-        ContractParam param = new ContractParam(chainId, contractId, groupId);
-        TbContract contract = queryContract(param);
-        if (Objects.isNull(contract)) {
-            log.info("contractId is invalid. contractId:{}", contractId);
-            throw new BaseException(ConstantCode.INVALID_CONTRACT_ID);
-        }
-        return contract;
-    }
-
-
-    /**
-     * contract name can not be repeated.
-     */
-    private void verifyContractNameNotExist(int chainId, int groupId, String path, String name, int contractId) {
-
-    }
 
     /**
      * @param contractId
@@ -688,4 +642,6 @@ public class ContractService {
     public boolean update(TbContract tbContract) {
         return this.tbContractMapper.updateByPrimaryKeySelective(tbContract) == 1;
     }
+
+
 }

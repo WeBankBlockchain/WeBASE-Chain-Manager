@@ -502,7 +502,7 @@ public class GroupController extends BaseController {
      * @return
      * @throws BaseException
      */
-    @GetMapping("changeDescription")
+    @PostMapping("changeDescription")
     public BaseResponse updateDescription(@RequestBody @Valid ReqUpdateGroupVo param,
                                           BindingResult result) throws BaseException {
         Instant startTime = Instant.now();

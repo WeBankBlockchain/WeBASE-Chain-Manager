@@ -1,8 +1,10 @@
 package com.webank.webase.chain.mgr.contract;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -31,4 +33,66 @@ public class ContractManager {
         log.info("success exec method [verifyContractId]. result:{}", JsonTools.objToString(tbContract));
         return tbContract;
     }
+
+
+    /**
+     * verify that the contract does not exist.
+     */
+    public void verifyContractNotExistByName(int chainId, int groupId, String name, String path) {
+        TbContract contract = tbContractMapper.getContract(chainId, groupId, name, path);
+        if (Objects.nonNull(contract)) {
+            log.warn("contract is exist. groupId:{} name:{} path:{}", groupId, name, path);
+            throw new BaseException(ConstantCode.CONTRACT_EXISTS);
+        }
+    }
+
+    /**
+     * verify that the contract had not deployed.
+     */
+    public TbContract verifyContractNotDeploy(int chainId, int contractId, int groupId) {
+        TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
+        if (ContractStatus.DEPLOYED.getValue() == contract.getContractStatus()) {
+            log.info("contract had bean deployed contractId:{}", contractId);
+            throw new BaseException(ConstantCode.CONTRACT_HAS_BEAN_DEPLOYED);
+        }
+        return contract;
+    }
+
+    /**
+     * verify that the contract had bean deployed.
+     */
+    public TbContract verifyContractDeploy(int chainId, int contractId, int groupId) {
+        TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
+        if (ContractStatus.DEPLOYED.getValue() != contract.getContractStatus()) {
+            log.info("contract had bean deployed contractId:{}", contractId);
+            throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOY);
+        }
+        return contract;
+    }
+
+    /**
+     * verify that the contractId is exist.
+     */
+    public TbContract verifyContractIdExist(int chainId, int contractId, int groupId) {
+        ContractParam param = new ContractParam(chainId, contractId, groupId);
+        TbContract contract = queryContract(param);
+        if (Objects.isNull(contract)) {
+            log.info("contractId is invalid. contractId:{}", contractId);
+            throw new BaseException(ConstantCode.INVALID_CONTRACT_ID);
+        }
+        return contract;
+    }
+
+
+    /**
+     * query contract info.
+     */
+    public TbContract queryContract(ContractParam queryParam) {
+        log.debug("start queryContract. queryParam:{}", JsonTools.toJSONString(queryParam));
+        TbContract tbContract = this.tbContractMapper.getByParam(queryParam);
+        log.debug("end queryContract. queryParam:{} tbContract:{}", JsonTools.toJSONString(queryParam),
+                JsonTools.toJSONString(tbContract));
+        return tbContract;
+    }
+
 }

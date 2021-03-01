@@ -30,6 +30,7 @@ public class RspAllOwnedDataOfAgencyVO {
         private Integer chainId;
         private Integer frontId;
         private String nodeId;
+        private String frontPeerName;
     }
 
 

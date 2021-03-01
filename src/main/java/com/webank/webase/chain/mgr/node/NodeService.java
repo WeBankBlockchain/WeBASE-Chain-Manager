@@ -19,6 +19,7 @@ import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
+import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfConsensusStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfSyncStatus;
@@ -63,6 +64,8 @@ public class NodeService {
     private TbGroupMapper tbGroupMapper;
     @Autowired
     private FrontInterfaceService frontInterface;
+    @Autowired
+    private FrontManager frontManager;
 
     private static final Long CHECK_NODE_WAIT_MIN_MILLIS = 5000L;
     private static final Long EXT_CHECK_NODE_WAIT_MIN_MILLIS = 3500L;
@@ -378,6 +381,29 @@ public class NodeService {
         log.debug("end getSealerAndObserverList resultList:{}", resultList);
         return resultList;
     }
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param agencyId
+     * @return
+     */
+    public List<String> listSealerAndObserverByGroupAndAgency(int chainId, int groupId, int agencyId) {
+        log.debug("start listSealerAndObserverByGroupAndAgency chainId:{} groupId:{} agencyId:{}", chainId, groupId, agencyId);
+
+        List<String> sealerAndObserverOnGroup = getSealerAndObserverList(chainId, groupId);
+        List<String> nodeIdByAgency = frontManager.listNodeIdByAgency(agencyId);
+
+        List<String> result = sealerAndObserverOnGroup
+                .stream()
+                .filter(node -> nodeIdByAgency.contains(node))
+                .distinct()
+                .collect(Collectors.toList());
+
+        log.debug("success listSealerAndObserverByGroupAndAgency chainId:{} groupId:{} agencyId:{} result:{}", chainId, groupId, agencyId, JsonTools.objToString(result));
+        return result;
+    }
+
 
     /**
      * @param chainId

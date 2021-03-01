@@ -55,6 +55,12 @@ public class ConstantProperties {
     public static final int HTTP_SUCCESS_RESPONSE_CODE = 0;
     public static final String ORDER_BY_CREATE_TIME_DESC = "create_time DESC";
 
+    //solidity compile
+    public static final String DEFAULT_SOLC_VERSION = "0.4.25";
+    public static final String SOLC_FILE_PATH = "./compiled";
+    public static final String SOLIDITY_COMPILE_DIRECTORY_TEMP = "./compiled";
+    public static final String SOLIDITY_FILE_TEMP = SOLIDITY_COMPILE_DIRECTORY_TEMP + "%1s.sol";
+
     private String groupInvalidGrayscaleValue; // y:year, M:month, d:day of month, h:hour, m:minute,
     // n:forever valid
     // front http request
@@ -145,7 +151,6 @@ public class ConstantProperties {
     }
 
     /**
-     *
      * @param injectedValue
      * @param defaultValue
      * @return

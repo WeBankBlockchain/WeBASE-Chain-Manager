@@ -188,7 +188,7 @@ public class NodeController extends BaseController {
         //nodeId of agency
         Set<String> finalNodes = nodeIds.stream().collect(Collectors.toSet());
         if (Objects.nonNull(agencyId)) {
-            List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
+            List<TbFront> frontList = frontManager.listFrontByAgency(agencyId);
             if (CollectionUtils.isEmpty(frontList)) {
                 log.info("finish queryNodeIdList. not fount front by agencyId:{}", agencyId);
                 return baseResponse;

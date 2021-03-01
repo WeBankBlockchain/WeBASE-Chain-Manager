@@ -74,7 +74,7 @@ public class AgencyService {
         log.info("start exec method [getAllByAgencyId]. agencyId:{}", agencyId);
 
         //query front list
-        List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
+        List<TbFront> frontList = frontManager.listFrontByAgency(agencyId);
         if (CollectionUtils.isEmpty(frontList)) {
             log.info("finish exec method [getAllByAgencyId]. not found front record by agencyId:{}", agencyId);
             return null;

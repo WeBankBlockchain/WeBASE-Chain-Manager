@@ -11,8 +11,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,7 +47,6 @@ public class FrontManager {
         log.debug("success exec method [listFrontByAgencyIdAndFrontPeerName]. agencyId:{} frontPeerName:{} nodeId:{} result:{}", agencyId, frontPeerName, nodeId, JsonTools.objToString(frontList));
         return frontList;
     }
-
 
 
     /**
@@ -138,12 +139,77 @@ public class FrontManager {
         if (Objects.nonNull(param.getFrontId()))
             criteria.andFrontIdEqualTo(param.getFrontId());
 
+        if (Objects.nonNull(param.getNodeId()))
+            criteria.andNodeIdEqualTo(param.getNodeId());
+
         if (CollectionUtils.isNotEmpty(param.getNodeIdList()))
             criteria.andNodeIdIn(param.getNodeIdList());
 
 
         return example;
 
+    }
+
+
+    /**
+     * @param agencyId
+     * @return
+     */
+    public List<TbFront> listFrontByAgency(int agencyId) {
+        log.debug("start exec method [listFrontByAgency]. agencyId:{}", agencyId);
+        TbFrontExample example = new TbFrontExample();
+        TbFrontExample.Criteria criteria = example.createCriteria();
+        criteria.andExtAgencyIdEqualTo(agencyId);
+        List<TbFront> frontList = tbFrontMapper.selectByExample(example);
+        log.debug("success exec method [listFrontByAgency]. agencyId:{} result:{}", agencyId, JsonTools.objToString(frontList));
+        return frontList;
+    }
+
+
+    /**
+     * @param chainId
+     * @param agencyId
+     * @return
+     */
+    public List<TbFront> listFrontByChainAndAgency(int chainId, int agencyId) {
+        log.debug("start exec method [listFrontByChainAndAgency]. chainId:{} agencyId:{}", chainId, agencyId);
+        FrontParam frontParam = new FrontParam();
+        frontParam.setChainId(chainId);
+        frontParam.setExtAgencyId(agencyId);
+        List<TbFront> frontList = listByParam(frontParam);
+        log.debug("success exec method [listFrontByChainAndAgency]. chainId:{} agencyId:{} result:{}", chainId, agencyId, JsonTools.objToString(frontList));
+        return frontList;
+    }
+
+    /**
+     * @param chainId
+     * @param agencyId
+     * @return
+     */
+    public List<Integer> listFrontIdByChainAndAgency(int chainId, int agencyId) {
+        log.debug("start exec method [listFrontIdByAgency]. chainId:{} agencyId:{}", chainId, agencyId);
+        List<TbFront> frontList = listFrontByChainAndAgency(chainId, agencyId);
+        if (CollectionUtils.isEmpty(frontList))
+            return new ArrayList<>();
+
+        List<Integer> idList = frontList.stream().map(TbFront::getFrontId).distinct().collect(Collectors.toList());
+        log.debug("success exec method [listFrontIdByAgency]. agencyId:{} result:{}", agencyId, JsonTools.objToString(idList));
+        return idList;
+    }
+
+
+    /**
+     * @param agencyId
+     * @return
+     */
+    public List<String> listNodeIdByAgency(int agencyId) {
+        log.debug("start exec method [listNodeIdByAgency]. agencyId:{}", agencyId);
+        List<TbFront> frontList = listFrontByAgency(agencyId);
+        List<String> nodeIdList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(frontList))
+            nodeIdList = frontList.stream().map(TbFront::getNodeId).collect(Collectors.toList());
+        log.debug("success exec method [listNodeIdByAgency]. agencyId:{} result:{}", agencyId, JsonTools.objToString(nodeIdList));
+        return nodeIdList;
     }
 
 }

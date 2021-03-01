@@ -169,6 +169,10 @@ jar {
             into 'dist/script'
         }
         copy {
+            from file('solc/')
+            into 'dist/solc'
+        }
+        copy {
             from configurations.runtime
             into 'dist/lib'
         }

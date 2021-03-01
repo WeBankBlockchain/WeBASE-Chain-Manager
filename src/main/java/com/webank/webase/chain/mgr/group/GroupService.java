@@ -27,6 +27,7 @@ import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
 import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.front.entity.RspEntityOfGroupPage;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
@@ -824,7 +825,7 @@ public class GroupService {
 
         //query by agencyId
         if (Objects.nonNull(agencyId)) {
-            List<Integer> groupIdList = listGroupIdByAgencyId(agencyId);
+            List<Integer> groupIdList = listGroupIdByChainAndAgencyId(chainId, agencyId);
             if (CollectionUtils.isEmpty(groupIdList)) {
                 criteria.andGroupIdEqualTo(-10);
             } else {
@@ -832,14 +833,30 @@ public class GroupService {
             }
         }
 
-
         //query
-        BasePageResponse basePageResponse = new BasePageResponse(ConstantCode.SUCCESS);
-        basePageResponse.setTotalCount(Integer.parseInt(String.valueOf(tbGroupMapper.countByExample(example))));
-        if (basePageResponse.getTotalCount() > 0) {
-            basePageResponse.setData(tbGroupMapper.selectByExample(example));
+        BasePageResponse rsp = new BasePageResponse(ConstantCode.SUCCESS);
+        rsp.setTotalCount(Integer.parseInt(String.valueOf(tbGroupMapper.countByExample(example))));
+
+        if (rsp.getTotalCount() > 0) {
+            List<TbGroup> groupList = tbGroupMapper.selectByExample(example);
+            List<RspEntityOfGroupPage> rspGroupList = new ArrayList<>();
+            for (TbGroup tbGroup : groupList) {
+                RspEntityOfGroupPage rspGroup = new RspEntityOfGroupPage();
+                BeanUtils.copyProperties(tbGroup, rspGroup);
+
+                //set node count by agency
+                if (Objects.nonNull(agencyId)) {
+                    List<String> listNodeIdOfAgency = nodeService.listSealerAndObserverByGroupAndAgency(chainId, tbGroup.getGroupId(), agencyId);
+                    if (CollectionUtils.isNotEmpty(listNodeIdOfAgency))
+                        rspGroup.setNodeCountOfAgency(listNodeIdOfAgency.size());
+                }
+                rspGroupList.add(rspGroup);
+            }
+
+            rsp.setData(rspGroupList);
         }
-        return basePageResponse;
+
+        return rsp;
     }
 
 
@@ -851,7 +868,7 @@ public class GroupService {
         log.info("start exec method[listGroupIdByAgencyId] agencyId:{}", agencyId);
 
         //list frontId
-        List<TbFront> frontList = frontService.listFrontByAgency(agencyId);
+        List<TbFront> frontList = frontManager.listFrontByAgency(agencyId);
         if (CollectionUtils.isEmpty(frontList)) {
             log.info("finish exec method[listGroupIdByAgencyId] not found front record by agencyId:{}", agencyId);
             return Collections.EMPTY_LIST;
@@ -863,6 +880,29 @@ public class GroupService {
         log.info("success exec method[listGroupIdByAgencyId] agencyId:{} result:{}", agencyId, JsonTools.objToString(groupIdList));
         return groupIdList;
     }
+
+
+    /**
+     * @param chainId
+     * @param agencyId
+     * @return
+     */
+    public List<Integer> listGroupIdByChainAndAgencyId(int chainId, int agencyId) {
+        log.info("start exec method[listGroupIdByChainAndAgencyId] chainId:{} agencyId:{}", chainId, agencyId);
+
+        //list frontId
+        List<Integer> frontIdList = frontManager.listFrontIdByChainAndAgency(chainId, agencyId);
+        if (CollectionUtils.isEmpty(frontIdList)) {
+            log.info("finish exec method[listGroupIdByChainAndAgencyId] not found front record by agencyId:{}", agencyId);
+            return Collections.EMPTY_LIST;
+        }
+
+        //list group
+        List<Integer> groupIdList = frontGroupMapService.listGroupIdByChainAndFronts(chainId, frontIdList);
+        log.info("success exec method[listGroupIdByChainAndAgencyId] chainId:{} agencyId:{} result:{}", chainId, agencyId, JsonTools.objToString(groupIdList));
+        return groupIdList;
+    }
+
 
     /**
      * @param agencyId
@@ -882,6 +922,7 @@ public class GroupService {
         log.info("success exec method[listGroupIdByAgencyId] agencyId:{} result:{}", agencyId, JsonTools.objToString(groupList));
         return groupList;
     }
+
 
     /**
      * @param chainId
