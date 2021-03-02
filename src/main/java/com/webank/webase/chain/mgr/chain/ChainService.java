@@ -513,19 +513,6 @@ public class ChainService {
         return this.frontService.frontProgress(chain.getChainId());
     }
 
-    /**
-     * @param chainId
-     * @return
-     */
-    public TbChain verifyChainId(int chainId) {
-        log.info("start exec method [verifyChainId]. chainId:{}", chainId);
-        TbChain tbChain = tbChainMapper.selectByPrimaryKey(chainId);
-        if (Objects.isNull(tbChain)) {
-            log.warn("fail exec method [verifyChainId]. not found record by chainId:{}", chainId);
-            throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
-        }
-        log.info("success exec method [verifyChainId]. result:{}", JsonTools.objToString(tbChain));
-        return tbChain;
-    }
+
 
 }

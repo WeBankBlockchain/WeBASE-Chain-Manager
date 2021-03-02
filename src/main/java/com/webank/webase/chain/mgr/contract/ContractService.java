@@ -14,13 +14,10 @@
 package com.webank.webase.chain.mgr.contract;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.sun.javafx.PlatformUtil;
-import com.sun.media.jfxmediaimpl.HostUtils;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.tools.Web3Tools;
 import com.webank.webase.chain.mgr.contract.entity.*;
@@ -40,7 +37,6 @@ import com.webank.webase.chain.mgr.util.EncoderUtil;
 import com.webank.webase.chain.mgr.util.HttpEntityUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
@@ -52,10 +48,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -128,19 +121,7 @@ public class ContractService {
 //        //request front for compile
 //        RspContractCompileDto restRsp = null;
 //        try {
-//
-//
-//            // decode
-//            byte[] contractSourceByteArr = Base64.getDecoder().decode(contract.getContractSource());
-//            Path contractFilePath = Paths.get(String.format(ConstantProperties.SOLIDITY_FILE_TEMP, contract.getContractName()));
-//            // save contract to file
-//            File contractFile = new File(contractFilePath.toUri());
-//            FileUtils.writeByteArrayToFile(contractFile, contractSourceByteArr);
-//            //get version from contract file TODO    PlatformUtil.isLinux();
-//
-//
-//
-////            restRsp = frontInterface.compileSingleContractFile(contract.getChainId(), contract.getGroupId(), contract.getContractName(), contract.getContractSource());
+//            restRsp = frontInterface.compileSingleContractFile(contract.getChainId(), contract.getGroupId(), contract.getContractName(), contract.getContractSource());
 //
 //            if (Objects.isNull(restRsp))
 //                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("compile result is null"));
@@ -348,7 +329,6 @@ public class ContractService {
 //            throw new BaseException(ConstantCode.DB_EXCEPTION);
 //        }
 //    }
-
 
 
     /**
@@ -563,7 +543,6 @@ public class ContractService {
                 JsonTools.toJSONString(contractStatusManageResult));
         return contractStatusManageResult;
     }
-
 
 
     /**

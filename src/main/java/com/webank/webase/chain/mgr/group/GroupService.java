@@ -21,6 +21,7 @@ import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.contract.ContractService;
 import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
@@ -72,6 +73,8 @@ public class GroupService {
 
     @Autowired
     private TbChainMapper tbChainMapper;
+    @Autowired
+    private ChainManager chainManager;
     @Autowired
     private TbFrontMapper tbFrontMapper;
     @Autowired
@@ -173,7 +176,7 @@ public class GroupService {
             log.error("fail generateToSingleNode node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
-        TbChain tbChain = chainService.verifyChainId(chainId);
+        TbChain tbChain = chainManager.requireChainIdExist(chainId);
 
         // save group
         TbGroup tbGroup = saveGroup(req.getGroupName(), req.getTimestamp(), generateGroupId, chainId, req.getNodeList(), req.getNodeList().size(),
@@ -205,7 +208,7 @@ public class GroupService {
 
         // check id
         Integer chainId = req.getChainId();
-        TbChain tbChain = chainService.verifyChainId(chainId);
+        TbChain tbChain = chainManager.requireChainIdExist(chainId);
 
         //set groupId
         Integer generateGroupId = req.getGenerateGroupId();
@@ -300,7 +303,7 @@ public class GroupService {
             log.error("fail operateGroup node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
-        TbChain tbChain = chainService.verifyChainId(chainId);
+        TbChain tbChain = chainManager.requireChainIdExist(chainId);
         // request front to operate
         Object groupHandleResult = frontInterface.operateGroup(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
                 tbFront.getFrontPort(), groupId, type);
@@ -809,7 +812,7 @@ public class GroupService {
      */
     public BasePageResponse queryGroupByPage(Integer chainId, Integer agencyId, Integer pageSize, Integer pageNumber, Byte status) {
         // check id
-        chainService.verifyChainId(chainId);
+        chainManager.requireChainIdExist(chainId);
         //reset all local group
 //        resetGroupList();
         //param

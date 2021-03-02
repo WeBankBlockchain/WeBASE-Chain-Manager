@@ -46,7 +46,6 @@ public class ConstantProperties {
     public static final BigInteger INITIAL_WEI_VALUE = new BigInteger("0");
     public static final BigInteger LIMIT_VALUE = new BigInteger("1000");
 
-
     // constant
     public static final String CONSTANT_PREFIX = "constant";
     public static final String PREFIX_RESULT_CODE = "0x";
@@ -57,9 +56,13 @@ public class ConstantProperties {
 
     //solidity compile
     public static final String DEFAULT_SOLC_VERSION = "0.4.25";
-    public static final String SOLC_FILE_PATH = "./compiled";
-    public static final String SOLIDITY_COMPILE_DIRECTORY_TEMP = "./compiled";
-    public static final String SOLIDITY_FILE_TEMP = SOLIDITY_COMPILE_DIRECTORY_TEMP + "%1s.sol";
+    public static final String SOLC_FILE_PATH = "./solc";
+    public static final String SOLIDITY_BASE_PATH = Paths.get("./solidity", "%s").toString();
+    public static final String SOLIDITY_FILE_NAME_FORMAT = Paths.get("%1s.sol").toString();
+    public static final String BINARY_FILE_SUFFIX = ".bin";
+    public static final String RUNTIME_BINARY_FILE_SUFFIX = ".bin-runtime";
+    public static final String ABI_FILE_SUFFIX = ".abi";
+    public static final String WINDOW_EXEC_FILE_SUFFIX = ".exe";
 
     private String groupInvalidGrayscaleValue; // y:year, M:month, d:day of month, h:hour, m:minute,
     // n:forever valid
@@ -94,6 +97,7 @@ public class ConstantProperties {
     private int dockerClientConnectTimeout = 10 * 60 * 1000;
     private int dockerPullTimeout = 10 * 60 * 1000;
     private int dockerClientReadTimeout = 10 * 60 * 1000;
+    private int solidityCompileTimeOut = 10 * 1000; //10 second
 
     private String dockerRepository = "fiscoorg/fisco-webase";
     private String imageTagUpdateUrl = "https://registry.hub.docker.com/v1/repositories/%s/tags";

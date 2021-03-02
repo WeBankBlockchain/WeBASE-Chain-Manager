@@ -8,7 +8,7 @@ import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.chain.ChainService;
+import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
@@ -50,7 +50,7 @@ public class UserService {
     @Autowired
     private TbUserMapper userMapper;
     @Autowired
-    private ChainService chainService;
+    private ChainManager chainManager;
 
 
     /**
@@ -120,7 +120,7 @@ public class UserService {
         //check userName
         userManager.requireUserNameNotFound(reqNewUser.getChainId(), tbGroup.getGroupId(), reqNewUser.getSignUserName());
         //check chainId
-        TbChain tbChain = chainService.verifyChainId(reqNewUser.getChainId());
+        TbChain tbChain = chainManager.requireChainIdExist(reqNewUser.getChainId());
         //check encrypt type
         if (Objects.isNull(reqNewUser.getEncryptType())) {
             reqNewUser.setEncryptType(Integer.valueOf(String.valueOf(tbChain.getChainType())));

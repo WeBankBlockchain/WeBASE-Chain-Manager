@@ -50,6 +50,8 @@ public class ContractController extends BaseController {
     private ContractService contractService;
     @Autowired
     private GroupService groupService;
+    @Autowired
+    private CompileService compileService;
 
     /**
      * compile deployInputParam.
@@ -86,8 +88,8 @@ public class ContractController extends BaseController {
         Instant startTime = Instant.now();
         log.info("start compileByContractId startTime:{} contractId:{}", startTime.toEpochMilli(), contractId);
 
-//        TbContract contract = contractService.compileByContractId(contractId);  TODO
-//        baseResponse.setData(contract);
+        TbContract contract = compileService.compileByContractId(contractId);
+        baseResponse.setData(contract);
 
         log.info("end compileContract useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
         return baseResponse;

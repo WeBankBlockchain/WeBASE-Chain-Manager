@@ -6,11 +6,13 @@ import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import com.webank.webase.chain.mgr.repository.bean.TbContractExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -95,4 +97,24 @@ public class ContractManager {
         return tbContract;
     }
 
+
+    /**
+     * 查询被引用的工具合约列表  TODO 这只是临时方案，因为查出的可能是工具合约,也可能不是工具合约
+     *
+     * @param chainId
+     * @param groupId
+     * @return
+     */
+    public List<TbContract> listToolingContractByChainAndGroup(int chainId, int groupId) {
+        log.debug("start listContractByChainAndGroup. chainId:{} groupId:{}", chainId, groupId);
+        TbContractExample example = new TbContractExample();
+        TbContractExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        criteria.andGroupIdEqualTo(groupId);
+        criteria.andContractAddressIsNull();
+        criteria.andContractStatusNotEqualTo(ContractStatus.DEPLOYED.getValue());
+        List<TbContract> contractList = this.tbContractMapper.selectByExampleWithBLOBs(example);
+        log.debug("end listContractByChainAndGroup.");
+        return contractList;
+    }
 }

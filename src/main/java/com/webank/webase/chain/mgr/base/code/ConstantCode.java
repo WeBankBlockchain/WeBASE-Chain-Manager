@@ -226,6 +226,5 @@ public class ConstantCode {
     public static final RetCode ADD_SEALER_ASYNC_FAIL = RetCode.mark(205282, "add sealer async not success");
     public static final RetCode NOT_FOUND_GENESIS_NODE_LIST_OF_GROUP = RetCode.mark(205283, "not found genesis node list of this group");
     public static final RetCode SOLC_NOT_SUPPORT_OS = RetCode.mark(205284, "The current system does not support contract compilation");
-
-
+    public static final RetCode FAIL_TO_CREATE_TEMP_FILE = RetCode.mark(205285, "fail to create temp file");
 }
