@@ -32,6 +32,7 @@ import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
+import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
@@ -81,6 +82,8 @@ public class ChainService {
     private TbGroupMapper tbGroupMapper;
     @Autowired
     private GroupService groupService;
+    @Autowired
+    private GroupManager groupManager;
     @Autowired
     private FrontService frontService;
     @Autowired
@@ -350,7 +353,7 @@ public class ChainService {
                         reqDeploy.getStorageType(), DeployTypeEnum.API);
 
         // save group if new , default node count = 0
-        this.groupService.saveGroup("", null, ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), null, 0, "deploy", GroupType.DEPLOY.getValue());
+        groupManager.saveGroup("", null, ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), null, 0, "deploy", GroupType.DEPLOY.getValue());
 
         // insert default group
         Map<String, AtomicInteger> ipIndexMap = new HashMap<>();

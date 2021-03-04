@@ -73,7 +73,7 @@ public class NodeService {
     /**
      * add new node data.
      */
-    public void addNodeInfo(Integer chainId, Integer groupId, PeerInfo peerInfo)
+    public synchronized void addNodeInfo(Integer chainId, Integer groupId, PeerInfo peerInfo)
             throws BaseException {
 
         //add db

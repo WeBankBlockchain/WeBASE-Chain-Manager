@@ -64,7 +64,7 @@ constant:
 
 # executor config
 executor:
-  corePoolSize: 3
-  maxPoolSize: 10
+  corePoolSize: 5
+  maxPoolSize: 15
   queueSize: 50
   threadNamePrefix: "chain-mgr-async-"

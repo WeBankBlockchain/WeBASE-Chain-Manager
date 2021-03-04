@@ -157,10 +157,10 @@ public class CompileService {
                 contract.setContractAbi(constant);
 
             if (compileResultFile.getPath().endsWith(ConstantProperties.BINARY_FILE_SUFFIX))
-                contract.setContractBin(constant);
+                contract.setBytecodeBin(constant);
 
             if (compileResultFile.getPath().endsWith(ConstantProperties.RUNTIME_BINARY_FILE_SUFFIX))
-                contract.setBytecodeBin(constant);
+                contract.setContractBin(constant);
         }
 
         if (StringUtils.isAnyBlank(contract.getBytecodeBin(), contract.getContractBin(), contract.getContractAbi()))

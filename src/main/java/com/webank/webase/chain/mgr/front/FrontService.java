@@ -30,6 +30,7 @@ import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
+import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
@@ -101,6 +102,8 @@ public class FrontService {
     private ThreadPoolTaskScheduler threadPoolTaskScheduler;
     @Autowired
     private FrontManager frontManager;
+    @Autowired
+    private GroupManager groupManager;
 
     /**
      * add new front
@@ -158,7 +161,7 @@ public class FrontService {
                     frontInterface.getPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
             List<PeerInfo> peerList = Arrays.asList(peerArr);
             // add group
-            groupService.saveGroup("", null, group, chainId, null, groupPeerList.size(), "synchronous",
+            groupManager.saveGroup("", null, group, chainId, null, groupPeerList.size(), "synchronous",
                     GroupType.SYNC.getValue());
             // save front group map
             frontGroupMapService.newFrontGroup(chainId, tbFront.getFrontId(), group);

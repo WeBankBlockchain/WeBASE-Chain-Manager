@@ -9,5 +9,5 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class RspEntityOfGroupPage extends TbGroup {
-    private Integer nodeCountOfAgency;//查询时入参如果有agency，则返回agency在每每个群组的节点数
+    private long nodeCountOfAgency;//查询时入参如果有agency，则返回agency在每每个群组的节点数
 }

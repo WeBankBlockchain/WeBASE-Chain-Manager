@@ -11,7 +11,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -103,5 +106,41 @@ public class GroupManager {
 
         log.debug("finish exec method[requireGroupExist] result:{}", JsonTools.objToString(exist));
         return exist;
+    }
+
+
+    /**
+     * save group id
+     */
+    @Transactional
+    public TbGroup saveGroup(String groupName, BigInteger timestamp, int groupId, int chainId, List<String> genesisNodeList, int nodeCount, String description,
+                                          int groupType) {
+        if (groupId == 0) {
+            return null;
+        }
+
+        TbGroup exists = this.tbGroupMapper.selectByPrimaryKey(groupId, chainId);
+        if (exists == null) {
+            // save group id
+            if (StringUtils.isBlank(groupName)) {
+                groupName = String.format("chain_%s_group_%s", chainId, groupId);
+            } else {
+                requireGroupNameNotFound(groupName);
+            }
+            TbGroup tbGroup = new TbGroup(timestamp, groupId, chainId, groupName, nodeCount, description, groupType);
+            tbGroup.setNodeIdList(JsonTools.objToString(genesisNodeList));
+            try {
+                this.tbGroupMapper.insertSelective(tbGroup);
+            } catch (Exception e) {
+                log.error("Insert group error", e);
+                throw e;
+            }
+            return tbGroup;
+        } else {
+            exists.setNodeCount(nodeCount);
+            exists.setModifyTime(new Date());
+            tbGroupMapper.updateByPrimaryKey(exists);
+        }
+        return exists;
     }
 }
