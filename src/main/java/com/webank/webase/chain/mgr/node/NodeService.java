@@ -73,13 +73,13 @@ public class NodeService {
     /**
      * add new node data.
      */
-    public synchronized void addNodeInfo(Integer chainId, Integer groupId, PeerInfo peerInfo)
+    public void addNodeInfo(Integer chainId, Integer groupId, PeerInfo peerInfo)
             throws BaseException {
 
         //add db
         TbNode tbNode = this.tbNodeMapper.selectByPrimaryKey(peerInfo.getNodeId(), chainId, groupId);
         if (Objects.nonNull(tbNode)) {
-            log.info("finish exec method[addNodeInfo]. jump over, found record by node:{} chain:{} group:{}", peerInfo.getNodeId(), chainId, groupId);
+            log.debug("finish exec method[addNodeInfo]. jump over, found record by node:{} chain:{} group:{}", peerInfo.getNodeId(), chainId, groupId);
             return;
         }
 
