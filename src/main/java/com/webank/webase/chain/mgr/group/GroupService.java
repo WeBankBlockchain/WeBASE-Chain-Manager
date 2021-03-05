@@ -275,14 +275,16 @@ public class GroupService {
             BeanUtils.copyProperties(req, generateGroupInfo);
             generateGroupInfo.setGenerateGroupId(generateGroupId);
             generateGroupInfo.setTimestamp(timestamp);
-            frontInterface.generateGroup(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort(),
-                    generateGroupInfo);
+            frontInterface.generateGroup(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort(), generateGroupInfo);
 
+            frontGroupMapService.newFrontGroup(chainId, tbFront.getFrontId(), generateGroupId);
             if (tbChain.getDeployType() == DeployTypeEnum.API.getType()) {
                 // fetch group config file
                 this.pullAllGroupFiles(generateGroupId, tbFront);
             }
         }
+        // clear cache
+        frontGroupMapCache.clearMapList(chainId);
 
 
         ReqStartGroup reqStartGroup = new ReqStartGroup();
@@ -790,23 +792,22 @@ public class GroupService {
     private void checkGroupStatusAndRemoveInvalidGroup(Integer chainId,
                                                        Set<Integer> allGroupOnChain) {
         log.info("start exec method [checkGroupStatusAndRemoveInvalidGroup] chain:{} allGroupOnChain:{}", chainId, JsonTools.objToString(allGroupOnChain));
-        if (CollectionUtils.isEmpty(allGroupOnChain)) {
+        if (CollectionUtils.isEmpty(allGroupOnChain))
             return;
-        }
 
         List<TbGroup> allLocalGroup = getGroupList(chainId, null);
-        if (CollectionUtils.isEmpty(allLocalGroup)) {
+        if (CollectionUtils.isEmpty(allLocalGroup))
             return;
-        }
 
         for (TbGroup localGroup : allLocalGroup) {
             int localGroupId = localGroup.getGroupId();
-            long count = allGroupOnChain.stream().filter(id -> id.intValue() == localGroupId).count();
+            long count = allGroupOnChain.stream().filter(id -> Objects.equals(id.intValue(), localGroupId)).count();
             try {
                 if (count > 0) {
                     log.info("group is valid, chainId:{} localGroupId:{}", chainId, localGroupId);
-                    // update NORMAL
-                    updateGroupStatus(chainId, localGroupId, DataStatus.NORMAL.getValue());
+                    if (!Objects.equals(DataStatus.NORMAL.getValue(), localGroup.getGroupStatus()))
+                        // update NORMAL
+                        updateGroupStatus(chainId, localGroupId, DataStatus.NORMAL.getValue());
                     continue;
                 }
 
@@ -821,12 +822,9 @@ public class GroupService {
                 }
 
                 log.warn("group is invalid, chainId:{} localGroupId:{}", chainId, localGroupId);
-                if (DataStatus.NORMAL.getValue() == localGroup.getGroupStatus()) {
+                if (Objects.equals(DataStatus.NORMAL.getValue(), localGroup.getGroupStatus()))
                     // update invalid
                     updateGroupStatus(chainId, localGroupId, DataStatus.INVALID.getValue());
-                    continue;
-                }
-
             } catch (Exception ex) {
                 log.info("fail check group. chainId:{} localGroup:{}", chainId,
                         JsonTools.toJSONString(localGroup));

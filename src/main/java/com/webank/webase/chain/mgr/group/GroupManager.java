@@ -89,6 +89,7 @@ public class GroupManager {
         log.info("start exec method[updateDescription] chainId:{} groupId:{} description:{}", chainId, groupId, description);
         TbGroup tbGroup = requireGroupExist(chainId, groupId);
         tbGroup.setDescription(description);
+        tbGroup.setModifyTime(new Date());
         tbGroupMapper.updateByPrimaryKey(tbGroup);
         log.info("finish exec method[updateDescription] ");
     }
@@ -114,7 +115,7 @@ public class GroupManager {
      */
     @Transactional
     public TbGroup saveGroup(String groupName, BigInteger timestamp, int groupId, int chainId, List<String> genesisNodeList, int nodeCount, String description,
-                                          int groupType) {
+                             int groupType) {
         if (groupId == 0) {
             return null;
         }
@@ -136,7 +137,8 @@ public class GroupManager {
                 throw e;
             }
             return tbGroup;
-        } else {
+        } else if (!Objects.equals(nodeCount, exists.getNodeCount())) {
+            log.info("group:{} oldNodeCount:{} newNodeCount:{} ",groupId,exists.getNodeCount(),nodeCount);
             exists.setNodeCount(nodeCount);
             exists.setModifyTime(new Date());
             tbGroupMapper.updateByPrimaryKey(exists);

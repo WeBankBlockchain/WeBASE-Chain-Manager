@@ -40,7 +40,9 @@ import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbTaskMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
+import com.webank.webase.chain.mgr.task.TaskManager;
 import com.webank.webase.chain.mgr.util.NetUtils;
 import com.webank.webase.chain.mgr.util.NumberUtil;
 import com.webank.webase.chain.mgr.util.SshUtil;
@@ -97,6 +99,8 @@ public class ChainService {
     @Autowired
     @Lazy
     private ResetGroupListTask resetGroupListTask;
+    @Autowired
+    private TaskManager taskManager;
     @Autowired
     private FrontInterfaceService frontInterface;
     @Autowired
@@ -256,6 +260,8 @@ public class ChainService {
             frontGroupMapCache.clearMapList(chainId);
             // reset group list
             resetGroupListTask.asyncResetGroupList();
+            // remove task
+            taskManager.removeByChainId(chainId);
 
             log.info("Delete chain:[{}] config files", chainId);
             try {

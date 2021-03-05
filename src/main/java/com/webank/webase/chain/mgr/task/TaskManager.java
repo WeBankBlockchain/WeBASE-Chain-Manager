@@ -198,4 +198,12 @@ public class TaskManager {
         //remove
         taskMapper.deleteByExample(example);
     }
+
+    public void removeByChainId(int chainId) {
+        if (chainId == 0) {
+            return;
+        }
+
+        taskMapper.deleteByChainId(chainId);
+    }
 }
