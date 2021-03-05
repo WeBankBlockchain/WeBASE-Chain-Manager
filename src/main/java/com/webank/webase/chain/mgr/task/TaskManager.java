@@ -197,13 +197,33 @@ public class TaskManager {
 
         //remove
         taskMapper.deleteByExample(example);
+        log.info("finish exec method[removeFinishTask] ");
     }
 
+    @Transactional
     public void removeByChainId(int chainId) {
         if (chainId == 0) {
             return;
         }
 
         taskMapper.deleteByChainId(chainId);
+    }
+
+    /**
+     * @param chainId
+     * @param groupId
+     */
+    @Transactional
+    public void removeByChainAndGroup(int chainId, int groupId) {
+        log.info("start exec method[removeByChainAndGroup] chainId:{} groupId:{}", chainId, groupId);
+
+        TbTaskExample example = new TbTaskExample();
+        TbTaskExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        criteria.andGroupIdEqualTo(groupId);
+
+        taskMapper.deleteByExample(example);
+        log.info("finish exec method[removeByChainAndGroup] chainId:{} groupId:{}", chainId, groupId);
+
     }
 }

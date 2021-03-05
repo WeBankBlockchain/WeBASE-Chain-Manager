@@ -46,6 +46,7 @@ import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
+import com.webank.webase.chain.mgr.task.TaskManager;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -112,6 +113,8 @@ public class GroupService {
     @Qualifier(value = "mgrAsyncExecutor")
     @Autowired
     private ThreadPoolTaskExecutor mgrAsyncExecutor;
+    @Autowired
+    private TaskManager taskManager;
 
 
     /**
@@ -381,9 +384,9 @@ public class GroupService {
      * update status.
      */
     public void updateGroupStatus(int chainId, int groupId, int groupStatus) {
-        log.debug("start updateGroupStatus groupId:{} groupStatus:{}", groupId, groupStatus);
+        log.info("start updateGroupStatus groupId:{} groupStatus:{}", groupId, groupStatus);
         this.tbGroupMapper.updateStatus(chainId, groupId, groupStatus);
-        log.debug("end updateGroupStatus groupId:{} groupStatus:{}", groupId, groupStatus);
+        log.info("end updateGroupStatus groupId:{} groupStatus:{}", groupId, groupStatus);
     }
 
     /**
@@ -801,7 +804,7 @@ public class GroupService {
 
         for (TbGroup localGroup : allLocalGroup) {
             int localGroupId = localGroup.getGroupId();
-            long count = allGroupOnChain.stream().filter(id -> Objects.equals(id.intValue(), localGroupId)).count();
+            long count = allGroupOnChain.stream().filter(id -> id.intValue() == localGroupId).count();
             try {
                 if (count > 0) {
                     log.info("group is valid, chainId:{} localGroupId:{}", chainId, localGroupId);
@@ -812,6 +815,7 @@ public class GroupService {
                 }
 
                 Date modifyTime = localGroup.getModifyTime();
+                log.warn("group is invalid, chainId:{} localGroupId:{}", chainId, localGroupId);
                 if (!CommonUtils.isDateTimeInValid(CommonUtils.timestamp2LocalDateTime(modifyTime.getTime()),
                         constants.getGroupInvalidGrayscaleValue())) {
                     log.warn("remove group, chainId:{} localGroup:{}", chainId,
@@ -821,7 +825,6 @@ public class GroupService {
                     continue;
                 }
 
-                log.warn("group is invalid, chainId:{} localGroupId:{}", chainId, localGroupId);
                 if (Objects.equals(DataStatus.NORMAL.getValue(), localGroup.getGroupStatus()))
                     // update invalid
                     updateGroupStatus(chainId, localGroupId, DataStatus.INVALID.getValue());
@@ -849,6 +852,8 @@ public class GroupService {
         nodeService.deleteByGroupId(chainId, groupId);
         // remove contract
         contractService.deleteByGroupId(chainId, groupId);
+        // remove task
+        taskManager.removeByChainAndGroup(chainId, groupId);
     }
 
     /**
