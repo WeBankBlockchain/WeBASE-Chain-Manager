@@ -151,30 +151,33 @@ public class FrontService {
             log.warn("fail newFront, after save, tbFront:{}", JsonTools.toJSONString(tbFront));
             throw new BaseException(ConstantCode.SAVE_FRONT_FAIL);
         }
-        for (String groupId : groupIdList) {
-            Integer group = Integer.valueOf(groupId);
-            // peer in group
-            List<String> groupPeerList =
-                    frontInterface.getGroupPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
-            // get peers on chain
-            PeerInfo[] peerArr =
-                    frontInterface.getPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
-            List<PeerInfo> peerList = Arrays.asList(peerArr);
-            // add group
-            groupManager.saveGroup("", null, group, chainId, null, groupPeerList.size(), "synchronous",
-                    GroupType.SYNC.getValue());
-            // save front group map
-            frontGroupMapService.newFrontGroup(chainId, tbFront.getFrontId(), group);
-            // save nodes
-            for (String nodeId : groupPeerList) {
-                PeerInfo newPeer =
-                        peerList.stream().map(p -> CommonUtils.object2JavaBean(p, PeerInfo.class))
-                                .filter(peer -> nodeId.equals(peer.getNodeId())).findFirst()
-                                .orElseGet(() -> new PeerInfo(nodeId));
-                nodeService.addNodeInfo(chainId, group, newPeer);
+
+        if(CollectionUtils.isNotEmpty(groupIdList)){
+            for (String groupId : groupIdList) {
+                Integer group = Integer.valueOf(groupId);
+                // peer in group
+                List<String> groupPeerList =
+                        frontInterface.getGroupPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
+                // get peers on chain
+                PeerInfo[] peerArr =
+                        frontInterface.getPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
+                List<PeerInfo> peerList = Arrays.asList(peerArr);
+                // add group
+                groupManager.saveGroup("", null, group, chainId, null, groupPeerList.size(), "synchronous",
+                        GroupType.SYNC.getValue());
+                // save front group map
+                frontGroupMapService.newFrontGroup(chainId, tbFront.getFrontId(), group);
+                // save nodes
+                for (String nodeId : groupPeerList) {
+                    PeerInfo newPeer =
+                            peerList.stream().map(p -> CommonUtils.object2JavaBean(p, PeerInfo.class))
+                                    .filter(peer -> nodeId.equals(peer.getNodeId())).findFirst()
+                                    .orElseGet(() -> new PeerInfo(nodeId));
+                    nodeService.addNodeInfo(chainId, group, newPeer);
+                }
+                // add sealer(consensus node) and observer in nodeList
+                refreshSealerAndObserverInNodeList(frontPeerName, frontIp, frontPort, chainId, group);
             }
-            // add sealer(consensus node) and observer in nodeList
-            refreshSealerAndObserverInNodeList(frontPeerName, frontIp, frontPort, chainId, group);
         }
 
         // clear cache

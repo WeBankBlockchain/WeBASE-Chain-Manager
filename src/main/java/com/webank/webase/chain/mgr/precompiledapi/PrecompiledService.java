@@ -33,6 +33,7 @@ import com.webank.webase.chain.mgr.trans.TransService;
 import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
 import com.webank.webase.chain.mgr.util.CommUtils;
 import com.webank.webase.chain.mgr.util.PrecompiledUtils;
+import io.jsonwebtoken.lang.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -388,6 +389,15 @@ public class PrecompiledService {
     private Set<String> checkBeforeAddNodeOfRemoveType(int chainId, int groupId, Set<String> nodeIds) {
         log.info("start exec method[checkBeforeAddObserver]. chainId:{} groupId:{} nodeIdList:{}", chainId, groupId, JsonTools.objToString(nodeIds));
 
+        //can not remove all sealer nodes
+        List<String> nodesOfSealerType = nodeService.getNodeIds(chainId, groupId, PrecompiledUtils.NODE_TYPE_SEALER);
+        if (Collections.size(nodeIds) >= Collections.size(nodesOfSealerType)) {
+            long inputSealerNodesCount = nodeIds.stream().filter(inputNode -> nodesOfSealerType.contains(inputNode)).count();
+            log.info("inputSealerNodesCount:{}", inputSealerNodesCount);
+            if (inputSealerNodesCount >= Collections.size(nodesOfSealerType))
+                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("can not remove all sealer, input:%s foundSealerList:%s", JsonTools.objToString(nodeIds), JsonTools.objToString(nodesOfSealerType))));
+        }
+
         //require nodeType is not remove
         List<String> nodesOfRemoveType = nodeService.getNodeIds(chainId, groupId, PrecompiledUtils.NODE_TYPE_REMOVE);
         if (CollectionUtils.isEmpty(nodesOfRemoveType)) {
@@ -395,13 +405,9 @@ public class PrecompiledService {
             return nodeIds;
         }
 
-        Set<String> nodeIdIsRemoveType = nodeIds.stream().filter(node -> nodesOfRemoveType.contains(node)).collect(Collectors.toSet());
-        if (CollectionUtils.isNotEmpty(nodeIdIsRemoveType))
-            throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are already remove:%s", JsonTools.objToString(nodeIdIsRemoveType))));
-
-        log.info("success exec method[checkBeforeAddNodeOfRemoveType]. nodeIds:{}", JsonTools.objToString(nodeIds));
-        return nodeIds;
-
+        Set<String> nodeIdIsNotRemoveType = nodeIds.stream().filter(node -> !nodesOfRemoveType.contains(node)).collect(Collectors.toSet());
+        log.info("success exec method[checkBeforeAddNodeOfRemoveType]. nodeIdIsNotRemoveType:{}", JsonTools.objToString(nodeIdIsNotRemoveType));
+        return nodeIdIsNotRemoveType;
     }
 
 
