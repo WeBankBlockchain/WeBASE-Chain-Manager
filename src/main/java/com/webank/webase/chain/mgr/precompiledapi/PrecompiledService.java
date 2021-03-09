@@ -206,6 +206,7 @@ public class PrecompiledService {
      * consensus: add sealer through webase-sign
      */
     public void addSealer(int chainId, int groupId, String signUserId, String nodeId) {
+        log.info("start addSealer chainId:{} groupId:{} nodeId:{}",chainId,groupId,nodeId);
         // params
         List<Object> funcParams = new ArrayList<>();
         funcParams.add(nodeId);
