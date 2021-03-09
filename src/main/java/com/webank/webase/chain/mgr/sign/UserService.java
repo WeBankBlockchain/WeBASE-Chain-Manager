@@ -118,9 +118,9 @@ public class UserService {
             reqNewUser.setSignUserId(buildUserId(tbGroup.getChainId(), tbGroup.getGroupId()));
         }
         //check userName
-        userManager.requireUserNameNotFound(reqNewUser.getChainId(), tbGroup.getGroupId(), reqNewUser.getSignUserName());
+        userManager.requireUserNameNotFound(tbGroup.getChainId(), tbGroup.getGroupId(), reqNewUser.getSignUserName());
         //check chainId
-        TbChain tbChain = chainManager.requireChainIdExist(reqNewUser.getChainId());
+        TbChain tbChain = chainManager.requireChainIdExist(tbGroup.getChainId());
         //check encrypt type
         if (Objects.isNull(reqNewUser.getEncryptType())) {
             reqNewUser.setEncryptType(Integer.valueOf(String.valueOf(tbChain.getChainType())));
