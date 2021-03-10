@@ -468,10 +468,11 @@ public class GroupController extends BaseController {
                                              @RequestParam(name = "agency", required = false) Integer agencyId,
                                              @RequestParam(defaultValue = "10") Integer pageSize,
                                              @RequestParam(defaultValue = "1") Integer pageNumber,
-                                             @RequestParam(name = "status", required = false) Byte status) {
+                                             @RequestParam(name = "status", required = false) Byte status,
+                                             @RequestParam(name = "sortType", required = false, defaultValue = "ASC") String sortType) {
         Instant startTime = Instant.now();
         log.info("start queryGroupByPage startTime:{} chainId:{} agencyId:{} pageNumber:{} pageSize:{} status:{}", startTime.toEpochMilli(), chainId, agencyId, pageSize, pageNumber, status);
-        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId, pageSize, pageNumber, status);
+        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId, pageSize, pageNumber, status,sortType);
 //        resetGroupListTask.asyncResetGroupList();
         log.info("end queryGroupByPage useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(basePageResponse));
         return basePageResponse;

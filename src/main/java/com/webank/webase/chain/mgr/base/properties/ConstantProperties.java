@@ -52,7 +52,7 @@ public class ConstantProperties {
     public static final String SEPARATOR = "SSS";
     public static final String ADMIN_USER_FORMAT = "admin_%s";
     public static final int HTTP_SUCCESS_RESPONSE_CODE = 0;
-    public static final String ORDER_BY_CREATE_TIME_DESC = "create_time DESC";
+    public static final String ORDER_BY_CREATE_TIME_FORMAT = "create_time %s";
 
     //solidity compile
     public static final String DEFAULT_SOLC_VERSION = "0.4.25";

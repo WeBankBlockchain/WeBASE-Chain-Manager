@@ -956,7 +956,7 @@ public class GroupService {
      * @param pageNumber
      * @return
      */
-    public BasePageResponse queryGroupByPage(Integer chainId, Integer agencyId, Integer pageSize, Integer pageNumber, Byte status) {
+    public BasePageResponse queryGroupByPage(Integer chainId, Integer agencyId, Integer pageSize, Integer pageNumber, Byte status, String sortType) {
         // check id
         chainManager.requireChainIdExist(chainId);
         //reset all local group
@@ -965,7 +965,7 @@ public class GroupService {
         TbGroupExample example = new TbGroupExample();
         example.setStart(Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).filter(p -> p >= 0).orElse(1));
         example.setCount(pageSize);
-//        example.setOrderByClause(ConstantProperties.ORDER_BY_CREATE_TIME_DESC);
+        example.setOrderByClause(String.format(ConstantProperties.ORDER_BY_CREATE_TIME_FORMAT, sortType));
         TbGroupExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(chainId);
         if (Objects.nonNull(status)) {

@@ -2188,6 +2188,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c
 | 3    | pageSize   | Int    | 否     | 每页记录数,默认10 |
 | 4    | pageNumber | Int    | 否     | 当前页码，默认1   |
 | 5    | status | Byte    | 是     | 状态（1-正常 2-异常）  |
+| 6    | sortType | String    | 是     | 排序规则（ASC-升序、DESC-倒叙）  |
 
 
 
@@ -2212,10 +2213,11 @@ http://localhost:5005/WeBASE-Chain-Manager/group/page/1?pageNumber=2&pageSize=3
 | 3.1.3  | groupName   | String        | 否   | 群组名称           |
 | 3.1.4  | nodeCount   | int           | 否   | 节点数量           |
 | 3.1.5  | description | String        | 是   | 描述           |
-| 3.1.6  | groupType | int        | 否  | 群组类型(1-同步的，2-手动创建的) |
+| 3.1.6  | groupType | int  | 否  | 群组类型(1-同步的，2-手动创建的) |
 | 3.1.7  | groupTimestamp | String        | 是  |创世块时间（单位：ms）  |
 | 3.1.8  | createTime  | LocalDateTime | 否   | 落库时间        |
 | 3.1.9  | modifyTime  | LocalDateTime | 否   | 修改时间       |
+| 3.1.10  | nodeCountOfAgency  | int |是 | 查询入参agency不为空时，此字段有返回值      |
 | 4  | attachment  | String | 是  |接口请求失败时的错误信息|
 
 ***2）出参示例***
@@ -2239,7 +2241,8 @@ http://localhost:5005/WeBASE-Chain-Manager/group/page/1?pageNumber=2&pageSize=3
             "modifyTime": 1611642306000,
             "groupTimestamp": "null",
             "epochSealerNum": 0,
-            "nodeIdList": null
+            "nodeIdList": null,
+            "nodeCountOfAgency":1
         },
         {
             "groupId": 5,
@@ -2253,7 +2256,8 @@ http://localhost:5005/WeBASE-Chain-Manager/group/page/1?pageNumber=2&pageSize=3
             "modifyTime": 1611642306000,
             "groupTimestamp": "null",
             "epochSealerNum": 0,
-            "nodeIdList": null
+            "nodeIdList": null,
+            "nodeCountOfAgency":2
         },
         {
             "groupId": 6,
@@ -2267,7 +2271,8 @@ http://localhost:5005/WeBASE-Chain-Manager/group/page/1?pageNumber=2&pageSize=3
             "modifyTime": 1611642306000,
             "groupTimestamp": "null",
             "epochSealerNum": 0,
-            "nodeIdList": null
+            "nodeIdList": null,
+            "nodeCountOfAgency":1
         }
     ],
     "totalCount": 11
@@ -2429,7 +2434,7 @@ curl --location --request GET 'http://localhost:5005/WeBASE-Chain-Manager/group/
 | 3.1.6 | createTime  | LocalDateTime | 否   | 落库时间       |
 | 3.1.7 | modifyTime  | LocalDateTime | 否   | 修改时间   |
 | 3.1.8 | groupTimestamp  | Long | 是   | 群组创建的时间戳   |
-| 3.1.9 | nodeIdList  | List | 是   | 最开始创建群组的节点列表   |
+| 3.1.9 | nodeIdList  | String | 是   | 最开始创建群组的节点列表Json   |
 | 3.1.10 |agencyList  | List | 否   | 机构列表   |
 | 3.1.10.1 |  | Object | 是   | 机构实体   |
 | 3.1.10.1.1 | agencyId | Integer | 是   | 机构编号   |
@@ -2641,6 +2646,10 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/nodeList/100001/300001/1/10?agen
 | 4.1.12 | frontPeerName | String    | 是   | 节点名称  |
 | 4.1.13 | createTime  | LocalDateTime | 否   | 落库时间                  |
 | 4.1.14 | modifyTime  | LocalDateTime | 否   | 修改时间                  |
+| 4.1.15 | int  | agency | 否   | 所属机构         |
+| 4.1.16 | String  | agencyName | 否   | 所属机构名称           |
+
+
 
 ***2）出参示例***
 
@@ -2664,7 +2673,9 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/node/nodeList/100001/300001/1/10?agen
             "pbftView": 5852,
             "nodeActive": 1,
             "createTime": "2019-02-14 17:47:00",
-            "modifyTime": "2019-03-15 11:14:29"
+            "modifyTime": "2019-03-15 11:14:29",
+            "agency":145,
+            "agencyName":"org11"
         }
     ]
 }
@@ -4759,6 +4770,7 @@ http://localhost:5005/WeBASE-Chain-Manager/agency/10/owned
 | 3.3.1.1  | chainId | Int        |  是   |所属链编号                 |
 | 3.3.1.2  | frontId | Int        |  是   |前置编号                  |
 | 3.3.1.3  | nodeId | String        |  是   |节点id                 |
+| 3.3.1.4  | frontPeerName | String    |  是   |节点前置名称     |
 | 3.4       | contractList     | List<Object>           | 是  | 合约列表                    |
 | 3.4.1   |    | Object           |是   | 合约信息对象              |
 | 3.4.1.1  | chainId | Int        |  是   |所属链编号                 |
@@ -4798,7 +4810,8 @@ http://localhost:5005/WeBASE-Chain-Manager/agency/10/owned
             {
                 "chainId": 1,
                 "frontId": 200036,
-                "nodeId": "53060c93c5c7bfdc2b35ffae766e5e9f0ca16340f8e4ed09421cbbdb86cc974d57eb6460d41c33a71634f033a898d92486dd5081e2db1672bd426fff6e4af5f8"
+                "nodeId": "53060c93c5c7bfdc2b35ffae766e5e9f0ca16340f8e4ed09421cbbdb86cc974d57eb6460d41c33a71634f033a898d92486dd5081e2db1672bd426fff6e4af5f8",
+                "frontPeerName": "peer0.testinvite.d292gp0toy"
             }
         ],
         "contractList": [
