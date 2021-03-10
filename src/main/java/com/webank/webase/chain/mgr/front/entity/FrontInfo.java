@@ -68,4 +68,6 @@ public class FrontInfo {
 
     @ApiModelProperty(value = "默认的 Channel 端口", example = "20200")
     private Integer channelPort;
+    @ApiModelProperty(value = "front关联的节点id,可空。优先调front接口获取nodeId,如果失败才取这个值")
+    private String nodeId;
 }

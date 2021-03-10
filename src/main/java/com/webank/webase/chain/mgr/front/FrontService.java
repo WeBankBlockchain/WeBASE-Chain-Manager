@@ -131,9 +131,20 @@ public class FrontService {
             throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
         }
         // check front not exist
-        SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontPeerName, frontIp, frontPort,
-                Integer.valueOf(groupIdList.get(0)));
-        requireNotFoundFront(chainId, syncStatus.getNodeId());
+        String newNodeId = null;
+        if (CollectionUtils.isNotEmpty(groupIdList)) {
+            SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontPeerName, frontIp, frontPort,
+                    Integer.valueOf(groupIdList.get(0)));
+            newNodeId = syncStatus.getNodeId();
+        }
+        if (StringUtils.isBlank(newNodeId)) //TODO 临时方案，最终等front有nodeInfo接口后改成调nodeInfo接口
+            newNodeId = frontInfo.getNodeId();
+
+        if (StringUtils.isBlank(newNodeId))
+            throw new BaseException(ConstantCode.NODE_ID_EMPTY);
+
+
+        requireNotFoundFront(chainId, newNodeId);
         requireNotFoundFront(frontIp, frontPort, frontPeerName);
 
         TbFront tbFront = new TbFront();
@@ -141,7 +152,7 @@ public class FrontService {
         tbFront.setFrontStatus(FrontStatusEnum.RUNNING.getId());
         // copy attribute
         BeanUtils.copyProperties(frontInfo, tbFront);
-        tbFront.setNodeId(syncStatus.getNodeId());
+        tbFront.setNodeId(newNodeId);
         Date now = new Date();
         tbFront.setCreateTime(now);
         tbFront.setModifyTime(now);
@@ -152,7 +163,7 @@ public class FrontService {
             throw new BaseException(ConstantCode.SAVE_FRONT_FAIL);
         }
 
-        if(CollectionUtils.isNotEmpty(groupIdList)){
+        if (CollectionUtils.isNotEmpty(groupIdList)) {
             for (String groupId : groupIdList) {
                 Integer group = Integer.valueOf(groupId);
                 // peer in group
