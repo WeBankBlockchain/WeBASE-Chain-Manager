@@ -33,6 +33,7 @@ import com.webank.webase.chain.mgr.trans.TransService;
 import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
 import com.webank.webase.chain.mgr.util.CommUtils;
 import com.webank.webase.chain.mgr.util.PrecompiledUtils;
+import io.jsonwebtoken.lang.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -389,12 +390,12 @@ public class PrecompiledService {
 
         //can not remove all sealer nodes
         List<String> nodesOfSealerType = nodeService.getNodeIds(chainId, groupId, PrecompiledUtils.NODE_TYPE_SEALER);
-//        if (Collections.size(nodeIds) >= Collections.size(nodesOfSealerType)) {
-//            long inputSealerNodesCount = nodeIds.stream().filter(inputNode -> nodesOfSealerType.contains(inputNode)).count();
-//            log.info("inputSealerNodesCount:{}", inputSealerNodesCount);
-//            if (inputSealerNodesCount >= Collections.size(nodesOfSealerType))
-//                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("can not remove all sealer, input:%s foundSealerList:%s", JsonTools.objToString(nodeIds), JsonTools.objToString(nodesOfSealerType))));
-//        }
+        if (Collections.size(nodeIds) >= Collections.size(nodesOfSealerType)) {
+            long inputSealerNodesCount = nodeIds.stream().filter(inputNode -> nodesOfSealerType.contains(inputNode)).count();
+            log.info("inputSealerNodesCount:{}", inputSealerNodesCount);
+            if (inputSealerNodesCount >= Collections.size(nodesOfSealerType))
+                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("can not remove all sealer, input:%s foundSealerList:%s", JsonTools.objToString(nodeIds), JsonTools.objToString(nodesOfSealerType))));
+        }
 
         //require nodeType is not remove
         List<String> nodesOfRemoveType = nodeService.getNodeIds(chainId, groupId, PrecompiledUtils.NODE_TYPE_REMOVE);
@@ -466,7 +467,7 @@ public class PrecompiledService {
                 List<Integer> lastSealerArray = Arrays.asList(PrecompiledCommon.LastSealer_RC1, PrecompiledCommon.LastSealer, PrecompiledCommon.LastSealer_RC3);
                 if (!lastSealerArray.contains(ex.getRetCode().getCode()))
                     throw ex;
-                log.info("remove the last node:{}",nodeId);
+                log.info("remove the last node:{}", nodeId);
                 //stop
                 groupService.stopGroupIfRunning(chainId, nodeId, groupId);
             }

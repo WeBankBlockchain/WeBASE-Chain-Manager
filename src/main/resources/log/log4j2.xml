@@ -21,7 +21,8 @@
                 <!-- 日志文件大小 -->
                 <SizeBasedTriggeringPolicy size="200 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="24"/>
+            <!--保存日志文件个数-->
+            <DefaultRolloverStrategy max="10"/>
         </RollingFile>
 
 
@@ -36,7 +37,8 @@
                 <!-- 日志文件大小 -->
                 <SizeBasedTriggeringPolicy size="200 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="24"/>
+            <!--保存日志文件个数-->
+            <DefaultRolloverStrategy max="30"/>
         </RollingFile>
 
         <RollingFile fileName="${logPath}/WeBASE-Chain-Manager-error.log" filePattern="${logPath}/WeBASE-Chain-Manager-error.log.%d{yyyy-MM-dd}.%i.log.gz"
@@ -49,7 +51,8 @@
                 <TimeBasedTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="200 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="24"/>
+            <!--保存日志文件个数-->
+            <DefaultRolloverStrategy max="30"/>
         </RollingFile>
 
 

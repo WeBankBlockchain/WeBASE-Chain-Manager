@@ -898,6 +898,10 @@ public class GroupService {
     public List<TbGroup> listGroupByChainAndAgencyId(int chainId, int agencyId) {
         log.info("start exec method[listGroupByChainAndAgencyId] chainId:{} agencyId:{}", chainId, agencyId);
         List<Integer> groupIdList = listGroupIdByChainAndAgencyId(chainId, agencyId);
+        log.info("groupIdList:{}", JsonTools.objToString(groupIdList));
+        if (CollectionUtils.isEmpty(groupIdList))
+            return Collections.EMPTY_LIST;
+
         TbGroupExample example = new TbGroupExample();
         TbGroupExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(chainId);

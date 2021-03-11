@@ -21,7 +21,7 @@
         <!-- 日志文件大小 -->
         <SizeBasedTriggeringPolicy size="200 MB"/>
       </Policies>
-      <DefaultRolloverStrategy max="24"/>
+      <DefaultRolloverStrategy max="10"/>
     </RollingFile>
 
 
