@@ -98,6 +98,7 @@ public class FrontGroupMapService {
      * remove by frontId
      */
     public void removeByFrontId(int frontId) {
+        log.info("removeByFrontId:{}", frontId);
         if (frontId == 0) {
             return;
         }

@@ -455,7 +455,7 @@ public class GroupService {
         log.info("start exec method [resetGroupByChain] chainId:{} startTime:{}", chainId, startTime.toEpochMilli());
 
         // get all front
-        List<TbFront> frontList = tbFrontMapper.selectByChainId(chainId);
+        List<TbFront> frontList = tbFrontMapper.selectByChainIdAndStatus(chainId, FrontStatusEnum.RUNNING.getId());
         if (frontList == null || frontList.size() == 0) {
             log.info("chain {} not found any front.", chainId);
             return;

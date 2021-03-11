@@ -22,6 +22,7 @@ import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import com.webank.webase.chain.mgr.front.entity.FrontParam;
+import com.webank.webase.chain.mgr.front.entity.ReqAbandonedFrontByAgencyIdVO;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import lombok.extern.log4j.Log4j2;
@@ -239,4 +240,20 @@ public class FrontController extends BaseController {
                 Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
         return response;
     }
+
+    /**
+     * @param param
+     * @param result
+     * @return
+     */
+    @PostMapping("/abandonedByAgencyId")
+    public BaseResponse abandonedFrontByAgencyId(@RequestBody @Valid ReqAbandonedFrontByAgencyIdVO param, BindingResult result) {
+        checkBindResult(result);
+        Instant startTime = Instant.now();
+        log.info("start abandonedFrontByAgencyId. startTime:{} param:{}", startTime.toEpochMilli(), JsonTools.objToString(param));
+        frontService.abandonedFrontByAgencyId(param.getAgencyId());
+        log.info("end abandonedFrontByAgencyId. useTime:{}");
+        return BaseResponse.success(null);
+    }
+
 }

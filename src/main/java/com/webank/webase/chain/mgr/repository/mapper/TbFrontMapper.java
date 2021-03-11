@@ -19,6 +19,9 @@ public interface TbFrontMapper {
     @Select({"select ", TbFrontSqlProvider.ALL_COLUMN_FIELDS, " from tb_front where chain_id=#{chainId}"})
     List<TbFront> selectByChainId(@Param("chainId") int chainId);
 
+    @Select({"select ", TbFrontSqlProvider.ALL_COLUMN_FIELDS, " from tb_front where chain_id=#{chainId} and front_status=#{frontStatus}"})
+    List<TbFront> selectByChainIdAndStatus(@Param("chainId") int chainId, @Param("frontStatus") int frontStatus);
+
     @Select({"select ", TbFrontSqlProvider.ALL_COLUMN_FIELDS, " from tb_front where chain_id=#{chainId} and ext_agency_id=#{agencyId}"})
     List<TbFront> selectByChainIdAndAgencyId(@Param("chainId") int chainId, @Param("agencyId") int agencyId);
 

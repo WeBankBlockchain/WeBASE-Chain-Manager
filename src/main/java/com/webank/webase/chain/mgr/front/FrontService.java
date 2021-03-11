@@ -669,14 +669,32 @@ public class FrontService {
      * @return
      */
     public List<TbFront> selectFrontByNodeIdListAndChain(int chainId, List<String> nodeIds) {
-        log.debug("start exec method [selectFrontByNodeIdListAndChain]. chainId:{} nodeIds:{}", chainId, JsonTools.objToString(nodeIds));
+        log.info("start exec method [selectFrontByNodeIdListAndChain]. chainId:{} nodeIds:{}", chainId, JsonTools.objToString(nodeIds));
         TbFrontExample example = new TbFrontExample();
         TbFrontExample.Criteria criteria = example.createCriteria();
         criteria.andNodeIdIn(nodeIds);
         criteria.andChainIdEqualTo(chainId);
         List<TbFront> frontList = tbFrontMapper.selectByExample(example);
-        log.debug("success exec method [selectFrontByNodeIdListAndChain]. result:{}", JsonTools.objToString(frontList));
+        log.info("success exec method [selectFrontByNodeIdListAndChain]. result:{}", JsonTools.objToString(frontList));
         return frontList;
+    }
+
+
+    /**
+     *
+     * @param agencyId
+     */
+    public void abandonedFrontByAgencyId(int agencyId) {
+        log.info("start exec method [abandonedFrontByAgencyId]. agencyId:{}", agencyId);
+
+        List<TbFront> frontList = frontManager.listFrontByAgency(agencyId);
+        log.info("agency:{} frontList:{}", agencyId, JsonTools.objToString(frontList));
+        for (TbFront front : CollectionUtils.emptyIfNull(frontList)) {
+            if (updateStatus(front.getFrontId(), FrontStatusEnum.ABANDONED))
+                frontGroupMapService.removeByFrontId(front.getFrontId());
+        }
+
+        log.info("finish exec method [abandonedFrontByAgencyId]. agencyId:{}", agencyId);
     }
 
 

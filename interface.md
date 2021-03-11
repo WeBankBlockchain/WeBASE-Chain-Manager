@@ -376,6 +376,8 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/chain/removeChain
 | 11  | jsonrpcPort  | Integer | 是   | JSON-RPC 端口，如：8545    |
 | 12  | p2pPort  | Integer | 是   | P2P 端口，如：30300    |
 | 13  | channelPort  | Integer | 是   | channel 端口，如：20200    |
+| 14  | nodeId  | String | 是   | front关联的节点id,可空。优先调front接口获取nodeId,如果失败才取这个值    |
+
 
 ***2）入参示例***
 
@@ -1094,6 +1096,92 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/front/getGroupSizeInfos/200001
     "data": {}
 }
 ```
+
+
+
+
+
+### 2.9  废弃机构下面的前置
+
+> 该接口不会删除前置信息，只将前置状态变更为“废弃”
+
+#### 2.9.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址：**/front/abandonedByAgencyId**
+- 请求方式：POST
+- 返回格式：JSON
+
+#### 2.9.2 请求参数
+
+***1）入参表***
+| 序号  | 输出参数    | 类型   | 可空    | 备注   |
+| ----- | ----------- | ---------- | ---- | ------------- |
+| 1  | agencyId  | Int  | 否   |废弃该机构下面的所有前置  |
+
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/front/abandonedByAgencyId
+```
+```
+{
+  "agencyId": 10
+}
+```
+
+#### 2.9.3 返回参数 
+
+***1）出参表***
+
+| 序号  | 输出参数    | 类型          |      | 备注                       |
+| ----- | ----------- | ------------- | ---- | -------------------------- |
+| 1     | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2     | message     | String        | 否   | 描述           |
+| 3     | attachment   | String   | 是   | 具体的错误信息     |
+
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+	"code": 0,
+	"message": "success",
+	"attachment": null,
+	"success": true
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 102000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## 3 群组管理模块
 
@@ -2188,7 +2276,7 @@ http://127.0.0.1:5005/WeBASE-Chain-Manager/group/charging/deleteData/1001/1/413c
 | 3    | pageSize   | Int    | 否     | 每页记录数,默认10 |
 | 4    | pageNumber | Int    | 否     | 当前页码，默认1   |
 | 5    | status | Byte    | 是     | 状态（1-正常 2-异常）  |
-| 6    | sortType | String    | 是     | 排序规则（ASC-升序、DESC-倒叙）  |
+| 6    | sortType | String    | 是     | 排序规则（ASC-升序、DESC-倒叙）,默认ASC  |
 
 
 
@@ -2577,6 +2665,79 @@ http://localhost:5005/WeBASE-Chain-Manager/group/changeDescription'
     "data": {}
 }
 ```
+
+
+
+
+### 3.19  移除群组下的机构
+
+> 移除指定机构群组下的所有节点。如果这个机构本来已经是群组内的唯一机构，则会停止该群组。
+
+#### 3.19.1 传输协议规范
+
+- 网络传输协议：使用HTTP协议
+- 请求地址：**/group/removeAgency**
+- 请求方式：POST
+- 返回格式：JSON
+
+#### 3.19.2 请求参数
+
+***1）入参表***
+| 序号  | 输出参数    | 类型   | 可空    | 备注   |
+| ----- | ----------- | ---------- | ---- | ------------- |
+| 1  | chainId     | Int   | 否   | 网络Id |
+| 2  | groupId     | Int  | 否   |群组Id  |
+| 3  | agencyId  | Int  | 否   |需要被移除的机构  |
+
+
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/group/removeAgency'
+```
+```
+{
+  "agencyId": 10,
+  "chainId": 1,
+  "groupId": 15
+}
+```
+
+#### 3.19.3 返回参数 
+
+***1）出参表***
+
+| 序号  | 输出参数    | 类型          |      | 备注                       |
+| ----- | ----------- | ------------- | ---- | -------------------------- |
+| 1     | code        | Int           | 否   | 返回码，0：成功 其它：失败 |
+| 2     | message     | String        | 否   | 描述           |
+| 3     | attachment   | String   | 是   | 具体的错误信息     |
+
+
+***2）出参示例***
+
+- 成功：
+
+```
+{
+	"code": 0,
+	"message": "success",
+	"attachment": null,
+	"success": true
+}
+```
+
+- 失败：
+
+```
+{
+    "code": 102000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
 
 
 
