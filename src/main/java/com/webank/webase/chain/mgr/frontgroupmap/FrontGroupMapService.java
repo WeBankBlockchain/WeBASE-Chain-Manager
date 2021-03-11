@@ -23,6 +23,7 @@ import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,7 +129,7 @@ public class FrontGroupMapService {
      * @param frontIdList
      * @return
      */
-    public List<Integer> listGroupByFronts(List<Integer> frontIdList) {
+    public List<Pair<Integer, Integer>> listGroupByFronts(List<Integer> frontIdList) {
         log.info("start exec method[listGroupByFronts], frontIdList:{}", JsonTools.objToString(frontIdList));
         if (CollectionUtils.isEmpty(frontIdList)) return Collections.EMPTY_LIST;
 
@@ -140,9 +141,10 @@ public class FrontGroupMapService {
         //query
         List<TbFrontGroupMap> frontGroupMapList = tbFrontGroupMapMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(frontGroupMapList)) return Collections.EMPTY_LIST;
-        List<Integer> groupIdList = frontGroupMapList.stream().map(map -> map.getGroupId()).distinct().collect(Collectors.toList());
-        log.info("success exec method[listGroupByFronts], frontIdList:{} result:{}", JsonTools.objToString(frontIdList), JsonTools.objToString(groupIdList));
-        return groupIdList;
+
+        List<Pair<Integer, Integer>> chainGroupPairList = frontGroupMapList.stream().map(map -> Pair.of(map.getChainId(), map.getGroupId())).distinct().collect(Collectors.toList());
+        log.info("success exec method[listGroupByFronts], frontIdList:{} result:{}", JsonTools.objToString(frontIdList), JsonTools.objToString(chainGroupPairList));
+        return chainGroupPairList;
     }
 
 

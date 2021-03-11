@@ -472,7 +472,7 @@ public class GroupController extends BaseController {
                                              @RequestParam(name = "sortType", required = false, defaultValue = "ASC") String sortType) {
         Instant startTime = Instant.now();
         log.info("start queryGroupByPage startTime:{} chainId:{} agencyId:{} pageNumber:{} pageSize:{} status:{}", startTime.toEpochMilli(), chainId, agencyId, pageSize, pageNumber, status);
-        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId, pageSize, pageNumber, status,sortType);
+        BasePageResponse basePageResponse = groupService.queryGroupByPage(chainId, agencyId, pageSize, pageNumber, status, sortType);
 //        resetGroupListTask.asyncResetGroupList();
         log.info("end queryGroupByPage useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(basePageResponse));
         return basePageResponse;
@@ -517,5 +517,26 @@ public class GroupController extends BaseController {
         log.info("end updateDescription useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
         return baseResponse;
     }
+
+
+    /**
+     * 将机构下的节点从群组中移除，如果该机构是群组下的唯一机构，则最终会停止群组。
+     *
+     * @param param
+     * @param result
+     * @return
+     * @throws BaseException
+     */
+    @PostMapping("removeAgency")
+    public BaseResponse removeAgencyFromGroup(@RequestBody @Valid ReqRemoveAgencyFromGroupVO param,
+                                              BindingResult result) throws BaseException {
+        checkBindResult(result);
+        Instant startTime = Instant.now();
+        log.info("start removeAgencyFromGroup startTime:{} param:{}", startTime.toEpochMilli(), JsonTools.objToString(param));
+        precompiledService.removeAgencyFromGroup(param.getAgencyId(), param.getChainId(), param.getGroupId());
+        log.info("end removeAgencyFromGroup useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
+        return BaseResponse.success(null);
+    }
+
 
 }

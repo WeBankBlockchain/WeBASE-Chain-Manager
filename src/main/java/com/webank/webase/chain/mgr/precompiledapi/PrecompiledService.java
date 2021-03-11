@@ -33,19 +33,16 @@ import com.webank.webase.chain.mgr.trans.TransService;
 import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
 import com.webank.webase.chain.mgr.util.CommUtils;
 import com.webank.webase.chain.mgr.util.PrecompiledUtils;
-import io.jsonwebtoken.lang.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.fisco.bcos.web3j.precompile.consensus.Consensus.FUNC_ADDOBSERVER;
@@ -206,7 +203,7 @@ public class PrecompiledService {
      * consensus: add sealer through webase-sign
      */
     public void addSealer(int chainId, int groupId, String signUserId, String nodeId) {
-        log.info("start addSealer chainId:{} groupId:{} nodeId:{}",chainId,groupId,nodeId);
+        log.info("start addSealer chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);
         // params
         List<Object> funcParams = new ArrayList<>();
         funcParams.add(nodeId);
@@ -285,11 +282,11 @@ public class PrecompiledService {
         //check trans's result
         CommUtils.handleTransResultDto(transResultDto);
 
-        //stop
-        groupService.stopGroupIfRunning(chainId, nodeId, groupId);
-
         //remove front-group map
         frontGroupMapService.removeByChainAndGroupAndNode(chainId, groupId, nodeId);
+
+        //stop
+        groupService.stopGroupIfRunning(chainId, nodeId, groupId);
     }
 
 
@@ -392,12 +389,12 @@ public class PrecompiledService {
 
         //can not remove all sealer nodes
         List<String> nodesOfSealerType = nodeService.getNodeIds(chainId, groupId, PrecompiledUtils.NODE_TYPE_SEALER);
-        if (Collections.size(nodeIds) >= Collections.size(nodesOfSealerType)) {
-            long inputSealerNodesCount = nodeIds.stream().filter(inputNode -> nodesOfSealerType.contains(inputNode)).count();
-            log.info("inputSealerNodesCount:{}", inputSealerNodesCount);
-            if (inputSealerNodesCount >= Collections.size(nodesOfSealerType))
-                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("can not remove all sealer, input:%s foundSealerList:%s", JsonTools.objToString(nodeIds), JsonTools.objToString(nodesOfSealerType))));
-        }
+//        if (Collections.size(nodeIds) >= Collections.size(nodesOfSealerType)) {
+//            long inputSealerNodesCount = nodeIds.stream().filter(inputNode -> nodesOfSealerType.contains(inputNode)).count();
+//            log.info("inputSealerNodesCount:{}", inputSealerNodesCount);
+//            if (inputSealerNodesCount >= Collections.size(nodesOfSealerType))
+//                throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("can not remove all sealer, input:%s foundSealerList:%s", JsonTools.objToString(nodeIds), JsonTools.objToString(nodesOfSealerType))));
+//        }
 
         //require nodeType is not remove
         List<String> nodesOfRemoveType = nodeService.getNodeIds(chainId, groupId, PrecompiledUtils.NODE_TYPE_REMOVE);
@@ -447,4 +444,35 @@ public class PrecompiledService {
         log.info("success exec method[requireAllNodeValid]. result:{}", JsonTools.objToString(nodeIds));
         return nodeIds;
     }
+
+
+    /**
+     * Remove the node, if it is the last node, it will stop the group.
+     *
+     * @param agencyId
+     * @param chainId
+     * @param groupId
+     */
+    public void removeAgencyFromGroup(int agencyId, int chainId, int groupId) {
+        log.info("start exec method[removeAgencyFromGroup] agencyId:{} chainId:{} groupId:{}", agencyId, chainId, groupId);
+        groupService.requireFoundGroupByChainAndGroup(agencyId, chainId, groupId);
+
+        List<String> peersOfAgency = nodeService.listSealerAndObserverByGroupAndAgency(chainId, groupId, agencyId);
+        String signUserId = userService.createAdminIfNonexistence(chainId, groupId).getSignUserId();
+        for (String nodeId : peersOfAgency) {
+            try {
+                removeNode(chainId, groupId, signUserId, nodeId);
+            } catch (BaseException ex) {
+                List<Integer> lastSealerArray = Arrays.asList(PrecompiledCommon.LastSealer_RC1, PrecompiledCommon.LastSealer, PrecompiledCommon.LastSealer_RC3);
+                if (!lastSealerArray.contains(ex.getRetCode().getCode()))
+                    throw ex;
+                log.info("remove the last node:{}",nodeId);
+                //stop
+                groupService.stopGroupIfRunning(chainId, nodeId, groupId);
+            }
+        }
+        log.info("success exec method[removeAgencyFromGroup] agencyId:{} chainId:{} groupId:{}", agencyId, chainId, groupId);
+    }
 }
+
+

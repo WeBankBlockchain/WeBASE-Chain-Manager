@@ -85,21 +85,23 @@ public class AgencyService {
             return ownedFront;
         }).collect(Collectors.toList());
 
-
-        //group list
-        List<TbGroup> groupList = groupService.listGroupByAgencyId(agencyId);
-        List<RspAllOwnedDataOfAgencyVO.OwnedGroup> ownedGroupList = null;
-        if (CollectionUtils.isNotEmpty(groupList)) {
-            ownedGroupList = groupList.stream().map(group -> {
-                RspAllOwnedDataOfAgencyVO.OwnedGroup ownedGroup = new RspAllOwnedDataOfAgencyVO.OwnedGroup();
-                BeanUtils.copyProperties(group, ownedGroup);
-                return ownedGroup;
-            }).collect(Collectors.toList());
-        }
-
-
         //chainIdList
         List<Integer> chainIdList = frontList.stream().map(front -> front.getChainId()).distinct().collect(Collectors.toList());
+
+        //group list
+        List<RspAllOwnedDataOfAgencyVO.OwnedGroup> ownedGroupList = null;
+        for (int chainId : CollectionUtils.emptyIfNull(chainIdList)) {
+            List<TbGroup> groupList = groupService.listGroupByChainAndAgencyId(chainId, agencyId);
+            if (CollectionUtils.isNotEmpty(groupList)) {
+                ownedGroupList = groupList.stream().map(group -> {
+                    RspAllOwnedDataOfAgencyVO.OwnedGroup ownedGroup = new RspAllOwnedDataOfAgencyVO.OwnedGroup();
+                    BeanUtils.copyProperties(group, ownedGroup);
+                    return ownedGroup;
+                }).collect(Collectors.toList());
+            }
+
+        }
+
 
         //contract list
         List<RspAllOwnedDataOfAgencyVO.OwnedContract> ownedContractList = new ArrayList<>();
@@ -213,7 +215,6 @@ public class AgencyService {
         log.info("success exec method [listAgencyByChainAndNodeIds]. result:{}", JsonTools.objToString(frontList));
         return agencyList;
     }
-
 
 
     /**
