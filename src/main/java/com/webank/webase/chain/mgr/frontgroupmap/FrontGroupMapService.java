@@ -106,6 +106,20 @@ public class FrontGroupMapService {
         this.tbFrontGroupMapMapper.deleteByFrontId(frontId);
     }
 
+    public void removeByFrontListAndChain(int chainId, List<Integer> frontIdList) {
+        if (CollectionUtils.isEmpty(frontIdList))
+            return;
+
+        TbFrontGroupMapExample example = new TbFrontGroupMapExample();
+        TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        criteria.andFrontIdIn(frontIdList);
+
+        tbFrontGroupMapMapper.deleteByExample(example);
+
+
+    }
+
     /**
      * get map list by groupId
      */
@@ -166,7 +180,7 @@ public class FrontGroupMapService {
 
         //query
         List<TbFrontGroupMap> frontGroupMapList = tbFrontGroupMapMapper.selectByExample(example);
-        log.info("frontGroupMapList:{}",JsonTools.objToString(frontGroupMapList));
+        log.info("frontGroupMapList:{}", JsonTools.objToString(frontGroupMapList));
 
         if (CollectionUtils.isEmpty(frontGroupMapList)) return Collections.EMPTY_LIST;
         List<Integer> groupIdList = frontGroupMapList.stream().map(map -> map.getGroupId()).distinct().collect(Collectors.toList());

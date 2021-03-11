@@ -1,5 +1,7 @@
 package com.webank.webase.chain.mgr.front;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
@@ -211,5 +213,41 @@ public class FrontManager {
         log.debug("success exec method [listNodeIdByAgency]. agencyId:{} result:{}", agencyId, JsonTools.objToString(nodeIdList));
         return nodeIdList;
     }
+
+
+    /**
+     * @param chainId
+     * @param nodeId
+     */
+    public void requireNotFoundFront(int chainId, String nodeId, String frontPeerName) {
+        log.info("start exec method[requireNotFoundFront] chainId:{} nodeId:{} frontPeerName:{}", chainId, nodeId, frontPeerName);
+        TbFrontExample example = new TbFrontExample();
+        TbFrontExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        criteria.andNodeIdEqualTo(nodeId);
+
+        tbFrontMapper.getOneByExample(example).ifPresent(front -> {
+            if (Objects.equals(frontPeerName, front.getFrontPeerName()))
+                throw new BaseException(ConstantCode.FRONT_EXISTS.attach(String.format("found front:%s record by chainId:%s nodeId:%s", front.getFrontPeerName(), chainId, nodeId)));
+            throw new BaseException(ConstantCode.SAVE_FRONT_FAIL.attach(String.format("found front:%s record by chainId:%s nodeId:%s, but new:%s", front.getFrontPeerName(), chainId, nodeId, frontPeerName)));
+        });
+
+
+        if (StringUtils.isNotBlank(frontPeerName)) {
+            TbFrontExample example1 = new TbFrontExample();
+            TbFrontExample.Criteria criteria1 = example1.createCriteria();
+            criteria1.andChainIdEqualTo(chainId);
+            criteria1.andFrontPeerNameEqualTo(frontPeerName);
+
+            tbFrontMapper.getOneByExample(example1).ifPresent(front -> {
+                if (Objects.equals(nodeId, front.getNodeId()))
+                    throw new BaseException(ConstantCode.FRONT_EXISTS.attach(String.format("found node:%s record by chainId:%s front:%s", front.getNodeId(), chainId, frontPeerName)));
+                throw new BaseException(ConstantCode.SAVE_FRONT_FAIL.attach(String.format("found node:%s record by chainId:%s front:%s, but new:%s", front.getNodeId(), chainId, frontPeerName, nodeId)));
+            });
+        }
+
+        log.info("finish exec method[requireNotFoundFront] chainId:{} nodeId:{}", chainId, nodeId);
+    }
+
 
 }

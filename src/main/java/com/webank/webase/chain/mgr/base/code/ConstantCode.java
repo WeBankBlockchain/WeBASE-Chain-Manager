@@ -229,5 +229,6 @@ public class ConstantCode {
     public static final RetCode FAIL_TO_CREATE_TEMP_FILE = RetCode.mark(205285, "fail to create temp file");
     public static final RetCode NODE_ID_EMPTY = RetCode.mark(205286, "node id is empty");
     public static final RetCode NOT_FOUND_GROUP_BY_AGENCY_AND_CHAIN = RetCode.mark(205287, "not found group by agency and chain");
+    public static final RetCode NOT_FOUND_VALID_NODE = RetCode.mark(205288, "not found valid node");
 
 }

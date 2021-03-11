@@ -18,8 +18,10 @@ import com.webank.webase.chain.mgr.base.enums.PrecompiledTypes;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
+import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
 import com.webank.webase.chain.mgr.group.GroupService;
@@ -27,6 +29,7 @@ import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.AddSealerAsyncParam;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
 import com.webank.webase.chain.mgr.node.entity.RspAddSealerAsyncVO;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.sign.UserService;
 import com.webank.webase.chain.mgr.task.TaskManager;
 import com.webank.webase.chain.mgr.trans.TransService;
@@ -70,6 +73,8 @@ public class PrecompiledService {
     @Autowired
     private GroupService groupService;
     @Autowired
+    private FrontManager frontManager;
+    @Autowired
     private NodeService nodeService;
     @Autowired
     private ConstantProperties constantProperties;
@@ -77,6 +82,8 @@ public class PrecompiledService {
     private TaskManager taskManager;
     @Autowired
     private FrontGroupMapService frontGroupMapService;
+    @Autowired
+    private FrontGroupMapCache frontGroupMapCache;
 
 
     /**
@@ -458,7 +465,36 @@ public class PrecompiledService {
         log.info("start exec method[removeAgencyFromGroup] agencyId:{} chainId:{} groupId:{}", agencyId, chainId, groupId);
         groupService.requireFoundGroupByChainAndGroup(agencyId, chainId, groupId);
 
-        List<String> peersOfAgency = nodeService.listSealerAndObserverByGroupAndAgency(chainId, groupId, agencyId);
+        List<TbFront> frontList = frontManager.listFrontByChainAndAgency(chainId, agencyId);
+        if (CollectionUtils.isEmpty(frontList))
+            throw new BaseException(ConstantCode.FRONT_LIST_NOT_FOUNT.attach("not found front by chain:" + chainId + " and agency:" + agencyId));
+
+        List<String> allPeersOnGroup = new ArrayList<>();
+        for (TbFront front : frontList) {
+            try {
+                allPeersOnGroup = frontInterfaceService.getGroupPeersFromSpecificFront(front.getFrontPeerName(), front.getFrontIp(), front.getFrontPort(), groupId);
+                break;
+            } catch (Exception ex) {
+                log.warn("query peer fail", ex);
+                continue;
+            }
+        }
+
+        if (CollectionUtils.isEmpty(allPeersOnGroup))
+            throw new BaseException(ConstantCode.NOT_FOUND_VALID_NODE);
+
+        //remove
+        final List<String> allPeersOnGroupFinal = allPeersOnGroup;
+        List<Integer> frontIdsNotInGroup = frontList.stream()
+                .filter(front -> !allPeersOnGroupFinal.contains(front.getNodeId()))
+                .map(f -> f.getFrontId())
+                .distinct()
+                .collect(Collectors.toList());
+        frontGroupMapService.removeByFrontListAndChain(chainId, frontIdsNotInGroup);
+        frontGroupMapCache.clearMapList(chainId);
+
+        List<String> nodesFromDbByAgency = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toList());
+        List<String> peersOfAgency = allPeersOnGroup.stream().filter(peer -> nodesFromDbByAgency.contains(peer)).distinct().collect(Collectors.toList());
         String signUserId = userService.createAdminIfNonexistence(chainId, groupId).getSignUserId();
         for (String nodeId : peersOfAgency) {
             try {
@@ -470,6 +506,8 @@ public class PrecompiledService {
                 log.info("remove the last node:{}", nodeId);
                 //stop
                 groupService.stopGroupIfRunning(chainId, nodeId, groupId);
+                //remove front-group map
+                frontGroupMapService.removeByChainAndGroupAndNode(chainId, groupId, nodeId);
             }
         }
         log.info("success exec method[removeAgencyFromGroup] agencyId:{} chainId:{} groupId:{}", agencyId, chainId, groupId);

@@ -96,7 +96,6 @@ public class FrontService {
     private PathService pathService;
     @Autowired
     private ConstantProperties constantProperties;
-
     @Qualifier(value = "deployAsyncScheduler")
     @Autowired
     private ThreadPoolTaskScheduler threadPoolTaskScheduler;
@@ -144,7 +143,7 @@ public class FrontService {
             throw new BaseException(ConstantCode.NODE_ID_EMPTY);
 
 
-        requireNotFoundFront(chainId, newNodeId);
+        frontManager.requireNotFoundFront(chainId, newNodeId, frontPeerName);
         requireNotFoundFront(frontIp, frontPort, frontPeerName);
 
         TbFront tbFront = new TbFront();
@@ -648,23 +647,6 @@ public class FrontService {
 
     /**
      * @param chainId
-     * @param nodeId
-     */
-    public void requireNotFoundFront(int chainId, String nodeId) {
-        log.info("start exec method[requireNotFoundFront] chainId:{} nodeId:{}", chainId, nodeId);
-        FrontParam param = new FrontParam();
-        param.setChainId(chainId);
-        param.setNodeId(nodeId);
-        long count = frontManager.countByParam(param);
-        if (count > 0)
-            throw new BaseException(ConstantCode.FRONT_EXISTS.attach(String.format("found front record by chainId:%s nodeId:%s", chainId, nodeId)));
-
-        log.info("finish exec method[requireNotFoundFront] chainId:{} nodeId:{}", chainId, nodeId);
-    }
-
-
-    /**
-     * @param chainId
      * @param nodeIds
      * @return
      */
@@ -681,7 +663,6 @@ public class FrontService {
 
 
     /**
-     *
      * @param agencyId
      */
     public void abandonedFrontByAgencyId(int agencyId) {
