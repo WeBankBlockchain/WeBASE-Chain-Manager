@@ -186,6 +186,10 @@ public class CompileService {
         String solcFileName = buildNameOfSolc(EncryptTypeEnum.getById(chainType));
         String solcFullFile = Paths.get(ConstantProperties.SOLC_FILE_PATH, solcFileName).toString();
 
+        //set execution authority
+        String addAuthorityCommand = String.format("chmod +x %s", solcFullFile);
+        JavaCommandExecutor.executeCommand(addAuthorityCommand, constant.getExecShellTimeout());
+
         //compile command
         String compileCommand = String.format("%s -o %s --bin --abi --bin-runtime %s", solcFullFile, compileOutDir, contractFile);
         ExecuteResult result = JavaCommandExecutor.executeCommand(compileCommand, constant.getSolidityCompileTimeOut());
