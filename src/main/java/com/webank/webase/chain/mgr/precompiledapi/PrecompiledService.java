@@ -271,11 +271,23 @@ public class PrecompiledService {
      */
     public void removeNode(int chainId, int groupId, String signUserId, String nodeId) {
         log.info("start method [removeNode] chainId:{} groupId：{} signUserId：{} nodeId：{}", chainId, groupId, signUserId, nodeId);
+
         // params
         List<Object> funcParams = new ArrayList<>();
         funcParams.add(nodeId);
         TransResultDto transResultDto = null;
         try {
+            //判断节点id是否等于对应front的id（防止tbaas的nginx错发到其他节点去）
+            TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
+            SyncStatus syncStatus = frontInterfaceService.getSyncStatusFromSpecificFront(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort(), groupId);
+            log.info("nodeId:{} syncStatus:{}", nodeId, JsonTools.objToString(syncStatus));
+            Optional.ofNullable(syncStatus).map(s -> {
+                if (!StringUtils.equals(nodeId, syncStatus.getNodeId()))
+                    throw new BaseException(ConstantCode.NODE_ID_NOT_MATCH.attach(String.format("handle node:%s but front response:%s", nodeId, syncStatus.getNodeId())));
+                return nodeId;
+            }).orElseThrow(() -> new BaseException(ConstantCode.NODE_ID_NOT_MATCH.attach("result of syncStatus is null")));
+
+
             transResultDto = transService.transHandleWithSignForPrecompile(chainId, groupId, signUserId,
                     PrecompiledTypes.CONSENSUS, FUNC_REMOVE, funcParams);
         } catch (RuntimeException e) {
@@ -457,7 +469,7 @@ public class PrecompiledService {
 
     /**
      * Remove the node, if it is the last node, it will stop the group.
-     *  TODO  这里的逻辑复杂，需要重构
+     * TODO  这里的逻辑复杂，需要重构
      *
      * @param agencyId
      * @param chainId
@@ -467,12 +479,16 @@ public class PrecompiledService {
         log.info("start exec method[removeAgencyFromGroup] agencyId:{} chainId:{} groupId:{}", agencyId, chainId, groupId);
         groupService.requireFoundGroupByChainAndGroup(agencyId, chainId, groupId);
 
-        List<TbFront> frontList = frontManager.listFrontByChainAndAgency(chainId, agencyId);
-        if (CollectionUtils.isEmpty(frontList))
-            throw new BaseException(ConstantCode.FRONT_LIST_NOT_FOUNT.attach("not found front by chain:" + chainId + " and agency:" + agencyId));
+        List<TbFront> frontList = frontService.selectFrontListByGroupId(chainId, groupId);
+        log.info("chain:{} group:{} frontList:{}", chainId, groupId, JsonTools.objToString(frontList));
+
+        List<TbFront> frontOfAgencyOnDb = CollectionUtils.emptyIfNull(frontList).stream().filter(front -> front.getExtAgencyId() == agencyId).distinct().collect(Collectors.toList());
+        log.info("frontOfAgencyOnDb:{}", JsonTools.objToString(frontOfAgencyOnDb));
+        if (CollectionUtils.isEmpty(frontOfAgencyOnDb))
+            throw new BaseException(ConstantCode.FRONT_LIST_NOT_FOUNT.attach("not found front by chain:" + chainId + " and agency:" + agencyId + " and group:" + groupId));
 
         List<String> allPeersOnGroup = new ArrayList<>();
-        for (TbFront front : frontList) {
+        for (TbFront front : frontOfAgencyOnDb) {
             try {
                 allPeersOnGroup = frontInterfaceService.getGroupPeersFromSpecificFront(front.getFrontPeerName(), front.getFrontIp(), front.getFrontPort(), groupId);
                 break;
@@ -502,9 +518,10 @@ public class PrecompiledService {
         frontGroupMapService.removeByFrontListAndChain(chainId, frontIdsNotInGroup);
         frontGroupMapCache.clearMapList(chainId);
 
-        List<String> nodesFromDbByAgency = frontList.stream().map(front -> front.getNodeId()).collect(Collectors.toList());
+        List<String> nodesFromDbByAgency = frontOfAgencyOnDb.stream().map(front -> front.getNodeId()).collect(Collectors.toList());
         List<String> peersOfAgency = allPeersOnGroup.stream().filter(peer -> nodesFromDbByAgency.contains(peer)).distinct().collect(Collectors.toList());
         String signUserId = userService.createAdminIfNonexistence(chainId, groupId).getSignUserId();
+        log.info("peersOfAgency:{}", JsonTools.objToString(peersOfAgency));
         for (String nodeId : peersOfAgency) {
             try {
                 removeNode(chainId, groupId, signUserId, nodeId);
