@@ -270,6 +270,7 @@ public class PrecompiledService {
      * consensus: remove node from list through webase-sign
      */
     public void removeNode(int chainId, int groupId, String signUserId, String nodeId) {
+        log.info("start method [removeNode] chainId:{} groupId：{} signUserId：{} nodeId：{}", chainId, groupId, signUserId, nodeId);
         // params
         List<Object> funcParams = new ArrayList<>();
         funcParams.add(nodeId);
@@ -456,6 +457,7 @@ public class PrecompiledService {
 
     /**
      * Remove the node, if it is the last node, it will stop the group.
+     *  TODO  这里的逻辑复杂，需要重构
      *
      * @param agencyId
      * @param chainId
@@ -474,10 +476,17 @@ public class PrecompiledService {
             try {
                 allPeersOnGroup = frontInterfaceService.getGroupPeersFromSpecificFront(front.getFrontPeerName(), front.getFrontIp(), front.getFrontPort(), groupId);
                 break;
+            } catch (BaseException ex) {
+                log.warn("query peer fail for BaseException", ex);
+                if (101004 == ex.getRetCode().getCode()) {
+                    log.info("front:{} already on group:{}", front.getFrontIp(), groupId);
+                    frontGroupMapService.removeByChainAndGroupAndNode(chainId, groupId, front.getNodeId());
+                    groupService.stopGroupIfRunning(chainId, front.getNodeId(), groupId);
+                }
             } catch (Exception ex) {
                 log.warn("query peer fail", ex);
-                continue;
             }
+            continue;
         }
 
         if (CollectionUtils.isEmpty(allPeersOnGroup))
