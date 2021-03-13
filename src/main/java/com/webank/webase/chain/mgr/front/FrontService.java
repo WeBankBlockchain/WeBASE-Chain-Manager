@@ -139,7 +139,7 @@ public class FrontService {
         if (StringUtils.isBlank(newNodeId)) //TODO 临时方案，最终等front有nodeInfo接口后改成调nodeInfo接口
             newNodeId = frontInfo.getNodeId();
 
-        if (StringUtils.isNotBlank(newNodeId) && !newNodeId.equals(frontInfo.getNodeId()))
+        if (StringUtils.isNotBlank(frontInfo.getNodeId()) && !newNodeId.equals(frontInfo.getNodeId()))
             throw new BaseException(ConstantCode.PARAM_EXCEPTION.attach(String.format("input nodeId:%s but front connect the node is:%s", frontInfo.getNodeId(), newNodeId)));
 
         if (StringUtils.isBlank(newNodeId))
