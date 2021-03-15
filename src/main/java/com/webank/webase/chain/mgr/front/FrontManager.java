@@ -1,6 +1,7 @@
 package com.webank.webase.chain.mgr.front;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.entity.FrontParam;
@@ -62,6 +63,7 @@ public class FrontManager {
         TbFrontExample example = new TbFrontExample();
         TbFrontExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(chainId);
+        criteria.andFrontStatusNotEqualTo(FrontStatusEnum.ABANDONED.getId());
 
         //query
         List<TbFront> frontList = tbFrontMapper.selectByExample(example);
@@ -82,6 +84,7 @@ public class FrontManager {
         TbFrontExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(chainId);
         criteria.andNodeIdIn(nodeIdList);
+        criteria.andFrontStatusNotEqualTo(FrontStatusEnum.ABANDONED.getId());
 
         //query
         List<TbFront> frontList = tbFrontMapper.selectByExample(example);
@@ -147,6 +150,11 @@ public class FrontManager {
         if (CollectionUtils.isNotEmpty(param.getNodeIdList()))
             criteria.andNodeIdIn(param.getNodeIdList());
 
+        if (Objects.nonNull(param.getFrontStatus())){
+            criteria.andFrontStatusEqualTo(param.getFrontStatus());
+        }else {
+            criteria.andFrontStatusNotEqualTo(FrontStatusEnum.ABANDONED.getId());
+        }
 
         return example;
 
