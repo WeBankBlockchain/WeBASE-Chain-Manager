@@ -659,6 +659,7 @@ public class FrontService {
         TbFrontExample.Criteria criteria = example.createCriteria();
         criteria.andNodeIdIn(nodeIds);
         criteria.andChainIdEqualTo(chainId);
+        criteria.andFrontStatusNotEqualTo(FrontStatusEnum.ABANDONED.getId());
         List<TbFront> frontList = tbFrontMapper.selectByExample(example);
         log.info("success exec method [selectFrontByNodeIdListAndChain]. result:{}", JsonTools.objToString(frontList));
         return frontList;

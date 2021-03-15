@@ -45,6 +45,8 @@ public class FrontManager {
         if (StringUtils.isNotBlank(nodeId)) {
             criteria.andNodeIdEqualTo(nodeId);
         }
+        criteria.andFrontStatusNotEqualTo(FrontStatusEnum.ABANDONED.getId());
+
 
         List<TbFront> frontList = tbFrontMapper.selectByExample(example);
         log.debug("success exec method [listFrontByAgencyIdAndFrontPeerName]. agencyId:{} frontPeerName:{} nodeId:{} result:{}", agencyId, frontPeerName, nodeId, JsonTools.objToString(frontList));

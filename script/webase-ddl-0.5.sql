@@ -16,7 +16,7 @@ ALTER TABLE tb_chain MODIFY COLUMN storage_type varchar(16) CHARACTER SET utf8 C
 
 
 
---add 2021.02.05--
+-- add 2021.02.05 --
 ALTER TABLE tb_node ADD COLUMN node_type varchar(64) DEFAULT 'sealer' COMMENT '节点类型（sealer、observer、remove）' AFTER node_name;
 
 
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS tb_user (
 
 
 
---add 2021.02.05--
+-- add 2021.02.05 --
 CREATE TABLE IF NOT EXISTS tb_task (
   id int(11) NOT NULL AUTO_INCREMENT COMMENT '任务自增编号',
   task_type tinyint(8) NOT NULL DEFAULT '1' COMMENT '任务类型（1：将节点类型变更为sealer）',
@@ -55,5 +55,5 @@ CREATE TABLE IF NOT EXISTS tb_task (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务信息表';
 
 
---add 2021.02.08--
+-- add 2021.02.08 --
 ALTER TABLE tb_contract ADD COLUMN save_by_agency int(10) DEFAULT  NULL COMMENT '合约发起机构（合约首次保存的机构Id）' AFTER group_id;
