@@ -23,7 +23,7 @@ public class IPUtil {
         LOCAL_IP_SET.add("127.0.0.1");
         LOCAL_IP_SET.add("localhost");
 
-        LOCAL_IP_SET.addAll(getLocalIPSet());
+//        LOCAL_IP_SET.addAll(getLocalIPSet());
     }
 
 
@@ -38,25 +38,25 @@ public class IPUtil {
     }
 
 
-    public static Set<String> getLocalIPSet(){
-        Set<String> result =  new HashSet<>();
-
-        try {
-            Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
-            for (NetworkInterface netint : Collections.list(nets)) {
-                Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
-                for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-                    String ip = inetAddress.getHostAddress();
-                    if (inetAddress instanceof Inet4Address) {
-                        result.add(ip);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Get ip address from network interface error.",e);
-        }
-        return result;
-    }
+//    public static Set<String> getLocalIPSet(){
+//        Set<String> result =  new HashSet<>();
+//
+//        try {
+//            Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+//            for (NetworkInterface netint : Collections.list(nets)) {
+//                Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+//                for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+//                    String ip = inetAddress.getHostAddress();
+//                    if (inetAddress instanceof Inet4Address) {
+//                        result.add(ip);
+//                    }
+//                }
+//            }
+//        } catch (Exception e) {
+//            log.warn("Get ip address from network interface error.",e);
+//        }
+//        return result;
+//    }
 
 
 }
