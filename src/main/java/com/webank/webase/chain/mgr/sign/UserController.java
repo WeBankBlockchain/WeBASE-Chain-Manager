@@ -2,6 +2,7 @@ package com.webank.webase.chain.mgr.sign;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
+import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  *
@@ -78,4 +80,22 @@ public class UserController extends BaseController {
     }
 
 
+    /**
+     * @param pageNumber
+     * @param pageSize
+     * @param appIds
+     * @return
+     */
+    @ApiOperation(value = "query user by page", notes = "分页查询用户列表")
+    @GetMapping("/page")
+    public BasePageResponse queryUserPage(@RequestParam("pageNumber") Integer pageNumber,
+                                          @RequestParam("pageSize") Integer pageSize,
+                                          @RequestParam(value = "chainIds", required = false) List<Integer> chainIds,
+                                          @RequestParam(value = "appIds", required = false) List<String> appIds) {
+        log.info("queryUserPage start. pageNumber：{}  pageSize：{} chainIds:{} appIds：{}", pageNumber, pageSize, JsonTools.objToString(chainIds), JsonTools.objToString(appIds));
+
+        BasePageResponse pageResponse = userService.queryUserPage(pageNumber, pageSize, chainIds, appIds);
+        log.info("queryUserPage finish. pageNumber：{}  pageSize：{} chainIds:{} appIds：{} result:{}", pageNumber, pageSize, JsonTools.objToString(chainIds), JsonTools.objToString(appIds), JsonTools.objToString(pageResponse));
+        return pageResponse;
+    }
 }

@@ -10,10 +10,7 @@ import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.group.GroupManager;
-import com.webank.webase.chain.mgr.repository.bean.TbChain;
-import com.webank.webase.chain.mgr.repository.bean.TbGroup;
-import com.webank.webase.chain.mgr.repository.bean.TbUser;
-import com.webank.webase.chain.mgr.repository.bean.TbUserExample;
+import com.webank.webase.chain.mgr.repository.bean.*;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbUserMapper;
 import com.webank.webase.chain.mgr.sign.req.EncodeInfo;
@@ -91,6 +88,8 @@ public class UserService {
                     .filter(user -> user.getSignUserId().equals(rspUserInfo.getSignUserId()))
                     .findFirst()
                     .ifPresent(u -> {
+                        rspUserInfo.setChainId(u.getChainId());
+                        rspUserInfo.setGroupId(u.getGroupId());
                         rspUserInfo.setSignUserName(u.getUserName());
                         rspUserInfo.setDescription(u.getDescription());
                     });
@@ -129,6 +128,7 @@ public class UserService {
         //add to db
         TbUser tbUser = new TbUser();
         BeanUtils.copyProperties(reqNewUser, tbUser);
+        tbUser.setChainId(tbGroup.getChainId());
         tbUser.setGroupId(tbGroup.getGroupId());
         tbUser.setUserName(reqNewUser.getSignUserName());
         tbUser.setUserStatus(Integer.valueOf(String.valueOf(DataStatus.NORMAL.getValue())));
@@ -231,7 +231,7 @@ public class UserService {
         //new user param
         ReqNewUser reqNewUser = new ReqNewUser();
         reqNewUser.setAppId(group.getGroupName());
-        reqNewUser.setChainId(chainId);
+//        reqNewUser.setChainId(chainId);
         reqNewUser.setSignUserName(adminUserName);
         reqNewUser.setDescription("admin user");
 
@@ -240,5 +240,69 @@ public class UserService {
 
         log.info("success exec method [createAdminIfNonexistence], chain:{} group:{}", chainId, groupId);
         return userManager.queryByChainAndGroupAndName(chainId, groupId, adminUserName);
+    }
+
+
+    /**
+     * @param pageNumber
+     * @param pageSize
+     * @param appIds
+     * @return
+     */
+    public BasePageResponse queryUserPage(Integer pageNumber, Integer pageSize, List<Integer> chainIds, List<String> appIds) {
+        log.info("start exec method [queryUserPage]");
+
+        TbUserExample example = new TbUserExample();
+        example.setStart(Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).filter(p -> p >= 0).orElse(1));
+        example.setCount(pageSize);
+
+        if (CollectionUtils.isNotEmpty(appIds)) {
+            List<TbGroup> groupList = groupManager.listGroupByAppIdList(appIds);
+            if (CollectionUtils.isEmpty(groupList))
+                return new BasePageResponse(ConstantCode.SUCCESS);
+
+            for (TbGroup tbGroup : groupList) {
+                TbUserExample.Criteria criteria = example.createCriteria();
+                criteria.andChainIdEqualTo(tbGroup.getChainId());
+                criteria.andGroupIdEqualTo(tbGroup.getGroupId());
+                example.or(criteria);
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(chainIds)) {
+            TbUserExample.Criteria criteria = example.createCriteria();
+            criteria.andChainIdIn(chainIds);
+        }
+
+        long userCount = userMapper.countByExample(example);
+        if (userCount <= 0)
+            return new BasePageResponse(ConstantCode.SUCCESS);
+
+        List<TbGroup> allGroupList = groupMapper.selectByExample(new TbGroupExample());
+        log.debug("allGroupList:{}", JsonTools.objToString(allGroupList));
+        List<RspUserInfo> restRspList = new ArrayList<>();
+        for (TbUser tbUser : userMapper.selectByExample(example)) {
+            RspUserInfo rspUserInfo = new RspUserInfo();
+            BeanUtils.copyProperties(tbUser, rspUserInfo);
+            rspUserInfo.setSignUserName(tbUser.getUserName());
+
+            if (CollectionUtils.isNotEmpty(allGroupList))
+                rspUserInfo.setAppId(allGroupList.stream()
+                        .filter(group -> group.getChainId().equals(tbUser.getChainId()) && group.getGroupId().equals(tbUser.getGroupId()))
+                        .findFirst()
+                        .map(g -> g.getGroupName())
+                        .orElse(null));
+
+            restRspList.add(rspUserInfo);
+        }
+
+
+        BasePageResponse basePageResponse = new BasePageResponse(ConstantCode.SUCCESS);
+        basePageResponse.setTotalCount(new Long(userCount).intValue());
+        basePageResponse.setData(restRspList);
+
+
+        log.info("success exec method [queryUserPage] result:{}", JsonTools.objToString(basePageResponse));
+        return basePageResponse;
     }
 }

@@ -25,6 +25,8 @@ import lombok.Data;
 public class RspUserInfo {
     private String signUserId;
     private String appId;
+    private Integer groupId;
+    private Integer chainId;
     private String address;
     private String publicKey;
     // not return privateKey

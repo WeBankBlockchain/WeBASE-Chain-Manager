@@ -138,11 +138,25 @@ public class GroupManager {
             }
             return tbGroup;
         } else if (!Objects.equals(nodeCount, exists.getNodeCount())) {
-            log.info("group:{} oldNodeCount:{} newNodeCount:{} ",groupId,exists.getNodeCount(),nodeCount);
+            log.info("group:{} oldNodeCount:{} newNodeCount:{} ", groupId, exists.getNodeCount(), nodeCount);
             exists.setNodeCount(nodeCount);
             exists.setModifyTime(new Date());
             tbGroupMapper.updateByPrimaryKey(exists);
         }
         return exists;
+    }
+
+    /**
+     * @param appIdList
+     * @return
+     */
+    public List<TbGroup> listGroupByAppIdList(List<String> appIdList) {
+        log.info("start exec method[listGroupByAppIdList] appIdList:{}", JsonTools.objToString(appIdList));
+        TbGroupExample example = new TbGroupExample();
+        TbGroupExample.Criteria criteria = example.createCriteria();
+        criteria.andGroupNameIn(appIdList);
+        List<TbGroup> groupList = tbGroupMapper.selectByExample(example);
+        log.info("success exec method[listGroupByAppIdList] result:{}", JsonTools.objToString(groupList));
+        return groupList;
     }
 }
