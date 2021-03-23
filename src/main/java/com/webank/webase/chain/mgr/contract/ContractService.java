@@ -15,6 +15,7 @@ package com.webank.webase.chain.mgr.contract;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
@@ -25,10 +26,11 @@ import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
+import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.method.MethodService;
-import com.webank.webase.chain.mgr.repository.bean.TbContract;
-import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.*;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.sign.UserService;
 import com.webank.webase.chain.mgr.sign.rsp.RspUserInfo;
 import com.webank.webase.chain.mgr.trans.TransService;
@@ -38,6 +40,7 @@ import com.webank.webase.chain.mgr.util.HttpEntityUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.core.util.JsonUtils;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
@@ -50,6 +53,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * services for contract data.
@@ -74,6 +78,10 @@ public class ContractService {
     private UserService userService;
     @Autowired
     private TransService transService;
+    @Autowired
+    private TbGroupMapper groupMapper;
+    @Autowired
+    private GroupManager groupManager;
 
 
     /**
@@ -104,59 +112,74 @@ public class ContractService {
         return compileInfos;
     }
 
-//    /**
-//     * @param contractId
-//     * @return
-//     */
-//    public TbContract compileByContractId(int contractId) {
-//        log.debug("start compileByContractId contractId:{}", contractId);
-//        //check contractId
-//        TbContract contract = contractManager.verifyContractId(contractId);
-//        //check contract status
-//        contractManager.verifyContractNotDeploy(contract.getChainId(), contract.getContractId(), contract.getGroupId());
-//        //check contractSource
-//        if (StringUtils.isBlank(contract.getContractSource()))
-//            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("contract source is empty"));
+
+    /**
+     *
+     * @param inputParam
+     * @return
+     */
+    public BasePageResponse queryContractPage(ReqQueryContractPage inputParam) {
+        log.info("start exec method [queryContractPage]");
+
+        TbContractExample example = new TbContractExample();
+        example.setStart(Optional.ofNullable(inputParam.getPageNumber()).map(page -> (page - 1) * inputParam.getPageSize()).filter(p -> p >= 0).orElse(1));
+        example.setCount(inputParam.getPageSize());
+
+        if (CollectionUtils.isNotEmpty(inputParam.getAppIds())) {
+            List<TbGroup> groupList = groupManager.listGroupByAppIdList(inputParam.getAppIds());
+            if (CollectionUtils.isEmpty(groupList))
+                return new BasePageResponse(ConstantCode.SUCCESS);
+
+            for (TbGroup tbGroup : groupList) {
+                TbContractExample.Criteria criteria = example.createCriteria();
+                criteria.andChainIdEqualTo(tbGroup.getChainId());
+                criteria.andGroupIdEqualTo(tbGroup.getGroupId());
+                example.or(criteria);
+            }
+        }
+
+        TbContractExample.Criteria criteriaComm = example.createCriteria();
+        if (CollectionUtils.isNotEmpty(inputParam.getChainIds()))
+            criteriaComm.andChainIdIn(inputParam.getChainIds());
+        if (null != inputParam.getContractStatus())
+            criteriaComm.andChainIdIn(inputParam.getChainIds());
+
+
+        long contractCount = tbContractMapper.countByExample(example);
+        if (contractCount <= 0)
+            return new BasePageResponse(ConstantCode.SUCCESS);
+
+        List<TbGroup> allGroupList = groupMapper.selectByExample(new TbGroupExample());
+        log.debug("allGroupList:{}", JsonTools.objToString(allGroupList));
+        List<RspContractVO> restRspList = new ArrayList<>();
+        for (TbContract tbContract : tbContractMapper.selectByExample(example)) {
+            RspContractVO rspContractVO = new RspContractVO();
+            BeanUtils.copyProperties(tbContract, rspContractVO);
+//            rspUserInfo.setSignUserName(tbUser.getUserName());
 //
-//        //request front for compile
-//        RspContractCompileDto restRsp = null;
-//        try {
-//            restRsp = frontInterface.compileSingleContractFile(contract.getChainId(), contract.getGroupId(), contract.getContractName(), contract.getContractSource());
-//
-//            if (Objects.isNull(restRsp))
-//                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("compile result is null"));
-//
-//            if (StringUtils.isAnyBlank(restRsp.getBytecodeBin(), restRsp.getContractAbi()))
-//                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach(restRsp.getErrors()));
-//
-//        } catch (BaseException baseException) {
-//            contract.setModifyTime(new Date());
-//            contract.setContractStatus(ContractStatus.COMPILE_FAILED.getValue());
-//            String message = baseException.getRetCode().getMessage();
-//            String attachment = baseException.getRetCode().getAttachment();
-//            contract.setDescription(StringUtils.isBlank(message) ? attachment : message);
-//            tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
-//            throw baseException;
-//        } catch (Exception ex) {
-//            log.error("compile not success", ex);
-//            contract.setModifyTime(new Date());
-//            contract.setContractStatus(ContractStatus.COMPILE_FAILED.getValue());
-//            contract.setDescription(ex.getMessage());
-//            tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
-//            throw ex;
-//        }
-//
-//        //success
-//        contract.setBytecodeBin(restRsp.getBytecodeBin());
-//        contract.setContractAbi(restRsp.getContractAbi());
-//        contract.setContractStatus(ContractStatus.COMPILED.getValue());
-//        contract.setDescription("");
-//        tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
-//
-//        TbContract result = tbContractMapper.selectByPrimaryKey(contractId);
-//        log.debug("success compileByContractId contractId:{} result:{}", contractId, JsonTools.objToString(result));
-//        return result;
-//    }
+//            if (CollectionUtils.isNotEmpty(allGroupList))
+//                rspUserInfo.setAppId(allGroupList.stream()
+//                        .filter(group -> group.getChainId().equals(tbUser.getChainId()) && group.getGroupId().equals(tbUser.getGroupId()))
+//                        .findFirst()
+//                        .map(g -> g.getGroupName())
+//                        .orElse(null));
+
+            restRspList.add(rspContractVO);
+        }
+
+
+        BasePageResponse basePageResponse = new BasePageResponse(ConstantCode.SUCCESS);
+        basePageResponse.setTotalCount(new Long(contractCount).intValue());
+        basePageResponse.setData(restRspList);
+
+
+        log.info("success exec method [queryContractPage] result:{}", JsonTools.objToString(basePageResponse));
+        return basePageResponse;
+    }
+
+
+
+
 
 
     /**

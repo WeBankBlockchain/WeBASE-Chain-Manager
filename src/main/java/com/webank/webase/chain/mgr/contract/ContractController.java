@@ -206,6 +206,29 @@ public class ContractController extends BaseController {
 
 
     /**
+     * @param inputParam
+     * @param result
+     * @return
+     * @throws BaseException
+     */
+    @PostMapping(value = "/page")
+    public BasePageResponse queryContractPage(@RequestBody @Valid ReqQueryContractPage inputParam,
+                                              BindingResult result) throws BaseException {
+        checkBindResult(result);
+        BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start queryContractPage. startTime:{} inputParam:{}", startTime.toEpochMilli(),
+                JsonTools.toJSONString(inputParam));
+
+        BasePageResponse basePageResponse = contractService.queryContractPage(inputParam);
+
+        log.info("end queryContractPage useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(basePageResponse));
+        return basePageResponse;
+    }
+
+
+    /**
      * query by contract id.
      */
     @GetMapping(value = "/{contractId}")
@@ -266,8 +289,9 @@ public class ContractController extends BaseController {
 
 
     /**
-     * send transaction.
+     * send transaction.  改用：trans/sendByContractId
      */
+    @Deprecated
     @PostMapping(value = "/transaction")
     public BaseResponse sendTransaction(@RequestBody @Valid TransactionInputParam param,
                                         BindingResult result) throws BaseException {
