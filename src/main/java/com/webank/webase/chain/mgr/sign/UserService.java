@@ -141,8 +141,13 @@ public class UserService {
         log.info("Request webase sign server:[{}]:[{}]", url, JsonTools.toJSONString(reqNewUser));
         BaseResponse restResponse = signRestTools.postToSign(url, reqNewUser, BaseResponse.class);
         RspUserInfo rspUserInfo = CommUtils.getResultData(restResponse, RspUserInfo.class);
+
+        tbUser.setAddress(rspUserInfo.getAddress());
+        userMapper.updateByPrimaryKey(tbUser);
+
         rspUserInfo.setSignUserName(reqNewUser.getSignUserName());
         rspUserInfo.setDescription(tbUser.getDescription());
+        rspUserInfo.setAddress(rspUserInfo.getAddress());
         log.debug("restResponse:{}", JsonTools.objToString(rspUserInfo));
         return rspUserInfo;
     }
@@ -292,6 +297,17 @@ public class UserService {
                         .findFirst()
                         .map(g -> g.getGroupName())
                         .orElse(null));
+
+            //兼容老数据
+            if (StringUtils.isBlank(tbUser.getAddress())) {
+                try {
+                    RspUserInfo restUserInfo = checkSignUserId(tbUser.getSignUserId());
+                    tbUser.setAddress(restUserInfo.getAddress());
+                    userMapper.updateByPrimaryKey(tbUser);
+                } catch (Exception ex) {
+                    log.info("sync user address fail", ex);
+                }
+            }
 
             restRspList.add(rspUserInfo);
         }

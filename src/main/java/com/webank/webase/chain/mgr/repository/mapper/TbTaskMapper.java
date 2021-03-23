@@ -21,7 +21,6 @@ import org.apache.ibatis.type.JdbcType;
 
 public interface TbTaskMapper {
 
-
     @Delete({ "delete from tb_task where chain_id=#{chainId}" })
     int deleteByChainId(@Param("chainId") int chainId);
 

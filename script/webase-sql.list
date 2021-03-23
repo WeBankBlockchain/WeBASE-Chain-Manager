@@ -5,3 +5,5 @@ source webase-dml.sql;
 
 # dev-0.5
 source webase-ddl-0.5.sql
+# dev-0.6
+source webase-ddl-0.6.sql
