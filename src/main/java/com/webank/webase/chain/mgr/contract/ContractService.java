@@ -144,34 +144,10 @@ public class ContractService {
         if (null != inputParam.getContractStatus())
             criteriaComm.andChainIdIn(inputParam.getChainIds());
 
-
-        long contractCount = tbContractMapper.countByExample(example);
-        if (contractCount <= 0)
-            return new BasePageResponse(ConstantCode.SUCCESS);
-
-        List<TbGroup> allGroupList = groupMapper.selectByExample(new TbGroupExample());
-        log.debug("allGroupList:{}", JsonTools.objToString(allGroupList));
-        List<RspContractVO> restRspList = new ArrayList<>();
-        for (TbContract tbContract : tbContractMapper.selectByExample(example)) {
-            RspContractVO rspContractVO = new RspContractVO();
-            BeanUtils.copyProperties(tbContract, rspContractVO);
-//            rspUserInfo.setSignUserName(tbUser.getUserName());
-//
-//            if (CollectionUtils.isNotEmpty(allGroupList))
-//                rspUserInfo.setAppId(allGroupList.stream()
-//                        .filter(group -> group.getChainId().equals(tbUser.getChainId()) && group.getGroupId().equals(tbUser.getGroupId()))
-//                        .findFirst()
-//                        .map(g -> g.getGroupName())
-//                        .orElse(null));
-
-            restRspList.add(rspContractVO);
-        }
-
-
         BasePageResponse basePageResponse = new BasePageResponse(ConstantCode.SUCCESS);
-        basePageResponse.setTotalCount(new Long(contractCount).intValue());
-        basePageResponse.setData(restRspList);
-
+        basePageResponse.setTotalCount(new Long(tbContractMapper.countByExample(example)).intValue());
+        if (basePageResponse.getTotalCount() > 0)
+            basePageResponse.setData(tbContractMapper.selectByExample(example));
 
         log.info("success exec method [queryContractPage] result:{}", JsonTools.objToString(basePageResponse));
         return basePageResponse;
