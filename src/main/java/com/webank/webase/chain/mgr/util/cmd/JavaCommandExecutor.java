@@ -15,14 +15,16 @@
  */
 package com.webank.webase.chain.mgr.util.cmd;
 
+import com.sun.javafx.PlatformUtil;
+import lombok.ToString;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import lombok.ToString;
-import lombok.extern.log4j.Log4j2;
 
 /**
  *
@@ -33,6 +35,7 @@ import lombok.extern.log4j.Log4j2;
 public class JavaCommandExecutor {
     public static final long DEFAULT_EXEC_TIMEOUT = 60_60_1000L;
 
+
     public static ExecuteResult executeCommand(String command, long timeout) {
         Process process = null;
         InputStream pIn = null;
@@ -42,7 +45,11 @@ public class JavaCommandExecutor {
         Future<Integer> executeFuture = null;
         try {
             log.info("exec command:[{}]", command);
-            String[] commandArray = { "/bin/bash", "-c", command };
+
+            String[] commandArray = {"/bin/bash", "-c", command};
+            if (PlatformUtil.isWindows())
+                commandArray = command.split(" ");
+
 
             process = Runtime.getRuntime().exec(commandArray);
             final Process p = process;
@@ -57,23 +64,25 @@ public class JavaCommandExecutor {
             pErr = process.getErrorStream();
             errorGobbler = new StreamGobbler(pErr, "ERROR");
             errorGobbler.start();
-            long newTimeout = timeout <= 0? DEFAULT_EXEC_TIMEOUT:timeout;
+            long newTimeout = timeout <= 0 ? DEFAULT_EXEC_TIMEOUT : timeout;
 
             p.waitFor(newTimeout, TimeUnit.MILLISECONDS);
             int exitCode = p.exitValue();
-
+            String returnMsg = outputGobbler.getContent();
             if (exitCode == 0) {
                 log.info("Exec command success: code:[{}], OUTPUT:\n[{}]",
                         exitCode, outputGobbler.getContent());
             } else {
                 log.error("Exec command ERROR: code:[{}], OUTPUT:\n[{}],\nERROR:\n[{}]",
                         exitCode, outputGobbler.getContent(), errorGobbler.getContent());
+                if (StringUtils.isNotBlank(errorGobbler.getContent()))
+                    returnMsg = errorGobbler.getContent();
             }
 
-            return new ExecuteResult(exitCode, outputGobbler.getContent());
+            return new ExecuteResult(exitCode, returnMsg);
         } catch (IOException ex) {
             String errorMessage = "The command [" + command + "] execute failed.";
-            log.error(errorMessage, errorMessage);
+            log.error(errorMessage, ex);
             return new ExecuteResult(-1, null);
         } catch (InterruptedException ex) {
             String errorMessage = "The command [" + command + "] did not complete due to an interrupted error.";

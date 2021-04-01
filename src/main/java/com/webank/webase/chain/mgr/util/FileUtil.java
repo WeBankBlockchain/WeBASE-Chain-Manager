@@ -1,5 +1,15 @@
 package com.webank.webase.chain.mgr.util;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.http.ssl.SSLContexts;
+import org.apache.http.ssl.TrustStrategy;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -8,18 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.http.ssl.SSLContexts;
-import org.apache.http.ssl.TrustStrategy;
-
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  *
@@ -32,14 +30,14 @@ public class FileUtil {
 
     static {
         // create parent dir
-        if (Files.notExists(DOWNLOAD_ROOT_DIR)){
+        if (Files.notExists(DOWNLOAD_ROOT_DIR)) {
             try {
                 Files.createDirectories(DOWNLOAD_ROOT_DIR);
             } catch (IOException e) {
                 log.error("Create download dir error", e);
             }
         }
-        log.info("Download root dir:[{}]",DOWNLOAD_ROOT_DIR.toAbsolutePath().toString());
+        log.info("Download root dir:[{}]", DOWNLOAD_ROOT_DIR.toAbsolutePath().toString());
 
         SSLContext sslContext = null;
         try {
@@ -52,7 +50,7 @@ public class FileUtil {
             }).build();
             HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
         } catch (Exception e) {
-            log.error("Load loadTrustMaterial error.",e);
+            log.error("Load loadTrustMaterial error.", e);
         }
     }
 
@@ -65,26 +63,26 @@ public class FileUtil {
      */
     public static void download(String url, String fileName,
                                 final int connectionTimeout, final int timeout) throws IOException {
-        download(true, url, fileName, timeout );
+        download(true, url, fileName, timeout);
     }
 
     /**
      * Download file if not exits.
      *
-     * @param force             force to download when true.
+     * @param force    force to download when true.
      * @param url
      * @param fileName
      * @param timeout
      */
     public static void download(boolean force, String url, String fileName, final int timeout) throws IOException {
-        Path filePath = DOWNLOAD_ROOT_DIR.resolve( fileName);
+        Path filePath = DOWNLOAD_ROOT_DIR.resolve(fileName);
         if (force || Files.notExists(filePath)) {
             log.info("File:[{}] not exists, start to download from:[{}]....", filePath.toAbsolutePath().toString(), url);
 
             // Open connection to the URL
             URL downloadUrl = new URL(url);
             URLConnection connection = downloadUrl.openConnection();
-            FileUtils.copyURLToFile(connection.getURL(),filePath.toFile(),timeout,timeout);
+            FileUtils.copyURLToFile(connection.getURL(), filePath.toFile(), timeout, timeout);
         } else {
             log.warn("Files:[{}] exists, skip download from:[{}].", filePath.toAbsolutePath().toString(), url);
         }
@@ -97,35 +95,33 @@ public class FileUtil {
     }
 
     /**
-     *
      * @param fileName
      * @return
      */
-    public static String getFilePath(String fileName){
+    public static String getFilePath(String fileName) {
         Path path = DOWNLOAD_ROOT_DIR.resolve(fileName);
-        if (Files.notExists(path)){
+        if (Files.notExists(path)) {
             throw new BaseException(ConstantCode.FILE_NOT_EXISTS);
         }
         return path.toAbsolutePath().toString();
     }
 
     /**
-     *
      * @param fileName
      * @return
      */
-    public static boolean exists(String fileName){
+    public static boolean exists(String fileName) {
         Path path = DOWNLOAD_ROOT_DIR.resolve(fileName);
         return Files.exists(path);
     }
 
     /**
-     *
      * @param fileName
      * @return
      */
-    public static boolean notExists(String fileName){
+    public static boolean notExists(String fileName) {
         Path path = DOWNLOAD_ROOT_DIR.resolve(fileName);
         return Files.notExists(path);
     }
+
 }

@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
+import io.jsonwebtoken.lang.Collections;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -59,9 +60,10 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @MapperScan("com.webank.webase.chain.mgr.repository.mapper")
 public class Application {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         SpringApplication.run(Application.class, args);
         log.info("main run success...");
+
     }
 
     /**

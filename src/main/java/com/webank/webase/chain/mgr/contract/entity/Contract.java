@@ -26,6 +26,7 @@ public class Contract {
     private Integer chainId;
     @NotNull
     private Integer groupId;
+    private Integer agencyId;
     private Integer contractId;
     @NotBlank
     private String contractName;

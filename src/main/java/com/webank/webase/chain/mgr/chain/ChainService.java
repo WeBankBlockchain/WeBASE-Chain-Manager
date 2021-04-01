@@ -17,6 +17,7 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.*;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
+import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.contract.ContractService;
@@ -26,8 +27,12 @@ import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
 import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
 import com.webank.webase.chain.mgr.front.FrontService;
+import com.webank.webase.chain.mgr.front.entity.ClientVersionDTO;
+import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
+import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
+import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
@@ -35,13 +40,17 @@ import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbTaskMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
+import com.webank.webase.chain.mgr.task.TaskManager;
+import com.webank.webase.chain.mgr.util.NetUtils;
 import com.webank.webase.chain.mgr.util.NumberUtil;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ThymeleafUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +85,8 @@ public class ChainService {
     @Autowired
     private GroupService groupService;
     @Autowired
+    private GroupManager groupManager;
+    @Autowired
     private FrontService frontService;
     @Autowired
     private FrontGroupMapService frontGroupMapService;
@@ -88,7 +99,10 @@ public class ChainService {
     @Autowired
     @Lazy
     private ResetGroupListTask resetGroupListTask;
-
+    @Autowired
+    private TaskManager taskManager;
+    @Autowired
+    private FrontInterfaceService frontInterface;
     @Autowired
     private ConstantProperties constantProperties;
     @Autowired
@@ -102,20 +116,11 @@ public class ChainService {
     /**
      * add new chain
      */
+    @Transactional
     public TbChain newChain(ChainInfo chainInfo) {
-        log.debug("start newChain chainInfo:{}", chainInfo);
-
-        // check id
-        TbChain tbChainInfo = tbChainMapper.selectByPrimaryKey(chainInfo.getChainId());
-        if (tbChainInfo != null) {
-            throw new BaseException(ConstantCode.CHAIN_ID_EXISTS);
-        }
-
-        // check name
-        int nameCount = tbChainMapper.countByName(chainInfo.getChainName());
-        if (nameCount > 0) {
-            throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS);
-        }
+        log.info("start newChain chainInfo:{}", chainInfo);
+        //check before new chain
+        checkBeforeAddNewChain(chainInfo);
 
         // copy attribute
         TbChain tbChain = new TbChain();
@@ -125,6 +130,15 @@ public class ChainService {
         tbChain.setModifyTime(now);
         tbChain.setRemark("");
         tbChain.setChainStatus(ChainStatusEnum.RUNNING.getId());
+
+        // chainType
+        FrontInfo frontInfo = chainInfo.getFrontList().get(0);
+        Integer chainType = frontInterface.getEncryptTypeFromSpecificFront(frontInfo.getFrontPeerName(), frontInfo.getFrontIp(), frontInfo.getFrontPort());
+        tbChain.setChainType(chainType.byteValue());
+
+        //chain version
+        ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontInfo.getFrontPeerName(), frontInfo.getFrontIp(), frontInfo.getFrontPort());
+        tbChain.setVersion(clientVersionDTO.getVersion());
 
         // save chain info
         int result = tbChainMapper.insertSelective(tbChain);
@@ -139,8 +153,82 @@ public class ChainService {
                 frontService.newFront(front);
             });
         }
+
+        log.info("finish newChain chainId:{}", tbChain.getChainId());
         return tbChainMapper.selectByPrimaryKey(tbChain.getChainId());
     }
+
+
+    /**
+     * @param chainInfo
+     */
+    private void checkBeforeAddNewChain(ChainInfo chainInfo) {
+        log.info("start checkBeforeAddNewChain chainInfo:{}", JsonTools.objToString(chainInfo));
+        // check id
+        if (Objects.nonNull(tbChainMapper.selectByPrimaryKey(chainInfo.getChainId())))
+            throw new BaseException(ConstantCode.CHAIN_ID_EXISTS);
+
+        // check name
+        if (tbChainMapper.countByName(chainInfo.getChainName()) > 0)
+            throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS);
+
+        Integer encryptType = null;// front's encrypt type same as chain(guomi or standard)
+        String buildTime = null;// node's build time
+        for (int i = 0; i < chainInfo.getFrontList().size(); i++) {
+            FrontInfo front = chainInfo.getFrontList().get(i);
+            log.info("check front [{}:{}]", front.getFrontIp(), front.getFrontPort());
+            String frontPeerName = front.getFrontPeerName();
+            String frontIp = front.getFrontIp();
+            Integer frontPort = front.getFrontPort();
+
+            // check front ip and port
+            CommonUtils.checkServerConnect(frontIp, frontPort);
+
+            //check encryptType and build time
+            if (i == 0) {
+                encryptType = frontInterface.getEncryptTypeFromSpecificFront(frontPeerName, frontIp, frontPort);
+                ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontPeerName, frontIp, frontPort);
+                buildTime = clientVersionDTO.getBuildTime();
+            } else {
+                //check encryptType
+                if (!Objects.equals(encryptType, frontInterface.getEncryptTypeFromSpecificFront(frontPeerName, frontIp, frontPort))) {
+                    log.error("fail checkBeforeAddNewChain, frontIp:{},frontPort:{},front's encryptType not match first encryptType:{}", frontIp, frontPort, encryptType);
+                    throw new BaseException(ConstantCode.ENCRYPT_TYPE_NOT_MATCH);
+                }
+
+                //check build time
+                ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontPeerName, frontIp, frontPort);
+                if (!Objects.equals(buildTime, clientVersionDTO.getBuildTime())) {
+                    log.error("fail checkBeforeAddNewChain, frontIp:{},frontPort:{},front's buildTime not match first buildTime:{}", frontIp, frontPort, buildTime);
+                    throw new BaseException(ConstantCode.BUILD_TIME_NOT_MATCH);
+                }
+            }
+
+            //check ssh
+            if (StringUtils.isNotBlank(front.getSshUser()) && Objects.nonNull(front.getSshPort())) {
+                //check ssh connect
+                SshUtil.verifyHostConnect(front.getFrontIp(), front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
+                //check port
+                Integer[] portArray = new Integer[]{front.getChannelPort(), front.getP2pPort(), front.getJsonrpcPort()};
+                Arrays.stream(portArray).forEach(port -> {
+                    if (Objects.nonNull(port)) {
+                        Pair<Boolean, Integer> portReachable = NetUtils.anyPortNotInUse(front.getFrontIp(),
+                                front.getSshUser(),
+                                front.getSshPort(),
+                                constantProperties.getPrivateKey(),
+                                port);
+                        if (portReachable.getKey()) {
+                            String message = String.format("Port:[%1d] is not in use on host :[%2s] failed", portReachable.getValue(), front.getFrontIp());
+                            throw new BaseException(ConstantCode.CHECK_PORT_NOT_SUCCESS.getCode(), message);
+                        }
+                    }
+                });
+            }
+        }
+
+        log.info("finish checkBeforeAddNewChain ");
+    }
+
 
     /**
      * remove chain
@@ -172,6 +260,8 @@ public class ChainService {
             frontGroupMapCache.clearMapList(chainId);
             // reset group list
             resetGroupListTask.asyncResetGroupList();
+            // remove task
+            taskManager.removeByChainId(chainId);
 
             log.info("Delete chain:[{}] config files", chainId);
             try {
@@ -235,7 +325,7 @@ public class ChainService {
 
         // exec build_chain.sh shell script
 
-        String fiscoVersion = StringUtils.removeStart(deploy.getVersion(),"v");
+        String fiscoVersion = StringUtils.removeStart(deploy.getVersion(), "v");
         deployShellService.execBuildChain(encryptType, ipConf, fiscoVersion, deploy.getChainName());
 
         try {
@@ -269,7 +359,7 @@ public class ChainService {
                         reqDeploy.getStorageType(), DeployTypeEnum.API);
 
         // save group if new , default node count = 0
-        this.groupService.saveGroup(ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), 0, "deploy", GroupType.DEPLOY.getValue());
+        groupManager.saveGroup("", null, ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), null, 0, "deploy", GroupType.DEPLOY.getValue());
 
         // insert default group
         Map<String, AtomicInteger> ipIndexMap = new HashMap<>();
@@ -431,5 +521,7 @@ public class ChainService {
         // check front start
         return this.frontService.frontProgress(chain.getChainId());
     }
+
+
 
 }

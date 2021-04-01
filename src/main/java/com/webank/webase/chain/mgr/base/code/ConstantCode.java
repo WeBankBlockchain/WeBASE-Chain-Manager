@@ -119,7 +119,7 @@ public class ConstantCode {
     // JSON PARSE
     public static final RetCode FAIL_PARSE_JSON = RetCode.mark(205034, "Fail to parse json");
     public static final RetCode CHAIN_ID_NOT_EXISTS = RetCode.mark(205035, "chain id not exists");
-
+    public static final RetCode BUILD_TIME_NOT_MATCH = RetCode.mark(205036, "node's build time not match");
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(205100, "param exception");
@@ -200,4 +200,36 @@ public class ConstantCode {
     public static final RetCode FILE_NOT_EXISTS = RetCode.mark(205272, "Image tar file not exits.");
     public static final RetCode CHECK_PORT_NOT_SUCCESS = RetCode.mark(205273, "port check not success.");
     public static final RetCode HOST_INIT_NOT_SUCCESS = RetCode.mark(205274, "host init not success");
+    public static final RetCode IN_FUNCPARAM_ERROR = RetCode.mark(205259, "contract funcParam is error");
+    public static final RetCode ABI_PARSE_ERROR = RetCode.mark(205260, "abi parse error");
+    public static final RetCode INVALID_ENCRYPT_TYPE = RetCode.mark(205261, "invalid encrypt type");
+    public static final RetCode FUNCTION_NOT_EXISTS = RetCode.mark(205262, "function is not exists");
+    public static final RetCode FOUND_TOO_MANY_DATA_BY_APP_ID = RetCode.mark(205263, "found too many group by appId");
+    public static final RetCode INVALID_APP_ID = RetCode.mark(205264, "invalid appId");
+    public static final RetCode REST_REQUEST_FAIL = RetCode.mark(205265, "rest server request not success");
+    public static final RetCode GROUP_NAME_EMPTY = RetCode.mark(205266, "group name empty");
+    public static final RetCode DUPLICATE_GROUP_NAME = RetCode.mark(205267, "duplicate group name");
+    public static final RetCode NOT_FOUND_GROUP_BY_ID_AND_CHAIN = RetCode.mark(205268, "not found group by chain and groupId");
+    public static final RetCode GET_LIST_MANAGER_FAIL = RetCode.mark(205269, "get list of manager on chain fail");
+    public static final RetCode CRUD_TABLE_KEY_LENGTH_ERROR = RetCode.mark(205270, "table key length error");
+    public static final RetCode CRUD_PARSE_CONDITION_ENTRY_FIELD_JSON_ERROR = RetCode.mark(205271, "crud's param parse json error");
+    public static final RetCode PRECOMPILED_COMMON_TRANSFER_JSON_FAIL = RetCode.mark(205272, "precompiled common transfer to json fail");
+    public static final RetCode TX_RECEIPT_OUTPUT_PARSE_JSON_FAIL = RetCode.mark(205273, "transaction receipt fail and parse output fail");
+    public static final RetCode TX_RECEIPT_OUTPUT_NULL = RetCode.mark(205274, "transaction receipt fail and output is null");
+    public static final RetCode TX_RECEIPT_CODE_ERROR = RetCode.mark(205275, "transaction receipt status return error");
+    public static final RetCode NODE_PARAM_EMPTY = RetCode.mark(205276, "nodeId input is empty");
+    public static final RetCode INVALID_NODE_TYPE = RetCode.mark(205277, "invalid node type: sealer, observer, remove ");
+    public static final RetCode INVALID_NODE_ID = RetCode.mark(205278, "invalid node id");
+    public static final RetCode SET_CONSENSUS_STATUS_FAIL = RetCode.mark(205279, "set consensus status not success");
+    public static final RetCode NOT_FOUND_OBSERVER_NODE = RetCode.mark(205280, "not found observer nodes");
+    public static final RetCode NODE_IN_TASK = RetCode.mark(205281, "node is already in task");
+    public static final RetCode ADD_SEALER_ASYNC_FAIL = RetCode.mark(205282, "add sealer async not success");
+    public static final RetCode NOT_FOUND_GENESIS_NODE_LIST_OF_GROUP = RetCode.mark(205283, "not found genesis node list of this group");
+    public static final RetCode SOLC_NOT_SUPPORT_OS = RetCode.mark(205284, "The current system does not support contract compilation");
+    public static final RetCode FAIL_TO_CREATE_TEMP_FILE = RetCode.mark(205285, "fail to create temp file");
+    public static final RetCode NODE_ID_EMPTY = RetCode.mark(205286, "node id is empty");
+    public static final RetCode NOT_FOUND_GROUP_BY_AGENCY_AND_CHAIN = RetCode.mark(205287, "not found group by agency and chain");
+    public static final RetCode NOT_FOUND_VALID_NODE = RetCode.mark(205288, "not found valid node");
+    public static final RetCode NODE_ID_NOT_MATCH = RetCode.mark(205289, "node id not match");
+
 }

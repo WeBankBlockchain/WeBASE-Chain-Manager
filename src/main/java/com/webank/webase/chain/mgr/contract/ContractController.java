@@ -17,13 +17,17 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.enums.SqlSortType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.contract.entity.*;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
+import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -35,6 +39,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Log4j2
 @RestController
@@ -43,6 +48,10 @@ public class ContractController extends BaseController {
 
     @Autowired
     private ContractService contractService;
+    @Autowired
+    private GroupService groupService;
+    @Autowired
+    private CompileService compileService;
 
     /**
      * compile deployInputParam.
@@ -63,6 +72,26 @@ public class ContractController extends BaseController {
         log.info("end compileContract useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
 
+        return baseResponse;
+    }
+
+
+    /**
+     * @param contractId
+     * @return
+     * @throws BaseException
+     * @throws IOException
+     */
+    @PostMapping(value = "/compile/{contractId}")
+    public BaseResponse compileByContractId(@PathVariable("contractId") Integer contractId) throws BaseException {
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start compileByContractId startTime:{} contractId:{}", startTime.toEpochMilli(), contractId);
+
+        TbContract contract = compileService.compileByContractId(contractId);
+        baseResponse.setData(contract);
+
+        log.info("end compileContract useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
         return baseResponse;
     }
 
@@ -110,6 +139,30 @@ public class ContractController extends BaseController {
 
 
     /**
+     * remove contract
+     *
+     * @param param
+     * @param result
+     * @return
+     * @throws BaseException
+     */
+    @PostMapping(value = "remove")
+    public BaseResponse deleteContract(@RequestBody @Valid ReqContractVO param, BindingResult result) throws BaseException {
+        checkBindResult(result);
+
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start deleteContract startTime:{} param:{}", startTime.toEpochMilli(), JsonTools.objToString(param));
+
+        contractService.deleteByContractId(param.getContractId());
+
+        log.info("end deleteContract useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return baseResponse;
+    }
+
+
+    /**
      * qurey contract info list.
      */
     @PostMapping(value = "/contractList")
@@ -121,9 +174,17 @@ public class ContractController extends BaseController {
         log.info("start contractList. startTime:{} inputParam:{}", startTime.toEpochMilli(),
                 JsonTools.toJSONString(inputParam));
 
+        //get groupId which status is normal
+        List<TbGroup> groupList = groupService.getGroupList(inputParam.getChainId(), DataStatus.NORMAL.getValue());
+        List<Integer> groupIds = null;
+        if (CollectionUtils.isNotEmpty(groupList))
+            groupIds = groupList.stream().map(g -> g.getGroupId()).distinct().collect(Collectors.toList());
+
         // param
         ContractParam queryParam = new ContractParam();
         BeanUtils.copyProperties(inputParam, queryParam);
+        queryParam.setGroupIdList(groupIds);
+
 
         int count = contractService.countOfContract(queryParam);
         if (count > 0) {
@@ -141,6 +202,29 @@ public class ContractController extends BaseController {
         log.info("end contractList. useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
         return pagesponse;
+    }
+
+
+    /**
+     * @param inputParam
+     * @param result
+     * @return
+     * @throws BaseException
+     */
+    @PostMapping(value = "/page")
+    public BasePageResponse queryContractPage(@RequestBody @Valid ReqQueryContractPage inputParam,
+                                              BindingResult result) throws BaseException {
+        checkBindResult(result);
+        BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start queryContractPage. startTime:{} inputParam:{}", startTime.toEpochMilli(),
+                JsonTools.toJSONString(inputParam));
+
+        BasePageResponse basePageResponse = contractService.queryContractPage(inputParam);
+
+        log.info("end queryContractPage useTime:{} result:{}",
+                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(basePageResponse));
+        return basePageResponse;
     }
 
 
@@ -185,9 +269,29 @@ public class ContractController extends BaseController {
     }
 
 
+    @PostMapping(value = "/deployByContractId")
+    public BaseResponse deployByContractId(@RequestBody @Valid ReqDeployByContractIdVO deployInputParam,
+                                           BindingResult result) throws BaseException {
+        checkBindResult(result);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start queryContract startTime:{} deployInputParam:{}", startTime.toEpochMilli(),
+                JsonTools.toJSONString(deployInputParam));
+
+        TbContract tbContract = contractService.deployByContractId(deployInputParam);
+        baseResponse.setData(tbContract);
+
+        log.info("end deployContract useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+
+        return baseResponse;
+    }
+
+
     /**
-     * send transaction.
+     * send transaction.  改用：trans/sendByContractId
      */
+    @Deprecated
     @PostMapping(value = "/transaction")
     public BaseResponse sendTransaction(@RequestBody @Valid TransactionInputParam param,
                                         BindingResult result) throws BaseException {

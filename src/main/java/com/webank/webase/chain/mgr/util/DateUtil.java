@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 public class DateUtil {
     public static final DateTimeFormatter _YYYY_MM_DD_HH_MM_SS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter YYYYMMDD_HHMMSS = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+    public static final DateTimeFormatter YYYYMMDDHHMMSS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter _YYYY_MM_DD = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 

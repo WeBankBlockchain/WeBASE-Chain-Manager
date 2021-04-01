@@ -1,6 +1,7 @@
 package com.webank.webase.chain.mgr.repository.bean;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,6 +13,19 @@ import lombok.ToString;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class TbGroup implements Serializable {
+
+    public TbGroup(BigInteger timestamp, Integer groupId, Integer chainId, String groupName, Integer nodeCount, String description, Integer groupType) {
+        this.groupId = groupId;
+        this.chainId = chainId;
+        this.groupName = groupName;
+        this.nodeCount = nodeCount;
+        this.description = description;
+        this.groupType = groupType.byteValue();
+        this.groupTimestamp = String.valueOf(timestamp);
+        Date now = new Date();
+        this.createTime = now;
+        this.modifyTime = now;
+    }
 
     public TbGroup(Integer groupId, Integer chainId, String groupName, Integer nodeCount, String description, Integer groupType) {
         this.groupId = groupId;

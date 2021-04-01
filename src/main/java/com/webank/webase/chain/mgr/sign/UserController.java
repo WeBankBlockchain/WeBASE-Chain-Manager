@@ -1,24 +1,24 @@
 package com.webank.webase.chain.mgr.sign;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.controller.BaseController;
+import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.sign.req.ReqNewUser;
+import com.webank.webase.chain.mgr.sign.req.ReqUpdateUserVo;
+import com.webank.webase.chain.mgr.sign.rsp.RspUserInfo;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.webank.webase.chain.mgr.base.controller.BaseController;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.sign.req.ReqNewUser;
-
-import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
 /**
  *
@@ -29,7 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("user")
 public class UserController extends BaseController {
 
-    @Autowired private UserService userService;
+    @Autowired
+    private UserService userService;
 
     /**
      * get user list by app id
@@ -49,10 +50,52 @@ public class UserController extends BaseController {
      */
     @ApiOperation(value = "register a new user in WeBASE-Sign", notes = "注册用户 id")
     @PostMapping("/newUser")
-    public Object newUser(@Valid @RequestBody ReqNewUser reqNewUser, BindingResult result) throws BaseException {
+    public BaseResponse newUser(@Valid @RequestBody ReqNewUser reqNewUser, BindingResult result) throws BaseException {
         checkBindResult(result);
         log.info("newUser start.");
-        return userService.newUser(reqNewUser);
+        RspUserInfo userInfo = userService.newUser(reqNewUser);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        baseResponse.setData(userInfo);
+        log.debug("newUser success result:{}", JsonTools.objToString(baseResponse));
+        return baseResponse;
     }
 
+    /**
+     * update user description.
+     *
+     * @param param
+     * @param result
+     * @return
+     * @throws BaseException
+     */
+    @ApiOperation(value = "update description of user", notes = "修改用户备注")
+    @PatchMapping("/update")
+    public BaseResponse updateUser(@Valid @RequestBody ReqUpdateUserVo param, BindingResult result) throws BaseException {
+        checkBindResult(result);
+        log.info("updateUser start.");
+        userService.updateUserDescription(param.getSignUserId(), param.getDescription());
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("updateUser success result:{}", JsonTools.objToString(baseResponse));
+        return baseResponse;
+    }
+
+
+    /**
+     * @param pageNumber
+     * @param pageSize
+     * @param appIds
+     * @return
+     */
+    @ApiOperation(value = "query user by page", notes = "分页查询用户列表")
+    @GetMapping("/page")
+    public BasePageResponse queryUserPage(@RequestParam("pageNumber") Integer pageNumber,
+                                          @RequestParam("pageSize") Integer pageSize,
+                                          @RequestParam(value = "chainIds", required = false) List<Integer> chainIds,
+                                          @RequestParam(value = "appIds", required = false) List<String> appIds) {
+        log.info("queryUserPage start. pageNumber：{}  pageSize：{} chainIds:{} appIds：{}", pageNumber, pageSize, JsonTools.objToString(chainIds), JsonTools.objToString(appIds));
+
+        BasePageResponse pageResponse = userService.queryUserPage(pageNumber, pageSize, chainIds, appIds);
+        log.info("queryUserPage finish. pageNumber：{}  pageSize：{} chainIds:{} appIds：{} result:{}", pageNumber, pageSize, JsonTools.objToString(chainIds), JsonTools.objToString(appIds), JsonTools.objToString(pageResponse));
+        return pageResponse;
+    }
 }

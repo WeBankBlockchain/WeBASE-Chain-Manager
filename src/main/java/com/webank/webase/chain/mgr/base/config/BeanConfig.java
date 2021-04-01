@@ -87,7 +87,7 @@ public class BeanConfig {
         executor.setMaxPoolSize(executorProperties.getMaxPoolSize());
         executor.setQueueCapacity(executorProperties.getQueueSize());
         executor.setThreadNamePrefix(executorProperties.getThreadNamePrefix());
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
         // init executor
         executor.initialize();
         return executor;
