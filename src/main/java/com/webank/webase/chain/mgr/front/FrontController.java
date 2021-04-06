@@ -101,7 +101,7 @@ public class FrontController extends BaseController {
         } else {
             List<TbFront> frontList = frontService.listFront(chainId, groupId, frontId, agencyId);
             pageResponse.setTotalCount(frontList.size());
-            pageResponse.setData(frontId);
+            pageResponse.setData(frontList);
         }
 
 
