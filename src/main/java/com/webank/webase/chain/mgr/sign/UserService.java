@@ -88,6 +88,7 @@ public class UserService {
                     .filter(user -> user.getSignUserId().equals(rspUserInfo.getSignUserId()))
                     .findFirst()
                     .ifPresent(u -> {
+                        rspUserInfo.setId(u.getId());
                         rspUserInfo.setChainId(u.getChainId());
                         rspUserInfo.setGroupId(u.getGroupId());
                         rspUserInfo.setSignUserName(u.getUserName());
