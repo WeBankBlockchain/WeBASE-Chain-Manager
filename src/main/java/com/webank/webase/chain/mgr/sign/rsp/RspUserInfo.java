@@ -23,6 +23,7 @@ import lombok.Data;
  */
 @Data
 public class RspUserInfo {
+    private Integer id;
     private String signUserId;
     private String appId;
     private Integer groupId;
