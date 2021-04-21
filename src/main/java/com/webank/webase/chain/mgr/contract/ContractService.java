@@ -28,7 +28,10 @@ import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
 import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.method.MethodService;
-import com.webank.webase.chain.mgr.repository.bean.*;
+import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import com.webank.webase.chain.mgr.repository.bean.TbContractExample;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.sign.UserService;
@@ -40,7 +43,6 @@ import com.webank.webase.chain.mgr.util.HttpEntityUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.core.util.JsonUtils;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
@@ -53,7 +55,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * services for contract data.
@@ -114,7 +115,6 @@ public class ContractService {
 
 
     /**
-     *
      * @param inputParam
      * @return
      */
@@ -134,27 +134,33 @@ public class ContractService {
                 TbContractExample.Criteria criteria = example.createCriteria();
                 criteria.andChainIdEqualTo(tbGroup.getChainId());
                 criteria.andGroupIdEqualTo(tbGroup.getGroupId());
+                if (CollectionUtils.isNotEmpty(inputParam.getChainIds()))
+                    criteria.andChainIdIn(inputParam.getChainIds());
+                if (null != inputParam.getContractStatus())
+                    criteria.andContractStatusEqualTo(inputParam.getContractStatus());
                 example.or(criteria);
             }
+        }else {
+            TbContractExample.Criteria criteriaComm = example.createCriteria();
+            if (CollectionUtils.isNotEmpty(inputParam.getChainIds()))
+                criteriaComm.andChainIdIn(inputParam.getChainIds());
+            if (null != inputParam.getContractStatus())
+                criteriaComm.andContractStatusEqualTo(inputParam.getContractStatus());
         }
-
-        TbContractExample.Criteria criteriaComm = example.createCriteria();
-        if (CollectionUtils.isNotEmpty(inputParam.getChainIds()))
-            criteriaComm.andChainIdIn(inputParam.getChainIds());
-        if (null != inputParam.getContractStatus())
-            criteriaComm.andChainIdIn(inputParam.getChainIds());
 
         BasePageResponse basePageResponse = new BasePageResponse(ConstantCode.SUCCESS);
         basePageResponse.setTotalCount(new Long(tbContractMapper.countByExample(example)).intValue());
         if (basePageResponse.getTotalCount() > 0)
-            basePageResponse.setData(tbContractMapper.selectByExample(example));
+            if (inputParam.getContainDetailFields()) {
+                basePageResponse.setData(tbContractMapper.selectByExampleWithBLOBs(example));
+            } else {
+                basePageResponse.setData(tbContractMapper.selectByExample(example));
+            }
+
 
         log.info("success exec method [queryContractPage] result:{}", JsonTools.objToString(basePageResponse));
         return basePageResponse;
     }
-
-
-
 
 
 
@@ -176,6 +182,7 @@ public class ContractService {
 
 
     /**
+     *
      * save new contract.
      */
     private TbContract newContract(Contract contract) {

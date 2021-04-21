@@ -29,4 +29,13 @@ public enum ContractStatus {
     public byte getValue() {
         return this.value;
     }
+
+    public static ContractStatus getByValue(byte value) {
+        for (ContractStatus enumObj : ContractStatus.values()) {
+            if (enumObj.value == value) {
+                return enumObj;
+            }
+        }
+        return null;
+    }
 }
