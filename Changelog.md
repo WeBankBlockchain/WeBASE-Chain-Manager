@@ -1,3 +1,20 @@
+### v1.4.3 (2021-01-27)
+
+**Fix**
+
+-  web3sdk升级为2.4.2
+- 优化合约字段长度
+
+**兼容性**
+
+- FISCO-BCOS v2.4.0+
+- WeBASE-Front v1.4.0+
+- WeBASE-Sign v1.4.0+
+
+详细了解,请阅读[**技术文档**](https://webasedoc.readthedocs.io/zh_CN/latest/)
+
+
+
 ### v1.1.1 (2020-06-17)
 
 **Fix**
@@ -11,6 +28,8 @@
 - WeBASE-Sign bsn 版本
 
 详细了解,请阅读[**技术文档**](https://webasedoc.readthedocs.io/zh_CN/latest/)
+
+
 
 ### v1.1.0 (2020-04-03)
 
