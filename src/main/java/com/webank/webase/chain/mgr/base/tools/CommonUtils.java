@@ -45,6 +45,8 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.web3j.crypto.Sign;
+import org.fisco.bcos.web3j.utils.Numeric;
 
 /**
  * common method.
@@ -463,6 +465,27 @@ public class CommonUtils {
             } catch (IOException e) {
                 log.error("closeable IOException:[{}]", e.toString());
             }
+        }
+    }
+
+    /**
+     * stringToSignatureData.
+     * 19/12/24 support guomi： add byte[] pub in signatureData
+     * @param signatureData signatureData
+     * @return
+     */
+    public static Sign.SignatureData stringToSignatureData(String signatureData, int encryptType) {
+        byte[] byteArr = Numeric.hexStringToByteArray(signatureData);
+        byte[] signR = new byte[32];
+        System.arraycopy(byteArr, 1, signR, 0, signR.length);
+        byte[] signS = new byte[32];
+        System.arraycopy(byteArr, 1 + signR.length, signS, 0, signS.length);
+        if (encryptType == 1) {
+            byte[] pub = new byte[64];
+            System.arraycopy(byteArr, 1 + signR.length + signS.length, pub, 0, pub.length);
+            return new Sign.SignatureData(byteArr[0], signR, signS, pub);
+        } else {
+            return new Sign.SignatureData(byteArr[0], signR, signS);
         }
     }
 }

@@ -54,7 +54,7 @@ List jaxb = [
 ]
 
 List lombok = [
-    "org.projectlombok:lombok:1.18.2"
+    "org.projectlombok:lombok:1.18.12"
 ]
 
 List jwt = [
@@ -83,7 +83,8 @@ List mysql = [
 ]
 
 List test = [
-    "org.springframework.boot:spring-boot-starter-test:$springboot_version"
+    "org.springframework.boot:spring-boot-starter-test:$springboot_version",
+    "com.github.yuanmomo:mybatis-generator-plugin:1.0.10",
 ]
 
 def log4j_version="2.13.3"
@@ -95,11 +96,24 @@ List log4j = [
 ]
 dependencies {
     compile springboot,spring,jaxb,jwt,swagger,jackson,mysql,log4j
-    compile 'org.fisco-bcos:web3sdk:2.4.2'
+    compile 'org.fisco-bcos:web3sdk:2.6.2'
+    compile "org.apache.commons:commons-lang3:3.8.1"
     compile "org.apache.commons:commons-lang3:3.8.1"
 
-    compile lombok
+    compile 'com.jcraft:jsch:0.1.55'
+    compile 'org.ini4j:ini4j:0.5.4'
+    compile ('com.github.docker-java:docker-java:3.2.1') {
+        exclude group: 'io.netty'
+    }
+    compile 'org.thymeleaf:thymeleaf:3.0.11.RELEASE'
+    compile 'ognl:ognl:3.2.14'
+
+    compileOnly lombok
     annotationProcessor lombok
+
+    testCompileOnly lombok
+    testAnnotationProcessor lombok
+
 
     testCompile test
 }
@@ -153,6 +167,10 @@ jar {
         copy {
             from file('script/')
             into 'dist/script'
+        }
+        copy {
+            from file('solc/')
+            into 'dist/solc'
         }
         copy {
             from configurations.runtime

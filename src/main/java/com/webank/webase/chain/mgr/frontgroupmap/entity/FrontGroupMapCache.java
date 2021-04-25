@@ -13,19 +13,21 @@
  */
 package com.webank.webase.chain.mgr.frontgroupmap.entity;
 
-import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 
 @Component
 public class FrontGroupMapCache {
 
-    @Autowired
-    private FrontGroupMapService mapService;
+    @Autowired private TbFrontGroupMapMapper tbFrontGroupMapMapper;
 
     private static Map<Integer, List<FrontGroup>> mapList = new ConcurrentHashMap<>();
 
@@ -40,9 +42,7 @@ public class FrontGroupMapCache {
      * reset mapList.
      */
     public Map<Integer, List<FrontGroup>> resetMapList(int chainId) {
-        MapListParam param = new MapListParam();
-        param.setChainId(chainId);
-        mapList.put(chainId, mapService.getList(param));
+        mapList.put(chainId, this.tbFrontGroupMapMapper.selectByChainId(chainId));
         return mapList;
     }
 
