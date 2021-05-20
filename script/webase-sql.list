@@ -3,6 +3,8 @@
 source webase-ddl.sql;
 source webase-dml.sql;
 
+# dev-0.3
+source webase-ddl-0.3.0.sql
 # dev-0.5
 source webase-ddl-0.5.sql
 # dev-0.6
