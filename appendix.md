@@ -4,47 +4,77 @@
 
 ### 1.1 Java部署
 
-此处给出OpenJDK安装简单步骤，供快速查阅。更详细的步骤，请参考[官网](https://openjdk.java.net/install/index.html)。
+<span id="jdk"></span>
 
-#### ① 安装包下载
+##### CentOS环境安装Java
 
-从[官网](https://jdk.java.net/java-se-ri/11)下载对应版本的java安装包，并解压到服务器相关目录
+<span id="centosjava"></span>
 
-```shell
-mkdir /software
-tar -zxvf openjdkXXX.tar.gz /software/
-```
-
-#### ② 配置环境变量
-
-- 修改/etc/profile
+**注意：CentOS下OpenJDK无法正常工作，需要安装OracleJDK[下载链接](https://www.oracle.com/technetwork/java/javase/downloads/index.html)。**
 
 ```
-sudo vi /etc/profile
-```
+# 创建新的文件夹，安装Java 8或以上的版本，将下载的jdk放在software目录
+# 从Oracle官网(https://www.oracle.com/technetwork/java/javase/downloads/index.html)选择Java 8或以上的版本下载，例如下载jdk-8u201-linux-x64.tar.gz
+$ mkdir /software
 
-- 在/etc/profile末尾添加以下信息
+# 解压jdk
+$ tar -zxvf jdk-8u201-linux-x64.tar.gz
 
-```shell
-JAVA_HOME=/software/jdk-11
-PATH=$PATH:$JAVA_HOME/bin
-CLASSPATH==.:$JAVA_HOME/lib
-export JAVA_HOME CLASSPATH PATH
-```
+# 配置Java环境，编辑/etc/profile文件
+$ vim /etc/profile
 
-- 重载/etc/profile
+# 打开以后将下面三句输入到文件里面并保存退出
+export JAVA_HOME=/software/jdk-8u201  #这是一个文件目录，非文件
+export PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 
-```
-source /etc/profile
-```
+# 生效profile
+$ source /etc/profile
 
-#### ③ 查看版本
-
-```
+# 查询Java版本，出现的版本是自己下载的版本，则安装成功。
 java -version
 ```
 
-### 1.2. 数据库部署
+##### Ubuntu环境安装Java
+
+<span id="ubuntujava"></span>
+
+```
+  # 安装默认Java版本(Java 8或以上)
+  sudo apt install -y default-jdk
+  # 查询Java版本
+  java -version
+```
+
+<span id="gradle"></span>
+
+### 1.2 Gradle部署
+
+此处给出简单步骤，供快速查阅。更详细的步骤，请参考[官网](http://www.gradle.org/downloads)。
+
+（1）从[官网](http://www.gradle.org/downloads)下载对应版本的Gradle安装包，并解压到相应目录
+
+```shell
+mkdir /software/
+unzip -d /software/ gradleXXX.zip
+```
+
+（2）配置环境变量
+
+```shell
+export GRADLE_HOME=/software/gradle-4.9
+export PATH=$GRADLE_HOME/bin:$PATH
+```
+
+（3）查看版本
+
+```
+gradle -version
+```
+
+<span id="mysql"></span>
+
+### 1.3. 数据库部署
 
 此处以Centos安装*MariaDB*为例。*MariaDB*数据库是 MySQL 的一个分支，主要由开源社区在维护，采用 GPL 授权许可。*MariaDB*完全兼容 MySQL，包括API和命令行。其他安装方式请参考[MySQL官网](https://dev.mysql.com/downloads/mysql/)。
 
@@ -128,6 +158,8 @@ mysql > create database webasechainmanager;
 
 ## 2. 常见问题
 
+<span id="q&a"></span>
+
 ### 2.1 脚本没权限
 
 - 执行shell脚本报错误"permission denied"或格式错误
@@ -179,6 +211,8 @@ ERROR 2003 (HY000): Can't connect to MySQL server on '127.0.0.1' (110)
 ```
 GRANT ALL PRIVILEGES ON *.* TO 'TestUser'@'%' IDENTIFIED BY '此处为TestUser的密码’' WITH GRANT OPTION;
 ```
+
+<span id="application-yml"></span>
 
 ## 3. application.yml配置项说明
 
