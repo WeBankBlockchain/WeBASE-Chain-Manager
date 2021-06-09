@@ -118,3 +118,6 @@ CREATE TABLE IF NOT EXISTS tb_task (
 
 -- tb_contract
 ALTER TABLE tb_contract ADD COLUMN save_by_agency int(10) DEFAULT  NULL COMMENT '合约发起机构（合约首次保存的机构Id）' AFTER group_id;
+
+-- tb_node
+ALTER TABLE tb_node MODIFY COLUMN node_name varchar(255) NOT NULL COMMENT '节点名称';
