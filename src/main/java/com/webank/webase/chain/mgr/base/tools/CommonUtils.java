@@ -1,11 +1,11 @@
 /**
  * Copyright 2014-2019 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -18,12 +18,11 @@ import com.webank.webase.chain.mgr.base.code.RetCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.pagetools.entity.MapHandle;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.InetAddress;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -31,20 +30,14 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.web3j.crypto.Sign;
+import org.fisco.bcos.web3j.utils.Numeric;
 
 /**
  * common method.
@@ -126,7 +119,6 @@ public class CommonUtils {
     }
 
 
-
     /**
      * convert list to url param.
      */
@@ -168,25 +160,6 @@ public class CommonUtils {
         return map;
     }
 
-    /**
-     * check server host.
-     */
-    public static void checkServerHostConnect(String serverHost) {
-        Boolean state;
-        try {
-            InetAddress address = InetAddress.getByName(serverHost);
-            state = address.isReachable(500);
-        } catch (Exception ex) {
-            log.error("fail checkServerHostConnect", ex);
-            throw new BaseException(ConstantCode.SERVER_CONNECT_FAIL);
-        }
-
-        if (!state) {
-            log.info("host connect state:{}", state);
-            throw new BaseException(ConstantCode.SERVER_CONNECT_FAIL);
-        }
-    }
-
 
     /**
      * check host an port.
@@ -207,7 +180,7 @@ public class CommonUtils {
             log.error("fail checkServerConnect", ex);
             throw new BaseException(ConstantCode.SERVER_CONNECT_FAIL);
         } finally {
-            if (Objects.nonNull(socket)) {
+            if (socket != null && !socket.isClosed()) {
                 try {
                     socket.close();
                 } catch (IOException e) {
@@ -234,9 +207,9 @@ public class CommonUtils {
     /**
      * check target time is valid.
      *
-     * @param dateTime target time.
+     * @param dateTime    target time.
      * @param validLength y:year, M:month, d:day of month, h:hour, m:minute, n:forever valid;
-     *        example1:1d;example2:n
+     *                    example1:1d;example2:n
      */
     public static boolean isDateTimeInValid(LocalDateTime dateTime, String validLength) {
         log.debug("start isDateTimeInValid. dateTime:{} validLength:{}", dateTime, validLength);
@@ -295,7 +268,7 @@ public class CommonUtils {
 
     /**
      * sort Mappings
-     * 
+     *
      * @param mapping
      * @return List<MapHandle>
      */
@@ -318,7 +291,7 @@ public class CommonUtils {
 
     /**
      * parseHexStr2Int.
-     * 
+     *
      * @param str str
      * @return
      */
@@ -331,7 +304,7 @@ public class CommonUtils {
 
     /**
      * delete Files.
-     * 
+     *
      * @param path path
      * @return
      */
@@ -369,7 +342,7 @@ public class CommonUtils {
 
     /**
      * delete single File.
-     * 
+     *
      * @param filePath filePath
      * @return
      */
@@ -385,7 +358,7 @@ public class CommonUtils {
 
     /**
      * 文件转Base64
-     * 
+     *
      * @param filePath 文件路径
      * @return
      */
@@ -410,7 +383,7 @@ public class CommonUtils {
 
     /**
      * 文件压缩并Base64加密
-     * 
+     *
      * @param srcFiles
      * @return
      */
@@ -427,12 +400,16 @@ public class CommonUtils {
                         srcFile.length());
                 zos.putNextEntry(new ZipEntry(srcFile.getName()));
                 int len;
-                FileInputStream in = new FileInputStream(srcFile);
-                while ((len = in.read(buf)) != -1) {
-                    zos.write(buf, 0, len);
+                FileInputStream in = null;
+                try {
+                    in = new FileInputStream(srcFile);
+                    while ((len = in.read(buf)) != -1) {
+                        zos.write(buf, 0, len);
+                    }
+                    zos.closeEntry();
+                } finally {
+                    close(in);
                 }
-                zos.closeEntry();
-                in.close();
             }
             long end = System.currentTimeMillis();
             log.info("fileToZipBase64 cost time：[{}] ms", (end - start));
@@ -453,7 +430,7 @@ public class CommonUtils {
 
     /**
      * close Closeable.
-     * 
+     *
      * @param closeable object
      */
     private static void close(Closeable closeable) {
@@ -463,6 +440,27 @@ public class CommonUtils {
             } catch (IOException e) {
                 log.error("closeable IOException:[{}]", e.toString());
             }
+        }
+    }
+
+    /**
+     * stringToSignatureData.
+     * 19/12/24 support guomi： add byte[] pub in signatureData
+     * @param signatureData signatureData
+     * @return
+     */
+    public static Sign.SignatureData stringToSignatureData(String signatureData, int encryptType) {
+        byte[] byteArr = Numeric.hexStringToByteArray(signatureData);
+        byte[] signR = new byte[32];
+        System.arraycopy(byteArr, 1, signR, 0, signR.length);
+        byte[] signS = new byte[32];
+        System.arraycopy(byteArr, 1 + signR.length, signS, 0, signS.length);
+        if (encryptType == 1) {
+            byte[] pub = new byte[64];
+            System.arraycopy(byteArr, 1 + signR.length + signS.length, pub, 0, pub.length);
+            return new Sign.SignatureData(byteArr[0], signR, signS, pub);
+        } else {
+            return new Sign.SignatureData(byteArr[0], signR, signS);
         }
     }
 }

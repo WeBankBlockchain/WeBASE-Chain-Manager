@@ -98,6 +98,9 @@ bash webase.sh 127.0.0.1 3306
 修改数据库名称：sed -i "s/webasechainmanager/${your_db_name}/g" conf/application.yml
 修改数据库用户：sed -i "s/defaultAccount/${your_db_account}/g" conf/application.yml
 修改数据库密码：sed -i "s/defaultPassword/${your_db_password}/g" conf/application.yml
+修改 Sign 地址：sed -i "s/127.0.0.1:5004/${your_webase_sign_address}/g" conf/application.yml
+修改 SSH 账号：sed -i "s/sshDefaultUser: root/sshDefaultUser: ${your_ssh_user}/g" conf/application.yml
+修改 SSH 端口：sed -i "s/sshDefaultPort: 22/sshDefaultPort: ${your_ssh_port}/g" conf/application.yml
 ```
 
 ### 6.2 服务启停

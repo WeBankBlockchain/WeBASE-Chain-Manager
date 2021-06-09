@@ -55,7 +55,6 @@ public class FrontControllerTest {
         param.setFrontIp("localhost");
         param.setFrontPort(5302);
         param.setAgency("1fe");
-        param.setDescription("test");
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post( "/front/new").
             content(JsonTools.toJSONString(param)).
