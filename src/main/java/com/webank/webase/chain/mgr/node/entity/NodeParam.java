@@ -16,18 +16,19 @@
 package com.webank.webase.chain.mgr.node.entity;
 
 import com.webank.webase.chain.mgr.base.entity.BaseQueryParam;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
+
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class NodeParam extends BaseQueryParam {
+    private Integer chainId;
     private Integer groupId;
     private String nodeId;
     private Integer p2pPort;
     private String nodeIp;
+    private Set<String> nodeIds;
 }

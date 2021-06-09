@@ -22,10 +22,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.crypto.Hash;
 import org.fisco.bcos.web3j.crypto.Keys;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
+import org.fisco.bcos.web3j.tx.txdecode.ConstantProperties;
 import org.fisco.bcos.web3j.utils.Numeric;
 
 public class Web3Tools {
@@ -85,4 +90,29 @@ public class Web3Tools {
         return inputs;
     }
 
+
+    /**
+     * get AbiDefinition by Function name
+     * @param funName
+     * @param contractAbi
+     * @return
+     */
+    public static AbiDefinition getAbiDefinition(String funName, String contractAbi) {
+        if (StringUtils.isBlank(contractAbi)) {
+            throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
+        }
+        List<AbiDefinition> abiList = JsonTools.toJavaObjectList(contractAbi, AbiDefinition.class);
+        if (abiList == null) {
+            throw new BaseException(ConstantCode.FAIL_PARSE_JSON);
+        }
+        AbiDefinition result = null;
+        for (AbiDefinition abiDefinition : abiList) {
+            if (ConstantProperties.TYPE_FUNCTION.equals(abiDefinition.getType())
+                    && funName.equals(abiDefinition.getName())) {
+                result = abiDefinition;
+                break;
+            }
+        }
+        return result;
+    }
 }
