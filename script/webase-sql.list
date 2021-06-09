@@ -1,5 +1,5 @@
 #!/bin/bash
 
 source webase-ddl.sql;
-source webase-ddl-1.5.1.sql;
-source webase-dml-1.5.1.sql;
+source webase-ddl-1.5.2.sql;
+source webase-dml-1.5.2.sql;
