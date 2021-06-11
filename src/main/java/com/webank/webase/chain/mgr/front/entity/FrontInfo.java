@@ -39,11 +39,11 @@ public class FrontInfo {
     private int extCompanyId;
 
     @ApiModelProperty(value = "主机所属组织名称", required = true)
-    @NotBlank
+//    @NotBlank
     private String agency;
 
     @ApiModelProperty(value = "主机所属组织 ID", example = "10", required = true)
-    @Positive(message = "External agency id error.")
+//    @Positive(message = "External agency id error.")
     private int extAgencyId;
 
     @ApiModelProperty(value = "主机ID", example = "10", required = true)
@@ -70,4 +70,5 @@ public class FrontInfo {
     private Integer channelPort;
     @ApiModelProperty(value = "front关联的节点id,可空。优先调front接口获取nodeId,如果失败才取这个值")
     private String nodeId;
+    private String description;
 }
