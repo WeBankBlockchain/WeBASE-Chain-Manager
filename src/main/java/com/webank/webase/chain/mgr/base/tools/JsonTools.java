@@ -198,7 +198,7 @@ public class JsonTools {
         }
         try {
             return obj instanceof String ? (String) obj
-                : OBJECT_MAPPER.get().writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+                : OBJECT_MAPPER.get().writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             log.error("Parse Object to String error : {}", e.getMessage());
             return null;
