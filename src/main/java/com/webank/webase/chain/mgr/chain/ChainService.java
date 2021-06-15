@@ -324,7 +324,6 @@ public class ChainService {
         }
 
         // exec build_chain.sh shell script
-
         String fiscoVersion = StringUtils.removeStart(deploy.getVersion(), "v");
         deployShellService.execBuildChain(encryptType, ipConf, fiscoVersion, deploy.getChainName());
 
@@ -346,6 +345,9 @@ public class ChainService {
     }
 
     /**
+     * 1. insert new tb_chain, save new tb_group
+     * 2. insert tb_front, tb_node, front_group_map
+     * 3. generate front application.yml
      * @param encryptTypeEnum
      * @param version
      * @param reqDeploy
@@ -359,7 +361,8 @@ public class ChainService {
                         reqDeploy.getStorageType(), DeployTypeEnum.API);
 
         // save group if new , default node count = 0
-        groupManager.saveGroup("", null, ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), null, 0, "deploy", GroupType.DEPLOY.getValue());
+        groupManager.saveGroup("", null, ConstantProperties.DEFAULT_GROUP_ID,
+            newChain.getChainId(), null, 0, "deploy", GroupType.DEPLOY.getValue());
 
         // insert default group
         Map<String, AtomicInteger> ipIndexMap = new HashMap<>();

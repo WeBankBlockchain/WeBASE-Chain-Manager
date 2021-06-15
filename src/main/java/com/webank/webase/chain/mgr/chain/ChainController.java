@@ -154,6 +154,14 @@ public class ChainController extends BaseController {
     }
 
 
+    /**
+     * 1. check local docker image & generate chain config files & init chain db data(include chain, front, node, group db data etc.)
+     * 2. init host and start node (init hosts' image & scp config files to host)
+     * @param reqDeploy
+     * @param result
+     * @return
+     * @throws BaseException
+     */
     @ApiOperation(value = "部署链")
     @PostMapping(value = "deploy")
     public BaseResponse deploy(
@@ -170,13 +178,13 @@ public class ChainController extends BaseController {
                 reqDeploy.setChainName(String.valueOf(reqDeploy.getChainId()));
             }
 
-            //verify dockerImageType
+            // verify dockerImageType
             DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqDeploy.getDockerImageType());
 
             // generate node config and return shell execution log
             this.deployService.deployChain(reqDeploy, imageTypeEnum);
 
-            // init host and start node
+            // init host and start node (init image/scp config files)
             this.nodeAsyncService.asyncDeployChain(reqDeploy, OptionType.DEPLOY_CHAIN, imageTypeEnum);
 
             return new BaseResponse(ConstantCode.SUCCESS);
@@ -197,7 +205,7 @@ public class ChainController extends BaseController {
 
         try {
             // generate node config and return shell execution log
-//            this.deployService.addNode(reqAddNode);
+            this.deployService.addNodes(reqAddNode);
 
             return new BaseResponse(ConstantCode.SUCCESS);
         } catch (BaseException e) {

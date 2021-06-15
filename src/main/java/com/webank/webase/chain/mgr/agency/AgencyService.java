@@ -234,4 +234,17 @@ public class AgencyService {
         log.info("success exec method [listAgencyFromFrontList]. result:{}", JsonTools.objToString(agencyList));
         return agencyList;
     }
+
+    /**
+     * add agency
+     */
+
+    /**
+     * delete agency (check if contains nodes)
+     */
+
+    /**
+     * generate agency cert
+     */
+
 }
