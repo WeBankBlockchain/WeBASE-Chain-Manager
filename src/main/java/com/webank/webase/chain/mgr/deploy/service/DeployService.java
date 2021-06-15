@@ -14,6 +14,7 @@
 
 package com.webank.webase.chain.mgr.deploy.service;
 
+import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -37,6 +38,8 @@ public class DeployService {
     @Autowired private ImageService imageService;
 
     /**
+     * 1. check image locally
+     * 2. generate chain config files locally & init chain db data
      * @param deploy
      * @param imageTypeEnum
      * @return
@@ -45,11 +48,24 @@ public class DeployService {
     public void deployChain(ReqDeploy deploy, DockerImageTypeEnum imageTypeEnum) throws BaseException {
 
         // check image tar file when install with offline
-        imageService.checkLocalImageByDockerImageTypeEnum(imageTypeEnum,deploy.getVersion());
+        imageService.checkLocalImageByDockerImageTypeEnum(imageTypeEnum, deploy.getVersion());
         // generate config files and insert data to db
         this.chainService.generateChainConfig(deploy, imageTypeEnum);
     }
 
+    /**
+     * add nodes
+     * @param reqAddNode
+     * @throws BaseException
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void addNodes(ReqAddNode reqAddNode) throws BaseException {
+
+//        // check image tar file when install with offline
+//        imageService.checkLocalImageByDockerImageTypeEnum(imageTypeEnum, deploy.getVersion());
+//        // generate config files and insert data to db
+//        this.chainService.generateChainConfig(deploy, imageTypeEnum);
+    }
 
 }
 

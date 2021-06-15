@@ -80,6 +80,10 @@ public class NodeAsyncService {
     private ImageService imageService;
 
     /**
+     * 1. initHostList
+     *   1.1. install docker and docker-compose,
+     *   1.2. docker pull image
+     * 3. start chain
      * @param deploy
      * @param optionType
      */
@@ -398,7 +402,8 @@ public class NodeAsyncService {
      * @return
      * @throws InterruptedException
      */
-    public List<RespInitHost> initHostList(List<ReqDeploy.DeployHost> hostList, String imageVersion, DockerImageTypeEnum dockerImageTypeEnum) throws InterruptedException {
+    public List<RespInitHost> initHostList(List<ReqDeploy.DeployHost> hostList, String imageVersion,
+        DockerImageTypeEnum dockerImageTypeEnum) throws InterruptedException {
         log.info("Start init imageVersion:{} imagePullType:{} hosts:{} .", imageVersion, dockerImageTypeEnum.getId(), CollectionUtils.size(hostList));
 
         // check image tar file when install with offline

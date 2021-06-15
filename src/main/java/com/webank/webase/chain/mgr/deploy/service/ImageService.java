@@ -61,6 +61,8 @@ public class ImageService {
 
 
     /**
+     * 1. check image exist in remote host
+     * 2. download
      * @param host
      * @param imageVersion
      * @param dockerImageTypeEnum
