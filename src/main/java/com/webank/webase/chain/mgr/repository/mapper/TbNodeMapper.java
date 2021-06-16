@@ -30,6 +30,16 @@ public interface TbNodeMapper {
     @Select({ "select * from tb_node where node_id = #{nodeId}" })
     TbNode getByNodeId(@Param("nodeId") String nodeId);
 
+    @Select({
+        "select * from tb_node where node_id= #{nodeId,jdbcType=VARCHAR} and group_id=#{groupId,jdbcType=INTEGER}"
+    })
+    TbNode getByNodeIdAndGroupId(@Param("nodeId") String nodeId, @Param("groupId") int groupId);
+
+    @Select({
+        "SELECT DISTINCT (group_id ) FROM tb_node WHERE chain_id = #{chainId} and node_id = #{nodeId,jdbcType=VARCHAR} "
+    })
+    List<Integer> selectGroupIdListOfNode(@Param("chainId") int chainId, @Param("nodeId") String nodeId);
+
     @UpdateProvider(type = TbNodeSqlProvider.class, method = "update")
     int update(TbNode tbNode);
 
