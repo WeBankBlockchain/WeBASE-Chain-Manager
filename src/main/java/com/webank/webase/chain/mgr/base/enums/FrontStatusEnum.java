@@ -28,7 +28,9 @@ public enum FrontStatusEnum {
     STOPPED(2, "stopped"),
     UPGRADING(3, "upgrading"),
     ABANDONED(4, "abandoned"),
-    ;
+    ADDING(5, "添加中"),
+    ADD_FAILED(6, "添加失败"),
+    STARTING(7, "启动中");
 
     private int id;
     private String description;
