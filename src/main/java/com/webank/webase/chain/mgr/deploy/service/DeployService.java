@@ -14,27 +14,27 @@
 
 package com.webank.webase.chain.mgr.deploy.service;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.code.RetCode;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
+import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
+import com.webank.webase.chain.mgr.node.NodeService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.chain.ChainService;
-import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
-import com.webank.webase.chain.mgr.util.FileUtil;
-
-import lombok.extern.slf4j.Slf4j;
-
 @Component
 @Slf4j
 public class DeployService {
     @Autowired private ChainService chainService;
-    @Autowired private ConstantProperties constantProperties;
+    @Autowired private NodeService nodeService;
     @Autowired private ImageService imageService;
 
     /**
@@ -53,19 +53,22 @@ public class DeployService {
         this.chainService.generateChainConfig(deploy, imageTypeEnum);
     }
 
-    /**
-     * add nodes
-     * @param reqAddNode
-     * @throws BaseException
-     */
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void addNodes(ReqAddNode reqAddNode) throws BaseException {
 
-//        // check image tar file when install with offline
-//        imageService.checkLocalImageByDockerImageTypeEnum(imageTypeEnum, deploy.getVersion());
-//        // generate config files and insert data to db
-//        this.chainService.generateChainConfig(deploy, imageTypeEnum);
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Pair<RetCode, String> addNodes(ReqAddNode addNode, DockerImageTypeEnum imageTypeEnum)
+        throws BaseException {
+
+        // check docker image of version before add in nodeService
+        // generate config files and insert data to db
+        try {
+            return this.nodeService.addNodes(addNode, imageTypeEnum);
+        } catch (InterruptedException e) {
+            log.error("addNode error :[]", e);
+            throw new BaseException(ConstantCode.ADD_NODE_WITH_UNKNOWN_EXCEPTION_ERROR);
+        }
     }
+
+
 
 }
 
