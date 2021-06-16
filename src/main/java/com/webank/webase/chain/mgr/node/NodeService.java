@@ -13,30 +13,65 @@
  */
 package com.webank.webase.chain.mgr.node;
 
+import com.webank.webase.chain.mgr.agency.AgencyService;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.code.RetCode;
+import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
+import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
+import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.chain.ChainService;
+import com.webank.webase.chain.mgr.deploy.req.DeployHost;
+import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
+import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
+import com.webank.webase.chain.mgr.deploy.service.HostService;
+import com.webank.webase.chain.mgr.deploy.service.ImageService;
+import com.webank.webase.chain.mgr.deploy.service.NodeAsyncService;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
+import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
 import com.webank.webase.chain.mgr.front.FrontManager;
+import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfConsensusStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfSyncStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
+import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
+import com.webank.webase.chain.mgr.repository.bean.TbChain;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
+import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
 import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ValidateUtil;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,6 +101,33 @@ public class NodeService {
     private FrontInterfaceService frontInterface;
     @Autowired
     private FrontManager frontManager;
+    @Autowired
+    private TbChainMapper tbChainMapper;
+    @Autowired
+    private DeployShellService deployShellService;
+    @Autowired
+    private PathService pathService;
+    @Autowired
+    private DockerOptions dockerOptions;
+    @Autowired
+    private FrontService frontService;
+    @Autowired
+    private GroupService groupService;
+    @Autowired
+    private ConstantProperties constantProperties;
+    @Autowired
+    private ChainService chainService;
+    @Autowired
+    private ImageService imageService;
+    @Qualifier(value = "deployAsyncScheduler")
+    @Autowired
+    private ThreadPoolTaskScheduler threadPoolTaskScheduler;
+    @Autowired
+    private HostService hostService;
+    @Autowired
+    private AgencyService agencyService;
+    @Autowired
+    private NodeAsyncService nodeAsyncService;
 
     private static final Long CHECK_NODE_WAIT_MIN_MILLIS = 5000L;
     private static final Long EXT_CHECK_NODE_WAIT_MIN_MILLIS = 3500L;
@@ -569,6 +631,220 @@ public class NodeService {
 
         log.error("fail exec method [getNodeType].  not found record by chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);
         return null;
+    }
+
+    /* add node */
+
+    /**
+     * Add a node. 扩容节点，并重启链的所有节点
+     * include: gen config & update other nodes & restart all node
+     * after check host and init host(dependency,port,image)
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Pair<RetCode, String> addNodes(ReqAddNode addNode,
+        DockerImageTypeEnum dockerImageTypeEnum) throws BaseException, InterruptedException {
+
+        String chainName = addNode.getChainName();
+        int groupId = addNode.getGroupId();
+
+        // validate chain
+        log.info("Check chainId:[{}] exists....", addNode.getChainId());
+        TbChain chain = tbChainMapper.selectByPrimaryKey(addNode.getChainId());
+        if (chain == null) {
+            throw new BaseException(ConstantCode.CHAIN_ID_NOT_EXISTS);
+        }
+        log.info("Check chainName:[{}] exists....", addNode.getChainName());
+        chain = tbChainMapper.getByChainName(addNode.getChainName());
+        if (chain == null) {
+            throw new BaseException(ConstantCode.CHAIN_NAME_NOT_EXISTS_ERROR);
+        }
+
+        // get version from tb_chain
+        String version = chain.getVersion();
+        // check image tar file when install with offline
+        imageService.checkLocalImageByDockerImageTypeEnum(dockerImageTypeEnum, version);
+
+        // get encrypt type
+        EncryptTypeEnum encryptType = EncryptTypeEnum.getById(chain.getChainType());
+
+        // check host connect and docker image
+        List<DeployHost> deployNodeInfoList = addNode.getDeployHostList();
+        for (int i = 0; i < addNode.getDeployHostList().size(); i++) {
+            DeployHost host = addNode.getDeployHostList().get(i);
+            // check host connect
+            SshUtil.verifyHostConnect(host.getIp(), host.getSshUser(), host.getSshPort(), constantProperties.getPrivateKey());
+
+            // check docker image exists on host
+            if (DockerImageTypeEnum.MANUAL == dockerImageTypeEnum) {
+                boolean exists = this.dockerOptions.checkImageExists(host.getIp(),
+                    host.getDockerDemonPort(), host.getSshUser(), host.getSshPort(), version);
+                if (!exists) {
+                    log.error("Docker image:[{}] not exists on host:[{}].", version, host.getIp());
+                    throw new BaseException(ConstantCode.IMAGE_NOT_EXISTS_ON_HOST.attach(host.getIp()));
+                }
+            }
+        }
+
+        // generate agency cert
+        String agencyName = addNode.getAgencyName();
+        agencyService.genNewAgencyCert(agencyName, chainName, encryptType);
+//        log.info("addNodes chainName:{},deployNodeInfoList:{},tagId:{},encrtypType:{},"
+//                + "webaseSignAddr:{},agencyName:{}", chainName, deployNodeInfoList,
+//            chain.getVersion(), chain.getEncryptType(), chain.getWebaseSignAddr(), agencyName);
+
+
+        // deployNodeInfo group by host ip
+        // todo verify same host has same sshUser or rootDir
+        Map<String, List<DeployHost>> hostIdAndInfoMap = new HashMap<>();
+        for (DeployHost nodeInfo : deployNodeInfoList) {
+            String hostIp = nodeInfo.getIp();
+            List<DeployHost> value = hostIdAndInfoMap.get(hostIp);
+            if (value == null) {
+                value = new ArrayList<>();
+            }
+            value.add(nodeInfo);
+            hostIdAndInfoMap.put(hostIp, value);
+        }
+        log.info("addNodes hostIdAndInfoMap:{}", hostIdAndInfoMap);
+        List<String> hostIpList = new ArrayList<>(hostIdAndInfoMap.keySet());
+
+        // new Front list record
+        List<Integer> newFrontIdList = new ArrayList<>();
+        List<TbFront> newFrontListStore = new ArrayList<>();
+        final CountDownLatch configHostLatch = new CountDownLatch(CollectionUtils.size(hostIdAndInfoMap));
+        // check success count
+        AtomicInteger configSuccessCount = new AtomicInteger(0);
+        Map<String, Future> taskMap = new HashedMap<>();
+        // mark chain as adding ,to avoid refresh
+        this.chainService.updateStatus(chain.getChainId(), ChainStatusEnum.NODE_ADDING, "adding new nodes");
+        // concurrent add nodes in multi host
+        for (final String hostIp : hostIdAndInfoMap.keySet()) {
+            Instant startTime = Instant.now();
+            log.info("batchAddNode hostIp:{}, startTime:{}", hostIp, startTime.toEpochMilli());
+            List<DeployHost> nodeListOnSameHost = hostIdAndInfoMap.get(hostIp);
+            TbChain finalChain = chain;
+            Future<?> task = threadPoolTaskScheduler.submit(() -> {
+                try {
+                    // generate ip/agency/sdk cert and scp
+                    log.info("batchAddNode generateHostSDKCertAndScp");
+                    DeployHost deployHost = nodeListOnSameHost.get(0);
+                    hostService.generateHostSDKCertAndScp(finalChain.getChainType(),
+                        chainName, deployHost, agencyName);
+
+                    // init front config files and db data
+                    // include node cert
+                    log.info("batchAddNode initFrontAndNode");
+                    List<TbFront> newFrontResult = frontService.initFrontAndNode(nodeListOnSameHost,
+                        finalChain, agencyName, hostIp, groupId, FrontStatusEnum.ADDING);
+                    newFrontListStore.addAll(newFrontResult);
+                    newFrontIdList.addAll(newFrontResult.stream().map(TbFront::getFrontId).collect(Collectors.toList()));
+                    log.info("batchAddNode initFrontAndNode newFrontIdList:{}", newFrontIdList);
+
+                    // generate(actual copy same old group of group1)
+                    // and scp to target new Front
+                    log.info("batchAddNode generateNewNodesGroupConfigsAndScp");
+                    // ssh user
+                    groupService.generateNewNodesGroupConfigsAndScp(finalChain, groupId, newFrontResult);
+                    configSuccessCount.incrementAndGet();
+                } catch (Exception e) {
+                    log.error("batchAddNode Exception:[].", e);
+                    newFrontIdList.forEach((id -> frontService.updateStatus(id, FrontStatusEnum.ADD_FAILED)));
+                    // update in each config process
+                    //hostService.updateStatus(hostId, HostStatusEnum.CONFIG_FAIL, "batchAddNode failed" + e.getMessage());
+                } finally {
+                    configHostLatch.countDown();
+                }
+            });
+            taskMap.put(hostIp, task);
+        }
+        // await and check time out
+        configHostLatch.await(constantProperties.getExecAddNodeTimeout(), TimeUnit.MILLISECONDS);
+        log.info("Verify batchAddNode timeout");
+        taskMap.forEach((key, value) -> {
+            String hostIp = key;
+            Future<?> task = value;
+            if (!task.isDone()) {
+                log.error("batchAddNode:[{}] timeout, cancel the task.", hostIp);
+                newFrontIdList.forEach((id -> frontService.updateStatus(id, FrontStatusEnum.ADD_FAILED)));
+                //hostService.updateStatus(hostId, HostStatusEnum.CONFIG_FAIL, "batchAddNode failed for timeout");
+                task.cancel(false);
+            }
+        });
+
+        boolean hostConfigSuccess = configSuccessCount.get() == CollectionUtils.size(hostIpList);
+        // check if all host init success
+        log.log(hostConfigSuccess ? Level.INFO: Level.ERROR,
+            "batchAddNode result, total:[{}], success:[{}]",
+            CollectionUtils.size(hostIdAndInfoMap.keySet()), configSuccessCount.get());
+
+        // update after all host config finish
+        // select all node list into config.ini
+        log.info("batchAddNode updateNodeConfigIniByGroupId");
+        try {
+            frontService.updateConfigIniByGroupIdAndNewFront(chain, groupId, newFrontListStore);
+        } catch (IOException e) {
+            log.error("batchAddNode updateNodeConfigIniByGroupId io Exception:[].", e);
+            newFrontIdList.forEach((id -> frontService.updateStatus(id, FrontStatusEnum.ADD_FAILED)));
+        }
+
+        log.info("batchAddNode asyncStartAddedNode");
+        // restart one node
+        nodeAsyncService.asyncStartAddedNode(chain.getChainId(), OptionType.MODIFY_CHAIN, newFrontIdList);
+        // restart all node to make sure 'nodeIdList' of each node contains removed node
+        // nodeAsyncService.asyncRestartNode(chain, groupId, OptionType.MODIFY_CHAIN, newFrontIdList);
+
+        return Pair.of(ConstantCode.SUCCESS, "success");
+    }
+
+    /**
+     * Find the first node for coping group config files.
+     *
+     * @param chainId
+     * @param groupId
+     * @return
+     */
+    public TbNode getOldestNodeByChainIdAndGroupId(int chainId, int groupId) {
+        List<TbNode> tbNodeList = this.selectNodeListByChainIdAndGroupId(chainId, groupId);
+        if (CollectionUtils.isEmpty(tbNodeList)) {
+            return null;
+        }
+        TbNode oldest = null;
+
+        for (TbNode tbNode : tbNodeList) {
+            if (oldest == null){
+                oldest = tbNode;
+                continue;
+            }
+            if (tbNode.getCreateTime().before(oldest.getCreateTime())){
+                oldest = tbNode;
+            }
+        }
+        return oldest;
+    }
+
+    /**
+     *
+     * @param chainId
+     * @param groupId
+     * @return
+     */
+    public List<TbNode> selectNodeListByChainIdAndGroupId(Integer chainId, final int groupId){
+        // select all fronts by all agencies
+        List<TbFront> tbFrontList = this.frontService.selectFrontListByChainId(chainId);
+        log.info("selectNodeListByChainIdAndGroupId tbFrontList:{}", tbFrontList);
+
+        // filter only not removed node will be added
+        List<TbNode> tbNodeList = tbFrontList.stream()
+            .map((front) -> tbNodeMapper.getByNodeIdAndGroupId(front.getNodeId(), groupId))
+            .filter(Objects::nonNull)
+            .filter((node) -> node.getGroupId() == groupId)
+            .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(tbNodeList)) {
+            log.error("Group of:[{}] chain:[{}] has no node.", groupId, chainId);
+            return Collections.emptyList();
+        }
+        return tbNodeList;
     }
 
 }
