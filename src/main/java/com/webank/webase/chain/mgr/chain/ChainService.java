@@ -14,7 +14,13 @@
 package com.webank.webase.chain.mgr.chain;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.enums.*;
+import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
+import com.webank.webase.chain.mgr.base.enums.DataStatus;
+import com.webank.webase.chain.mgr.base.enums.DeployTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
+import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
@@ -22,6 +28,7 @@ import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.contract.ContractService;
 import com.webank.webase.chain.mgr.deploy.config.NodeConfig;
+import com.webank.webase.chain.mgr.deploy.req.DeployHost;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
 import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
@@ -40,13 +47,23 @@ import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
-import com.webank.webase.chain.mgr.repository.mapper.TbTaskMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import com.webank.webase.chain.mgr.task.TaskManager;
 import com.webank.webase.chain.mgr.util.NetUtils;
 import com.webank.webase.chain.mgr.util.NumberUtil;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ThymeleafUtil;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,12 +75,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * service of chain.
@@ -280,7 +291,7 @@ public class ChainService {
     @Transactional
     public void generateChainConfig(ReqDeploy deploy, DockerImageTypeEnum dockerImageTypeEnum) {
         // check deploy count
-        int totalNodeNum = deploy.getDeployHostList().stream().mapToInt(ReqDeploy.DeployHost::getNum).sum();
+        int totalNodeNum = deploy.getDeployHostList().stream().mapToInt(DeployHost::getNum).sum();
         if (totalNodeNum < 2) {
             throw new BaseException(ConstantCode.TWO_NODES_AT_LEAST);
         }
@@ -303,7 +314,7 @@ public class ChainService {
         // build ipConf
         String[] ipConf = new String[CollectionUtils.size(deploy.getDeployHostList())];
         for (int i = 0; i < deploy.getDeployHostList().size(); i++) {
-            ReqDeploy.DeployHost host = deploy.getDeployHostList().get(i);
+            DeployHost host = deploy.getDeployHostList().get(i);
             //check host connect
             SshUtil.verifyHostConnect(host.getIp(), host.getSshUser(), host.getSshPort(), constantProperties.getPrivateKey());
 
@@ -366,7 +377,7 @@ public class ChainService {
 
         // insert default group
         Map<String, AtomicInteger> ipIndexMap = new HashMap<>();
-        for (ReqDeploy.DeployHost deployHost : reqDeploy.getDeployHostList()) {
+        for (DeployHost deployHost : reqDeploy.getDeployHostList()) {
             List<Path> nodeOfIpList = null;
             try {
                 nodeOfIpList = pathService.listHostNodesPath(newChain.getChainName(), deployHost.getIp());

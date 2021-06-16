@@ -204,8 +204,16 @@ public class ChainController extends BaseController {
         log.info("Start:[{}] add node:[{}] ", startTime, JsonTools.toJSONString(reqAddNode));
 
         try {
+            // check chain name
+            if (StringUtils.isBlank(reqAddNode.getChainName())) {
+                reqAddNode.setChainName(String.valueOf(reqAddNode.getChainId()));
+            }
+
+            // verify dockerImageType
+            DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqAddNode.getDockerImageType());
+
             // generate node config and return shell execution log
-            this.deployService.addNodes(reqAddNode);
+            this.deployService.addNodes(reqAddNode, imageTypeEnum);
 
             return new BaseResponse(ConstantCode.SUCCESS);
         } catch (BaseException e) {
