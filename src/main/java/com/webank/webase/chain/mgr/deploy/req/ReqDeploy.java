@@ -37,7 +37,7 @@ public class ReqDeploy {
     private int encryptType;
 
     @ApiModelProperty(value = "镜像拉取方式, 0 : 手动拉取, 1: 官方自动拉取。默认 0", example = "0")
-    private byte dockerImageType = DockerImageTypeEnum.PULL_OFFICIAL.getId();
+    private byte dockerImageType = DockerImageTypeEnum.MANUAL.getId();
 
     @ApiModelProperty(value = "共识机制", example = "pbft")
     private String consensusType = "pbft";

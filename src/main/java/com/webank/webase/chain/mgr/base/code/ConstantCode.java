@@ -231,5 +231,6 @@ public class ConstantCode {
     public static final RetCode NOT_FOUND_GROUP_BY_AGENCY_AND_CHAIN = RetCode.mark(205287, "not found group by agency and chain");
     public static final RetCode NOT_FOUND_VALID_NODE = RetCode.mark(205288, "not found valid node");
     public static final RetCode NODE_ID_NOT_MATCH = RetCode.mark(205289, "node id not match");
+    public static final RetCode MANUALLY_ADDED_CHAIN_NOT_SUPPORT_ADD_NODE = RetCode.mark(205290, "manually added chain cannot add new nodes");
 
 }

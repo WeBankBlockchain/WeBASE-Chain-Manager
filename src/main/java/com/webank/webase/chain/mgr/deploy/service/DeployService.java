@@ -17,12 +17,16 @@ package com.webank.webase.chain.mgr.deploy.service;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.code.RetCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.enums.DeployTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
 import com.webank.webase.chain.mgr.node.NodeService;
+import com.webank.webase.chain.mgr.repository.bean.TbChain;
+import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +40,7 @@ public class DeployService {
     @Autowired private ChainService chainService;
     @Autowired private NodeService nodeService;
     @Autowired private ImageService imageService;
+    @Autowired private ChainManager chainManager;
 
     /**
      * 1. check image locally
@@ -57,10 +62,16 @@ public class DeployService {
     @Transactional(propagation = Propagation.REQUIRED)
     public Pair<RetCode, String> addNodes(ReqAddNode addNode, DockerImageTypeEnum imageTypeEnum)
         throws BaseException {
+        // check chain not added by adding front
+        TbChain chain = chainManager.requireChainIdExist(addNode.getChainId());
+        if (DeployTypeEnum.MANUALLY.getType() == chain.getDeployType()) {
+            log.error("addNodes error: manually added chain cannot add new nodes, chain:{}", chain);
+            throw new BaseException(ConstantCode.MANUALLY_ADDED_CHAIN_NOT_SUPPORT_ADD_NODE);
+        }
 
-        // check docker image of version before add in nodeService
         // generate config files and insert data to db
         try {
+            // check docker image of version before add in nodeService
             return this.nodeService.addNodes(addNode, imageTypeEnum);
         } catch (InterruptedException e) {
             log.error("addNode error :[]", e);
