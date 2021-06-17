@@ -100,9 +100,9 @@ public class ConstantProperties {
     private int solidityCompileTimeOut = 10 * 1000; //10 second
     /* add node */
     // scp command concurrent await time
-    private long execScpTimeout = 10 * 1000L;
+    private long execScpTimeout = 60 * 1000L;
     // add node concurrent await time
-    private long execAddNodeTimeout = 40 * 1000L;
+    private long execAddNodeTimeout = 60 * 1000L;
 
     //constant
     private long resetGroupListCycle = 300000L;

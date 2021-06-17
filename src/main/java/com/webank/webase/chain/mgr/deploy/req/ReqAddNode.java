@@ -30,11 +30,10 @@ public class ReqAddNode {
     @ApiModelProperty(value = "镜像拉取方式, 0 : 手动拉取, 1: 官方自动拉取。默认 0", example = "0")
     private byte dockerImageType = DockerImageTypeEnum.MANUAL.getId();
 
-    //todo agency证书应该提前另外生成
+    // agencyName一个机构，多个主机的节点，放在DeployHost里就是多个机构。用于生成节点的证书和SDK证书
     @ApiModelProperty(value = "机构名，默认等于 Org ID")
     @NotBlank(message = "Agency name error.")
     private String agencyName;
-    //todo agencyName放在这里就是一个机构多个节点，放在DeployHost里就是多个机构。用于生成节点的SDK
 
     @Size(min = 1,message = "At least 1 host.")
     private List<DeployHost> deployHostList;

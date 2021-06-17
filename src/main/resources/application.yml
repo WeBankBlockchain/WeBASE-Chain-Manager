@@ -44,9 +44,6 @@ constant:
   maxBlockDifferenceOfNewSealer: 3  # The maximum allowable block difference of the new consensus node
   addSealerNodeCycle: 30000
 
-
-
-
   ## 部署配置
   dockerRepository: fiscoorg/fisco-webase
   dockerRestartPeriodTime: 30000

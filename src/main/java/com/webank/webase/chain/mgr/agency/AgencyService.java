@@ -275,7 +275,7 @@ public class AgencyService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public Path genNewAgencyCert(String agencyName, String chainName, EncryptTypeEnum encryptType) throws BaseException  {
-
+        log.info("genNewAgencyCert agencyName:{},chainName:{},encryptType:{}", agencyName, chainName, encryptType.getType());
         if (!ValidateUtil.validateAgencyName(agencyName)) {
             throw new BaseException(ConstantCode.AGENCY_NAME_CONFIG_ERROR);
         }
@@ -296,12 +296,10 @@ public class AgencyService {
         ExecuteResult executeResult = this.deployShellService.execGenAgency(encryptType,
             chainName, agencyName);
         if (executeResult.failed()) {
+            log.error("execGenAgency failed:{}", executeResult.getExecuteOut());
             throw new BaseException(ConstantCode.EXEC_GEN_AGENCY_ERROR);
         }
         return agencyRoot;
     }
-    //todo check agency exist
-
-    //todo generate agency cert
 
 }

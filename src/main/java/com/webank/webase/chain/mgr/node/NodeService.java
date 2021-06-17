@@ -688,13 +688,14 @@ public class NodeService {
         // generate agency cert
         String agencyName = addNode.getAgencyName();
         agencyService.genNewAgencyCert(agencyName, chainName, encryptType);
-//        log.info("addNodes chainName:{},deployNodeInfoList:{},tagId:{},encrtypType:{},"
-//                + "webaseSignAddr:{},agencyName:{}", chainName, deployNodeInfoList,
-//            chain.getVersion(), chain.getEncryptType(), chain.getWebaseSignAddr(), agencyName);
+
+        log.info("addNodes chainName:{},deployNodeInfoList:{},tagId:{},encrtypType:{},"
+                + "webaseSignAddr:{},agencyName:{}", chainName, deployNodeInfoList,
+            chain.getVersion(), chain.getChainType(), chain.getWebaseSignAddr(), agencyName);
 
 
         // deployNodeInfo group by host ip
-        // todo verify same host has same sshUser or rootDir
+        // todo verify same host list has same sshUser or rootDir
         Map<String, List<DeployHost>> hostIdAndInfoMap = new HashMap<>();
         for (DeployHost nodeInfo : deployNodeInfoList) {
             String hostIp = nodeInfo.getIp();
