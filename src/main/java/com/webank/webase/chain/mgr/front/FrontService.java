@@ -853,8 +853,9 @@ public class FrontService {
         // update all node's config.ini's p2p list
         for (String nodeId : CollectionUtils.emptyIfNull(allNodeIdList)) {
             // select all peers to update node config.ini p2p part
-            List<TbFront> dbFrontList = this.selectFrontListByChainId(chainId);
-            //dbFrontList.addAll(newFrontList); remove because select all front(new or old) from db
+            List<TbFront> dbFrontList = new ArrayList<>(this.selectFrontListByChainId(chainId));
+            // all front(old) from db not contain new added front in memory
+            dbFrontList.addAll(newFrontList);
 
 //            List<TbFront> dbRelatedFrontList = this.selectRelatedFront(chainId, nodeId);
 //            // add new-added nodes' new front
