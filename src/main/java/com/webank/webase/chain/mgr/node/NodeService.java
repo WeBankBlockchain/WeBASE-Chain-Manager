@@ -753,7 +753,7 @@ public class NodeService {
                     // generate(actual copy same old group of group1)
                     // and scp to target new Front
                     log.info("batchAddNode generateNewNodesGroupConfigsAndScp");
-                    // ssh user
+                    // generate group config.ini and scp
                     groupService.generateNewNodesGroupConfigsAndScp(finalChain, groupId, newFrontResult);
                     configSuccessCount.incrementAndGet();
                 } catch (Exception e) {

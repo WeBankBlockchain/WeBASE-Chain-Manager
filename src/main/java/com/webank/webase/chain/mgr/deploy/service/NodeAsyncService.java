@@ -510,7 +510,8 @@ public class NodeAsyncService {
         try {
             // start one front
             // update chain to updating
-            this.chainService.updateStatus(chainId, ChainStatusEnum.NODE_ADDING, "starting new added nodes");
+            this.chainService.updateStatus(chainId, ChainStatusEnum.NODE_ADDING,
+                "starting new nodes of " + JsonTools.toJSONString(newFrontIdList));
 
             // restart front by host
             this.restartFrontByHost(chainId, optionType, hostFrontListMap,
@@ -518,7 +519,7 @@ public class NodeAsyncService {
 
             // update chain to running
             threadPoolTaskScheduler.schedule(() -> {
-                this.chainService.updateStatus(chainId, ChainStatusEnum.RUNNING, "start new added success");
+                this.chainService.updateStatus(chainId, ChainStatusEnum.RUNNING, "");
             }, Instant.now().plusMillis(constant.getDockerRestartPeriodTime()));
 
         } catch (Exception e) {
