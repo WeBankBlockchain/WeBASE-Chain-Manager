@@ -240,7 +240,7 @@ public class ChainController extends BaseController {
 
     @ApiOperation(value = "查询镜像获取方式")
     @GetMapping("/image/type")
-    public BaseResponse getChain() throws BaseException {
+    public BaseResponse getImageType() throws BaseException {
 
         Instant startTime = Instant.now();
         log.info("Start:[{}] get image type ", startTime);

@@ -1065,7 +1065,7 @@ public class GroupService {
      * @throws IOException
      */
     public void generateNewNodesGroupConfigsAndScp(TbChain chain, int groupId, List<TbFront> newFrontList) {
-        log.info("start generateNewNodesGroupConfigsAndScp chain:{},groupId,newFrontList:{}",
+        log.info("start generateNewNodesGroupConfigsAndScp chain:{},groupId:{},newFrontList:{}",
             chain, groupId, newFrontList);
         int chainId = chain.getChainId();
         String chainName = chain.getChainName();
@@ -1078,7 +1078,7 @@ public class GroupService {
         // copy group.x.[genesis|conf] from old front
         TbNode oldNode = this.nodeService.getOldestNodeByChainIdAndGroupId(chainId, groupId);
         TbFront oldFront = null;
-        if (oldNode != null){
+        if (oldNode != null) {
             oldFront = this.tbFrontMapper.getByChainIdAndNodeId(chainId, oldNode.getNodeId());
         }
 

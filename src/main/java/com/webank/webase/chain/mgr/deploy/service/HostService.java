@@ -15,9 +15,11 @@
 package com.webank.webase.chain.mgr.deploy.service;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.ScpTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.deploy.config.NodeConfig;
 import com.webank.webase.chain.mgr.deploy.req.DeployHost;
 import com.webank.webase.chain.mgr.util.cmd.ExecuteResult;
@@ -39,13 +41,15 @@ public class HostService {
     private PathService pathService;
     @Autowired
     private DeployShellService deployShellService;
+    @Autowired
+    private ChainService chainService;
     /**
      * generate sdk files(crt files and node.[key,crt]) and scp to same host
      *
      * when add node
      */
     @Transactional(propagation = Propagation.REQUIRED)
-    public void generateHostSDKCertAndScp(byte encryptType, String chainName, DeployHost deployHost, String agencyName)
+    public void generateHostSDKCertAndScp(byte encryptType, int chainId, String chainName, DeployHost deployHost, String agencyName)
         throws BaseException {
         log.info("start generateHostSDKCertAndScp encryptType:{},chainName:{},deployHost:{},agencyName:{}",
             encryptType, chainName, deployHost, agencyName);
@@ -68,7 +72,7 @@ public class HostService {
             EncryptTypeEnum.getById(encryptType), chainName, agencyName, sdkPath.toAbsolutePath().toString());
         if (executeResult.failed()) {
             log.error("exec gen node cert shell error!");
-//            this.updateStatus(host.getId(), HostStatusEnum.CONFIG_FAIL, executeResult.getExecuteOut());
+            chainService.updateStatus(chainId, ChainStatusEnum.RUNNING, executeResult.getExecuteOut());
             throw new BaseException(ConstantCode.EXEC_GEN_SDK_ERROR);
         }
 

@@ -504,7 +504,7 @@ public class NodeAsyncService {
     public void asyncStartAddedNode(int chainId, OptionType optionType, List<Integer> newFrontIdList) {
         log.info("asyncStartAddedNode Init newFrontIdList:[{}]", newFrontIdList);
         List<TbFront> frontList = frontService.selectByFrontIdList(newFrontIdList);
-        // group front by host
+        // group front by host <ip, List of front>
         Map<String, List<TbFront>> hostFrontListMap = frontList.stream().collect(Collectors.groupingBy(TbFront::getFrontIp));
 
         try {

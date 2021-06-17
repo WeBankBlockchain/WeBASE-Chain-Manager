@@ -646,6 +646,14 @@ public class NodeService {
 
         String chainName = addNode.getChainName();
         int groupId = addNode.getGroupId();
+        int chainId = addNode.getChainId();
+
+        // todo check groupId exist, only support add new node in existed group
+        int groupCount = this.tbGroupMapper.countByChainIdAndGroupId(chainId, groupId);
+        log.debug("checkGroupIdExisted groupId:{} groupCount:{}", groupId, groupCount);
+        if (groupCount <= 0) {
+            throw new BaseException(ConstantCode.ADD_NEW_NODES_MUST_USING_EXISTED_GROUP_ID);
+        }
 
         // validate chain
         log.info("Check chainId:[{}] exists....", addNode.getChainId());
@@ -683,6 +691,7 @@ public class NodeService {
                     throw new BaseException(ConstantCode.IMAGE_NOT_EXISTS_ON_HOST.attach(host.getIp()));
                 }
             }
+            // todo check mem/cpu
         }
 
         // generate agency cert
@@ -730,7 +739,7 @@ public class NodeService {
                     log.info("batchAddNode generateHostSDKCertAndScp");
                     DeployHost deployHost = nodeListOnSameHost.get(0);
                     hostService.generateHostSDKCertAndScp(finalChain.getChainType(),
-                        chainName, deployHost, agencyName);
+                        chainId, chainName, deployHost, agencyName);
 
                     // init front config files and db data
                     // include node cert
@@ -751,7 +760,7 @@ public class NodeService {
                     log.error("batchAddNode Exception:[].", e);
                     newFrontIdList.forEach((id -> frontService.updateStatus(id, FrontStatusEnum.ADD_FAILED)));
                     // update in each config process
-                    //hostService.updateStatus(hostId, HostStatusEnum.CONFIG_FAIL, "batchAddNode failed" + e.getMessage());
+                    chainService.updateStatus(chainId, ChainStatusEnum.RUNNING, "batchAddNode failed" + e.getMessage());
                 } finally {
                     configHostLatch.countDown();
                 }
@@ -767,7 +776,7 @@ public class NodeService {
             if (!task.isDone()) {
                 log.error("batchAddNode:[{}] timeout, cancel the task.", hostIp);
                 newFrontIdList.forEach((id -> frontService.updateStatus(id, FrontStatusEnum.ADD_FAILED)));
-                //hostService.updateStatus(hostId, HostStatusEnum.CONFIG_FAIL, "batchAddNode failed for timeout");
+                chainService.updateStatus(chainId, ChainStatusEnum.RUNNING, "batchAddNode failed for timeout");
                 task.cancel(false);
             }
         });
@@ -789,10 +798,8 @@ public class NodeService {
         }
 
         log.info("batchAddNode asyncStartAddedNode");
-        // restart one node
+        // restart new node
         nodeAsyncService.asyncStartAddedNode(chain.getChainId(), OptionType.MODIFY_CHAIN, newFrontIdList);
-        // restart all node to make sure 'nodeIdList' of each node contains removed node
-        // nodeAsyncService.asyncRestartNode(chain, groupId, OptionType.MODIFY_CHAIN, newFrontIdList);
 
         return Pair.of(ConstantCode.SUCCESS, "success");
     }
