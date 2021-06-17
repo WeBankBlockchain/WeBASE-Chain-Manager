@@ -479,9 +479,9 @@ public class FrontService {
         for (TbFront front : frontList) {
 
             // delete on remote host
-            if (deleteHostId.contains(front.getExtHostId())) {
-                continue;
-            }
+//            if (deleteHostId.contains(front.getExtHostId())) {
+//                continue;
+//            }
 
             if (Objects.nonNull(front.getDockerPort()) && StringUtils.isNotBlank(front.getContainerName())) {
                 // remote docker container
@@ -490,7 +490,7 @@ public class FrontService {
                         front.getSshPort(), front.getContainerName());
 
 
-                // move chain config files
+                // move chain config files on host
                 ChainService.mvChainOnRemote(front.getFrontIp(), front.getRootOnHost(), front.getChainName(),
                         front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
                 deleteHostId.add(front.getExtHostId());
