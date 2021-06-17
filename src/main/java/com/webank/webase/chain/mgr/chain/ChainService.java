@@ -260,6 +260,7 @@ public class ChainService {
             // remove group
             groupService.removeByChainId(chainId);
             // remove front
+            // stop docker in remote host and remove dir in remote host
             frontService.removeByChainId(chainId);
             // remove front group map
             this.frontGroupMapService.removeByChainId(chainId);
