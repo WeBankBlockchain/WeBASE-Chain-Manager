@@ -734,11 +734,10 @@ public class FrontService {
         int chainId = chain.getChainId();
         String chainName = chain.getChainName();
         byte encryptType = chain.getChainType();
-        // the node dir on remote host,  same as image tag( todo start with v?)
+        // the node dir on remote host,  same as image tag(start with v, ex: v2.7.2)
         String version = chain.getVersion();
 
         // if host is a new one, currentIndexOnHost will be null
-        // todo get node index
         Integer maxIndexOnHost = this.frontMapper.getNodeMaxIndex(hostIp);
 
         // get start index on host
@@ -791,7 +790,7 @@ public class FrontService {
             String nodeRootDirOnHost = PathService.getNodeRootOnHost(PathService
                 .getChainRootOnHost(rootDirOnHost, chainName), currentIndex);
 
-            TbFront front = TbFront.build(chainId, nodeId, ip, frontPort, agencyName, "",
+            TbFront front = TbFront.build(chainId, nodeId, ip, frontPort, agencyName, "new added node",
                 frontStatusEnum, version, DockerOptions
                     .getContainerName(rootDirOnHost, chainName, currentIndex),
                 jsonrpcPort, p2pPort, channelPort, chainName,
@@ -807,11 +806,9 @@ public class FrontService {
             this.nodeService.insert(chainId, nodeId, nodeName, groupId, ip, p2pPort, nodeName, DataStatus.STARTING);
 
             // insert front group into db
-//            this.frontGroupMapService.newFrontGroup(front.getFrontId(), groupId, GroupStatus.MAINTAINING);
             this.frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), groupId);
 
             // generate front application.yml
-//            ThymeleafUtil.newFrontConfig(nodeRoot, encryptType, channelPort, frontPort, chain.getWebaseSignAddr());
             ThymeleafUtil.newFrontConfig(nodeRoot, encryptType, channelPort, frontPort);
         }
         return newFrontList;
