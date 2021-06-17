@@ -299,6 +299,7 @@ public class AgencyService {
             log.error("execGenAgency failed:{}", executeResult.getExecuteOut());
             throw new BaseException(ConstantCode.EXEC_GEN_AGENCY_ERROR);
         }
+        log.info("genNewAgencyCert success! path:{}", agencyRoot);
         return agencyRoot;
     }
 

@@ -14,6 +14,7 @@
 package com.webank.webase.chain.mgr.front;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
@@ -136,6 +137,8 @@ public class FrontService {
     private GroupManager groupManager;
     @Autowired
     private DeployShellService deployShellService;
+    @Autowired
+    private ChainService chainService;
 
     /**
      * add new front
@@ -562,6 +565,7 @@ public class FrontService {
 
 
     /**
+     * get front list from normal front_group_map
      * @param groupId
      * @return
      */
@@ -577,11 +581,12 @@ public class FrontService {
                 .map((map) -> tbFrontMapper.getById(map.getFrontId()))
                 .filter((front) -> front != null)
                 .collect(Collectors.toList());
-
+        log.info("selectFrontListByGroupId frontList:{}", tbFrontList);
         if (CollectionUtils.isEmpty(tbFrontList)) {
             log.error("Group:[{}] has no front.", groupId);
             return Collections.emptyList();
         }
+
         return tbFrontList;
     }
 
@@ -824,13 +829,12 @@ public class FrontService {
     public void updateConfigIniByGroupIdAndNewFront(TbChain chain, int groupId, final List<TbFront> newFrontList)
         throws IOException {
         int chainId = chain.getChainId();
-        log.info("start updateNodeConfigIniByGroupId chainId:{},groupId:{}newFrontList:{}", chainId, groupId, newFrontList);
+        log.info("start updateNodeConfigIniByGroupId chainId:{},groupId:{},newFrontList:{}", chainId, groupId, newFrontList);
         String chainName = chain.getChainName();
         byte encryptType = chain.getChainType();
 
         // all existed front's nodeid, include removed node's front
         // 游离的front是否需要选进来。
-        // List<TbFront> tbFrontList = this.frontService.selectFrontListByChainId(chainId);
         List<TbNode> dbNodeListOfGroup = this.nodeService.selectNodeListByChainIdAndGroupId(chainId, groupId);
         log.info("updateNodeConfigIniByGroupId dbNodeListOfGroup:{}", dbNodeListOfGroup);
 
@@ -839,31 +843,34 @@ public class FrontService {
         // add new node in db's node list
         List<String> newNodeIdList = newFrontList.stream().map(TbFront::getNodeId).collect(Collectors.toList());
         allNodeIdList.addAll(newNodeIdList);
-        log.info("updateNodeConfigIniByGroupId nodeIdList:{}", allNodeIdList);
+        log.info("updateNodeConfigIniByGroupId allNodeIdList:{}", allNodeIdList);
 
         // all map's normal front added
-        // <nodeId, List<FrontReleted> map
+        // <nodeId, List<FrontRelated> map
         Map<String, List<TbFront>> nodeIdRelatedFrontMap = new HashMap<>();
 
         // all fronts include old and new
+        // update all node's config.ini's p2p list
         for (String nodeId : CollectionUtils.emptyIfNull(allNodeIdList)) {
-            // select related peers to update node config.ini p2p part
-            // select from existed in db
-            List<TbFront> dbRelatedFrontList = this.selectRelatedFront(chainId, nodeId);
-            // add just added nodes' new front
-            if (dbRelatedFrontList.isEmpty()) {
-                // if exist not new front, but removed node's front, not add
-                List<TbFront> oldFrontListDb = this.selectFrontListByGroupId(chainId, groupId);
-                dbRelatedFrontList.addAll(oldFrontListDb);
-            }
-            dbRelatedFrontList.addAll(newFrontList);
+            // select all peers to update node config.ini p2p part
+            List<TbFront> dbFrontList = this.selectFrontListByChainId(chainId);
+            //dbFrontList.addAll(newFrontList); remove because select all front(new or old) from db
 
-            // store
-            nodeIdRelatedFrontMap.put(nodeId, dbRelatedFrontList);
+//            List<TbFront> dbRelatedFrontList = this.selectRelatedFront(chainId, nodeId);
+//            // add new-added nodes' new front
+//            if (dbRelatedFrontList.isEmpty()) {
+//                // if existed front belongs to removed node, not add
+//                List<TbFront> oldFrontListDb = this.selectFrontListByGroupId(chainId, groupId);
+//                dbRelatedFrontList.addAll(oldFrontListDb);
+//            }
+
+            // store front for scp
+            nodeIdRelatedFrontMap.put(nodeId, dbFrontList);
             // start generate process
-            log.info("updateNodeConfigIniByGroupId nodeRelatedFront:{}", dbRelatedFrontList);
-            // find first target
-            TbFront tbFront = dbRelatedFrontList.stream().filter(f -> f.getNodeId().equals(nodeId)).findFirst().orElse(null);
+            log.info("updateNodeConfigIniByGroupId dbFrontList:{}", dbFrontList);
+
+            // find first match target
+            TbFront tbFront = dbFrontList.stream().filter(f -> f.getNodeId().equals(nodeId)).findFirst().orElse(null);
             if (tbFront == null) {
                 log.error("updateNodeConfigIniByGroupId cannot find front of nodeId:{}", nodeId);
                 continue;
@@ -871,18 +878,17 @@ public class FrontService {
 
             boolean guomi = encryptType == EncryptType.SM2_TYPE;
             //int chainIdInConfigIni = this.constant.getDefaultChainId();
-            int chainIdInConfigIni = chainId;
 
             // local node root
             Path nodeRoot = this.pathService.getNodeRoot(chainName, tbFront.getFrontIp(), tbFront.getHostIndex());
 
             // generate config.ini
             ThymeleafUtil.newNodeConfigIni(nodeRoot, tbFront.getChannelPort(),
-                tbFront.getP2pPort(), tbFront.getJsonrpcPort(), dbRelatedFrontList,
-                guomi, chainIdInConfigIni, chain.getVersion());
+                tbFront.getP2pPort(), tbFront.getJsonrpcPort(), dbFrontList,
+                guomi, chainId, chain.getVersion());
 
         }
-        log.info("end updateNodeConfigIniByGroupId start batchScpNodeConfigIni");
+        log.info("end updateNodeConfigIniByGroupId start batchScpNodeConfigIni nodeIdRelatedFrontMap:{}", nodeIdRelatedFrontMap);
 
         // scp to remote
         // this.scpNodeConfigIni(chain, groupId);
@@ -946,6 +952,7 @@ public class FrontService {
                 } catch (Exception e) {
                     log.error("batchScpNodeConfigIni:[{}] with unknown error", front.getFrontIp(), e);
                     this.updateStatus(front.getFrontId(), FrontStatusEnum.ADD_FAILED);
+                    chainService.updateStatus(chain.getChainId(), ChainStatusEnum.RUNNING, "scp nodes' config.ini failed");
                 } finally {
                     checkHostLatch.countDown();
                 }
@@ -960,7 +967,7 @@ public class FrontService {
             Future<?> task = value;
             if (!task.isDone()) {
                 log.error("batchScpNodeConfigIni nodeId:[{}] timeout, cancel the task.", nodeId);
-//                hostService.updateStatus(hostId, HostStatusEnum.CONFIG_FAIL, "config host timeout.");
+                chainService.updateStatus(chain.getChainId(), ChainStatusEnum.RUNNING, "scp nodes' config.ini failed for timeout");
                 task.cancel(false);
             }
         });
@@ -998,28 +1005,30 @@ public class FrontService {
     }
 
     /**
-     *
+     * select related peers to update node config.ini p2p part
      * @param nodeId
      * @return
      */
-    public List<TbFront> selectRelatedFront(int chainId, String nodeId){
+    public List<TbFront> selectRelatedFront(int chainId, String nodeId) {
+        log.info("start selectRelatedFront chainId:{},nodeId:{}", chainId, nodeId);
         Set<Integer> frontIdSet = new HashSet<>();
         List<Integer> groupIdList = this.nodeMapper.selectGroupIdListOfNode(chainId, nodeId);
+        log.info("selectRelatedFront groupIdList:{}", groupIdList);
         if (CollectionUtils.isEmpty(groupIdList)){
             log.error("Node:[{}] has no group", nodeId);
             return Collections.emptyList();
         }
         for (Integer groupIdOfNode : groupIdList) {
             List<TbFrontGroupMap> tbFrontGroupMaps = this.frontGroupMapService.listByChainAndGroup(chainId, groupIdOfNode);
-            if (CollectionUtils.isNotEmpty(tbFrontGroupMaps)){
-                tbFrontGroupMaps.forEach(map->{
-                    frontIdSet.add(map.getFrontId());
-                });
+            log.debug("selectRelatedFront tbFrontGroupMaps:{}", tbFrontGroupMaps);
+            if (CollectionUtils.isNotEmpty(tbFrontGroupMaps)) {
+                tbFrontGroupMaps.forEach(map-> frontIdSet.add(map.getFrontId()));
             }
         }
+        log.info("selectRelatedFront frontIdSet:{}", frontIdSet);
 
         List<TbFront> nodeRelatedFrontList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(frontIdSet)){
+        if (CollectionUtils.isNotEmpty(frontIdSet)) {
             nodeRelatedFrontList = frontIdSet.stream().map((frontId)-> this.tbFrontMapper.getById(frontId))
                 .filter((front) -> front != null)
                 .collect(Collectors.toList());
@@ -1032,6 +1041,7 @@ public class FrontService {
         List<TbFront> frontList = new ArrayList<>();
         frontIdList.forEach(id -> {
             TbFront front = frontMapper.getById(id);
+            // todo if front of new added node, error or not?
             if (front == null) {
                 throw new BaseException(ConstantCode.INVALID_FRONT_ID);
             }

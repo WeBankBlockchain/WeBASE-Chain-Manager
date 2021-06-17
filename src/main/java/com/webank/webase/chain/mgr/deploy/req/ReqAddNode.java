@@ -35,6 +35,9 @@ public class ReqAddNode {
     @NotBlank(message = "Agency name error.")
     private String agencyName;
 
+    /**
+     * number of node in DeployHost is useless in adding nodes
+     */
     @Size(min = 1,message = "At least 1 host.")
     private List<DeployHost> deployHostList;
 
