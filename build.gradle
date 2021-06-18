@@ -99,7 +99,7 @@ dependencies {
     compile 'org.fisco-bcos:web3sdk:2.6.2'
     compile "org.apache.commons:commons-lang3:3.8.1"
     compile "org.apache.commons:commons-lang3:3.8.1"
-
+    compile 'org.apache.commons:commons-compress:1.20'
     compile 'com.jcraft:jsch:0.1.55'
     compile 'org.ini4j:ini4j:0.5.4'
     compile ('com.github.docker-java:docker-java:3.2.1') {
