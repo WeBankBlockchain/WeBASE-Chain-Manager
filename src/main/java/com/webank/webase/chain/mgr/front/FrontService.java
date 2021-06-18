@@ -18,6 +18,7 @@ import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
+import com.webank.webase.chain.mgr.base.enums.FrontTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.enums.ScpTypeEnum;
@@ -26,6 +27,7 @@ import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainService;
+import com.webank.webase.chain.mgr.deploy.config.NodeConfig;
 import com.webank.webase.chain.mgr.deploy.req.DeployHost;
 import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
@@ -188,6 +190,7 @@ public class FrontService {
         TbFront tbFront = new TbFront();
         tbFront.setChainName(tbChain.getChainName());
         tbFront.setFrontStatus(FrontStatusEnum.RUNNING.getId());
+        tbFront.setFrontType(FrontTypeEnum.API_NEW.getId());
         // copy attribute
         BeanUtils.copyProperties(frontInfo, tbFront);
         tbFront.setNodeId(newNodeId);
@@ -796,7 +799,7 @@ public class FrontService {
                 .getChainRootOnHost(rootDirOnHost, chainName), currentIndex);
 
             TbFront front = TbFront.build(chainId, nodeId, ip, frontPort, agencyName, "new added node",
-                frontStatusEnum, version, DockerOptions
+                frontStatusEnum, FrontTypeEnum.DEPLOY_ADD, version, DockerOptions
                     .getContainerName(rootDirOnHost, chainName, currentIndex),
                 jsonrpcPort, p2pPort, channelPort, chainName,
                 extCompanyId, extAgencyId, extHostId, currentIndex,
@@ -834,7 +837,7 @@ public class FrontService {
         byte encryptType = chain.getChainType();
 
         // all existed front's nodeid, include removed node's front
-        // 游离的front是否需要选进来。
+        // 游离的front也选进来。
         List<TbNode> dbNodeListOfGroup = this.nodeService.selectNodeListByChainIdAndGroupId(chainId, groupId);
         log.info("updateNodeConfigIniByGroupId dbNodeListOfGroup:{}", dbNodeListOfGroup);
 
@@ -852,7 +855,7 @@ public class FrontService {
         // all fronts include old and new
         // update all node's config.ini's p2p list
         for (String nodeId : CollectionUtils.emptyIfNull(allNodeIdList)) {
-            // select all peers to update node config.ini p2p part
+            // select all front add in node's config.ini's p2p list
             List<TbFront> dbFrontList = new ArrayList<>(this.selectFrontListByChainId(chainId));
             // all front(old) from db not contain new added front in memory
             dbFrontList.addAll(newFrontList);
@@ -900,6 +903,71 @@ public class FrontService {
             Thread.currentThread().interrupt();
         }
     }
+
+
+    /**
+     * update config ini of target node
+     * @param chain
+     * @param nodeId2Delete
+     * @param groupIdList
+     */
+    public void updateNodeConfigIniByGroupList(TbChain chain, String nodeId2Delete,
+        Set<Integer> groupIdList) throws IOException {
+        // update config.ini of related nodes
+        for (Integer groupId : CollectionUtils.emptyIfNull(groupIdList)) {
+            // update node config.ini in group
+            this.updateNodeConfigIniByGroupId(chain, nodeId2Delete, groupId);
+        }
+    }
+
+    /**
+     * not generate but update existed node config.ini of existed nodes
+     * @param chain
+     * @param nodeId2Delete
+     * @param groupId
+     * @throws IOException
+     */
+    public void updateNodeConfigIniByGroupId(TbChain chain, String nodeId2Delete, int groupId) throws IOException {
+        int chainId = chain.getChainId();
+        log.info("start updateNodeConfigIniByGroupId chainId:{},groupId:{}", chainId, groupId);
+        String chainName = chain.getChainName();
+        byte encryptType = chain.getChainType();
+
+        List<TbNode> dbNodeListOfGroup = this.nodeService.selectNodeListByChainIdAndGroupId(chainId, groupId);
+        log.info("updateNodeConfigIniByGroupId dbNodeListOfGroup:{}", dbNodeListOfGroup);
+
+        // all fronts include old and new
+        for (TbNode node : CollectionUtils.emptyIfNull(dbNodeListOfGroup)) {
+            // select related peers to update node config.ini p2p part
+            List<TbFront> dbFrontList = new ArrayList<>(this.selectFrontListByChainId(chainId));
+            // front list remove the node to delete
+            List<TbFront> newFrontList = dbFrontList.stream()
+                .filter(f -> !f.getNodeId().equals(nodeId2Delete))
+                .collect(Collectors.toList());
+            log.info("updateNodeConfigIniByGroupId newFrontList:{}", newFrontList);
+
+            TbFront tbFront = this.getByChainIdAndNodeId(chainId, node.getNodeId());
+
+            boolean guomi = encryptType == EncryptType.SM2_TYPE;
+//            int chainIdInConfigIni = this.constant.getDefaultChainId();
+
+            // local node root
+            Path nodeRoot = this.pathService.getNodeRoot(chainName, tbFront.getFrontIp(), tbFront.getHostIndex());
+
+            // generate config.ini
+            // 1.5.0 add chain version from v2.7.2 => 2.7.2
+            ThymeleafUtil.newNodeConfigIni(nodeRoot, tbFront.getChannelPort(),
+                tbFront.getP2pPort(), tbFront.getJsonrpcPort(), newFrontList, guomi, chainId,
+                chain.getVersion());
+
+        }
+        log.info("end updateNodeConfigIniByGroupId start batchScpNodeConfigIni");
+
+        // scp to remote
+        this.scpNodeConfigIni(chain, groupId);
+
+    }
+
 
     /**
      * multi scp node config init
@@ -982,6 +1050,34 @@ public class FrontService {
     }
 
     /**
+     * sync scp node config init
+     * not multi thread
+     * @param chain
+     * @param groupId
+     */
+    public void scpNodeConfigIni(TbChain chain, int groupId) {
+        int chainId = chain.getChainId();
+        List<TbNode> tbNodeList = this.nodeService.selectNodeListByChainIdAndGroupId(chainId, groupId);
+
+        for (TbNode tbNode : CollectionUtils.emptyIfNull(tbNodeList)){
+            TbFront front = this.getByChainIdAndNodeId(chainId, tbNode.getNodeId());
+            int hostIndex = front.getHostIndex();
+
+            // path pattern: /NODES_ROOT/chain_name/[ip]/node[index]/config.ini
+            // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0/config.ini
+            Path localNodePath = this.pathService.getNodeRoot(chain.getChainName(),front.getFrontIp(),hostIndex);
+            String localScr = PathService.getConfigIniPath(localNodePath).toAbsolutePath().toString();
+
+            // ex: (node-mgr local) /opt/fisco/chain1/node0/config.ini
+            String remoteDst = String.format("%s/%s/node%s/config.ini", front.getRootOnHost(), chain.getChainName(), hostIndex);
+
+            // copy group config files to local node's conf dir
+            deployShellService.scp(ScpTypeEnum.UP, front.getSshUser(), front.getFrontIp(), front.getSshPort(),
+                localScr, remoteDst);
+        }
+    }
+
+    /**
      * @param chainId
      * @return
      */
@@ -1049,5 +1145,139 @@ public class FrontService {
             frontList.add(front);
         });
         return frontList;
+    }
+
+
+    /**
+     * @param nodeId
+     * @return
+     */
+    @Transactional
+    public void stopNode(int chainId, String nodeId) {
+        // get front
+        TbFront front = this.getByChainIdAndNodeId(chainId, nodeId);
+        if (front == null){
+            throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
+        }
+
+        int runningTotal = 0;
+        List<TbFront> frontList = this.selectFrontListByChainId(chainId);
+        for (TbFront tbFront : frontList) {
+            if (FrontStatusEnum.isRunning(tbFront.getFrontStatus())) {
+                runningTotal ++;
+            }
+        }
+
+        if (runningTotal < 2) {
+            log.error("Two running nodes at least of chain:[{}]", chainId);
+            throw new BaseException(ConstantCode.TWO_NODES_AT_LEAST);
+        }
+
+        if (!FrontStatusEnum.isRunning(front.getFrontStatus())) {
+            log.warn("Node:[{}:{}] is already stopped.",front.getFrontIp(),front.getHostIndex());
+            return ;
+        }
+
+
+        // select node list and check if removed node
+        List<TbNode> nodeList = this.nodeMapper.selectByNodeId(chainId, nodeId);
+        // node is removed and doesn't belong to any group. then local tb_node table would delete removed node
+        // if observer to removed, this observer would still return groupId(as a observer)
+        boolean nodeRemovable = CollectionUtils.isEmpty(nodeList);
+
+        if (!nodeRemovable) {
+            // node belongs to some groups, check if it is the last one of each group.
+            Set<Integer> groupIdSet = nodeList.stream().map(TbNode::getGroupId)
+                .collect(Collectors.toSet());
+
+            for (Integer groupId : groupIdSet) {
+                int nodeCountOfGroup = CollectionUtils.size(this.nodeMapper.selectByGroupId(chainId, groupId));
+                if (nodeCountOfGroup != 1) { // group has another node.
+                    throw new BaseException(ConstantCode.NODE_NEED_REMOVE_FROM_GROUP_ERROR.attach(groupId));
+                }
+            }
+        }
+
+        log.info("Docker stop and remove container front id:[{}:{}].", front.getFrontId(), front.getContainerName());
+        this.dockerOptions.stop(front.getFrontIp(), front.getDockerPort(), front.getSshUser(),
+            front.getSshPort(), front.getContainerName());
+        try {
+            Thread.sleep(constantProperties.getDockerRestartPeriodTime());
+        } catch (InterruptedException e) {
+            log.warn("Docker stop and remove container sleep Interrupted");
+            Thread.currentThread().interrupt();
+        }
+
+        // update map
+//        this.frontGroupMapService.updateFrontMapStatus(front.getFrontId(), GroupStatus.MAINTAINING);
+        // update front
+        ((FrontService) AopContext.currentProxy()).updateStatus(front.getFrontId(), FrontStatusEnum.STOPPED);
+    }
+
+    /**
+     *  @param nodeId
+     * @return
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void deleteNode(int chainId, String nodeId) {
+        log.info("deleteNode nodeId:{}", nodeId);
+        int errorFlag = 0;
+        // remove front
+        TbFront front = this.frontService.getByChainIdAndNodeId(chainId, nodeId);
+        if (front == null) {
+            throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
+        }
+
+        // check front(node) type, only deploy added nodes could be deleted
+        if (FrontTypeEnum.isDeployAdded(front.getFrontType())) {
+            log.error("only support delete deploy added nodes");
+            throw new BaseException(ConstantCode.ONLY_SUPPORT_DELETE_ADDED_NODE_ERROR_);
+        }
+        // check front status, only not running node could be deleted
+        if (FrontStatusEnum.isRunning(front.getFrontStatus())) {
+            log.error("only support delete stopped nodes");
+            throw new BaseException(ConstantCode.ONLY_SUPPORT_DELETE_ADDED_NODE_ERROR_);
+        }
+
+        TbChain chain = this.tbChainMapper.selectByPrimaryKey(chainId);
+        final byte encryptType = chain.getChainType();
+        String ip = front.getFrontIp();
+        // get delete node's group id list from ./NODES_ROOT/default_chain/ip/node[x]/conf/group.[groupId].genesis
+        Path nodePath = this.pathService.getNodeRoot(chain.getChainName(), ip, front.getHostIndex());
+        Set<Integer> groupIdSet = NodeConfig.getGroupIdSet(nodePath, EncryptTypeEnum.getById(encryptType));
+        log.info("deleteNode updateNodeConfigIniByGroupList chain:{}, groupIdSet:{}", chain, groupIdSet);
+        // update related node's config.ini file, e.g. p2p
+        try {
+            log.info("deleteNode updateNodeConfigIniByGroupList chain:{}, groupIdSet:{}", chain, groupIdSet);
+            // update related node's config.ini file, e.g. p2p
+            this.frontService.updateNodeConfigIniByGroupList(chain, nodeId, groupIdSet);
+        } catch (IOException e) {
+            errorFlag++;
+            log.error("Delete node, update related group:[{}] node's config error ", groupIdSet, e);
+            log.error("Please update related node's group config manually");
+        }
+
+        // move node directory to tmp
+        try {
+            this.pathService.deleteNode(chain.getChainName(), ip, front.getHostIndex(), front.getNodeId());
+        } catch (IOException e) {
+            errorFlag++;
+            log.error("Delete node's config files:[{}:{}:{}] error.",
+                chain.getChainName(), ip, front.getHostIndex(), e);
+            log.error("Please move/rm node's config files manually");
+        }
+
+        // move node of remote host files to temp directory, e.g./opt/fisco/delete-tmp
+        NodeService.mvNodeOnRemoteHost(ip, front.getRootOnHost(), chain.getChainName(), front.getHostIndex(),
+            front.getNodeId(), front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
+
+        // delete front, node in db
+        this.frontService.removeByFrontId(front.getFrontId());
+
+        // if error occur, throw out finally
+        if (errorFlag != 0) {
+            log.error("Update related group OR delete node's config files error. Check out upper error log");
+            throw new BaseException(ConstantCode.DELETE_NODE_DIR_ERROR);
+        }
     }
 }

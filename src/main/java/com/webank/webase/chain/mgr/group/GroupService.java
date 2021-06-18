@@ -513,9 +513,8 @@ public class GroupService {
                         GroupType.SYNC.getValue());
 
                 //save front-group
-//                    List<String> sealerList =    frontInterface.getSealerListFromSpecificFront(frontPeerName, frontIp, frontPort, gId);
                 List<PeerInfo> peerInfoList = nodeService.getSealerAndObserverListFromSpecificFront(gId, frontPeerName, frontIp, frontPort);
-                List<String> sealerAndObserverList = peerInfoList.stream().map(p -> p.getNodeId()).collect(Collectors.toList());
+                List<String> sealerAndObserverList = peerInfoList.stream().map(PeerInfo::getNodeId).collect(Collectors.toList());
                 if (sealerAndObserverList.contains(front.getNodeId())) {
                     frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), gId);
                 } else {
