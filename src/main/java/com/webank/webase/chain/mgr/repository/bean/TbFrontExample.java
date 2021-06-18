@@ -1922,6 +1922,66 @@ public class TbFrontExample {
             addCriterion("node_root_on_host not between", value1, value2, "nodeRootOnHost");
             return (Criteria) this;
         }
+
+        public Criteria andFrontTypeIsNull() {
+            addCriterion("front_type is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andFrontTypeIsNotNull() {
+            addCriterion("front_type is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andFrontTypeEqualTo(Integer value) {
+            addCriterion("front_type =", value, "frontType");
+            return (Criteria) this;
+        }
+
+        public Criteria andFrontTypeNotEqualTo(Integer value) {
+            addCriterion("front_type <>", value, "frontType");
+            return (Criteria) this;
+        }
+
+        public Criteria andFrontTypeGreaterThan(Integer value) {
+            addCriterion("front_type >", value, "frontType");
+            return (Criteria) this;
+        }
+
+        public Criteria andFrontTypeGreaterThanOrEqualTo(Integer value) {
+            addCriterion("front_type >=", value, "frontType");
+            return (Criteria) this;
+        }
+
+        public Criteria andFrontTypeLessThan(Integer value) {
+            addCriterion("front_type <", value, "frontType");
+            return (Criteria) this;
+        }
+
+        public Criteria andFrontTypeLessThanOrEqualTo(Integer value) {
+            addCriterion("front_type <=", value, "frontType");
+            return (Criteria) this;
+        }
+
+        public Criteria andFrontTypeIn(List<Integer> values) {
+            addCriterion("front_type in", values, "frontType");
+            return (Criteria) this;
+        }
+
+        public Criteria andFrontTypeNotIn(List<Integer> values) {
+            addCriterion("front_type not in", values, "frontType");
+            return (Criteria) this;
+        }
+
+        public Criteria andFrontTypeBetween(Integer value1, Integer value2) {
+            addCriterion("front_type between", value1, value2, "frontType");
+            return (Criteria) this;
+        }
+
+        public Criteria andFrontTypeNotBetween(Integer value1, Integer value2) {
+            addCriterion("front_type not between", value1, value2, "frontType");
+            return (Criteria) this;
+        }
     }
 
     /**
