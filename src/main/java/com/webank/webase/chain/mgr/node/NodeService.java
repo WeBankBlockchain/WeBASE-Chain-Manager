@@ -21,12 +21,14 @@ import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
+import com.webank.webase.chain.mgr.base.enums.FrontTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainService;
+import com.webank.webase.chain.mgr.deploy.config.NodeConfig;
 import com.webank.webase.chain.mgr.deploy.req.DeployHost;
 import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
 import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
@@ -55,10 +57,12 @@ import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ValidateUtil;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -69,6 +73,7 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -218,10 +223,10 @@ public class NodeService {
     /**
      * query node info.
      */
-    public TbNode queryByNodeId(String nodeId) throws BaseException {
-        log.debug("start queryNode nodeId:{}", nodeId);
+    public TbNode queryByNodeId(int chainId, String nodeId) throws BaseException {
+        log.debug("start queryNodechainId:{},nodeId:{}",chainId, nodeId);
         try {
-            TbNode nodeRow = this.tbNodeMapper.getByNodeId(nodeId);
+            TbNode nodeRow = this.tbNodeMapper.getByNodeId(chainId, nodeId);
             log.debug("end queryNode nodeId:{} TbNode:{}", nodeId, JsonTools.toJSONString(nodeRow));
             return nodeRow;
         } catch (RuntimeException ex) {
@@ -843,7 +848,7 @@ public class NodeService {
 
         // filter only not removed node will be added
         List<TbNode> tbNodeList = tbFrontList.stream()
-            .map((front) -> tbNodeMapper.getByNodeIdAndGroupId(front.getNodeId(), groupId))
+            .map((front) -> tbNodeMapper.getByNodeIdAndGroupId(chainId, front.getNodeId(), groupId))
             .filter(Objects::nonNull)
             .filter((node) -> node.getGroupId() == groupId)
             .collect(Collectors.toList());
@@ -854,5 +859,6 @@ public class NodeService {
         }
         return tbNodeList;
     }
+
 
 }

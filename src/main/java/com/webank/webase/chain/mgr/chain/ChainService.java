@@ -20,6 +20,7 @@ import com.webank.webase.chain.mgr.base.enums.DeployTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
+import com.webank.webase.chain.mgr.base.enums.FrontTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
@@ -411,7 +412,7 @@ public class ChainService {
                         deployHost.getIp(), nodeConfig.getHostIndex());
                 // pass object
                 TbFront front = TbFront.build(newChain.getChainId(), nodeConfig.getNodeId(), deployHost.getIp(), frontPort,
-                        String.valueOf(deployHost.getExtOrgId()), frontDesc, FrontStatusEnum.INITIALIZED, version,
+                        String.valueOf(deployHost.getExtOrgId()), frontDesc, FrontStatusEnum.INITIALIZED, FrontTypeEnum.CHAIN_DEPLOY, version,
                         DockerOptions.getContainerName(deployHost.getRootDirOnHost(), reqDeploy.getChainName(), nodeConfig.getHostIndex()),
                         nodeConfig.getJsonrpcPort(), nodeConfig.getP2pPort(), nodeConfig.getChannelPort(), reqDeploy.getChainName(),
                         deployHost.getExtCompanyId(), deployHost.getExtOrgId(), deployHost.getExtHostId(), nodeConfig.getHostIndex(),
