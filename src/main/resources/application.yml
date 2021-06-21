@@ -1,3 +1,6 @@
+# server version
+version: v1.5.2
+
 #server config
 server:
   port: 5005
