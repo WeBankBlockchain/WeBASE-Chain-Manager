@@ -861,4 +861,136 @@ public class NodeService {
     }
 
 
+    /**
+     * @param nodeId
+     * @return
+     */
+    @Transactional
+    public void stopNode(int chainId, String nodeId) {
+        log.info("stopNode chainId:{},nodeId:{}", chainId, nodeId);
+        // get front
+        TbFront front = this.frontService.getByChainIdAndNodeId(chainId, nodeId);
+        if (front == null){
+            throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
+        }
+
+        int runningTotal = 0;
+        List<TbFront> frontList = this.frontService.selectFrontListByChainId(chainId);
+        for (TbFront tbFront : frontList) {
+            if (FrontStatusEnum.isRunning(tbFront.getFrontStatus())) {
+                runningTotal ++;
+            }
+        }
+
+        if (runningTotal < 2) {
+            log.error("Two running nodes at least of chain:[{}]", chainId);
+            throw new BaseException(ConstantCode.TWO_NODES_AT_LEAST);
+        }
+
+        if (!FrontStatusEnum.isRunning(front.getFrontStatus())) {
+            log.warn("Node:[{}:{}] is already stopped.",front.getFrontIp(),front.getHostIndex());
+            return ;
+        }
+
+
+        // select node list and check if removed node
+        List<TbNode> nodeList = this.tbNodeMapper.selectByNodeId(chainId, nodeId);
+        log.info("stopNode nodeList:{}", nodeList);
+        // node is removed and doesn't belong to any group. then local tb_node table would delete removed node
+        // if observer to removed, this observer would still return groupId(as a observer)
+        boolean nodeRemovable = CollectionUtils.isEmpty(nodeList);
+
+        if (!nodeRemovable) {
+            // node belongs to some groups, check if it is the last one of each group.
+            Set<Integer> groupIdSet = nodeList.stream().map(TbNode::getGroupId)
+                .collect(Collectors.toSet());
+
+            for (Integer groupId : groupIdSet) {
+                int nodeCountOfGroup = CollectionUtils.size(this.tbNodeMapper.selectByGroupId(chainId, groupId));
+                if (nodeCountOfGroup != 1) { // group has another node.
+                    throw new BaseException(ConstantCode.NODE_NEED_REMOVE_FROM_GROUP_ERROR.attach(groupId));
+                }
+            }
+        }
+
+        log.info("Docker stop and remove container front id:[{}:{}].", front.getFrontId(), front.getContainerName());
+        this.dockerOptions.stop(front.getFrontIp(), front.getDockerPort(), front.getSshUser(),
+            front.getSshPort(), front.getContainerName());
+        try {
+            Thread.sleep(constantProperties.getDockerRestartPeriodTime());
+        } catch (InterruptedException e) {
+            log.warn("Docker stop and remove container sleep Interrupted");
+            Thread.currentThread().interrupt();
+        }
+
+        // update front
+        ((FrontService) AopContext.currentProxy()).updateStatus(front.getFrontId(), FrontStatusEnum.STOPPED);
+    }
+
+    /**
+     *  @param nodeId
+     * @return
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void deleteNode(int chainId, String nodeId) {
+        log.info("deleteNode chainId:{},nodeId:{}", chainId, nodeId);
+        int errorFlag = 0;
+        // remove front
+        TbFront front = this.frontService.getByChainIdAndNodeId(chainId, nodeId);
+        if (front == null) {
+            throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
+        }
+
+        // check front(node) type, only deploy added nodes could be deleted
+        if (FrontTypeEnum.isDeployAdded(front.getFrontType())) {
+            log.error("only support delete deploy added nodes");
+            throw new BaseException(ConstantCode.ONLY_SUPPORT_DELETE_ADDED_NODE_ERROR_);
+        }
+        // check front status, only not running node could be deleted
+        if (FrontStatusEnum.isRunning(front.getFrontStatus())) {
+            log.error("only support delete stopped nodes");
+            throw new BaseException(ConstantCode.ONLY_SUPPORT_DELETE_ADDED_NODE_ERROR_);
+        }
+
+        TbChain chain = this.tbChainMapper.selectByPrimaryKey(chainId);
+        final byte encryptType = chain.getChainType();
+        String ip = front.getFrontIp();
+        // get delete node's group id list from ./NODES_ROOT/default_chain/ip/node[x]/conf/group.[groupId].genesis
+        Path nodePath = this.pathService.getNodeRoot(chain.getChainName(), ip, front.getHostIndex());
+        Set<Integer> groupIdSet = NodeConfig.getGroupIdSet(nodePath, EncryptTypeEnum.getById(encryptType));
+        log.info("deleteNode updateNodeConfigIniByGroupList chain:{}, groupIdSet:{}", chain, groupIdSet);
+        // update related node's config.ini file, e.g. p2p
+        try {
+            log.info("deleteNode updateNodeConfigIniByGroupList chain:{}, groupIdSet:{}", chain, groupIdSet);
+            // update related node's config.ini file, e.g. p2p
+            this.frontService.updateNodeConfigIniByGroupList(chain, nodeId, groupIdSet);
+        } catch (IOException e) {
+            errorFlag++;
+            log.error("Delete node, update related group:[{}] node's config error ", groupIdSet, e);
+            log.error("Please update related node's group config manually");
+        }
+
+        // move node directory to tmp
+        try {
+            this.pathService.deleteNode(chain.getChainName(), ip, front.getHostIndex(), front.getNodeId());
+        } catch (IOException e) {
+            errorFlag++;
+            log.error("Delete node's config files:[{}:{}:{}] error.",
+                chain.getChainName(), ip, front.getHostIndex(), e);
+            log.error("Please move/rm node's config files manually");
+        }
+
+        // move node of remote host files to temp directory, e.g./opt/fisco/delete-tmp
+        NodeService.mvNodeOnRemoteHost(ip, front.getRootOnHost(), chain.getChainName(), front.getHostIndex(),
+            front.getNodeId(), front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
+
+        // delete front, node in db
+        this.frontService.removeByFrontId(front.getFrontId());
+
+        // if error occur, throw out finally
+        if (errorFlag != 0) {
+            log.error("Update related group OR delete node's config files error. Check out upper error log");
+            throw new BaseException(ConstantCode.DELETE_NODE_DIR_ERROR);
+        }
+    }
 }
