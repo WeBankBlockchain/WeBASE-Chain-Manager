@@ -122,4 +122,3 @@ dist
 /src/main/resources/application-dev.yml
 generatorConfig.xml
 mbg.properties
-GenerateToolTest.java

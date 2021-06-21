@@ -57,39 +57,37 @@ import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ValidateUtil;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigInteger;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * services for node data.
@@ -889,7 +887,7 @@ public class NodeService {
 
         if (!FrontStatusEnum.isRunning(front.getFrontStatus())) {
             log.warn("Node:[{}:{}] is already stopped.",front.getFrontIp(),front.getHostIndex());
-            return ;
+            return;
         }
 
 
@@ -924,7 +922,7 @@ public class NodeService {
         }
 
         // update front
-        ((FrontService) AopContext.currentProxy()).updateStatus(front.getFrontId(), FrontStatusEnum.STOPPED);
+        this.frontService.updateStatus(front.getFrontId(), FrontStatusEnum.STOPPED);
     }
 
     /**
@@ -942,14 +940,14 @@ public class NodeService {
         }
 
         // check front(node) type, only deploy added nodes could be deleted
-        if (FrontTypeEnum.isDeployAdded(front.getFrontType())) {
+        if (!FrontTypeEnum.isDeployAdded(front.getFrontType())) {
             log.error("only support delete deploy added nodes");
-            throw new BaseException(ConstantCode.ONLY_SUPPORT_DELETE_ADDED_NODE_ERROR_);
+            throw new BaseException(ConstantCode.ONLY_SUPPORT_DELETE_ADDED_NODE_ERROR);
         }
         // check front status, only not running node could be deleted
         if (FrontStatusEnum.isRunning(front.getFrontStatus())) {
             log.error("only support delete stopped nodes");
-            throw new BaseException(ConstantCode.ONLY_SUPPORT_DELETE_ADDED_NODE_ERROR_);
+            throw new BaseException(ConstantCode.NODE_RUNNING_ERROR);
         }
 
         TbChain chain = this.tbChainMapper.selectByPrimaryKey(chainId);
