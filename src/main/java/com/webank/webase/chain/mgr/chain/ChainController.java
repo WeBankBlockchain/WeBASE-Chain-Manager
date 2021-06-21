@@ -275,4 +275,46 @@ public class ChainController extends BaseController {
             return new BaseResponse(ConstantCode.HOST_INIT_NOT_SUCCESS);
         }
     }
+
+    /**
+     * delete by chainId
+     */
+    @ApiOperation(value = "删除新增的节点")
+    @DeleteMapping("/node/delete/{chainId}/{nodeId}")
+    public BaseResponse deleteNode(@PathVariable("chainId") Integer chainId,
+        @PathVariable("nodeId") String nodeId) {
+        Instant startTime = Instant.now();
+        log.info("start deleteNode startTime:{} chainId:{},nodeId:{}",
+            startTime.toEpochMilli(), chainId, nodeId);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+
+        // delete node
+        deployService.deleteNode(chainId, nodeId);
+
+        log.info("end deleteNode useTime:{} result:{}",
+            Duration.between(startTime, Instant.now()).toMillis(),
+            JsonTools.toJSONString(baseResponse));
+        return baseResponse;
+    }
+
+    /**
+     * delete by chainId
+     */
+    @ApiOperation(value = "停止新增的节点")
+    @DeleteMapping("/node/stop/{chainId}/{nodeId}")
+    public BaseResponse stopNewNode(@PathVariable("chainId") Integer chainId,
+        @PathVariable("nodeId") String nodeId) {
+        Instant startTime = Instant.now();
+        log.info("start stopNewNode startTime:{} chainId:{},nodeId:{}",
+            startTime.toEpochMilli(), chainId, nodeId);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+
+        // delete node
+        deployService.stopNode(chainId, nodeId);
+
+        log.info("end stopNewNode useTime:{} result:{}",
+            Duration.between(startTime, Instant.now()).toMillis(),
+            JsonTools.toJSONString(baseResponse));
+        return baseResponse;
+    }
 }
