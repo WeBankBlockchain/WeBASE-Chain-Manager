@@ -235,5 +235,6 @@ public class ConstantCode {
     public static final RetCode MANUALLY_ADDED_CHAIN_NOT_SUPPORT_ADD_NODE = RetCode.mark(205290, "manually added chain cannot add new nodes");
     public static final RetCode ADD_NEW_NODES_MUST_USING_EXISTED_GROUP_ID = RetCode.mark(205291, "only support add new node in existed group");
     public static final RetCode ONLY_SUPPORT_DELETE_ADDED_NODE_ERROR = RetCode.mark(205292, "only support delete new added error node");
+    public static final RetCode ONLY_SUPPORT_STOP_CHAIN_DEPLOY_NODE_ERROR = RetCode.mark(205293, "only support stop node deployed by chain");
 
 }

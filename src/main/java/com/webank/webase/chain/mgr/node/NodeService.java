@@ -890,6 +890,11 @@ public class NodeService {
             return;
         }
 
+        // check front(node) type, only deploy added nodes could be deleted
+        if (!FrontTypeEnum.isDeployAdded(front.getFrontType())) {
+            log.error("only support delete deploy added nodes");
+            throw new BaseException(ConstantCode.ONLY_SUPPORT_STOP_CHAIN_DEPLOY_NODE_ERROR);
+        }
 
         // select node list and check if removed node
         List<TbNode> nodeList = this.tbNodeMapper.selectByNodeId(chainId, nodeId);
