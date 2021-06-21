@@ -177,7 +177,7 @@ public class ConstantCode {
 //    public static final RetCode NODE_IN_GROUP_ERROR = RetCode.mark(205250, "Node still in group, remove before deleting.");
     public static final RetCode READ_NODE_CONFIG_ERROR = RetCode.mark(205251, "Read node config error.");
     public static final RetCode DELETE_NODE_DIR_ERROR = RetCode.mark(205252, "Delete node config files error.");
-        public static final RetCode NODE_RUNNING_ERROR = RetCode.mark(205253, "Node is running.");
+    public static final RetCode NODE_RUNNING_ERROR = RetCode.mark(205253, "Node is running, cannot be stopped.");
 //    public static final RetCode UPDATE_RELATED_NODE_ERROR = RetCode.mark(205254, "Update related nodes error.");
     public static final RetCode DELETE_CHAIN_ERROR = RetCode.mark(205255, "Delete chain error.");
         public static final RetCode NODE_NEED_REMOVE_FROM_GROUP_ERROR = RetCode.mark(205256, "Node is sealer or observer, remove from group first.");
@@ -234,6 +234,6 @@ public class ConstantCode {
     // v0.9
     public static final RetCode MANUALLY_ADDED_CHAIN_NOT_SUPPORT_ADD_NODE = RetCode.mark(205290, "manually added chain cannot add new nodes");
     public static final RetCode ADD_NEW_NODES_MUST_USING_EXISTED_GROUP_ID = RetCode.mark(205291, "only support add new node in existed group");
-    public static final RetCode ONLY_SUPPORT_DELETE_ADDED_NODE_ERROR_ = RetCode.mark(205292, "only support delete new added error node");
+    public static final RetCode ONLY_SUPPORT_DELETE_ADDED_NODE_ERROR = RetCode.mark(205292, "only support delete new added error node");
 
 }
