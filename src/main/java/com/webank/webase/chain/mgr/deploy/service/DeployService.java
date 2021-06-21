@@ -79,7 +79,15 @@ public class DeployService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void stopNode(int chainId, String nodeId) {
+        nodeService.stopNode(chainId, nodeId);
+    }
 
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void deleteNode(int chainId, String nodeId) {
+        nodeService.deleteNode(chainId, nodeId);
+    }
 
 }
 
