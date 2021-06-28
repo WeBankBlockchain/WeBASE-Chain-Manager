@@ -52,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.*;
@@ -140,7 +141,7 @@ public class ContractService {
                     criteria.andContractStatusEqualTo(inputParam.getContractStatus());
                 example.or(criteria);
             }
-        }else {
+        } else {
             TbContractExample.Criteria criteriaComm = example.createCriteria();
             if (CollectionUtils.isNotEmpty(inputParam.getChainIds()))
                 criteriaComm.andChainIdIn(inputParam.getChainIds());
@@ -163,10 +164,10 @@ public class ContractService {
     }
 
 
-
     /**
      * add new contract data.
      */
+    @Transactional
     public TbContract saveContract(Contract contract) throws BaseException {
         log.debug("start addContractInfo Contract:{}", JsonTools.toJSONString(contract));
         TbContract tbContract;
@@ -182,10 +183,30 @@ public class ContractService {
 
 
     /**
-     *
+     * @param param
+     * @return
+     */
+    @Transactional
+    public List<TbContract> saveContractBatch(ReqSaveContractListVO param) {
+        int chainId = param.getChainId();
+        int groupId = param.getGroupId();
+        List<TbContract> tbContractList = new ArrayList<>();
+        for (Contract contract : param.getContractList()) {
+            if (Objects.isNull(chainId)) {
+                contract.setChainId(chainId);
+                contract.setGroupId(groupId);
+                tbContractList.add(saveContract(contract));
+            }
+        }
+        return tbContractList;
+    }
+
+
+    /**
      * save new contract.
      */
-    private TbContract newContract(Contract contract) {
+    @Transactional
+    public TbContract newContract(Contract contract) {
         // check contract not exist.
         contractManager.verifyContractNotExistByName(contract.getChainId(), contract.getGroupId(),
                 contract.getContractName(), contract.getContractPath());
@@ -205,7 +226,8 @@ public class ContractService {
     /**
      * update contract.
      */
-    private TbContract updateContract(Contract contract) {
+    @Transactional
+    public TbContract updateContract(Contract contract) {
         // check not deploy
         TbContract tbContract = contractManager.verifyContractNotDeploy(contract.getChainId(),
                 contract.getContractId(), contract.getGroupId());
