@@ -117,6 +117,28 @@ public class ContractController extends BaseController {
         return baseResponse;
     }
 
+    /**
+     * @param reqSaveContractListVO
+     * @param result
+     * @return
+     */
+    @PostMapping(value = "/batch")
+    public BaseResponse saveContractBatch(@RequestBody @Valid ReqSaveContractListVO reqSaveContractListVO, BindingResult result) {
+        checkBindResult(result);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start saveContractBatch startTime:{} reqSaveContractListVO:{}", startTime.toEpochMilli(),
+                JsonTools.toJSONString(reqSaveContractListVO));
+
+        // add contract row
+        List<TbContract> tbContract = contractService.saveContractBatch(reqSaveContractListVO);
+        baseResponse.setData(tbContract);
+
+        log.info("end saveContractBatch useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return baseResponse;
+    }
+
 
     /**
      * delete contract by id.
