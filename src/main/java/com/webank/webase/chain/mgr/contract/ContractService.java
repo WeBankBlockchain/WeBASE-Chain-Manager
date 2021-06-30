@@ -192,11 +192,11 @@ public class ContractService {
         int groupId = param.getGroupId();
         List<TbContract> tbContractList = new ArrayList<>();
         for (Contract contract : param.getContractList()) {
-            if (Objects.isNull(chainId)) {
+            if (Objects.nonNull(chainId))
                 contract.setChainId(chainId);
+            if (Objects.nonNull(groupId))
                 contract.setGroupId(groupId);
-                tbContractList.add(saveContract(contract));
-            }
+            tbContractList.add(saveContract(contract));
         }
         return tbContractList;
     }
