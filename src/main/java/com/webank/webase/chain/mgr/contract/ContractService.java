@@ -187,15 +187,14 @@ public class ContractService {
      * @return
      */
     @Transactional
-    public List<TbContract> saveContractBatch(ReqSaveContractListVO param) {
-        int chainId = param.getChainId();
-        int groupId = param.getGroupId();
+    public List<TbContract> saveContractBatch(ReqSaveContractBatchVO param) {
         List<TbContract> tbContractList = new ArrayList<>();
-        for (Contract contract : param.getContractList()) {
-            if (Objects.nonNull(chainId))
-                contract.setChainId(chainId);
-            if (Objects.nonNull(groupId))
-                contract.setGroupId(groupId);
+        for (BaseContract baseContract : param.getContractList()) {
+            Contract contract = new Contract();
+            BeanUtils.copyProperties(baseContract, contract);
+            contract.setChainId(param.getChainId());
+            contract.setGroupId(param.getGroupId());
+            contract.setAgencyId(param.getAgencyId());
             tbContractList.add(saveContract(contract));
         }
         return tbContractList;
