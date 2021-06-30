@@ -170,6 +170,7 @@ public class ContractService {
     @Transactional
     public TbContract saveContract(Contract contract) throws BaseException {
         log.debug("start addContractInfo Contract:{}", JsonTools.toJSONString(contract));
+        groupManager.requireGroupExist(contract.getAgencyId(), contract.getGroupId());
         TbContract tbContract;
         if (contract.getContractId() == null) {
             tbContract = newContract(contract);// new
@@ -188,6 +189,7 @@ public class ContractService {
      */
     @Transactional
     public List<TbContract> saveContractBatch(ReqSaveContractBatchVO param) {
+
         List<TbContract> tbContractList = new ArrayList<>();
         for (BaseContract baseContract : param.getContractList()) {
             Contract contract = new Contract();
