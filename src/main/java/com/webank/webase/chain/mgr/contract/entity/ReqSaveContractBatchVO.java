@@ -6,11 +6,12 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
-public class ReqSaveContractListVO {
+public class ReqSaveContractBatchVO {
     @NotNull
     private Integer chainId;
     @NotNull
     private Integer groupId;
+    private Integer agencyId;
     @NotNull
-    private List<Contract> contractList;
+    private List<BaseContract> contractList;
 }

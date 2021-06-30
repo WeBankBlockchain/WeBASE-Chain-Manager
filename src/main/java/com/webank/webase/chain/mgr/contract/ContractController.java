@@ -118,20 +118,20 @@ public class ContractController extends BaseController {
     }
 
     /**
-     * @param reqSaveContractListVO
+     * @param reqSaveContractBatchVO
      * @param result
      * @return
      */
     @PostMapping(value = "/batch")
-    public BaseResponse saveContractBatch(@RequestBody @Valid ReqSaveContractListVO reqSaveContractListVO, BindingResult result) {
+    public BaseResponse saveContractBatch(@RequestBody @Valid ReqSaveContractBatchVO reqSaveContractBatchVO, BindingResult result) {
         checkBindResult(result);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
-        log.info("start saveContractBatch startTime:{} reqSaveContractListVO:{}", startTime.toEpochMilli(),
-                JsonTools.toJSONString(reqSaveContractListVO));
+        log.info("start saveContractBatch startTime:{} ReqSaveContractBatchVO:{}", startTime.toEpochMilli(),
+                JsonTools.toJSONString(reqSaveContractBatchVO));
 
         // add contract row
-        List<TbContract> tbContract = contractService.saveContractBatch(reqSaveContractListVO);
+        List<TbContract> tbContract = contractService.saveContractBatch(reqSaveContractBatchVO);
         baseResponse.setData(tbContract);
 
         log.info("end saveContractBatch useTime:{}",
