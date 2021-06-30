@@ -170,7 +170,7 @@ public class ContractService {
     @Transactional
     public TbContract saveContract(Contract contract) throws BaseException {
         log.debug("start addContractInfo Contract:{}", JsonTools.toJSONString(contract));
-        groupManager.requireGroupExist(contract.getAgencyId(), contract.getGroupId());
+        groupManager.requireGroupExist(contract.getChainId(), contract.getGroupId());
         TbContract tbContract;
         if (contract.getContractId() == null) {
             tbContract = newContract(contract);// new
