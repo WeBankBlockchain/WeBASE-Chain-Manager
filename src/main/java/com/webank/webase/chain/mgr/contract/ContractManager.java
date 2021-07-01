@@ -119,11 +119,10 @@ public class ContractManager {
     }
 
     /**
-     *
      * @param contractPath
      * @return
      */
-    public List<TbContract> listContractByPath(String contractPath){
+    public List<TbContract> listContractByPath(String contractPath) {
         log.debug("start listContractByPath. contractPath:{}", contractPath);
         TbContractExample example = new TbContractExample();
         TbContractExample.Criteria criteria = example.createCriteria();
@@ -133,5 +132,26 @@ public class ContractManager {
         List<TbContract> contractList = this.tbContractMapper.selectByExampleWithBLOBs(example);
         log.debug("end listContractByPath.");
         return contractList;
+    }
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param agencyId
+     * @return
+     */
+    public long getCountOfContract(int chainId, Integer groupId, Integer agencyId) {
+        log.info("start getCountOfContract. chainId:{} groupId:{} agencyId:{}", chainId, groupId, agencyId);
+        TbContractExample example = new TbContractExample();
+        TbContractExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        if (Objects.nonNull(groupId))
+            criteria.andGroupIdEqualTo(groupId);
+        if (Objects.nonNull(agencyId))
+            criteria.andSaveByAgencyEqualTo(agencyId);
+
+        long count = tbContractMapper.countByExample(example);
+        log.debug("end getCountOfContract. result:{}", count);
+        return count;
     }
 }
