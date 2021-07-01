@@ -49,6 +49,8 @@ public class ContractController extends BaseController {
     @Autowired
     private ContractService contractService;
     @Autowired
+    private ContractManager contractManager;
+    @Autowired
     private GroupService groupService;
     @Autowired
     private CompileService compileService;
@@ -377,5 +379,26 @@ public class ContractController extends BaseController {
         log.info("end sendByTransaction useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
 
         return result;
+    }
+
+    /**
+     * 查询链下合约数
+     * @param chainId
+     * @param groupId
+     * @param agencyId
+     * @return
+     */
+    @GetMapping(value = "/count")
+    public BaseResponse getContractCount(@RequestParam("chainId") Integer chainId,
+                                         @RequestParam(value = "groupId", required = false) Integer groupId,
+                                         @RequestParam(value = "agencyId", required = false) Integer agencyId) {
+        Instant startTime = Instant.now();
+        log.info("start getContractCount startTime:{}, chainId:{} groupId:{} agencyId:{}",
+                startTime.toEpochMilli(), chainId, groupId, agencyId);
+        long count = contractManager.getCountOfContract(chainId, groupId, agencyId);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        baseResponse.setData(count);
+        log.info("end getContractCount useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
+        return baseResponse;
     }
 }
