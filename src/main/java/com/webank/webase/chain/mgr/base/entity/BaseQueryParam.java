@@ -23,8 +23,8 @@ import lombok.NoArgsConstructor;
 public class BaseQueryParam {
 
     private Integer chainId;
-    private Integer start;
-    private Integer pageSize;
+    private Integer start=-1;
+    private Integer pageSize=-1;
     private String flagSortedByTime;
 
     public BaseQueryParam(Integer start, Integer pageSize) {
