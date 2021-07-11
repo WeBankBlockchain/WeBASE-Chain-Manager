@@ -70,7 +70,7 @@ public class TbContractSqlProvider {
 
         // add pagination for mysql with limit clause
         StringBuilder sqlBuilder = new StringBuilder(sql.toString());
-        if (param != null && (param.getStart() > -1 || param.getPageSize() > -1)) {
+        if (param != null && ((param.getStart() !=null && param.getStart() > -1) || (param.getPageSize() !=null &&param.getPageSize() > -1))) {
             sqlBuilder.append(" limit ");
             if (param.getStart() > -1 && param.getPageSize() > -1) {
                 sqlBuilder.append(param.getStart()).append(",").append(param.getPageSize());
