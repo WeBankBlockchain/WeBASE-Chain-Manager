@@ -352,8 +352,9 @@ public class GroupService {
                 throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
             }
             // request front to start
-            frontInterface.operateGroup(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort(), groupId,
-                    "start");
+//            frontInterface.operateGroup(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort(), groupId,
+//                    "start");
+            startGroupIfNotRunning(req.getChainId(), tbFront.getNodeId(), groupId);
         }
         // refresh  20210225 挪到controller异步调用
 //        resetGroupList();
