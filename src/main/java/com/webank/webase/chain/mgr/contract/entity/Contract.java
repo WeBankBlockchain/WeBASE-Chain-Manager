@@ -13,27 +13,18 @@
  */
 package com.webank.webase.chain.mgr.contract.entity;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Contract.
  */
 @Data
-public class Contract {
+public class Contract extends BaseContract{
     @NotNull
     private Integer chainId;
     @NotNull
     private Integer groupId;
     private Integer agencyId;
-    private Integer contractId;
-    @NotBlank
-    private String contractName;
-    @NotBlank
-    private String contractPath;
-    private String contractSource;
-    private String contractAbi;
-    private String contractBin;
-    private String bytecodeBin;
 }

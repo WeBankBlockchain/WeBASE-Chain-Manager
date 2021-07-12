@@ -24,18 +24,16 @@ public class TbContractSqlProvider {
     public String selectByParam(ContractParam param) {
         SQL sql = new SQL();
         sql.SELECT(ALL_COLUMN_FIELDS).FROM("tb_contract");
-        this.applyContractParam(sql, param);
-        return sql.toString();
+        return this.applyContractParam(sql, param);
     }
 
     public String countByParam(ContractParam param) {
         SQL sql = new SQL();
         sql.SELECT("count(1)").FROM("tb_contract");
-        this.applyContractParam(sql, param);
-        return sql.toString();
+        return this.applyContractParam(sql, param);
     }
 
-    public SQL applyContractParam(SQL sql, ContractParam param) {
+    public String applyContractParam(SQL sql, ContractParam param) {
         if (param.getContractId() != null) {
             sql.WHERE("contract_id = #{contractId}");
         }
@@ -69,7 +67,21 @@ public class TbContractSqlProvider {
         if (StringUtils.isNotBlank(param.getFlagSortedByTime())) {
             sql.ORDER_BY(String.format("modify_time %s", param.getFlagSortedByTime()));
         }
-        return sql;
+
+        // add pagination for mysql with limit clause
+        StringBuilder sqlBuilder = new StringBuilder(sql.toString());
+        if (param != null && ((param.getStart() !=null && param.getStart() > -1) || (param.getPageSize() !=null &&param.getPageSize() > -1))) {
+            sqlBuilder.append(" limit ");
+            if (param.getStart() > -1 && param.getPageSize() > -1) {
+                sqlBuilder.append(param.getStart()).append(",").append(param.getPageSize());
+            } else if (param.getStart() > -1) {
+                sqlBuilder.append(param.getStart());
+            } else if (param.getPageSize() > -1) {
+                sqlBuilder.append(param.getPageSize());
+            }
+        }
+
+        return sqlBuilder.toString();
     }
 
     /**
