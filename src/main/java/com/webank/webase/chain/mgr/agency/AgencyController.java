@@ -20,7 +20,6 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import io.jsonwebtoken.lang.Collections;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.log4j.Log4j2;
@@ -80,6 +79,31 @@ public class AgencyController extends BaseController {
         log.info("end queryAgencyList useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
                 JsonTools.toJSONString(baseResponse));
+        return baseResponse;
+    }
+
+
+    /**
+     * 查询链下机构数
+     *
+     * @param chainId
+     * @param groupId
+     * @param nodeTypes
+     * @return
+     */
+    @GetMapping(value = "/count")
+    public BaseResponse getAgencyCount(@RequestParam("chainId") Integer chainId,
+                                       @RequestParam(name = "groupId", required = false) Integer groupId,
+                                       @RequestParam(value = "nodeTypes", required = false) List<String> nodeTypes) {
+        Instant startTime = Instant.now();
+        log.info("start getAgencyCount startTime:{}, chainId:{} groupId:{} nodeTypes:{}",
+                startTime.toEpochMilli(), chainId, groupId, JsonTools.objToString(nodeTypes));
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS, 0);
+        List<RspAgencyVo> agencyList = agencyService.queryAgencyList(chainId, groupId, nodeTypes);
+        if (CollectionUtils.isNotEmpty(agencyList))
+            baseResponse.setData(agencyList.stream().map(agency -> agency.getAgencyId()).distinct().count());
+
+        log.info("end getAgencyCount useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
         return baseResponse;
     }
 }

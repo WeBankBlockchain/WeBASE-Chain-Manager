@@ -74,8 +74,8 @@ public class CompileService {
             byte[] contractSourceByteArr = Base64.getDecoder().decode(contract.getContractSource());
             FileUtils.writeByteArrayToFile(filePair.getRight(), contractSourceByteArr);
 
-            // TODO 临时方案，将群组下的所有合约文件写到同一个目录
-            writeContractToFileByGroup(contract.getChainId(), contract.getGroupId(), contractDirectory);
+            //Write the contract in the specified directory to the same folder
+            writeContractToFileByContractPath(contract.getContractPath(), contractDirectory);
 
             //compile ExecuteResult execCompile
             execCompile(tbChain.getChainType(), contractDirectory.toString(), filePair.getRight().toString());
@@ -115,14 +115,35 @@ public class CompileService {
     }
 
 
+//    /**
+//     * @param chainId
+//     * @param groupId
+//     * @param directory
+//     * @throws IOException
+//     */
+//    private void writeContractToFileByGroup(int chainId, int groupId, File directory) throws IOException {
+//        List<TbContract> contractList = contractManager.listToolingContractByChainAndGroup(chainId, groupId);
+//        if (CollectionUtils.isEmpty(contractList))
+//            return;
+//
+//        for (TbContract contract : contractList) {
+//            if (StringUtils.isBlank(contract.getContractSource()))
+//                continue;
+//            byte[] contractSourceByteArr = Base64.getDecoder().decode(contract.getContractSource());
+//            String contractNameWithSuffix = String.format(SOLIDITY_FILE_NAME_FORMAT, contract.getContractName());
+//            File contractFile = Paths.get(directory.toString(), contractNameWithSuffix).toFile();
+//            FileUtils.writeByteArrayToFile(contractFile, contractSourceByteArr);
+//        }
+//    }
+
+
     /**
-     * @param chainId
-     * @param groupId
+     * @param contractPath
      * @param directory
      * @throws IOException
      */
-    private void writeContractToFileByGroup(int chainId, int groupId, File directory) throws IOException {
-        List<TbContract> contractList = contractManager.listToolingContractByChainAndGroup(chainId, groupId);
+    private void writeContractToFileByContractPath(String contractPath, File directory) throws IOException {
+        List<TbContract> contractList = contractManager.listContractByPath(contractPath);
         if (CollectionUtils.isEmpty(contractList))
             return;
 
@@ -135,6 +156,7 @@ public class CompileService {
             FileUtils.writeByteArrayToFile(contractFile, contractSourceByteArr);
         }
     }
+
 
     /**
      * @param contract
@@ -163,8 +185,8 @@ public class CompileService {
                 contract.setContractBin(constant);
         }
 
-        if (StringUtils.isAnyBlank(contract.getBytecodeBin(), contract.getContractBin(), contract.getContractAbi()))
-            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("compile result is not found"));
+//        if (StringUtils.isAnyBlank(contract.getBytecodeBin(), contract.getContractBin(), contract.getContractAbi()))
+//            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("compile result is not found"));
 
         //success
         contract.setContractStatus(ContractStatus.COMPILED.getValue());
