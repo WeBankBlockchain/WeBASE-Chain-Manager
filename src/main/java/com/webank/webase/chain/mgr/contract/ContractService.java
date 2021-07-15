@@ -238,6 +238,7 @@ public class ContractService {
 
         Integer belongAgency = tbContract.getSaveByAgency();
         BeanUtils.copyProperties(contract, tbContract);
+        tbContract.setContractStatus(ContractStatus.NOTDEPLOYED.getValue());
         tbContract.setSaveByAgency(belongAgency);
         tbContract.setModifyTime(new Date());
         tbContractMapper.updateByPrimaryKeyWithBLOBs(tbContract);
