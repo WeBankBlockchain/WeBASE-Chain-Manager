@@ -17,9 +17,12 @@ import java.lang.management.RuntimeMXBean;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.util.Base64;
 import java.util.Formatter;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.fisco.bcos.web3j.precompile.common.PrecompiledCommon.Success;
 
@@ -162,6 +165,33 @@ public class CommUtils {
         String processId = name.substring(0, name.indexOf("@"));
         log.debug("success exec  method getCurrentProcessId, result:{}", processId);
         return processId;
+    }
+
+
+    public static String replaceBlank(String str) {
+        String dest = "";
+        if (str!=null) {
+            Pattern p = Pattern.compile("\\s*|\\t|\\r|\\n");
+            Matcher m = p.matcher(str);
+            dest = m.replaceAll("");
+        }
+        return dest;
+    }
+
+
+    public static byte[] base64Decode(String encodeContent){
+        // decode and save contract to file
+        byte[] contractSourceByteArr = null;
+        try{
+            contractSourceByteArr = Base64.getDecoder().decode(CommUtils.replaceBlank(encodeContent));
+        }catch (Exception ex){
+            log.warn("decode by base64 of jdk8 fail,content:{}",encodeContent,ex);
+            log.info("try decode by org.apache.commons.codec.binary.Base64");
+            org.apache.commons.codec.binary.Base64 base64 = new org.apache.commons.codec.binary.Base64();
+            contractSourceByteArr = base64.decode(CommUtils.replaceBlank(encodeContent));
+        }
+        log.warn("decode contractSource success");
+        return contractSourceByteArr;
     }
 
 }

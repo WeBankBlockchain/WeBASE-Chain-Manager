@@ -72,11 +72,11 @@ public class TbContractSqlProvider {
         StringBuilder sqlBuilder = new StringBuilder(sql.toString());
         if (param != null && ((param.getStart() !=null && param.getStart() > -1) || (param.getPageSize() !=null &&param.getPageSize() > -1))) {
             sqlBuilder.append(" limit ");
-            if (param.getStart() > -1 && param.getPageSize() > -1) {
+            if ((param.getStart() !=null && param.getStart() > -1) && (param.getPageSize() !=null &&param.getPageSize() > -1)) {
                 sqlBuilder.append(param.getStart()).append(",").append(param.getPageSize());
-            } else if (param.getStart() > -1) {
+            } else if (param.getStart() !=null && param.getStart() > -1) {
                 sqlBuilder.append(param.getStart());
-            } else if (param.getPageSize() > -1) {
+            } else if (param.getPageSize() !=null &&param.getPageSize() > -1) {
                 sqlBuilder.append(param.getPageSize());
             }
         }
