@@ -383,6 +383,7 @@ public class ContractController extends BaseController {
 
     /**
      * 查询链下合约数
+     *
      * @param chainId
      * @param groupId
      * @param agencyId
@@ -399,6 +400,26 @@ public class ContractController extends BaseController {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         baseResponse.setData(count);
         log.info("end getContractCount useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
+        return baseResponse;
+    }
+
+
+    /**
+     * 批量删除合约
+     * @param chainId
+     * @param groupId
+     * @param contractPath
+     * @return
+     */
+    @DeleteMapping("/batch/{chainId}/{groupId}")
+    public BaseResponse deleteContractBatch(@PathVariable int chainId,
+                                            @PathVariable int groupId,
+                                            @RequestParam(value = "contractPath") String contractPath) {
+        Instant startTime = Instant.now();
+        log.info("start deleteContractBatch startTime:{}, chainId:{} groupId:{} contractPath:{}", startTime, chainId, groupId, contractPath);
+        contractManager.deleteByChainAndGroupAndPath(chainId, groupId, contractPath);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("end deleteContractBatch useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
         return baseResponse;
     }
 }
