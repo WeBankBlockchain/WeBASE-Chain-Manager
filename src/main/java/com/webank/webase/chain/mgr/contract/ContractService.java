@@ -652,5 +652,4 @@ public class ContractService {
         return this.tbContractMapper.updateByPrimaryKeySelective(tbContract) == 1;
     }
 
-
 }
