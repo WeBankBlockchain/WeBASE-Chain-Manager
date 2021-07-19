@@ -14,6 +14,7 @@
 package com.webank.webase.chain.mgr.contract.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.NotNull;
 
@@ -21,6 +22,7 @@ import javax.validation.constraints.NotNull;
  * Contract.
  */
 @Data
+@EqualsAndHashCode
 public class Contract extends BaseContract{
     @NotNull
     private Integer chainId;
