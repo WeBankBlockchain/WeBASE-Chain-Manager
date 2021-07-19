@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -46,6 +47,21 @@ public class ContractManager {
         TbContract contract = tbContractMapper.getContract(chainId, groupId, name, path);
         if (Objects.nonNull(contract)) {
             log.warn("contract is exist. groupId:{} name:{} path:{}", groupId, name, path);
+            throw new BaseException(ConstantCode.CONTRACT_EXISTS);
+        }
+    }
+
+    public void verifyContractNotExistByName(int contractId, int chainId, int groupId, String name, String path) {
+        TbContractExample example = new TbContractExample();
+        TbContractExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        criteria.andGroupIdEqualTo(groupId);
+        criteria.andContractNameEqualTo(name);
+        criteria.andContractPathEqualTo(path);
+
+        Optional<TbContract> contractOpt = tbContractMapper.getOneByExample(example);
+        if (contractOpt.isPresent() && !contractOpt.get().getContractId().equals(contractId)) {
+            log.warn("found contract by groupId:{} name:{} path:{} the contractId is:{}, but input contractId:{}", groupId, name, path, contractOpt.get().getContractId(), contractId);
             throw new BaseException(ConstantCode.CONTRACT_EXISTS);
         }
     }
