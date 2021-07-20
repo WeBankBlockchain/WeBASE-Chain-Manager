@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
  * Contract.
  */
 @Data
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 public class Contract extends BaseContract{
     @NotNull
     private Integer chainId;
