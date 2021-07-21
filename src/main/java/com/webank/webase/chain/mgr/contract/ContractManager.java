@@ -145,8 +145,8 @@ public class ContractManager {
         TbContractExample example = new TbContractExample();
         TbContractExample.Criteria criteria = example.createCriteria();
         criteria.andContractPathEqualTo(contractPath);
-        criteria.andContractAddressIsNull();
-        criteria.andContractStatusNotEqualTo(ContractStatus.DEPLOYED.getValue());
+//        criteria.andContractAddressIsNull();
+//        criteria.andContractStatusNotEqualTo(ContractStatus.DEPLOYED.getValue());
         List<TbContract> contractList = this.tbContractMapper.selectByExampleWithBLOBs(example);
         log.debug("end listContractByPath.");
         return contractList;
