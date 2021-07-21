@@ -7,7 +7,6 @@ import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.OsNameEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
@@ -29,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -147,16 +145,19 @@ public class CompileService {
      */
     private void writeContractToFileByContractPath(String contractPath, File directory) throws IOException {
         List<TbContract> contractList = contractManager.listContractByPath(contractPath);
+        log.info("contractPath:{} contractList:{}", contractPath, JsonTools.objToString(contractList));
         if (CollectionUtils.isEmpty(contractList))
             return;
 
         for (TbContract contract : contractList) {
             if (StringUtils.isBlank(contract.getContractSource()))
                 continue;
+
             byte[] contractSourceByteArr = CommUtils.base64Decode(contract.getContractSource());
             String contractNameWithSuffix = String.format(SOLIDITY_FILE_NAME_FORMAT, contract.getContractName());
             File contractFile = Paths.get(directory.toString(), contractNameWithSuffix).toFile();
             FileUtils.writeByteArrayToFile(contractFile, contractSourceByteArr);
+            log.debug("write contract:{} to file success", contract.getContractName());
         }
     }
 
