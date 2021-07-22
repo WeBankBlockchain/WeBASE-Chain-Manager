@@ -49,6 +49,8 @@ public class ContractController extends BaseController {
     @Autowired
     private ContractService contractService;
     @Autowired
+    private ContractManager contractManager;
+    @Autowired
     private GroupService groupService;
     @Autowired
     private CompileService compileService;
@@ -113,6 +115,28 @@ public class ContractController extends BaseController {
         baseResponse.setData(tbContract);
 
         log.info("end saveContract useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return baseResponse;
+    }
+
+    /**
+     * @param reqSaveContractBatchVO
+     * @param result
+     * @return
+     */
+    @PostMapping(value = "/batch")
+    public BaseResponse saveContractBatch(@RequestBody @Valid ReqSaveContractBatchVO reqSaveContractBatchVO, BindingResult result) {
+        checkBindResult(result);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start saveContractBatch startTime:{} ReqSaveContractBatchVO:{}", startTime.toEpochMilli(),
+                JsonTools.toJSONString(reqSaveContractBatchVO));
+
+        // add contract row
+        List<TbContract> tbContract = contractService.saveContractBatch(reqSaveContractBatchVO);
+        baseResponse.setData(tbContract);
+
+        log.info("end saveContractBatch useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
         return baseResponse;
     }
@@ -355,5 +379,47 @@ public class ContractController extends BaseController {
         log.info("end sendByTransaction useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
 
         return result;
+    }
+
+    /**
+     * 查询链下合约数
+     *
+     * @param chainId
+     * @param groupId
+     * @param agencyId
+     * @return
+     */
+    @GetMapping(value = "/count")
+    public BaseResponse getContractCount(@RequestParam("chainId") Integer chainId,
+                                         @RequestParam(value = "groupId", required = false) Integer groupId,
+                                         @RequestParam(value = "agencyId", required = false) Integer agencyId) {
+        Instant startTime = Instant.now();
+        log.info("start getContractCount startTime:{}, chainId:{} groupId:{} agencyId:{}",
+                startTime.toEpochMilli(), chainId, groupId, agencyId);
+        long count = contractManager.getCountOfContract(chainId, groupId, agencyId);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        baseResponse.setData(count);
+        log.info("end getContractCount useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
+        return baseResponse;
+    }
+
+
+    /**
+     * 批量删除合约
+     * @param chainId
+     * @param groupId
+     * @param contractPath
+     * @return
+     */
+    @DeleteMapping("/batch/{chainId}/{groupId}")
+    public BaseResponse deleteContractBatch(@PathVariable int chainId,
+                                            @PathVariable int groupId,
+                                            @RequestParam(value = "contractPath") String contractPath) {
+        Instant startTime = Instant.now();
+        log.info("start deleteContractBatch startTime:{}, chainId:{} groupId:{} contractPath:{}", startTime, chainId, groupId, contractPath);
+        contractManager.deleteByChainAndGroupAndPath(chainId, groupId, contractPath);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+        log.info("end deleteContractBatch useTime:{} result:{}", Duration.between(startTime, Instant.now()).toMillis(), JsonTools.objToString(baseResponse));
+        return baseResponse;
     }
 }
