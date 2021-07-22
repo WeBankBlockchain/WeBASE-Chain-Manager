@@ -1,4 +1,4 @@
-group = 'com.webank.webase.node.mgr'
+group = 'com.webank.webase.chain.mgr'
 version = '0.0.1-SNAPSHOT'
 
 apply plugin: 'maven'
@@ -15,21 +15,21 @@ targetCompatibility = 1.8
 // In this section you declare where to find the dependencies of your project
 repositories {
     maven {url "http://maven.aliyun.com/nexus/content/groups/public/"}
-    
+    mavenCentral()
+
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     maven { url 'https://dl.bintray.com/ethereum/maven/' }
     mavenLocal()
-    mavenCentral()
 }
 
-def springboot_version="2.1.10.RELEASE"
+def springboot_version="2.1.18.RELEASE"
 List springboot = [
      "org.springframework.boot:spring-boot-starter-web:$springboot_version",
      "org.springframework.boot:spring-boot-starter-jdbc:$springboot_version"
 ]
 
 // cover old version
-def spring_version="5.1.15.RELEASE"
+def spring_version="5.2.15.RELEASE"
 List spring =[
     "org.springframework:spring-aop:$spring_version",
     "org.springframework:spring-core:$spring_version",
@@ -66,7 +66,7 @@ List swagger = [
     'io.springfox:springfox-swagger-ui:2.8.0'
 ]
 
-def jackson_version = "2.11.0"
+def jackson_version = "2.11.4"
 List jackson = [
     "com.fasterxml.jackson.core:jackson-databind:$jackson_version",
     "com.fasterxml.jackson.core:jackson-annotations:$jackson_version",
@@ -98,8 +98,7 @@ dependencies {
     compile springboot,spring,jaxb,jwt,swagger,jackson,mysql,log4j
     compile 'org.fisco-bcos:web3sdk:2.6.2'
     compile "org.apache.commons:commons-lang3:3.8.1"
-    compile "org.apache.commons:commons-lang3:3.8.1"
-
+    compile 'org.apache.commons:commons-compress:1.20'
     compile 'com.jcraft:jsch:0.1.55'
     compile 'org.ini4j:ini4j:0.5.4'
     compile ('com.github.docker-java:docker-java:3.2.1') {

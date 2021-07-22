@@ -21,14 +21,32 @@ import org.apache.ibatis.annotations.Update;
 
 public interface TbNodeMapper {
 
+    @Select({ "select * from tb_node where chain_id=#{chainId} and group_id=#{groupId,jdbcType=INTEGER}" })
+    List<TbNode> selectByGroupId(@Param("chainId") int chainId, @Param("groupId") int groupId);
+
+    /**
+     * Query node info.
+     *
+     * One node maybe in multiple group.
+     *
+     */
+    @Select({ "select * from tb_node where node_id=#{nodeId,jdbcType=VARCHAR}" })
+    List<TbNode> selectByNodeId(@Param("chainId") int chainId, @Param("nodeId") String nodeId);
+
+    @Select({ "select * from tb_node where chain_id=#{chainId} and node_id = #{nodeId} limit 1" })
+    TbNode getByNodeId(@Param("chainId") int chainId, @Param("nodeId") String nodeId);
+
     @SelectProvider(type = TbNodeSqlProvider.class, method = "countByParam")
-    public int countByParam(NodeParam param);
+    int countByParam(NodeParam param);
 
     @SelectProvider(type = TbNodeSqlProvider.class, method = "selectByParam")
-    public List<TbNode> selectByParam(NodeParam param);
+    List<TbNode> selectByParam(NodeParam param);
 
-    @Select({ "select * from tb_node where node_id = #{nodeId}" })
-    TbNode getByNodeId(@Param("nodeId") String nodeId);
+    @Select({ "select * from tb_node where chain_id = #{chainId} and node_id= #{nodeId,jdbcType=VARCHAR} and group_id=#{groupId,jdbcType=INTEGER}" })
+    TbNode getByNodeIdAndGroupId(@Param("chainId") int chainId, @Param("nodeId") String nodeId, @Param("groupId") int groupId);
+
+    @Select({ "SELECT DISTINCT (group_id ) FROM tb_node WHERE chain_id = #{chainId} and node_id = #{nodeId,jdbcType=VARCHAR} " })
+    List<Integer> selectGroupIdListOfNode(@Param("chainId") int chainId, @Param("nodeId") String nodeId);
 
     @UpdateProvider(type = TbNodeSqlProvider.class, method = "update")
     int update(TbNode tbNode);

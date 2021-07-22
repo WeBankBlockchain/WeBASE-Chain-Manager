@@ -120,3 +120,5 @@ download
 dist
 /.idea/
 /src/main/resources/application-dev.yml
+generatorConfig.xml
+mbg.properties

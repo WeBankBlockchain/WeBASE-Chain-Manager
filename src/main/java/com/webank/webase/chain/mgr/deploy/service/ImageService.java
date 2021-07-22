@@ -6,15 +6,14 @@ import com.webank.webase.chain.mgr.base.enums.ScpTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
+import com.webank.webase.chain.mgr.deploy.req.DeployHost;
 import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
 import com.webank.webase.chain.mgr.util.FileUtil;
 import com.webank.webase.chain.mgr.util.SshUtil;
+import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 
 @Slf4j
 @Service
@@ -61,11 +60,13 @@ public class ImageService {
 
 
     /**
+     * 1. check image exist in remote host
+     * 2. download
      * @param host
      * @param imageVersion
      * @param dockerImageTypeEnum
      */
-    public void pullHostImage(ReqDeploy.DeployHost host, String imageVersion, DockerImageTypeEnum dockerImageTypeEnum) {
+    public void pullHostImage(DeployHost host, String imageVersion, DockerImageTypeEnum dockerImageTypeEnum) {
         log.info("start pullImage .  host:[{}] imageVersion:[{}] dockerImageTypeEnum:[{}].", host.getIp(), imageVersion, dockerImageTypeEnum.getId());
 
         boolean exists = dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),

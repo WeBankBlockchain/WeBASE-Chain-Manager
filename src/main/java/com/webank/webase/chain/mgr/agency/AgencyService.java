@@ -15,9 +15,14 @@ package com.webank.webase.chain.mgr.agency;
 
 import com.webank.webase.chain.mgr.agency.entity.RspAgencyVo;
 import com.webank.webase.chain.mgr.agency.entity.RspAllOwnedDataOfAgencyVO;
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.contract.ContractService;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
+import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
+import com.webank.webase.chain.mgr.deploy.service.PathService;
 import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
@@ -26,8 +31,15 @@ import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
+import com.webank.webase.chain.mgr.util.ValidateUtil;
+import com.webank.webase.chain.mgr.util.cmd.ExecuteResult;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FileUtils;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +50,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * service of chain.
@@ -64,6 +78,10 @@ public class AgencyService {
     private FrontGroupMapService frontGroupMapService;
     @Autowired
     private FrontManager frontManager;
+    @Autowired
+    private PathService pathService;
+    @Autowired
+    private DeployShellService deployShellService;
 
 
     /**
@@ -234,4 +252,55 @@ public class AgencyService {
         log.info("success exec method [listAgencyFromFrontList]. result:{}", JsonTools.objToString(agencyList));
         return agencyList;
     }
+
+    /**
+     * todo add agency
+     * agency has no tables in db, but collect from tb_front
+     */
+
+    /**
+     * todo delete agency (check if contains nodes)
+     */
+
+    /**
+     * todo generate agency cert
+     */
+    /**
+     * Init an agency, generate config files(private key and crt files) and insert into db.
+     *
+     * @param agencyName
+     * @param chainName
+     * @return Path of agency
+     * @throws BaseException
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Path genNewAgencyCert(String agencyName, String chainName, EncryptTypeEnum encryptType) throws BaseException  {
+        log.info("genNewAgencyCert agencyName:{},chainName:{},encryptType:{}", agencyName, chainName, encryptType.getType());
+        if (!ValidateUtil.validateAgencyName(agencyName)) {
+            throw new BaseException(ConstantCode.AGENCY_NAME_CONFIG_ERROR);
+        }
+
+        // check agency cert exist in path
+        Path agencyRoot = this.pathService.getAgencyRoot(chainName, agencyName);
+        if (Files.exists(agencyRoot)) {
+            log.warn("Exists agency:[{}:{}] config.", agencyName, agencyRoot.toAbsolutePath().toString());
+            return agencyRoot;
+//            try {
+//                FileUtils.deleteDirectory(agencyRoot.toFile());
+//            } catch (IOException e) {
+//                throw new BaseException(ConstantCode.DELETE_OLD_AGENCY_DIR_ERROR);
+//            }
+        }
+
+        // generate new agency config(private key and crt)
+        ExecuteResult executeResult = this.deployShellService.execGenAgency(encryptType,
+            chainName, agencyName);
+        if (executeResult.failed()) {
+            log.error("execGenAgency failed:{}", executeResult.getExecuteOut());
+            throw new BaseException(ConstantCode.EXEC_GEN_AGENCY_ERROR);
+        }
+        log.info("genNewAgencyCert success! path:{}", agencyRoot);
+        return agencyRoot;
+    }
+
 }

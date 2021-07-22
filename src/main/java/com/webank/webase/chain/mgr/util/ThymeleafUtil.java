@@ -14,6 +14,7 @@
 
 package com.webank.webase.chain.mgr.util;
 
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.thymeleaf.TemplateEngine;
@@ -31,7 +33,7 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
 
-
+@Slf4j
 public class ThymeleafUtil {
 
     public static final String FRONT_APLLICATION_YML = "front-application-yml.tpl";
@@ -95,6 +97,7 @@ public class ThymeleafUtil {
 
     /**
      * node config path: /NODES_ROOT/IP/NODE[index]/
+     * v0.9 add chain's support version
      * @param nodeRoot
      * @param channelPort
      * @param p2pPort
@@ -105,12 +108,18 @@ public class ThymeleafUtil {
      * @throws IOException
      */
     public static void newNodeConfigIni(Path nodeRoot, int channelPort, int p2pPort,
-                                        int jsonrpcPort, List<TbNode> peerList, boolean guomi,
-                                        int chainIdInConfigIni) throws IOException {
+                                        int jsonrpcPort, List<TbFront> peerList, boolean guomi,
+                                        int chainIdInConfigIni, String chainVersion) throws IOException {
+        log.info("newNodeConfigIni nodeRoot:{},channelPort:{}peerList:{},chainVersion:{}", nodeRoot, channelPort, peerList, chainVersion);
+        if (chainVersion.startsWith("v")) {
+            chainVersion = chainVersion.substring(1);
+            log.info("chainVersion for supportVersion:{}", chainVersion);
+        }
         String nodeConfigIni = ThymeleafUtil.generate(ThymeleafUtil.NODE_CONFIG_INI,
-                Pair.of("channelPort", channelPort), Pair.of("p2pPort", p2pPort),
-                Pair.of("jsonrpcPort", jsonrpcPort), Pair.of("nodeList", peerList),
-                Pair.of("guomi", guomi), Pair.of("chainId", chainIdInConfigIni));
+            Pair.of("channelPort", channelPort), Pair.of("p2pPort", p2pPort),
+            Pair.of("jsonrpcPort", jsonrpcPort), Pair.of("nodeList", peerList),
+            Pair.of("guomi", guomi), Pair.of("chainId", chainIdInConfigIni),
+            Pair.of("supportVersion", chainVersion));
 
         if (Files.notExists(nodeRoot)){
             Files.createDirectories(nodeRoot);
