@@ -20,6 +20,7 @@ import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainService;
+import com.webank.webase.chain.mgr.deploy.req.DeployHost;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
 import com.webank.webase.chain.mgr.deploy.resp.RespInitHost;
 import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
@@ -80,6 +81,10 @@ public class NodeAsyncService {
     private ImageService imageService;
 
     /**
+     * 1. initHostList
+     *   1.1. install docker and docker-compose,
+     *   1.2. docker pull image
+     * 3. start chain
      * @param deploy
      * @param optionType
      */
@@ -308,7 +313,7 @@ public class NodeAsyncService {
      * @param hostList
      * @return
      */
-    public boolean initHostList(TbChain tbChain, List<ReqDeploy.DeployHost> hostList,
+    public boolean initHostList(TbChain tbChain, List<DeployHost> hostList,
                                 boolean scpNodeConfig, DockerImageTypeEnum dockerImageTypeEnum) throws InterruptedException {
         log.info("Start init chain:[{}:{}] hosts:[{}].", tbChain.getChainId(), tbChain.getChainName(), CollectionUtils.size(hostList));
 
@@ -319,7 +324,7 @@ public class NodeAsyncService {
 
 
         Set<String> ipSet = new HashSet<>();
-        for (final ReqDeploy.DeployHost host : hostList) {
+        for (final DeployHost host : hostList) {
             Future<?> task = threadPoolTaskScheduler.submit(() -> {
                 try {
                     if (scpNodeConfig) {
@@ -398,7 +403,8 @@ public class NodeAsyncService {
      * @return
      * @throws InterruptedException
      */
-    public List<RespInitHost> initHostList(List<ReqDeploy.DeployHost> hostList, String imageVersion, DockerImageTypeEnum dockerImageTypeEnum) throws InterruptedException {
+    public List<RespInitHost> initHostList(List<DeployHost> hostList, String imageVersion,
+        DockerImageTypeEnum dockerImageTypeEnum) throws InterruptedException {
         log.info("Start init imageVersion:{} imagePullType:{} hosts:{} .", imageVersion, dockerImageTypeEnum.getId(), CollectionUtils.size(hostList));
 
         // check image tar file when install with offline
@@ -409,7 +415,7 @@ public class NodeAsyncService {
 //        AtomicInteger initSuccessCount = new AtomicInteger(0);
         Map<String, Future> taskMap = new HashedMap<>();
 
-        for (final ReqDeploy.DeployHost host : hostList) {
+        for (final DeployHost host : hostList) {
             Future<Pair<Boolean, String>> task = threadPoolTaskScheduler.submit(() -> {
                 try {
                     //check ssh connect
@@ -467,7 +473,7 @@ public class NodeAsyncService {
     /**
      * @param host
      */
-    public void checkHostPort(ReqDeploy.DeployHost host) {
+    public void checkHostPort(DeployHost host) {
         log.info("start checkHostPort,hostIp:{} nodeCount:{}", host.getIp(), host.getNum());
         for (int i = 0; i < host.getNum(); i++) {
             Pair<Boolean, Integer> portReachable = NetUtils.anyPortInUse(host.getIp(),
@@ -485,6 +491,43 @@ public class NodeAsyncService {
         }
         log.info("success checkHostPort,hostIp:{} nodeCount:{}", host.getIp(), host.getNum());
     }
+
+    /* add nodes */
+    /**
+     * 扩容节点，并启动
+     * 不会重启所有节点，只启动新节点
+     * @param chainId
+     * @param optionType
+     * @param newFrontIdList
+     */
+    @Async("deployAsyncScheduler")
+    public void asyncStartAddedNode(int chainId, OptionType optionType, List<Integer> newFrontIdList) {
+        log.info("asyncStartAddedNode Init newFrontIdList:[{}]", newFrontIdList);
+        List<TbFront> frontList = frontService.selectByFrontIdList(newFrontIdList);
+        // group front by host <ip, List of front>
+        Map<String, List<TbFront>> hostFrontListMap = frontList.stream().collect(Collectors.groupingBy(TbFront::getFrontIp));
+
+        try {
+            // start one front
+            // update chain to updating
+            this.chainService.updateStatus(chainId, ChainStatusEnum.NODE_ADDING,
+                "starting new nodes of " + JsonTools.toJSONString(newFrontIdList));
+
+            // restart front by host
+            this.restartFrontByHost(chainId, optionType, hostFrontListMap,
+                FrontStatusEnum.STARTING, FrontStatusEnum.RUNNING, FrontStatusEnum.STOPPED);
+
+            // update chain to running
+            threadPoolTaskScheduler.schedule(() -> {
+                this.chainService.updateStatus(chainId, ChainStatusEnum.RUNNING, "");
+            }, Instant.now().plusMillis(constant.getDockerRestartPeriodTime()));
+
+        } catch (Exception e) {
+            log.error("asyncStartAddedNode start newFrontIdList:[{}] error", newFrontIdList, e);
+            newFrontIdList.forEach((id -> this.frontService.updateStatus(id, FrontStatusEnum.ADD_FAILED)));
+        }
+    }
+
 }
 
 

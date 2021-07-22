@@ -1,16 +1,15 @@
 package com.webank.webase.chain.mgr.repository.mapper;
 
+import com.webank.webase.chain.mgr.contract.entity.ContractParam;
+import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import com.webank.webase.chain.mgr.repository.bean.TbContractExample;
+import com.webank.webase.chain.mgr.repository.bean.TbContractExample.Criteria;
+import com.webank.webase.chain.mgr.repository.bean.TbContractExample.Criterion;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
-import com.webank.webase.chain.mgr.contract.entity.ContractParam;
-import com.webank.webase.chain.mgr.repository.bean.TbContract;
-import java.util.stream.Collectors;
-import com.webank.webase.chain.mgr.repository.bean.TbContractExample.Criteria;
-import com.webank.webase.chain.mgr.repository.bean.TbContractExample.Criterion;
-import com.webank.webase.chain.mgr.repository.bean.TbContractExample;
-import java.util.List;
-import java.util.Map;
 
 public class TbContractSqlProvider {
 
