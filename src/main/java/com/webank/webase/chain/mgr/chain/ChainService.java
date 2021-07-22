@@ -18,7 +18,7 @@ import com.webank.webase.chain.mgr.base.enums.*;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.contract.ContractService;
 import com.webank.webase.chain.mgr.deploy.config.NodeConfig;
@@ -40,7 +40,6 @@ import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
-import com.webank.webase.chain.mgr.repository.mapper.TbTaskMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import com.webank.webase.chain.mgr.task.TaskManager;
 import com.webank.webase.chain.mgr.util.NetUtils;
@@ -521,7 +520,6 @@ public class ChainService {
         // check front start
         return this.frontService.frontProgress(chain.getChainId());
     }
-
 
 
 }

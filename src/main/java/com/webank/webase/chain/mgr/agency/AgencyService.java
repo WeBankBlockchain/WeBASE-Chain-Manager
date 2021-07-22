@@ -15,7 +15,7 @@ package com.webank.webase.chain.mgr.agency;
 
 import com.webank.webase.chain.mgr.agency.entity.RspAgencyVo;
 import com.webank.webase.chain.mgr.agency.entity.RspAllOwnedDataOfAgencyVO;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.contract.ContractService;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.front.FrontManager;

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--对应mapper接口 -->
+<mapper namespace="com.webank.webase.chain.mgr.data.txndaily.TxnDailyMapper">
+    <resultMap id="txnDailyMap"
+        type="com.webank.webase.chain.mgr.data.txndaily.entity.TbTxnDaily">
+        <result column="chain_id" javaType="java.lang.Integer"
+            jdbcType="INTEGER" property="chainId" />
+        <result column="group_id" javaType="java.lang.Integer"
+            jdbcType="INTEGER" property="groupId" />
+        <result column="stat_date" javaType="java.time.LocalDate"
+            jdbcType="TIMESTAMP" property="statDate" />
+        <result column="txn" javaType="java.lang.Integer" jdbcType="INTEGER"
+            property="txn" />
+    </resultMap>
+
+    <insert id="addTransDaily"
+        parameterType="com.webank.webase.chain.mgr.data.txndaily.entity.TbTxnDaily">
+        INSERT INTO tb_txn_daily
+        (chain_id,group_id,stat_date,txn,block_number,create_time,modify_time)
+        VALUES(#{chainId},#{groupId},#{statDate},#{txn},#{blockNumber},now(),now())
+        ON DUPLICATE KEY UPDATE
+        txn=#{txn},
+        block_number=#{blockNumber},
+        modify_time=NOW()
+    </insert>
+
+    <select id="queryLatestTransCount"
+        resultType="com.webank.webase.chain.mgr.data.txndaily.entity.LatestTransCount">
+        SELECT max(block_number) blockNumber,
+        count(block_number) txn,
+        DATE_FORMAT(block_timestamp,'%Y-%m-%d') statDate
+        FROM tb_transaction_#{chainId}_#{groupId}
+        WHERE 
+        <![CDATA[ block_timestamp >=
+            (SELECT IFNULL(max(stat_date),0) FROM tb_txn_daily 
+             WHERE chain_id = #{chainId} AND group_id = #{groupId})
+        ]]>
+        GROUP BY statDate
+    </select>
+
+    <select id="listSeventDayOfTransDaily" resultMap="txnDailyMap">
+        SELECT * FROM tb_txn_daily
+        WHERE chain_id = #{chainId}
+        AND group_id = #{groupId}
+        <![CDATA[
+          AND stat_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        ]]>
+        ORDER BY stat_date DESC
+    </select>
+
+    <delete id="deleteByChainId">
+        DELETE FROM tb_txn_daily 
+        WHERE chain_id = #{chainId}
+    </delete>
+
+    <delete id="deleteByGroupId">
+        DELETE FROM tb_txn_daily 
+        WHERE chain_id = #{chainId}
+        AND group_id = #{groupId}
+    </delete>
+
+</mapper>

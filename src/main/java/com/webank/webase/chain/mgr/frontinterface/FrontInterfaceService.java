@@ -18,8 +18,8 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.base.tools.HttpRequestTools;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.HttpRequestTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.contract.entity.ReqContractCompileDto;
 import com.webank.webase.chain.mgr.contract.entity.RspContractCompileDto;
 import com.webank.webase.chain.mgr.front.entity.ClientVersionDTO;
@@ -33,6 +33,7 @@ import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.util.HttpEntityUtils;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
@@ -611,4 +612,34 @@ public class FrontInterfaceService {
     }
 
 
+    public Transaction getTransaction(Integer chainId, Integer groupId, String transHash)
+        throws BaseException {
+        if (StringUtils.isBlank(transHash)) {
+            return null;
+        }
+        String uri = String.format(FrontRestTools.URI_TRANS_BY_HASH, transHash);
+        Transaction transInfo =
+            frontRestTools.getForEntity(chainId, groupId, uri, Transaction.class);
+        return transInfo;
+    }
+
+    public Block getBlockByNumber(Integer chainId, Integer groupId, BigInteger blockNumber)
+        throws BaseException {
+        String uri = String.format(FrontRestTools.URI_BLOCK_BY_NUMBER, blockNumber);
+        Block block = null;
+        try {
+            block = frontRestTools.getForEntity(chainId, groupId, uri, Block.class);
+        } catch (Exception ex) {
+            log.info("fail getBlockByNumber,exception:{}", ex);
+        }
+        return block;
+    }
+
+    public TransactionReceipt getTransReceipt(Integer chainId, Integer groupId, String transHash)
+        throws BaseException {
+        String uri = String.format(FrontRestTools.URI_TRANS_RECEIPT, transHash);
+        TransactionReceipt transReceipt =
+            frontRestTools.getForEntity(chainId, groupId, uri, TransactionReceipt.class);
+        return transReceipt;
+    }
 }

@@ -14,10 +14,8 @@
 package chain.mgr.test.user;
 
 import com.webank.webase.chain.mgr.Application;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.sign.req.ReqNewUser;
 import com.webank.webase.chain.mgr.sign.req.ReqUpdateUserVo;
 import com.webank.webase.chain.mgr.sign.rsp.RspUserInfo;

@@ -22,7 +22,7 @@ import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.EnumService;
 import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.chain.entity.ReqDeleteChainVo;
 import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
