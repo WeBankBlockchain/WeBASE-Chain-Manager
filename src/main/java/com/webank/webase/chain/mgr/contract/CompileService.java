@@ -83,6 +83,16 @@ public class CompileService {
 
             //save compile result
             saveCompileResultFile(contract, contractDirectory);
+
+            //delete directory
+            if (Objects.nonNull(contractDirectory)) {
+                log.info("remove file");
+                try {
+                    FileUtils.deleteDirectory(contractDirectory);
+                } catch (IOException e) {
+                    log.error("delete directory exception", e);
+                }
+            }
         } catch (BaseException baseException) {
             contract.setModifyTime(new Date());
             contract.setContractStatus(ContractStatus.COMPILE_FAILED.getValue());
@@ -98,18 +108,7 @@ public class CompileService {
             contract.setDescription(ex.getMessage());
             tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
             throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach(ex.getMessage()));
-        } finally {
-            //delete directory
-            if (Objects.nonNull(contractDirectory)) {
-                log.info("remove file");
-                try {
-                    FileUtils.deleteDirectory(contractDirectory);
-                } catch (IOException e) {
-                    log.error("delete directory exception", e);
-                }
-            }
         }
-
         TbContract result = tbContractMapper.selectByPrimaryKey(contractId);
         log.info("success compileByContractId contractId:{} result:{}", contractId, JsonTools.objToString(result));
         return result;
