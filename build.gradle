@@ -22,14 +22,14 @@ repositories {
     mavenCentral()
 }
 
-def springboot_version="2.1.10.RELEASE"
+def springboot_version="2.1.18.RELEASE"
 List springboot = [
      "org.springframework.boot:spring-boot-starter-web:$springboot_version",
      "org.springframework.boot:spring-boot-starter-jdbc:$springboot_version"
 ]
 
 // cover old version
-def spring_version="5.1.15.RELEASE"
+def spring_version="5.2.15.RELEASE"
 List spring =[
     "org.springframework:spring-aop:$spring_version",
     "org.springframework:spring-core:$spring_version",
@@ -66,7 +66,7 @@ List swagger = [
     'io.springfox:springfox-swagger-ui:2.8.0'
 ]
 
-def jackson_version = "2.11.0"
+def jackson_version = "2.11.4"
 List jackson = [
     "com.fasterxml.jackson.core:jackson-databind:$jackson_version",
     "com.fasterxml.jackson.core:jackson-annotations:$jackson_version",
