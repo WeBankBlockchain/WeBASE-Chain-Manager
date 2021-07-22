@@ -12,6 +12,7 @@ import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
+import com.webank.webase.chain.mgr.util.CommUtils;
 import com.webank.webase.chain.mgr.util.DateUtil;
 import com.webank.webase.chain.mgr.util.cmd.ExecuteResult;
 import com.webank.webase.chain.mgr.util.cmd.JavaCommandExecutor;
@@ -27,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -67,21 +67,32 @@ public class CompileService {
         File contractDirectory = null;
         try {
             //left: base directory  right: solidity file
-            Pair<File, File> filePair = buildFilePair(contract.getContractName());
+            Pair<File, File> filePair = buildFilePair(CommUtils.replaceBlank(contract.getContractName()));
             contractDirectory = filePair.getLeft();
 
             // decode and save contract to file
-            byte[] contractSourceByteArr = Base64.getDecoder().decode(contract.getContractSource());
+            byte[] contractSourceByteArr = CommUtils.base64Decode(contract.getContractSource());
+
             FileUtils.writeByteArrayToFile(filePair.getRight(), contractSourceByteArr);
 
-            // TODO 临时方案，将群组下的所有合约文件写到同一个目录
-            writeContractToFileByGroup(contract.getChainId(), contract.getGroupId(), contractDirectory);
+            //Write the contract in the specified directory to the same folder
+            writeContractToFileByContractPath(contract.getContractPath(), contractDirectory);
 
             //compile ExecuteResult execCompile
             execCompile(tbChain.getChainType(), contractDirectory.toString(), filePair.getRight().toString());
 
             //save compile result
             saveCompileResultFile(contract, contractDirectory);
+
+            //delete directory
+            if (Objects.nonNull(contractDirectory)) {
+                log.info("remove file");
+                try {
+                    FileUtils.deleteDirectory(contractDirectory);
+                } catch (IOException e) {
+                    log.error("delete directory exception", e);
+                }
+            }
         } catch (BaseException baseException) {
             contract.setModifyTime(new Date());
             contract.setContractStatus(ContractStatus.COMPILE_FAILED.getValue());
@@ -97,44 +108,58 @@ public class CompileService {
             contract.setDescription(ex.getMessage());
             tbContractMapper.updateByPrimaryKeyWithBLOBs(contract);
             throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach(ex.getMessage()));
-        } finally {
-            //delete directory
-            if (Objects.nonNull(contractDirectory)) {
-                log.info("remove file");
-                try {
-                    FileUtils.deleteDirectory(contractDirectory);
-                } catch (IOException e) {
-                    log.error("delete directory exception", e);
-                }
-            }
         }
-
         TbContract result = tbContractMapper.selectByPrimaryKey(contractId);
         log.info("success compileByContractId contractId:{} result:{}", contractId, JsonTools.objToString(result));
         return result;
     }
 
 
+//    /**
+//     * @param chainId
+//     * @param groupId
+//     * @param directory
+//     * @throws IOException
+//     */
+//    private void writeContractToFileByGroup(int chainId, int groupId, File directory) throws IOException {
+//        List<TbContract> contractList = contractManager.listToolingContractByChainAndGroup(chainId, groupId);
+//        if (CollectionUtils.isEmpty(contractList))
+//            return;
+//
+//        for (TbContract contract : contractList) {
+//            if (StringUtils.isBlank(contract.getContractSource()))
+//                continue;
+//            byte[] contractSourceByteArr = Base64.getDecoder().decode(contract.getContractSource());
+//            String contractNameWithSuffix = String.format(SOLIDITY_FILE_NAME_FORMAT, contract.getContractName());
+//            File contractFile = Paths.get(directory.toString(), contractNameWithSuffix).toFile();
+//            FileUtils.writeByteArrayToFile(contractFile, contractSourceByteArr);
+//        }
+//    }
+
+
     /**
-     * @param chainId
-     * @param groupId
+     * @param contractPath
      * @param directory
      * @throws IOException
      */
-    private void writeContractToFileByGroup(int chainId, int groupId, File directory) throws IOException {
-        List<TbContract> contractList = contractManager.listToolingContractByChainAndGroup(chainId, groupId);
+    private void writeContractToFileByContractPath(String contractPath, File directory) throws IOException {
+        List<TbContract> contractList = contractManager.listContractByPath(contractPath);
+        log.info("contractPath:{} contractList:{}", contractPath, JsonTools.objToString(contractList));
         if (CollectionUtils.isEmpty(contractList))
             return;
 
         for (TbContract contract : contractList) {
             if (StringUtils.isBlank(contract.getContractSource()))
                 continue;
-            byte[] contractSourceByteArr = Base64.getDecoder().decode(contract.getContractSource());
+
+            byte[] contractSourceByteArr = CommUtils.base64Decode(contract.getContractSource());
             String contractNameWithSuffix = String.format(SOLIDITY_FILE_NAME_FORMAT, contract.getContractName());
             File contractFile = Paths.get(directory.toString(), contractNameWithSuffix).toFile();
             FileUtils.writeByteArrayToFile(contractFile, contractSourceByteArr);
+            log.debug("write contract:{} to file success", contract.getContractName());
         }
     }
+
 
     /**
      * @param contract
@@ -163,8 +188,8 @@ public class CompileService {
                 contract.setContractBin(constant);
         }
 
-        if (StringUtils.isAnyBlank(contract.getBytecodeBin(), contract.getContractBin(), contract.getContractAbi()))
-            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("compile result is not found"));
+//        if (StringUtils.isAnyBlank(contract.getBytecodeBin(), contract.getContractBin(), contract.getContractAbi()))
+//            throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.attach("compile result is not found"));
 
         //success
         contract.setContractStatus(ContractStatus.COMPILED.getValue());

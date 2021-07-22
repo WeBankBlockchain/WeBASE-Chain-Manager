@@ -4576,6 +4576,73 @@ http://localhost:5005/WeBASE-Chain-Manager/contract/remove
 
 
 
+### 5.13 查询合约数
+
+
+#### 5.13.1 传输协议规范
+* 网络传输协议：使用HTTP协议
+* 请求地址：**/contract/count?chainId={chainId}&groupId={groupId}&agencyId={agencyId}**
+* 请求方式：GET
+* 返回格式：JSON
+
+#### 5.13.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数    | 类型          | 可为空 | 备注                                       |
+|------|-------------|---------------|--------|------------------|
+| 1    | chainId      | int           | 否     | 链编号   |
+| 2    | groupId      | int           | 是     | 群组编号   |
+| 3    | agencyId      | int           | 是    | 机构编号   |
+
+***2）入参示例***
+
+```
+http://localhost:5005/WeBASE-Chain-Manager/contract/count?chainId=1&groupId=&agencyId=3
+```
+
+#### 5.13.3 返回参数 
+
+***1）出参表***
+
+| 序号 | 输出参数    | 类型          |        | 备注                                       |
+|------|-------------|---------------|--------|-------------------------------|
+| 1    | code            | Int           | 否     | 返回码，0：成功 其它：失败                      |
+| 2    | message         | String        | 否     | 描述                                            |
+| 3    | data           | long         |        | 返回合约数 |
+
+
+***2）出参示例***
+
+* 成功：
+```
+{
+    "code": 0, 
+    "message": "success", 
+    "data": 3, 
+    "attachment": null, 
+    "success": true
+}
+```
+
+* 失败：
+```
+{
+    "code": 102000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
+
+
+
+
+
+
+
+
+
 ## 6 私钥用户管理模块
 
 ### 6.1 新建私钥用户
@@ -5070,6 +5137,72 @@ curl --location --request GET 'http://localhost:5005/WeBASE-Chain-Manager/agency
     "data": {}
 }
 ```
+
+
+
+
+
+
+
+
+### 7.3 查询机构数
+
+
+#### 7.3.1 传输协议规范
+* 网络传输协议：使用HTTP协议
+* 请求地址：**/agency/count?chainId={chainId}&groupId={groupId}&nodeTypes={nodeTypes}**
+* 请求方式：GET
+* 返回格式：JSON
+
+#### 7.3.2 请求参数
+
+***1）入参表***
+
+| 序号 | 输入参数    | 类型          | 可为空 | 备注                                       |
+|------|-------------|---------------|--------|------------------|
+| 1    | chainId      | int           | 否     | 链编号   |
+| 2    | groupId      | int           | 是     | 群组编号   |
+| 3    | nodeTypes      | array       | 是    | 节点类型["observer","sealer","remove"]   |
+
+***2）入参示例***
+
+```
+curl --location --request GET 'http://localhost:5005/WeBASE-Chain-Manager/agency/count?chainId=1&groupId=&nodeTypes=sealer,observer'
+```
+
+#### 7.3.3 返回参数 
+
+***1）出参表***
+
+| 序号 | 输出参数    | 类型          |        | 备注                                       |
+|------|-------------|---------------|--------|-------------------------------|
+| 1    | code            | Int           | 否     | 返回码，0：成功 其它：失败                      |
+| 2    | message         | String        | 否     | 描述                                            |
+| 3    | data           | long         |        | 返回机构数 |
+
+
+***2）出参示例***
+
+* 成功：
+```
+{
+    "code": 0, 
+    "message": "success", 
+    "data": 3, 
+    "attachment": null, 
+    "success": true
+}
+```
+
+* 失败：
+```
+{
+    "code": 102000,
+    "message": "system exception",
+    "data": {}
+}
+```
+
 
 
 
