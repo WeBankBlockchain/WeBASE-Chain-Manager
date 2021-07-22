@@ -233,11 +233,12 @@ public class ContractService {
         TbContract tbContract = contractManager.verifyContractNotDeploy(contract.getChainId(),
                 contract.getContractId(), contract.getGroupId());
         // check contractName
-        contractManager.verifyContractNotExistByName(contract.getChainId(), contract.getGroupId(),
-                contract.getContractPath(), contract.getContractName());
+        contractManager.verifyContractNotExistByName(contract.getContractId(), contract.getChainId(), contract.getGroupId(),
+                contract.getContractName(), contract.getContractPath());
 
         Integer belongAgency = tbContract.getSaveByAgency();
         BeanUtils.copyProperties(contract, tbContract);
+        tbContract.setContractStatus(ContractStatus.NOTDEPLOYED.getValue());
         tbContract.setSaveByAgency(belongAgency);
         tbContract.setModifyTime(new Date());
         tbContractMapper.updateByPrimaryKeyWithBLOBs(tbContract);
@@ -650,6 +651,5 @@ public class ContractService {
     public boolean update(TbContract tbContract) {
         return this.tbContractMapper.updateByPrimaryKeySelective(tbContract) == 1;
     }
-
 
 }

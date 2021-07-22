@@ -12,6 +12,7 @@ import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
+import com.webank.webase.chain.mgr.util.CommUtils;
 import com.webank.webase.chain.mgr.util.DateUtil;
 import com.webank.webase.chain.mgr.util.cmd.ExecuteResult;
 import com.webank.webase.chain.mgr.util.cmd.JavaCommandExecutor;
@@ -27,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -67,11 +67,12 @@ public class CompileService {
         File contractDirectory = null;
         try {
             //left: base directory  right: solidity file
-            Pair<File, File> filePair = buildFilePair(contract.getContractName());
+            Pair<File, File> filePair = buildFilePair(CommUtils.replaceBlank(contract.getContractName()));
             contractDirectory = filePair.getLeft();
 
             // decode and save contract to file
-            byte[] contractSourceByteArr = Base64.getDecoder().decode(contract.getContractSource());
+            byte[] contractSourceByteArr = CommUtils.base64Decode(contract.getContractSource());
+
             FileUtils.writeByteArrayToFile(filePair.getRight(), contractSourceByteArr);
 
             //Write the contract in the specified directory to the same folder
@@ -144,16 +145,19 @@ public class CompileService {
      */
     private void writeContractToFileByContractPath(String contractPath, File directory) throws IOException {
         List<TbContract> contractList = contractManager.listContractByPath(contractPath);
+        log.info("contractPath:{} contractList:{}", contractPath, JsonTools.objToString(contractList));
         if (CollectionUtils.isEmpty(contractList))
             return;
 
         for (TbContract contract : contractList) {
             if (StringUtils.isBlank(contract.getContractSource()))
                 continue;
-            byte[] contractSourceByteArr = Base64.getDecoder().decode(contract.getContractSource());
+
+            byte[] contractSourceByteArr = CommUtils.base64Decode(contract.getContractSource());
             String contractNameWithSuffix = String.format(SOLIDITY_FILE_NAME_FORMAT, contract.getContractName());
             File contractFile = Paths.get(directory.toString(), contractNameWithSuffix).toFile();
             FileUtils.writeByteArrayToFile(contractFile, contractSourceByteArr);
+            log.debug("write contract:{} to file success", contract.getContractName());
         }
     }
 
