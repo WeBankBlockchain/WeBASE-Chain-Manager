@@ -1,16 +1,15 @@
 package com.webank.webase.chain.mgr.repository.mapper;
 
+import com.webank.webase.chain.mgr.contract.entity.ContractParam;
+import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import com.webank.webase.chain.mgr.repository.bean.TbContractExample;
+import com.webank.webase.chain.mgr.repository.bean.TbContractExample.Criteria;
+import com.webank.webase.chain.mgr.repository.bean.TbContractExample.Criterion;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
-import com.webank.webase.chain.mgr.contract.entity.ContractParam;
-import com.webank.webase.chain.mgr.repository.bean.TbContract;
-import java.util.stream.Collectors;
-import com.webank.webase.chain.mgr.repository.bean.TbContractExample.Criteria;
-import com.webank.webase.chain.mgr.repository.bean.TbContractExample.Criterion;
-import com.webank.webase.chain.mgr.repository.bean.TbContractExample;
-import java.util.List;
-import java.util.Map;
 
 public class TbContractSqlProvider {
 
@@ -24,18 +23,16 @@ public class TbContractSqlProvider {
     public String selectByParam(ContractParam param) {
         SQL sql = new SQL();
         sql.SELECT(ALL_COLUMN_FIELDS).FROM("tb_contract");
-        this.applyContractParam(sql, param);
-        return sql.toString();
+        return this.applyContractParam(sql, param);
     }
 
     public String countByParam(ContractParam param) {
         SQL sql = new SQL();
         sql.SELECT("count(1)").FROM("tb_contract");
-        this.applyContractParam(sql, param);
-        return sql.toString();
+        return this.applyContractParam(sql, param);
     }
 
-    public SQL applyContractParam(SQL sql, ContractParam param) {
+    public String applyContractParam(SQL sql, ContractParam param) {
         if (param.getContractId() != null) {
             sql.WHERE("contract_id = #{contractId}");
         }
@@ -69,7 +66,21 @@ public class TbContractSqlProvider {
         if (StringUtils.isNotBlank(param.getFlagSortedByTime())) {
             sql.ORDER_BY(String.format("modify_time %s", param.getFlagSortedByTime()));
         }
-        return sql;
+
+        // add pagination for mysql with limit clause
+        StringBuilder sqlBuilder = new StringBuilder(sql.toString());
+        if (param != null && ((param.getStart() !=null && param.getStart() > -1) || (param.getPageSize() !=null &&param.getPageSize() > -1))) {
+            sqlBuilder.append(" limit ");
+            if ((param.getStart() !=null && param.getStart() > -1) && (param.getPageSize() !=null &&param.getPageSize() > -1)) {
+                sqlBuilder.append(param.getStart()).append(",").append(param.getPageSize());
+            } else if (param.getStart() !=null && param.getStart() > -1) {
+                sqlBuilder.append(param.getStart());
+            } else if (param.getPageSize() !=null &&param.getPageSize() > -1) {
+                sqlBuilder.append(param.getPageSize());
+            }
+        }
+
+        return sqlBuilder.toString();
     }
 
     /**
