@@ -2,7 +2,7 @@ package com.webank.webase.chain.mgr.group;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.bean.TbGroupExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
@@ -159,4 +159,5 @@ public class GroupManager {
         log.info("success exec method[listGroupByAppIdList] result:{}", JsonTools.objToString(groupList));
         return groupList;
     }
+
 }

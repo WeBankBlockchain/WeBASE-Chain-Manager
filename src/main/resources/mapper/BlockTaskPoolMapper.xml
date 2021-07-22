@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--对应mapper接口 -->
+<mapper
+    namespace="com.webank.webase.chain.mgr.data.block.taskpool.BlockTaskPoolMapper">
+    <resultMap id="taskPoolMap"
+        type="com.webank.webase.chain.mgr.data.block.entity.TbBlockTaskPool">
+        <id column="id" javaType="java.lang.Long" jdbcType="BIGINT"
+            property="id" />
+        <result column="block_number" javaType="java.lang.Long"
+            jdbcType="BIGINT" property="blockNumber" />
+        <result column="sync_status" javaType="java.lang.Integer"
+            jdbcType="INTEGER" property="syncStatus" />
+        <result column="certainty" javaType="java.lang.Integer"
+            jdbcType="INTEGER" property="certainty" />
+        <result column="handle_item" javaType="java.lang.Integer"
+            jdbcType="INTEGER" property="handleItem" />
+        <result column="create_time" javaType="java.time.LocalDateTime"
+            jdbcType="TIMESTAMP" property="createTime" />
+        <result column="modify_time" javaType="java.time.LocalDateTime"
+            jdbcType="TIMESTAMP" property="modifyTime" />
+    </resultMap>
+
+    <insert id="saveAll">
+        insert into tb_task_pool_#{chainId}_#{groupId}
+        (
+        block_number,sync_status,certainty,handle_item,create_time,modify_time)
+        values
+        <foreach collection="list" item="item" index="index"
+            separator=",">
+            (
+            #{item.blockNumber},
+            #{item.syncStatus},
+            #{item.certainty},
+            #{item.handleItem},
+            NOW(),
+            NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        sync_status = values(sync_status),
+        modify_time = NOW()
+    </insert>
+
+    <update id="setSyncStatusByBlockHeight">
+        update tb_task_pool_#{chainId}_#{groupId} set sync_status = #{syncStatus},
+        modify_time = NOW() where block_number = #{blockNumber}
+    </update>
+
+    <update id="setCertaintyByBlockHeight">
+        update tb_task_pool_#{chainId}_#{groupId} set certainty = #{certainty},
+        modify_time = NOW() where block_number = #{blockNumber}
+    </update>
+
+    <update id="setSyncStatusAndCertaintyByBlockHeight">
+        update tb_task_pool_#{chainId}_#{groupId} set sync_status =
+        #{syncStatus},certainty = #{certainty}, modify_time = NOW() where
+        block_number = #{blockNumber}
+    </update>
+
+    <select id="findBySyncStatusOrderByBlockHeightLimit" resultMap="taskPoolMap">
+        select * from tb_task_pool_#{chainId}_#{groupId} where sync_status = #{syncStatus} order by
+        block_number limit #{limit}
+    </select>
+
+    <select id="findByBlockNumber" resultMap="taskPoolMap">
+        select * from
+        tb_task_pool_#{chainId}_#{groupId} where block_number = #{blockNumber}
+    </select>
+    
+    <select id="findByCertainty" resultMap="taskPoolMap">
+        select * from
+        tb_task_pool_#{chainId}_#{groupId} where certainty = #{certainty}
+    </select>
+
+    <select id="findUnNormalRecords" resultMap="taskPoolMap">
+        select * from
+        tb_task_pool_#{chainId}_#{groupId} where sync_status = 4 or sync_status = 3
+    </select>
+
+    <select id="findBySyncStatusAndDepotUpdatetimeLessThan"
+        resultMap="taskPoolMap">
+        <![CDATA[select * from tb_task_pool_#{chainId}_#{groupId} where sync_status = #{syncStatus} and modify_time < #{time,jdbcType=TIMESTAMP}]]>
+    </select>
+
+    <select id="findByBlockHeightRange" resultMap="taskPoolMap">
+        <![CDATA[select * from tb_task_pool_#{chainId}_#{groupId} where block_number >= #{startNumber} and block_number <= #{endNumber}]]>
+    </select>
+
+    <select id="countByBlockHeightRange" resultType="java.lang.Long">
+        <![CDATA[select count(1) from tb_task_pool_#{chainId}_#{groupId} where block_number >= #{startNumber} and block_number <= #{endNumber}]]>
+    </select>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(1) from tb_task_pool_#{chainId}_#{groupId} where 1=1
+        <if test="pkHash != null and pkHash != ''">
+            and pk_hash = #{pkHash}
+        </if>
+        <if test="blockNumber != null">
+            and block_number = #{blockNumber}
+        </if>
+    </select>
+
+    <select id="getLatestBlockNumber" resultType="java.math.BigInteger">
+        select max(block_number) from tb_task_pool_#{chainId}_#{groupId}
+    </select>
+</mapper>

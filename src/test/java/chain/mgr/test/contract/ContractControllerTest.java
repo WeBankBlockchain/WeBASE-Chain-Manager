@@ -15,7 +15,7 @@ package chain.mgr.test.contract;
 
 import com.webank.webase.chain.mgr.Application;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.contract.entity.Contract;
 import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
 import com.webank.webase.chain.mgr.contract.entity.QueryContractParam;

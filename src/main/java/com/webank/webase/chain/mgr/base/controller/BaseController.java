@@ -13,7 +13,7 @@
  */
 package com.webank.webase.chain.mgr.base.controller;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.ParamException;
 import java.util.stream.Collectors;

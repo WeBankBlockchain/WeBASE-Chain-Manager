@@ -21,6 +21,10 @@ import org.apache.ibatis.annotations.SelectProvider;
 
 public interface TbGroupMapper {
 
+    @Select({ "select ", TbGroupSqlProvider.ALL_COLUMN_FIELDS, " from tb_group ",
+        "where chain_id = #{chainId} and group_id = #{groupId}" })
+    TbGroup getGroupById(@Param("chainId") int chainId, @Param("groupId") int groupId);
+
     @Select({ "select max(group_id) from tb_group  where chain_id = #{chainId}" })
     int getMaxGroup(@Param("chainId") int chainId);
 

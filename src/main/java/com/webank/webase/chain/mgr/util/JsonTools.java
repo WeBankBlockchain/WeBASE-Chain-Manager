@@ -1,4 +1,4 @@
-package com.webank.webase.chain.mgr.base.tools;
+package com.webank.webase.chain.mgr.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParser.Feature;
