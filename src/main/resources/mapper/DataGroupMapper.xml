@@ -3,9 +3,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <!--对应mapper接口 -->
-<mapper namespace="com.webank.webase.data.group.DataGroupMapper">
+<mapper namespace="com.webank.webase.chain.mgr.data.datagroup.DataGroupMapper">
     <resultMap id="blockMap"
-               type="com.webank.webase.data.block.entity.TbBlock">
+               type="com.webank.webase.chain.mgr.data.block.entity.TbBlock">
         <result column="block_hash" javaType="java.lang.String"
                 jdbcType="VARCHAR" property="blockHash"/>
         <result column="block_number" javaType="java.math.BigInteger"
@@ -27,7 +27,7 @@
     </resultMap>
 
     <resultMap id="transactionMap"
-               type="com.webank.webase.data.transaction.entity.TbTransaction">
+               type="com.webank.webase.chain.mgr.data.transaction.entity.TbTransaction">
         <id column="id" javaType="java.lang.Long" jdbcType="BIGINT"
             property="id"/>
         <result column="chain_id" javaType="java.lang.Integer"
@@ -56,8 +56,37 @@
                 jdbcType="TIMESTAMP" property="modifyTime"/>
     </resultMap>
 
+
+    <resultMap id="nodeMap"
+      type="com.webank.webase.chain.mgr.repository.bean.TbNode">
+        <result column="node_id" javaType="java.lang.String" jdbcType="VARCHAR"
+          property="nodeId" />
+        <result column="front_id" javaType="java.lang.Integer"
+          jdbcType="INTEGER" property="frontId" />
+        <result column="chain_id" javaType="java.lang.Integer"
+          jdbcType="INTEGER" property="chainId" />
+        <result column="group_id" javaType="java.lang.Integer"
+          jdbcType="INTEGER" property="groupId" />
+        <result column="node_ip" javaType="java.lang.String" jdbcType="VARCHAR"
+          property="nodeIp" />
+        <result column="p2p_port" javaType="java.lang.Integer"
+          jdbcType="INTEGER" property="p2pPort" />
+        <result column="block_number" javaType="java.math.BigInteger"
+          jdbcType="INTEGER" property="blockNumber" />
+        <result column="pbft_view" javaType="java.math.BigInteger"
+          jdbcType="INTEGER" property="pbftView" />
+        <result column="node_active" javaType="java.lang.Integer"
+          jdbcType="INTEGER" property="nodeActive" />
+        <result column="description" javaType="java.lang.String"
+          jdbcType="VARCHAR" property="description" />
+        <result column="create_time" javaType="java.time.LocalDateTime"
+          jdbcType="TIMESTAMP" property="createTime" />
+        <result column="modify_time" javaType="java.time.LocalDateTime"
+          jdbcType="TIMESTAMP" property="modifyTime" />
+    </resultMap>
+
     <select id="getGeneral"
-            resultType="com.webank.webase.data.group.entity.GroupGeneral">
+            resultType="com.webank.webase.chain.mgr.data.datagroup.entity.GroupGeneral">
         SELECT a.chain_id        chainId,
                a.group_id        groupId,
                sum(txn)          txnCount,
@@ -155,7 +184,7 @@
         </if>
     </select>
 
-    <select id="queryContractList" resultType="com.webank.webase.chainmanager.contract.entity.ContractInfoDto">
+    <select id="queryContractList" resultType="com.webank.webase.chain.mgr.data.datagroup.entity.ContractInfoDto">
         select max(t1.contract_name) as contractName,t1.contract_address as contractAddress
         from tb_parser_#{chainId}_#{groupId} t1
         where 1=1

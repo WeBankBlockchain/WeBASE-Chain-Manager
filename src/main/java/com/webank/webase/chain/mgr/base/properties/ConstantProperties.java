@@ -128,6 +128,13 @@ public class ConstantProperties {
     private long startBlockNumber = 0;
     private int crawlBatchUnit = 100;
     private boolean ifPullData = true; // default true
+    // retain max data of block & trans
+    /**
+     * block into
+     */
+    private BigInteger blockRetainMax = new BigInteger("5000");
+
+    private BigInteger transRetainMax = new BigInteger("10000");
 
     private Map<Integer, String> transactionMap = new HashMap<>();
 
