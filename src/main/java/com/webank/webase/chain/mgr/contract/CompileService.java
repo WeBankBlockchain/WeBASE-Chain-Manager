@@ -156,7 +156,7 @@ public class CompileService {
             String contractNameWithSuffix = String.format(SOLIDITY_FILE_NAME_FORMAT, contract.getContractName());
             File contractFile = Paths.get(directory.toString(), contractNameWithSuffix).toFile();
             FileUtils.writeByteArrayToFile(contractFile, contractSourceByteArr);
-            log.debug("write contract:{} to file success", contract.getContractName());
+            log.info("write contract to file success :{} ", contractFile.getAbsolutePath());
         }
     }
 
@@ -216,7 +216,9 @@ public class CompileService {
         JavaCommandExecutor.executeCommand(addAuthorityCommand, constant.getExecShellTimeout());
 
         //compile command
-        String compileCommand = String.format("%s -o %s --bin --abi --bin-runtime %s", solcFullFile, compileOutDir, contractFile);
+//        String compileCommand = String.format("%s -o %s --bin --abi --bin-runtime %s", solcFullFile, compileOutDir, contractFile);
+//        ExecuteResult result = JavaCommandExecutor.executeCommand(compileCommand, constant.getSolidityCompileTimeOut());
+        String compileCommand = ".\\solc\\solc-0.4.25-window.exe -o .\\solidity\\20210722092916 --bin --abi --bin-runtime .\\solidity\\20210722092916\\CNSTest.sol";
         ExecuteResult result = JavaCommandExecutor.executeCommand(compileCommand, constant.getSolidityCompileTimeOut());
         log.info("ExecuteResult:{}", JsonTools.objToString(result));
         if (result.failed())
