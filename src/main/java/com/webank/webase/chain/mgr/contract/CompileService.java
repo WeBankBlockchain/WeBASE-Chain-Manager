@@ -156,7 +156,7 @@ public class CompileService {
             String contractNameWithSuffix = String.format(SOLIDITY_FILE_NAME_FORMAT, contract.getContractName());
             File contractFile = Paths.get(directory.toString(), contractNameWithSuffix).toFile();
             FileUtils.writeByteArrayToFile(contractFile, contractSourceByteArr);
-            log.debug("write contract:{} to file success", contract.getContractName());
+            log.info("write contract to file success :{} ", contractFile.getAbsolutePath());
         }
     }
 
