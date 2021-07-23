@@ -129,16 +129,24 @@ public class ChainService {
         tbChain.setModifyTime(now);
         tbChain.setRemark("");
         tbChain.setChainStatus(ChainStatusEnum.RUNNING.getId());
+        tbChain.setChainType(chainInfo.getChainType().byteValue());
+        if (chainInfo.getDeployType() == null) {
+            tbChain.setDeployType(DeployTypeEnum.MANUALLY.getType());
+        }
+        // fix add chain or visual deploy chain
+        if (chainInfo.getChainType() == null) {
+            tbChain.setDeployType(DeployTypeEnum.API.getType());
 
-        // chainType
-        FrontInfo frontInfo = chainInfo.getFrontList().get(0);
-        Integer chainType = frontInterface.getEncryptTypeFromSpecificFront(frontInfo.getFrontPeerName(), frontInfo.getFrontIp(), frontInfo.getFrontPort());
-        tbChain.setChainType(chainType.byteValue());
-
-        //chain version
-        ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontInfo.getFrontPeerName(), frontInfo.getFrontIp(), frontInfo.getFrontPort());
-        tbChain.setVersion(clientVersionDTO.getVersion());
-
+            FrontInfo frontInfo = chainInfo.getFrontList().get(0);
+            Integer chainType = frontInterface
+                .getEncryptTypeFromSpecificFront(frontInfo.getFrontPeerName(),
+                    frontInfo.getFrontIp(), frontInfo.getFrontPort());
+            tbChain.setChainType(chainType.byteValue());
+            //chain version
+            ClientVersionDTO clientVersionDTO = frontInterface.getClientVersionFromSpecificFront(frontInfo.getFrontPeerName(), frontInfo.getFrontIp(), frontInfo.getFrontPort());
+            tbChain.setVersion(clientVersionDTO.getVersion());
+        }
+        log.info("newChain tbChain:{}", tbChain);
         // save chain info
         int result = tbChainMapper.insertSelective(tbChain);
         if (result == 0) {
@@ -173,6 +181,13 @@ public class ChainService {
 
         Integer encryptType = null;// front's encrypt type same as chain(guomi or standard)
         String buildTime = null;// node's build time
+
+        // fix add chain or visual deploy chain
+        List<FrontInfo> frontInfos = chainInfo.getFrontList();
+        if (frontInfos == null) {
+            log.info("new chain of added(not visual deploy chain)");
+            return;
+        }
         for (int i = 0; i < chainInfo.getFrontList().size(); i++) {
             FrontInfo front = chainInfo.getFrontList().get(i);
             log.info("check front [{}:{}]", front.getFrontIp(), front.getFrontPort());

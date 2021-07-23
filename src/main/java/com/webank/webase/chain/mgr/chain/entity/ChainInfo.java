@@ -40,5 +40,9 @@ public class ChainInfo {
 
     @ApiModelProperty(value = "存储方式", example = "rocksdb")
     private String storageType;
+    // guomi or ecdsa
+    private Integer chainType;
+    // fix add chain error
+    private Integer deployType;
 
 }
