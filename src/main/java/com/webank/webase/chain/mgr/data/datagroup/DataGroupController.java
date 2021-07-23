@@ -18,7 +18,9 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseQueryParam;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.contract.ContractManager;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.data.block.entity.BlockListParam;
@@ -32,6 +34,7 @@ import com.webank.webase.chain.mgr.data.txndaily.entity.TbTxnDaily;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import com.webank.webase.chain.mgr.util.JsonTools;
 import java.math.BigInteger;
@@ -65,6 +68,8 @@ public class DataGroupController extends BaseController {
     private ContractManager contractManager;
     @Autowired
     private GroupManager groupManager;
+    @Autowired
+    private GroupService groupService;
     @Autowired
     private FrontInterfaceService frontInterface;
 
@@ -408,30 +413,30 @@ public class DataGroupController extends BaseController {
         return pageResponse;
     }
 
-//    /**
-//     * query all group.
-//     */
-//    @GetMapping("/list")
-//    public BasePageResponse getGroupList(
-//            @RequestParam(value = "chainId", required = false) Integer chainId)
-//            throws BaseException {
-//        BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
-//        Instant startTime = Instant.now();
-//        log.info("start getGroupList.");
-//
-//        // get group list
-//        int count = groupManager.countOfGroup(chainId, DataStatus.NORMAL.getValue());
-//        if (count > 0) {
-//            List<TbGroup> groupList =
-//                    groupService.getGroupList(chainId, null, DataStatus.NORMAL.getValue());
-//            pagesponse.setTotalCount(count);
-//            pagesponse.setData(groupList);
-//        }
-//
-//        log.info("end getGroupList useTime:{}",
-//                Duration.between(startTime, Instant.now()).toMillis());
-//        return pagesponse;
-//    }
+    /**
+     * query all group.
+     */
+    @GetMapping("/list")
+    public BasePageResponse getGroupList(
+            @RequestParam(value = "chainId", required = false) Integer chainId)
+            throws BaseException {
+        BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start getGroupList.");
+
+        // get group list
+        int count = groupManager.countByChainIdAndGroupStatus(chainId, DataStatus.NORMAL.getValue());
+        if (count > 0) {
+            List<TbGroup> groupList =
+                    groupService.getGroupList(chainId, DataStatus.NORMAL.getValue());
+            pagesponse.setTotalCount(count);
+            pagesponse.setData(groupList);
+        }
+
+        log.info("end getGroupList useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return pagesponse;
+    }
 
 
 }

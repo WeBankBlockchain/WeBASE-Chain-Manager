@@ -14,7 +14,7 @@
 package com.webank.webase.chain.mgr.scheduler;
 
 
-import com.webank.webase.chain.mgr.group.GroupService;
+import com.webank.webase.chain.mgr.data.datagroup.DataGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 public class RefreshSubTableTask {
 
     @Autowired
-    private GroupService groupService;
+    private DataGroupService dataGroupService;
 
 //    @Scheduled(fixedDelayString = "${constant.refreshSubTableTaskFixedDelay}", initialDelay = 1000)
     public void taskStart() {
@@ -37,6 +37,6 @@ public class RefreshSubTableTask {
      * refreshSubTable.
      */
     public void refreshSubTable() {
-        groupService.refreshSubTable();
+        dataGroupService.refreshSubTable();
     }
 }
