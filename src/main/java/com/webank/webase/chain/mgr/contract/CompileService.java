@@ -216,7 +216,7 @@ public class CompileService {
         JavaCommandExecutor.executeCommand(addAuthorityCommand, constant.getExecShellTimeout());
 
         //compile command
-        String compileCommand = ".\\solc\\solc-0.4.25-window.exe -o .\\solidity\\20210722092916 --bin --abi --bin-runtime .\\solidity\\20210722092916\\CNSTest.sol";
+        String compileCommand = String.format("%s -o %s --bin --abi --bin-runtime %s", solcFullFile, compileOutDir, contractFile);
         ExecuteResult result = JavaCommandExecutor.executeCommand(compileCommand, constant.getSolidityCompileTimeOut());
         log.info("ExecuteResult:{}", JsonTools.objToString(result));
         if (result.failed())
