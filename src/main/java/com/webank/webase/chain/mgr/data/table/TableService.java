@@ -34,7 +34,7 @@ import org.springframework.util.CollectionUtils;
 @Service
 public class TableService {
 
-    @Value("${spring.datasource.master.url}")
+    @Value("${spring.datasource.url}")
     private String dbUrl;
     @Autowired
     private TableMapper tableMapper;

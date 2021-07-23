@@ -41,7 +41,7 @@ public class MethodService {
     /**
      * save method info from Contract.
      */
-    @Async(value = "mgrAsyncExecutor")
+    @Async(value = "asyncExecutor")
     public void saveMethodFromContract(TbContract tbContract) {
         Instant startTime = Instant.now();
         log.info("start saveMethodFromContract startTime:{}", startTime.toEpochMilli());

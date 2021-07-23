@@ -15,6 +15,7 @@ package com.webank.webase.chain.mgr.data.transaction;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.data.block.entity.MinMaxBlock;
 import com.webank.webase.chain.mgr.data.table.TableService;
@@ -31,7 +32,6 @@ import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.fisco.bcos.web3j.tx.txdecode.ConstantProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.stereotype.Service;

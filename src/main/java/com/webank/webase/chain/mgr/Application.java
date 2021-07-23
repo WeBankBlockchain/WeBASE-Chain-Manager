@@ -57,7 +57,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @SpringBootApplication
 @EnableTransactionManagement
 @EnableAspectJAutoProxy(exposeProxy = true)
-@MapperScan("com.webank.webase.chain.mgr.repository.mapper")
+@MapperScan({"com.webank.webase.chain.mgr.repository.mapper","com.webank.webase.chain.mgr.data"})
 public class Application {
 
     public static void main(String[] args) throws InterruptedException {
