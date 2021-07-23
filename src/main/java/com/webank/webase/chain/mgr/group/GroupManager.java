@@ -160,4 +160,11 @@ public class GroupManager {
         return groupList;
     }
 
+    public int countByChainIdAndGroupStatus(int chainId, byte groupStatus) {
+        log.info("start exec method[countByChainIdAndGroupStatus] chainId:{},groupStatus:{}", chainId, groupStatus);
+        int count = tbGroupMapper.countByChainIdAndGroupStatus(chainId, groupStatus);
+        log.info("success exec method[countByChainIdAndGroupStatus] result:{}", groupStatus);
+        return count;
+    }
+
 }
