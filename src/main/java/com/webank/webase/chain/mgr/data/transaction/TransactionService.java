@@ -14,6 +14,7 @@
 package com.webank.webase.chain.mgr.data.transaction;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.enums.TableName;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.util.JsonTools;
@@ -209,18 +210,26 @@ public class TransactionService {
         return tbTransaction;
     }
 
-    /**
-     * get transaction info
-     */
-    public Transaction getTransaction(int chainId, int groupId, String transHash) {
-        return frontInterface.getTransaction(chainId, groupId, transHash);
-    }
+//    /**
+//     * get transaction info
+//     */
+//    public Transaction getTransaction(int chainId, int groupId, String transHash) {
+//        return frontInterface.getTransaction(chainId, groupId, transHash);
+//    }
+//
+//    /**
+//     * get transaction receipt
+//     */
+//    public TransactionReceipt getTransReceipt(int chainId, int groupId, String transHash) {
+//        return frontInterface.getTransReceipt(chainId, groupId, transHash);
+//    }
 
     /**
-     * get transaction receipt
+     * Remove trans info.
      */
-    public TransactionReceipt getTransReceipt(int chainId, int groupId, String transHash) {
-        return frontInterface.getTransReceipt(chainId, groupId, transHash);
+    public Integer remove(Integer chainId, Integer groupId, Integer subTransNum) {
+        Integer affectRow = transactionMapper.remove(chainId, groupId, subTransNum);
+        return affectRow;
     }
 
 }

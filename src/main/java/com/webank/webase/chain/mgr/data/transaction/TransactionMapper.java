@@ -58,5 +58,7 @@ public interface TransactionMapper {
     void rollback(@Param("chainId") int chainId, @Param("groupId") int groupId,
         @Param("blockNumber") long blockNumber);
 
+    Integer remove(@Param("chainId") int chainId, @Param("groupId") Integer groupId, @Param("subTransNum") Integer subTransNum);
+
 
 }
