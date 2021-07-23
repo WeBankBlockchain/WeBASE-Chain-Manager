@@ -44,6 +44,16 @@ constant:
   maxBlockDifferenceOfNewSealer: 3  # The maximum allowable block difference of the new consensus node
   addSealerNodeCycle: 30000
 
+  # if pull data(can change by interface)
+  ifPullData: true
+  ## data pull
+  startBlockNumber: 0
+  crawlBatchUnit: 50
+  dataPullCron: 0/10 * * * * ?
+  ## if multiLiving
+  multiLiving: false
+  ## group
+  refreshSubTableTaskFixedDelay: 5000
 
 
 
