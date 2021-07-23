@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.data.group.entity;
+package com.webank.webase.chain.mgr.data.datagroup.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

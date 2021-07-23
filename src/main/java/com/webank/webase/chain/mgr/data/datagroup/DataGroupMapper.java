@@ -11,14 +11,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.data.group;
+package com.webank.webase.chain.mgr.data.datagroup;
 
 
 import com.webank.webase.chain.mgr.base.entity.BaseQueryParam;
 import com.webank.webase.chain.mgr.data.block.entity.BlockListParam;
 import com.webank.webase.chain.mgr.data.block.entity.TbBlock;
-import com.webank.webase.chain.mgr.data.group.entity.ContractInfoDto;
-import com.webank.webase.chain.mgr.data.group.entity.GroupGeneral;
+import com.webank.webase.chain.mgr.data.datagroup.entity.ContractInfoDto;
+import com.webank.webase.chain.mgr.data.datagroup.entity.GroupGeneral;
 import com.webank.webase.chain.mgr.data.transaction.entity.TbTransaction;
 import com.webank.webase.chain.mgr.data.transaction.entity.TransListParam;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;

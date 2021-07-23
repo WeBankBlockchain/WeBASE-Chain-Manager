@@ -1,4 +1,4 @@
-package com.webank.webase.chain.mgr.data.group.entity;
+package com.webank.webase.chain.mgr.data.datagroup.entity;
 
 import lombok.Data;
 
