@@ -34,7 +34,7 @@ import org.springframework.util.CollectionUtils;
  */
 @Log4j2
 @Component
-//@ConditionalOnProperty(value = {"constant.multiLiving"}, havingValue = "false")
+@ConditionalOnProperty(value = {"constant.multiLiving"}, havingValue = "false")
 public class DataPullTask {
 
     @Autowired

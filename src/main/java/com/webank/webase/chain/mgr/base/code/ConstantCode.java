@@ -128,6 +128,10 @@ public class ConstantCode {
     public static final RetCode CHAIN_ID_NOT_EXISTS = RetCode.mark(205035, "chain id not exists");
     public static final RetCode BUILD_TIME_NOT_MATCH = RetCode.mark(205036, "node's build time not match");
 
+    // contract
+    public static final RetCode CONTRACT_NOT_EXISTS = RetCode.mark(205037, "contract name or address not exists");
+
+
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(205100, "param exception");
 

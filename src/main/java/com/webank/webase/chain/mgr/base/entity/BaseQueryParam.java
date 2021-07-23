@@ -23,6 +23,8 @@ import lombok.NoArgsConstructor;
 public class BaseQueryParam {
 
     private Integer chainId;
+    private Integer groupId;
+    private String comVariable;
     private Integer start;
     private Integer pageSize;
     private String flagSortedByTime;
