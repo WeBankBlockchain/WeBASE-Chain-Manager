@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--对应mapper接口 -->
+<mapper namespace="com.webank.webase.data.group.DataGroupMapper">
+    <resultMap id="blockMap"
+               type="com.webank.webase.data.block.entity.TbBlock">
+        <result column="block_hash" javaType="java.lang.String"
+                jdbcType="VARCHAR" property="blockHash"/>
+        <result column="block_number" javaType="java.math.BigInteger"
+                jdbcType="INTEGER" property="blockNumber"/>
+        <result column="block_timestamp" javaType="java.time.LocalDateTime"
+                jdbcType="TIMESTAMP" property="blockTimestamp"/>
+        <result column="trans_count" javaType="java.lang.Integer"
+                jdbcType="INTEGER" property="transCount"/>
+        <result column="sealer_index" javaType="java.lang.Integer"
+                jdbcType="INTEGER" property="sealerIndex"/>
+        <result column="sealer" javaType="java.lang.String" jdbcType="VARCHAR"
+                property="sealer"/>
+        <result column="block_detail" javaType="java.lang.String" jdbcType="VARCHAR"
+                property="blockDetail"/>
+        <result column="create_time" javaType="java.time.LocalDateTime"
+                jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="modify_time" javaType="java.time.LocalDateTime"
+                jdbcType="TIMESTAMP" property="modifyTime"/>
+    </resultMap>
+
+    <resultMap id="transactionMap"
+               type="com.webank.webase.data.transaction.entity.TbTransaction">
+        <id column="id" javaType="java.lang.Long" jdbcType="BIGINT"
+            property="id"/>
+        <result column="chain_id" javaType="java.lang.Integer"
+                jdbcType="INTEGER" property="chainId"/>
+        <result column="group_id" javaType="java.lang.Integer"
+                jdbcType="INTEGER" property="groupId"/>
+        <result column="chain_name" javaType="java.lang.String"
+                jdbcType="VARCHAR" property="chainName"/>
+        <result column="app_name" javaType="java.lang.String" jdbcType="VARCHAR"
+                property="appName"/>
+        <result column="trans_hash" javaType="java.lang.String"
+                jdbcType="VARCHAR" property="transHash"/>
+        <result column="block_number" javaType="java.math.BigInteger"
+                jdbcType="INTEGER" property="blockNumber"/>
+        <result column="block_timestamp" javaType="java.time.LocalDateTime"
+                jdbcType="TIMESTAMP" property="blockTimestamp"/>
+        <result column="trans_detail" javaType="java.lang.String"
+                jdbcType="VARCHAR" property="transDetail"/>
+        <result column="receipt_detail" javaType="java.lang.String"
+                jdbcType="VARCHAR" property="receiptDetail"/>
+        <result column="audit_flag" javaType="java.lang.Integer"
+                jdbcType="INTEGER" property="auditFlag"/>
+        <result column="create_time" javaType="java.time.LocalDateTime"
+                jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="modify_time" javaType="java.time.LocalDateTime"
+                jdbcType="TIMESTAMP" property="modifyTime"/>
+    </resultMap>
+
+    <select id="getGeneral"
+            resultType="com.webank.webase.data.group.entity.GroupGeneral">
+        SELECT a.chain_id        chainId,
+               a.group_id        groupId,
+               sum(txn)          txnCount,
+               max(block_number) blockNumber
+        FROM tb_txn_daily a
+        WHERE a.chain_id = #{chainId}
+          AND a.group_id = #{groupId}
+    </select>
+
+    <select id="getBlockCounts" resultType="java.math.BigInteger">
+        SELECT SUM(a.block_number)
+        FROM (SELECT chain_id, group_id, MAX(block_number) AS block_number
+              FROM tb_txn_daily
+              GROUP BY chain_id, group_id) AS a
+    </select>
+
+    <select id="getTxnCounts" resultType="java.math.BigInteger">
+        select sum(txn)
+        from tb_txn_daily
+    </select>
+
+    <select id="countOfBlock" resultType="java.lang.Integer">
+        select count(1) from tb_block_#{chainId}_#{groupId} where 1=1
+        <if test="param.blockHash != null and param.blockHash != ''">
+            and block_hash = #{param.blockHash}
+        </if>
+        <if test="param.blockNumber != null">
+            and block_number = #{param.blockNumber}
+        </if>
+    </select>
+
+    <select id="queryBlockList" resultMap="blockMap">
+        select * from tb_block_#{chainId}_#{groupId} where 1=1
+        <if test="param.blockHash != null and param.blockHash != ''">
+            and block_hash = #{param.blockHash}
+        </if>
+        <if test="param.blockNumber != null">
+            and block_number = #{param.blockNumber}
+        </if>
+        order by block_number desc
+        <if test="param.start != null and param.pageSize != null">
+            limit #{param.start},#{param.pageSize}
+        </if>
+    </select>
+
+    <select id="countOfTrans" resultType="java.lang.Integer">
+        select count(1) from tb_transaction_#{chainId}_#{groupId} where 1=1
+        <if test="param.transHash != null and param.transHash != ''">
+            and trans_hash = #{param.transHash}
+        </if>
+        <if test="param.blockNumber != null">
+            and block_number = #{param.blockNumber}
+        </if>
+    </select>
+
+    <select id="queryTransList" resultMap="transactionMap">
+        select a.*,b.receipt_detail
+        from tb_transaction_#{chainId}_#{groupId} a
+        left join tb_receipt_#{chainId}_#{groupId} b on (a.trans_hash = b.trans_hash)
+        where 1=1
+        <if test="param.transHash != null and param.transHash != ''">
+            and a.trans_hash = #{param.transHash}
+        </if>
+        <if test="param.blockNumber != null">
+            and a.block_number = #{param.blockNumber}
+        </if>
+        order by a.block_number desc
+        <if test="param.start != null and param.pageSize != null">
+            limit #{param.start},#{param.pageSize}
+        </if>
+    </select>
+
+    <select id="queryTransCountByApp" resultType="java.lang.Integer">
+        select count(*)
+        from tb_transaction_#{chainId}_#{groupId}
+        where app_name = #{appName}
+    </select>
+
+
+    <select id="queryTransCountByContract" resultType="java.lang.Integer">
+        select count(*)
+        from tb_transaction_#{chainId}_#{groupId}
+        where trans_detail like CONCAT('%to%', #{contractAddress}, '%value%')
+    </select>
+
+
+
+    <select id="countOfContract" resultType="java.lang.Integer">
+        select count(distinct(contract_address))
+        from tb_parser_#{chainId}_#{groupId}
+        where 1=1
+        <if test="param.comVariable != null and param.comVariable != ''">
+            and contract_name = #{param.comVariable}
+            or contract_address = #{param.comVariable}
+        </if>
+    </select>
+
+    <select id="queryContractList" resultType="com.webank.webase.chainmanager.contract.entity.ContractInfoDto">
+        select max(t1.contract_name) as contractName,t1.contract_address as contractAddress
+        from tb_parser_#{chainId}_#{groupId} t1
+        where 1=1
+        <if test="param.comVariable != null and param.comVariable != ''">
+            and t1.contract_name = #{param.comVariable}
+            or t1.contract_address = #{param.comVariable}
+        </if>
+        group by t1.contract_address
+        <if test="param.start != null and param.pageSize != null">
+            limit #{param.start},#{param.pageSize}
+        </if>
+    </select>
+
+    <select id="countOfNode" resultType="java.lang.Integer">
+        select count(1) from tb_node where 1=1
+        <if test="chainId != null">
+            and chain_id = #{chainId}
+        </if>
+        <if test="groupId != null">
+            and group_id = #{groupId}
+        </if>
+    </select>
+
+    <select id="queryNodeList" resultMap="nodeMap">
+        select a.*,b.front_id,b.agency as org_name
+        from tb_node a
+        left join
+        tb_front b on a.node_id = b.node_id and a.chain_id = b.chain_id
+        where
+        1=1
+        <if test="chainId != null">
+            and a.chain_id = #{chainId}
+        </if>
+        <if test="groupId != null">
+            and a.group_id = #{groupId}
+        </if>
+        <if test="start != null and pageSize != null">
+            limit #{start},#{pageSize}
+        </if>
+    </select>
+
+</mapper>
