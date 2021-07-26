@@ -20,19 +20,20 @@ import com.webank.webase.chain.mgr.base.entity.BaseQueryParam;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.group.GroupService;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.contract.ContractManager;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.data.block.entity.BlockListParam;
 import com.webank.webase.chain.mgr.data.block.entity.TbBlock;
-import com.webank.webase.chain.mgr.data.datagroup.entity.ContractInfoDto;
 import com.webank.webase.chain.mgr.data.datagroup.entity.GroupGeneral;
+import com.webank.webase.chain.mgr.data.datagroup.entity.ToggleInfo;
 import com.webank.webase.chain.mgr.data.datagroup.entity.TranxCount;
 import com.webank.webase.chain.mgr.data.transaction.entity.TbTransaction;
 import com.webank.webase.chain.mgr.data.transaction.entity.TransListParam;
 import com.webank.webase.chain.mgr.data.txndaily.entity.TbTxnDaily;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.group.GroupManager;
+import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
@@ -41,7 +42,6 @@ import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
@@ -50,6 +50,8 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -72,7 +74,42 @@ public class DataGroupController extends BaseController {
     private GroupService groupService;
     @Autowired
     private FrontInterfaceService frontInterface;
+    @Autowired
+    private ConstantProperties cProperties;
 
+    /**
+     * toggle of pull data
+     */
+    @GetMapping("/togglePullData")
+    public BaseResponse getTogglePullData() {
+        Instant startTime = Instant.now();
+        log.info("start getTogglePullData.");
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+
+        // remove
+        baseResponse.setData(cProperties.isIfPullData());
+
+        log.info("end getTogglePullData useTime:{}",
+            Duration.between(startTime, Instant.now()).toMillis());
+        return baseResponse;
+    }
+
+    /**
+     * update toggle of pull data
+     */
+    @PostMapping("/togglePullData")
+    public BaseResponse updateTogglePullData(@RequestBody ToggleInfo toggleInfo) {
+        Instant startTime = Instant.now();
+        log.info("start updateTogglePullData.");
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+
+        // update
+        cProperties.setIfPullData(toggleInfo.isEnable());
+
+        log.info("end updateTogglePullData useTime:{}",
+            Duration.between(startTime, Instant.now()).toMillis());
+        return baseResponse;
+    }
 
     /**
      * refresh sub table.

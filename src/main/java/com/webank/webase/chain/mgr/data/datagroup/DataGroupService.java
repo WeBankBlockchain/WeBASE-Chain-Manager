@@ -70,7 +70,7 @@ public class DataGroupService {
         // get group list
         List<TbGroup> groupList = groupService.getGroupList(null, DataStatus.NORMAL.getValue());
         // create sub table
-        groupList.stream().forEach(group -> tableService.newSubTable(group.getChainId(), group.getGroupId()));
+        groupList.forEach(group -> tableService.newSubTable(group.getChainId(), group.getGroupId()));
     }
 
     /**

@@ -54,6 +54,16 @@ public class DataGroupControllerTest {
     }
 
     @Test
+    public void testGetIfPullData() throws Exception {
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders
+            .get("/datagroup/togglePullData"));
+        resultActions
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andDo(MockMvcResultHandlers.print());
+        System.out.println("response:" + resultActions.andReturn().getResponse().getContentAsString());
+    }
+
+    @Test
     public void testGetGroupList() throws Exception {
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders
             .get("/datagroup/list" + "?chainId=" +  chainId));
