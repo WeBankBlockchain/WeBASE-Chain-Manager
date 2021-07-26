@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.scheduler;
+package com.webank.webase.chain.mgr.data.scheduler;
 
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
