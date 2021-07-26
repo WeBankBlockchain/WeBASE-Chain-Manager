@@ -33,7 +33,7 @@ import org.springframework.util.CollectionUtils;
  */
 @Log4j2
 @Component
-public class StatTxnDailyTask {
+public class DataTxnDailyStatTask {
 
     @Autowired
     private GroupService groupService;

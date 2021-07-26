@@ -36,7 +36,7 @@ import org.springframework.stereotype.Component;
 @Log4j2
 @Component
 @ConditionalOnProperty(name = "constant.isDeleteInfo", havingValue = "true")
-public class DeleteInfoTask {
+public class DataDeleteTask {
 
     @Autowired
     private GroupService groupService;
