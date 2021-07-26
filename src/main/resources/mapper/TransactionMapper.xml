@@ -85,7 +85,7 @@
 
 
     <select id="getCountByMinMax" resultType="java.lang.Integer">
-        select max(trans_number) - min(trans_number) + 1
+        select max(id) - min(id) + 1
         from tb_transaction_#{chainId}_#{groupId}
     </select>
 
@@ -137,9 +137,9 @@
 
     <delete id="remove">
         DELETE from tb_transaction_#{chainId}_#{groupId}
-        where statistics_flag = 2
-        and block_number &lt;=
-        (select max(block_number) blockNumber from tb_trans_daily where chain_id=#{chain_id} and group_id = #{groupId})
+<!--        where audit_flag = 2 only used in audit required circumstance -->
+        where block_number &lt;=
+        (select max(block_number) blockNumber from tb_txn_daily where chain_id = #{chainId} and group_id = #{groupId})
         order by block_number
         limit ${subTransNum}
     </delete>
