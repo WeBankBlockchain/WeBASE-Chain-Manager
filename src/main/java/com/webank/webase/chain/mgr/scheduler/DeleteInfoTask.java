@@ -58,7 +58,7 @@ public class DeleteInfoTask {
      */
     public void deleteInfoStart() {
         Instant startTime = Instant.now();
-        log.debug("start deleteInfoStart. startTime:{}", startTime.toEpochMilli());
+        log.info("start deleteInfoStart. startTime:{}", startTime.toEpochMilli());
         //get group list
         List<TbGroup> groupList = groupService.getGroupList(null, DataStatus.NORMAL.getValue());
         if (groupList == null || groupList.size() == 0) {
@@ -67,7 +67,7 @@ public class DeleteInfoTask {
         }
         groupList.forEach(g -> deleteByGroupId(g.getChainId(), g.getGroupId()));
 
-        log.debug("end deleteInfoStart useTime:{}",
+        log.info("end deleteInfoStart useTime:{}",
             Duration.between(startTime, Instant.now()).toMillis());
     }
 
@@ -86,7 +86,7 @@ public class DeleteInfoTask {
      * delete block.
      */
     private void deleteBlock(int chainId, int groupId) {
-        log.debug("start deleteBlock. chainId:{},groupId:{}", groupId);
+        log.debug("start deleteBlock. chainId:{},groupId:{}", chainId, groupId);
         try {
             Integer removeCount = blockService.remove(chainId, groupId, cProperties.getBlockRetainMax());
             log.debug("end deleteBlock. chainId:{},groupId:{} removeCount:{}", chainId, groupId, removeCount);
