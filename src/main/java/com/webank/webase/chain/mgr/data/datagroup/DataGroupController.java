@@ -88,6 +88,31 @@ public class DataGroupController extends BaseController {
         return response;
     }
 
+    /**
+     * query all group.
+     */
+    @GetMapping("/list")
+    public BasePageResponse getGroupList(
+        @RequestParam(value = "chainId", required = false) Integer chainId)
+        throws BaseException {
+        BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
+        Instant startTime = Instant.now();
+        log.info("start getGroupList.");
+
+        // get group list
+        int count = groupManager.countByChainIdAndGroupStatus(chainId, DataStatus.NORMAL.getValue());
+        if (count > 0) {
+            List<TbGroup> groupList =
+                groupService.getGroupList(chainId, DataStatus.NORMAL.getValue());
+            pagesponse.setTotalCount(count);
+            pagesponse.setData(groupList);
+        }
+
+        log.info("end getGroupList useTime:{}",
+            Duration.between(startTime, Instant.now()).toMillis());
+        return pagesponse;
+    }
+
 
     /**
      * query node info list.
@@ -207,34 +232,6 @@ public class DataGroupController extends BaseController {
     }
 
     /**
-     * query count of trans by app
-     */
-    @GetMapping(value = "/transCountByApp/{chainId}/{groupId}/{appName}")
-    public BaseResponse queryTransCountByApp(@PathVariable("chainId") Integer chainId,
-                                             @PathVariable("groupId") Integer groupId,
-                                             @PathVariable("appName") String appName) {
-
-        BaseResponse pageResponse = new BaseResponse(ConstantCode.SUCCESS);
-        Instant startTime = Instant.now();
-        log.info("start queryTransList.");
-
-        // check groupId
-        groupManager.requireGroupExist(chainId, groupId);
-
-        TranxCount count = new TranxCount();
-        count.setChainId(chainId);
-        count.setGroupId(groupId);
-        count.setAppName(appName);
-        count.setTranxCount(dataGroupService.queryTransCountByApp(chainId, groupId, appName));
-        pageResponse.setData(count);
-
-        log.info("end queryTransList useTime:{}",
-                Duration.between(startTime, Instant.now()).toMillis());
-        return pageResponse;
-    }
-
-
-    /**
      * query trans list.
      */
     @GetMapping(value = "/transList/{chainId}/{groupId}/{pageNumber}/{pageSize}")
@@ -292,7 +289,7 @@ public class DataGroupController extends BaseController {
     }
 
     /**
-     * get transaction by hash.
+     * get transaction info by hash.
      */
     @GetMapping("/transInfo/{chainId}/{groupId}/{transHash}")
     public BaseResponse getTransaction(@PathVariable("chainId") Integer chainId,
@@ -328,53 +325,6 @@ public class DataGroupController extends BaseController {
         return baseResponse;
     }
 
-    /**
-     * query contract info list.
-     */
-    @GetMapping(value = "/contractList/{chainId}/{groupId}/{pageNumber}/{pageSize}")
-    public BasePageResponse queryContractList(@PathVariable("chainId") Integer chainId,
-                                              @PathVariable("groupId") Integer groupId,
-                                              @PathVariable("pageNumber") Integer pageNumber,
-                                              @PathVariable("pageSize") Integer pageSize,
-                                              @RequestParam(value = "contractParam", required = false) String contractParam)
-            throws BaseException {
-        BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
-        Instant startTime = Instant.now();
-        log.info("start queryContractList.");
-
-        // check groupId
-        groupManager.requireGroupExist(chainId, groupId);
-
-        // param
-        BaseQueryParam queryParam = new BaseQueryParam();
-        queryParam.setChainId(chainId);
-        queryParam.setGroupId(groupId);
-        queryParam.setComVariable(contractParam);
-
-        int count = dataGroupService.countOfContract(queryParam);
-        if (count > 0) {
-            Integer start =
-                    Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).orElse(null);
-            queryParam.setStart(start);
-            queryParam.setPageSize(pageSize);
-            // query list
-            List<ContractInfoDto> listOfContract = dataGroupService.queryContractList(queryParam);
-            listOfContract.stream().forEach(contractInfoDto -> {
-                ContractParam param = new ContractParam(contractInfoDto.getContractName(),
-                        contractInfoDto.getContractAddress());
-                TbContract localContract = contractManager.queryContract(param);
-                if (Objects.nonNull(localContract)) {
-                    contractInfoDto.setContractAbi(localContract.getContractAbi());
-                }
-            });
-            pagesponse.setData(listOfContract);
-            pagesponse.setTotalCount(count);
-        }
-
-        log.info("end queryContractList. useTime:{}",
-                Duration.between(startTime, Instant.now()).toMillis());
-        return pagesponse;
-    }
 
     /**
      * query count of trans by contract
@@ -411,31 +361,6 @@ public class DataGroupController extends BaseController {
         log.info("end queryTransCountByContract useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
         return pageResponse;
-    }
-
-    /**
-     * query all group.
-     */
-    @GetMapping("/list")
-    public BasePageResponse getGroupList(
-            @RequestParam(value = "chainId", required = false) Integer chainId)
-            throws BaseException {
-        BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
-        Instant startTime = Instant.now();
-        log.info("start getGroupList.");
-
-        // get group list
-        int count = groupManager.countByChainIdAndGroupStatus(chainId, DataStatus.NORMAL.getValue());
-        if (count > 0) {
-            List<TbGroup> groupList =
-                    groupService.getGroupList(chainId, DataStatus.NORMAL.getValue());
-            pagesponse.setTotalCount(count);
-            pagesponse.setData(groupList);
-        }
-
-        log.info("end getGroupList useTime:{}",
-                Duration.between(startTime, Instant.now()).toMillis());
-        return pagesponse;
     }
 
 
