@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
  * refresh sub table
  */
 @Component
-public class RefreshSubTableTask {
+public class DataSubTableRefreshTask {
 
     @Autowired
     private DataGroupService dataGroupService;
