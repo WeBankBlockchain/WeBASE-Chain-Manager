@@ -11,9 +11,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.scheduler;
+package com.webank.webase.chain.mgr.data.scheduler;
 
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.data.txndaily.TxnDailyService;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
@@ -28,8 +29,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 /**
- * data parser
- * 
+ * record trans per day
  */
 @Log4j2
 @Component
@@ -39,9 +39,15 @@ public class DataTxnDailyStatTask {
     private GroupService groupService;
     @Autowired
     private TxnDailyService txnDailyService;
+    @Autowired
+    private ConstantProperties cProperties;
 
     @Scheduled(fixedDelayString = "${constant.statTxnDailyTaskFixedDelay}", initialDelay = 1000)
     public void taskStart() {
+        // toggle
+        if (!cProperties.isIfPullData()) {
+            return;
+        }
         statStart();
     }
 

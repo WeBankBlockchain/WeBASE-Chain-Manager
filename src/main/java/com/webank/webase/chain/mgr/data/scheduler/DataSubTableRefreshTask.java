@@ -11,25 +11,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.chain.mgr.scheduler;
+package com.webank.webase.chain.mgr.data.scheduler;
 
 
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.data.datagroup.DataGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * refresh sub table
+ * refresh sub table, etc tb_transaction_x_x
  */
 @Component
 public class DataSubTableRefreshTask {
 
     @Autowired
     private DataGroupService dataGroupService;
+    @Autowired
+    private ConstantProperties cProperties;
 
-//    @Scheduled(fixedDelayString = "${constant.refreshSubTableTaskFixedDelay}", initialDelay = 1000)
+    @Scheduled(fixedDelayString = "${constant.refreshSubTableTaskFixedDelay}", initialDelay = 1000)
     public void taskStart() {
+        // toggle
+        if (!cProperties.isIfPullData()) {
+            return;
+        }
         refreshSubTable();
     }
 
