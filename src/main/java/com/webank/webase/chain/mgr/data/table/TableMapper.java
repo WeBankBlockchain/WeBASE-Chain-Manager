@@ -87,22 +87,6 @@ public interface TableMapper {
             "  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='交易信息表';";
 
     /**
-     * create dynamic receipt table
-     */
-    String createTbReceipt = "CREATE TABLE IF NOT EXISTS ${tableName} (\n" +
-            "  id bigint NOT NULL AUTO_INCREMENT COMMENT '自增编号',\n" +
-            "  trans_hash varchar(128) NOT NULL COMMENT '交易hash',\n" +
-            "  block_number bigint(25) NOT NULL COMMENT '所属区块',\n" +
-            "  block_timestamp datetime NOT NULL COMMENT '所属块出块时间',\n" +
-            "  receipt_detail mediumtext COMMENT '交易回执详情',\n" +
-            "  create_time datetime DEFAULT NULL COMMENT '创建时间',\n" +
-            "  modify_time datetime DEFAULT NULL COMMENT '修改时间',\n" +
-            "  PRIMARY KEY (id),\n" +
-            "  UNIQUE KEY uk_hash (trans_hash),\n" +
-            "  KEY idx_number (block_number)\n" +
-            "  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='交易回执信息表';";
-
-    /**
      * create common tx daily statistic table
      */
     String createTbTxnDaily = "CREATE TABLE IF NOT EXISTS tb_txn_daily (\n" +

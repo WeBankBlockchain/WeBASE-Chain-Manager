@@ -26,7 +26,7 @@ import org.springframework.stereotype.Repository;
 public interface TxnDailyMapper {
 
     /**
-     * add new tb_trans_daily data.
+     * add new tb_txn_daily data.
      */
     Integer addTransDaily(TbTxnDaily tbTxnDaily);
 
