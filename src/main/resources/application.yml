@@ -45,6 +45,7 @@ constant:
   maxBlockDifferenceOfNewSealer: 3  # The maximum allowable block difference of the new consensus node
   addSealerNodeCycle: 30000
 
+  #### data related config
   # if pull data(can change by interface)
   ifPullData: true
   ## data pull
@@ -60,7 +61,8 @@ constant:
   deleteInfoCron: "0 0/1 * * * ?"
   blockRetainMax: 5000
   transRetainMax: 10000
-
+  ## stat txn daily
+  statTxnDailyTaskFixedDelay: 60000
 
   ## 部署配置
   dockerRepository: fiscoorg/fisco-webase
