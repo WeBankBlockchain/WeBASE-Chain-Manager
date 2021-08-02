@@ -4,7 +4,7 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.TaskStatusEnum;
 import com.webank.webase.chain.mgr.base.enums.TaskTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.repository.bean.TbTask;
 import com.webank.webase.chain.mgr.repository.bean.TbTaskExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbTaskMapper;

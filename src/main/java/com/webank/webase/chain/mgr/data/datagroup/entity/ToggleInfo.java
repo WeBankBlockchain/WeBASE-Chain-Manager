@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019 the original author or authors.
+ * Copyright 2014-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.chain.mgr.base.tools.pagetools.entity;
+package com.webank.webase.chain.mgr.data.datagroup.entity;
 
 import lombok.Data;
 
-/**
- * data unit to handle map2PagedList tool
- * @param <T>
- */
 @Data
-public class MapHandle{
-    private String key;
-    private Object data;
-
-    public MapHandle(String key, Object data) {
-        this.key = key;
-        this.data = data;
-    }
+public class ToggleInfo {
+    private boolean enable;
 }

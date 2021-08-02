@@ -13,7 +13,7 @@
  */
 package chain.mgr.test.front;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.Application;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import org.junit.Before;

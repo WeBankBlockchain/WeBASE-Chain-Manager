@@ -13,7 +13,7 @@
  */
 package com.webank.webase.chain.mgr.base.properties;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -122,7 +122,19 @@ public class ConstantProperties {
     private String fiscoBcosBinary = "";
 
     private String webaseSignAddress = "127.0.0.1:5004";
+    // data pull
+    public static final int MAX_FORK_CERTAINTY_BLOCK_NUMBER = 6;
+    public static final int DEPOT_TIME_OUT = 60;
+    private long startBlockNumber = 0;
+    private int crawlBatchUnit = 100;
+    private boolean ifPullData = true; // default true
+    // retain max data of block & trans
+    /**
+     * block into
+     */
+    private BigInteger blockRetainMax = new BigInteger("5000");
 
+    private BigInteger transRetainMax = new BigInteger("10000");
 
     private Map<Integer, String> transactionMap = new HashMap<>();
 

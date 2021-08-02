@@ -5,7 +5,7 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.sign.req.ReqNewUser;
 import com.webank.webase.chain.mgr.sign.req.ReqUpdateUserVo;
 import com.webank.webase.chain.mgr.sign.rsp.RspUserInfo;
