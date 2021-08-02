@@ -17,7 +17,7 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
 import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;

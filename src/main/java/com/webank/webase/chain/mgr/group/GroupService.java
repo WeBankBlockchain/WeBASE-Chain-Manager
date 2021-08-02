@@ -20,7 +20,7 @@ import com.webank.webase.chain.mgr.base.enums.*;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.contract.ContractService;
@@ -113,7 +113,7 @@ public class GroupService {
     private GroupManager groupManager;
     @Autowired
     private FrontManager frontManager;
-    @Qualifier(value = "mgrAsyncExecutor")
+    @Qualifier(value = "asyncExecutor")
     @Autowired
     private ThreadPoolTaskExecutor mgrAsyncExecutor;
     @Autowired
@@ -667,7 +667,7 @@ public class GroupService {
             long count = allGroupOnChain.stream().filter(id -> id.intValue() == localGroupId).count();
             try {
                 if (count > 0) {
-                    log.info("group is valid, chainId:{} localGroupId:{}", chainId, localGroupId);
+                    log.info("group check pass, chainId:{} localGroupId:{}", chainId, localGroupId);
                     if (!Objects.equals(DataStatus.NORMAL.getValue(), localGroup.getGroupStatus()))
                         // update NORMAL
                         updateGroupStatus(chainId, localGroupId, DataStatus.NORMAL.getValue());
@@ -675,7 +675,7 @@ public class GroupService {
                 }
 
                 Date modifyTime = localGroup.getModifyTime();
-                log.warn("group is invalid, chainId:{} localGroupId:{}", chainId, localGroupId);
+                log.warn("group check pass, chainId:{} localGroupId:{}", chainId, localGroupId);
                 if (!CommonUtils.isDateTimeInValid(CommonUtils.timestamp2LocalDateTime(modifyTime.getTime()),
                         constants.getGroupInvalidGrayscaleValue())) {
                     log.warn("remove group, chainId:{} localGroup:{}", chainId,

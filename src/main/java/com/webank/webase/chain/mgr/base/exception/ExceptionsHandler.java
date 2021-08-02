@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.code.RetCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 
 import lombok.extern.log4j.Log4j2;
 

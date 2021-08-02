@@ -1,6 +1,5 @@
 package com.webank.webase.chain.mgr.util;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

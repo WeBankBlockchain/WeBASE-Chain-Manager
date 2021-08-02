@@ -2,7 +2,7 @@ package com.webank.webase.chain.mgr.sign;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.repository.bean.TbUser;
 import com.webank.webase.chain.mgr.repository.bean.TbUserExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;

@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.chain.mgr.base.tools.pagetools;
+package com.webank.webase.chain.mgr.util.pagetools;
 
-import com.webank.webase.chain.mgr.base.tools.pagetools.entity.MapHandle;
+import com.webank.webase.chain.mgr.util.pagetools.entity.MapHandle;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

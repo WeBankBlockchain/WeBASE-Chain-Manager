@@ -14,7 +14,7 @@ public class ResetGroupListAsyncTask {
     /**
      * async reset groupList.
      */
-    @Async(value = "mgrAsyncExecutor")
+    @Async(value = "asyncExecutor")
     public void asyncResetGroupList() {
         groupService.resetGroupList();
     }
