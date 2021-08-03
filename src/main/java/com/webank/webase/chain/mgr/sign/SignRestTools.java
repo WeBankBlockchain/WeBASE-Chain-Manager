@@ -60,7 +60,23 @@ public class SignRestTools {
         if (StringUtils.isBlank(webaseSignAddress)) {
             return null;
         }
+        webaseSignAddress = this.getRouteIpPort(webaseSignAddress);
         return String.format(SIGN_BASE_URL, webaseSignAddress);
+    }
+
+    /**
+     * remove quote of ip:port
+     * @param route
+     * @return
+     */
+    public String getRouteIpPort(String route) {
+        if (route.startsWith("\"")) {
+            route = route.substring(1);
+        }
+        if (route.endsWith("\"")) {
+            route = route.substring(0, route.length() - 1);
+        }
+        return route;
     }
 
     /**
