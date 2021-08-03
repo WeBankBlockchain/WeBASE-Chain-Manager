@@ -36,6 +36,7 @@ import com.webank.webase.chain.mgr.util.ValidateUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.web3j.protocol.core.methods.response.ConsensusStatus.ConsensusInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -323,8 +324,8 @@ public class NodeService {
      * get peer of consensusStatus
      */
     private List<PeerOfConsensusStatus> getPeerOfConsensusStatus(int chainId, int groupId) {
-        String consensusStatusJson = frontInterface.getConsensusStatus(chainId, groupId);
-        if (StringUtils.isBlank(consensusStatusJson)) {
+        ConsensusInfo consensusStatusJson = frontInterface.getConsensusStatus(chainId, groupId);
+        if (consensusStatusJson == null) {
             return null;
         }
         List jsonArr = JsonTools.toJavaObject(consensusStatusJson, List.class);
