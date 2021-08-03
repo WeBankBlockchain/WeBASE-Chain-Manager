@@ -13,13 +13,19 @@
  */
 package com.webank.webase.chain.mgr.frontinterface;
 
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_CLIENT_VERSION;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_CSYNC_STATUS;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_ENCRYPT_TYPE;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_GET_OBSERVER_LIST;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_GROUP_PEERS;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_GROUP_PLIST;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_PEERS;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.util.HttpRequestTools;
-import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.contract.entity.ReqContractCompileDto;
 import com.webank.webase.chain.mgr.contract.entity.RspContractCompileDto;
 import com.webank.webase.chain.mgr.front.entity.ClientVersionDTO;
@@ -32,9 +38,20 @@ import com.webank.webase.chain.mgr.node.entity.ConsensusHandle;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.util.HttpEntityUtils;
+import com.webank.webase.chain.mgr.util.HttpRequestTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
+import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
+import org.fisco.bcos.web3j.protocol.core.methods.response.ConsensusStatus.ConsensusInfo;
 import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -48,17 +65,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
-import java.math.BigInteger;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.*;
 
 
 @Log4j2
@@ -302,10 +308,10 @@ public class FrontInterfaceService {
     /**
      * get consensusStatus
      */
-    public String getConsensusStatus(Integer chainId, Integer groupId) {
+    public ConsensusInfo getConsensusStatus(Integer chainId, Integer groupId) {
         log.debug("start getConsensusStatus. groupId:{}", groupId);
-        String consensusStatus = frontRestTools.getForEntity(chainId, groupId,
-                FrontRestTools.URI_CONSENSUS_STATUS, String.class);
+        ConsensusInfo consensusStatus = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_CONSENSUS_STATUS, ConsensusInfo.class);
         log.debug("end getConsensusStatus. consensusStatus:{}", consensusStatus);
         return consensusStatus;
     }
@@ -411,7 +417,7 @@ public class FrontInterfaceService {
 
     public Object getConsensusList(String peerName, String frontIp, Integer frontPort, Integer groupId,
                                    Integer pageSize, Integer pageNumber) {
-        log.debug("start getConsensusList. groupId:{}" + groupId);
+        log.debug("start getConsensusList. groupId:{}", groupId);
         Map<String, String> map = new HashMap<>();
         map.put("groupId", String.valueOf(groupId));
         map.put("pageSize", String.valueOf(pageSize));
