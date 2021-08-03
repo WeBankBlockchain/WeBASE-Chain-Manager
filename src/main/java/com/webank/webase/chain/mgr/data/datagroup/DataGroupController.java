@@ -34,6 +34,7 @@ import com.webank.webase.chain.mgr.data.txndaily.entity.TbTxnDaily;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.group.GroupService;
+import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
@@ -76,6 +77,8 @@ public class DataGroupController extends BaseController {
     private FrontInterfaceService frontInterface;
     @Autowired
     private ConstantProperties cProperties;
+    @Autowired
+    private NodeService nodeService;
 
     /**
      * toggle of pull data
@@ -162,6 +165,13 @@ public class DataGroupController extends BaseController {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start queryNodeList.");
+
+        // check node status before query
+        try {
+            nodeService.checkAndUpdateNodeStatus(chainId);
+        } catch (Exception ex) {
+            log.error("fail to update node status for exception.", ex);
+        }
 
         // check groupId
         groupManager.requireGroupExist(chainId, groupId);
