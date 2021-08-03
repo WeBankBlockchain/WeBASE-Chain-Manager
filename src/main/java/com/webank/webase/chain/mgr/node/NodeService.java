@@ -37,6 +37,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.ConsensusStatus.ConsensusInfo;
+import org.fisco.bcos.web3j.protocol.core.methods.response.ConsensusStatus.ViewInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -320,33 +321,25 @@ public class NodeService {
         return latestNumber;
     }
 
+
     /**
      * get peer of consensusStatus
      */
     private List<PeerOfConsensusStatus> getPeerOfConsensusStatus(int chainId, int groupId) {
-        ConsensusInfo consensusStatusJson = frontInterface.getConsensusStatus(chainId, groupId);
-        if (consensusStatusJson == null) {
+        ConsensusInfo consensusInfo = frontInterface.getConsensusStatus(chainId, groupId);
+        if (consensusInfo == null) {
+            log.debug("getPeerOfConsensusStatus is null");
             return null;
         }
-        List jsonArr = JsonTools.toJavaObject(consensusStatusJson, List.class);
-        if (jsonArr == null) {
-            log.error("getPeerOfConsensusStatus error");
-            throw new BaseException(ConstantCode.FAIL_PARSE_JSON);
-        }
         List<PeerOfConsensusStatus> dataIsList = new ArrayList<>();
-        for (int i = 0; i < jsonArr.size(); i++) {
-            if (jsonArr.get(i) instanceof List) {
-                List<PeerOfConsensusStatus> tempList = JsonTools.toJavaObjectList(
-                        JsonTools.toJSONString(jsonArr.get(i)), PeerOfConsensusStatus.class);
-                if (tempList != null) {
-                    dataIsList.addAll(tempList);
-                } else {
-                    throw new BaseException(ConstantCode.FAIL_PARSE_JSON);
-                }
-            }
+        List<ViewInfo> viewInfos = consensusInfo.getViewInfos();
+        for (ViewInfo viewInfo : viewInfos) {
+            dataIsList.add(
+                new PeerOfConsensusStatus(viewInfo.getNodeId(), new BigInteger(viewInfo.getView())));
         }
         return dataIsList;
     }
+
 
     /**
      * add sealer and observer in NodeList return: List<String> nodeIdList
