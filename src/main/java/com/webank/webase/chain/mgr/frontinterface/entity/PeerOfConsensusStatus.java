@@ -16,9 +16,13 @@
 package com.webank.webase.chain.mgr.frontinterface.entity;
 
 import java.math.BigInteger;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class PeerOfConsensusStatus {
     private String nodeId;
     private BigInteger view;

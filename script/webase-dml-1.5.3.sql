@@ -1,1 +1,1 @@
-alter table tb_contract modify column contract_path varchar(256);
+alter table tb_contract modify column contract_path varchar(255);

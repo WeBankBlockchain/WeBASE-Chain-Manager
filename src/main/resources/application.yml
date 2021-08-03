@@ -67,7 +67,7 @@ constant:
   ## 部署配置
   dockerRepository: fiscoorg/fisco-webase
   dockerRestartPeriodTime: 30000
-  webaseSignAddress: ${WEBASE_SIGN:"127.0.0.1:5004"}
+  webaseSignAddress: ${WEBASE_SIGN:127.0.0.1:5004}
   # SSH 免密登录的账号
   sshDefaultUser: root
   # SSH 服务的端口
