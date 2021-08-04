@@ -13,16 +13,25 @@
  */
 package com.webank.webase.chain.mgr.method;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.method.entity.Method;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbMethod;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbMethodMapper;
+import com.webank.webase.chain.mgr.util.Web3Tools;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.extern.log4j.Log4j2;
+import org.fisco.bcos.sdk.abi.ABICodec;
+import org.fisco.bcos.sdk.crypto.CryptoSuite;
+import org.fisco.bcos.sdk.transaction.codec.decode.TransactionDecoderService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -37,6 +46,8 @@ public class MethodService {
     private TbChainMapper tbChainMapper;
     @Autowired
     private TbMethodMapper tbMethodMapper;
+    @Autowired
+    Map<Integer, CryptoSuite> cryptoSuiteMap;
 
     /**
      * save method info from Contract.
@@ -50,9 +61,15 @@ public class MethodService {
         if (ObjectUtils.isEmpty(tbChain)) {
             return;
         }
-        TransactionDecoder transactionDecoder =
-                new TransactionDecoder(tbContract.getContractAbi(), tbChain.getChainType());
-        List<Method> methodList = transactionDecoder.methodInfo();
+        List<Method> methodList;
+        try {
+            methodList = new ArrayList<>(Web3Tools.
+                getMethodFromAbi(tbContract.getContractAbi(), cryptoSuiteMap.get((int)tbChain.getChainType())));
+        } catch (IOException e) {
+            log.error("saveMethod failed:[]", e);
+            throw new BaseException(ConstantCode.ABI_PARSE_ERROR);
+        }
+
         TbMethod tbMethod = new TbMethod();
         BeanUtils.copyProperties(tbContract, tbMethod);
         // save each method

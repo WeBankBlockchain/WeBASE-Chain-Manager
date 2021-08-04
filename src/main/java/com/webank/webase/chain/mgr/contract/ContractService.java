@@ -19,9 +19,19 @@ import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.util.JsonTools;
-import com.webank.webase.chain.mgr.util.Web3Tools;
-import com.webank.webase.chain.mgr.contract.entity.*;
+import com.webank.webase.chain.mgr.contract.entity.BaseContract;
+import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
+import com.webank.webase.chain.mgr.contract.entity.Contract;
+import com.webank.webase.chain.mgr.contract.entity.ContractParam;
+import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
+import com.webank.webase.chain.mgr.contract.entity.ReqContractDeploy;
+import com.webank.webase.chain.mgr.contract.entity.ReqDeployByContractIdVO;
+import com.webank.webase.chain.mgr.contract.entity.ReqQueryContractPage;
+import com.webank.webase.chain.mgr.contract.entity.ReqSaveContractBatchVO;
+import com.webank.webase.chain.mgr.contract.entity.ReqTransSendInfoDto;
+import com.webank.webase.chain.mgr.contract.entity.RespContractDeploy;
+import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
+import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
@@ -37,25 +47,33 @@ import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.sign.UserService;
 import com.webank.webase.chain.mgr.sign.rsp.RspUserInfo;
 import com.webank.webase.chain.mgr.trans.TransService;
-import com.webank.webase.chain.mgr.util.ContractAbiUtil;
-import com.webank.webase.chain.mgr.util.EncoderUtil;
 import com.webank.webase.chain.mgr.util.HttpEntityUtils;
+import com.webank.webase.chain.mgr.util.JsonTools;
+import com.webank.webase.chain.mgr.util.Web3Tools;
+import com.webank.webase.chain.mgr.util.web3.ContractAbiUtil;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.abi.datatypes.Address;
-import org.fisco.bcos.web3j.abi.datatypes.Type;
-import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.sdk.abi.FunctionEncoder;
+import org.fisco.bcos.sdk.abi.datatypes.Address;
+import org.fisco.bcos.sdk.abi.datatypes.Type;
+import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.util.*;
 
 /**
  * services for contract data.
@@ -389,7 +407,7 @@ public class ContractService {
         if (CollectionUtils.isEmpty(params))
             params = Arrays.asList();
 
-        AbiDefinition abiDefinition = null;
+        ABIDefinition abiDefinition = null;
         try {
             // get constructor abi
             abiDefinition = ContractAbiUtil.getAbiDefinition(tbContract.getContractAbi());
@@ -406,7 +424,7 @@ public class ContractService {
         String encodedConstructor = "";
         if (funcInputTypes.size() > 0) {
             List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
-            encodedConstructor = EncoderUtil.encodeConstructor(finalInputs);
+            encodedConstructor = FunctionEncoder.encodeConstructor(finalInputs);
         }
         // data sign
         String data = tbContract.getBytecodeBin() + encodedConstructor;
@@ -457,7 +475,7 @@ public class ContractService {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        List<AbiDefinition> abiArray = JsonTools.toJavaObjectList(inputParam.getContractAbi(), AbiDefinition.class);
+        List<ABIDefinition> abiArray = JsonTools.toJavaObjectList(inputParam.getContractAbi(), ABIDefinition.class);
         if (abiArray == null || abiArray.isEmpty()) {
             log.info("fail deployContract. abi is empty");
             throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
