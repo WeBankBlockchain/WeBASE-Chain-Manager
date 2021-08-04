@@ -14,10 +14,8 @@
 package com.webank.webase.chain.mgr.data.transaction;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.enums.TableName;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.data.block.entity.MinMaxBlock;
 import com.webank.webase.chain.mgr.data.table.TableService;
 import com.webank.webase.chain.mgr.data.transaction.entity.TbTransaction;
@@ -27,12 +25,12 @@ import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
-import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.stereotype.Service;
@@ -201,7 +199,7 @@ public class TransactionService {
      */
     public TbTransaction getTbTransFromFrontByHash(int chainId, Integer groupId, String transHash)
             throws BaseException {
-        Transaction trans = frontInterface.getTransaction(chainId, groupId, transHash);
+        JsonTransactionResponse trans = frontInterface.getTransaction(chainId, groupId, transHash);
         TbTransaction tbTransaction = null;
         if (trans != null) {
             tbTransaction = new TbTransaction(chainId, groupId, transHash, trans.getBlockNumber(), null,

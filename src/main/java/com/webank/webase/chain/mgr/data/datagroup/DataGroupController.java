@@ -45,9 +45,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
-import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
-import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
+import org.fisco.bcos.sdk.client.protocol.response.BcosBlock.Block;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -346,7 +346,7 @@ public class DataGroupController extends BaseController {
         log.info("start getTransaction startTime:{} groupId:{} transaction:{}",
             startTime.toEpochMilli(), groupId, transHash);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-        Transaction transInfo = frontInterface.getTransaction(chainId, groupId, transHash);
+        JsonTransactionResponse transInfo = frontInterface.getTransaction(chainId, groupId, transHash);
         baseResponse.setData(transInfo);
         log.info("end getTransaction useTime:{} result:{}",
             Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(baseResponse));

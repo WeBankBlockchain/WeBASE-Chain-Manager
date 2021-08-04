@@ -50,11 +50,12 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
-import org.fisco.bcos.web3j.protocol.core.methods.response.ConsensusStatus.ConsensusInfo;
-import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion;
-import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
+import org.fisco.bcos.sdk.client.protocol.response.BcosBlock.Block;
+import org.fisco.bcos.sdk.client.protocol.response.ConsensusStatus.ConsensusInfo;
+import org.fisco.bcos.sdk.model.NodeVersion;
+import org.fisco.bcos.sdk.model.NodeVersion.ClientVersion;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -239,10 +240,10 @@ public class FrontInterfaceService {
                 TransactionCount.class);
     }
 
-    public Transaction getTransactionByHashFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId, String transHash) {
+    public JsonTransactionResponse getTransactionByHashFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId, String transHash) {
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         String uri = String.format(FrontRestTools.URI_TRANS_BY_HASH, transHash);
-        return getFromSpecificFront(groupId, frontIp, frontPort, uri, entity, Transaction.class);
+        return getFromSpecificFront(groupId, frontIp, frontPort, uri, entity, JsonTransactionResponse.class);
     }
 
     public TransactionReceipt getTransactionReceiptFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId, String transHash) {
@@ -255,10 +256,10 @@ public class FrontInterfaceService {
     /**
      * get client version.
      */
-    public NodeVersion.Version getClientVersion(Integer chainId, Integer groupId) {
+    public ClientVersion getClientVersion(Integer chainId, Integer groupId) {
         log.debug("start getClientVersion. groupId:{}", groupId);
-        NodeVersion.Version clientVersionDTO = frontRestTools.getForEntity(chainId, groupId,
-                FrontRestTools.URI_CLIENT_VERSION, NodeVersion.Version.class);
+        ClientVersion clientVersionDTO = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_CLIENT_VERSION, ClientVersion.class);
         log.debug("end getClientVersion. clientVersionDTO:{}", JsonTools.objToString(clientVersionDTO));
         return clientVersionDTO;
     }
@@ -618,14 +619,14 @@ public class FrontInterfaceService {
     }
 
 
-    public Transaction getTransaction(Integer chainId, Integer groupId, String transHash)
+    public JsonTransactionResponse getTransaction(Integer chainId, Integer groupId, String transHash)
         throws BaseException {
         if (StringUtils.isBlank(transHash)) {
             return null;
         }
         String uri = String.format(FrontRestTools.URI_TRANS_BY_HASH, transHash);
-        Transaction transInfo =
-            frontRestTools.getForEntity(chainId, groupId, uri, Transaction.class);
+        JsonTransactionResponse transInfo =
+            frontRestTools.getForEntity(chainId, groupId, uri, JsonTransactionResponse.class);
         return transInfo;
     }
 

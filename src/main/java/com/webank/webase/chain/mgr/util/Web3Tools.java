@@ -16,22 +16,22 @@
 package com.webank.webase.chain.mgr.util;
 
 
+import static com.webank.webase.chain.mgr.util.web3.ContractAbiUtil.TYPE_FUNCTION;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.method.entity.Method;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.crypto.Hash;
-import org.fisco.bcos.web3j.crypto.Keys;
-import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
-import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
-import org.fisco.bcos.web3j.tx.txdecode.ConstantProperties;
-import org.fisco.bcos.web3j.utils.Numeric;
+import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.crypto.CryptoSuite;
+import org.fisco.bcos.sdk.utils.Numeric;
+import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 
 public class Web3Tools {
 
@@ -48,40 +48,40 @@ public class Web3Tools {
      * @param publicKey
      * @return
      */
-    public static String getAddressByPublicKey(String publicKey) {
-        String address = "0x" + Keys.getAddress(publicKey);
-        return address;
-    }
+//    public static String getAddressByPublicKey(String publicKey) {
+//        String address = "0x" + Keys.getAddress(publicKey);
+//        return address;
+//    }
 
     /**
-     * abi string to AbiDefinition.
+     * abi string to ABIDefinition.
      */
-    public static List<AbiDefinition> loadContractDefinition(String abi) throws IOException {
+    public static List<ABIDefinition> loadContractDefinition(String abi) throws IOException {
         ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
-        AbiDefinition[] abiDefinition = objectMapper.readValue(abi, AbiDefinition[].class);
+        ABIDefinition[] abiDefinition = objectMapper.readValue(abi, ABIDefinition[].class);
         return Arrays.asList(abiDefinition);
     }
 
     /**
      * get methodId after hash
      */
-    public static String buildMethodId(AbiDefinition abiDefinition) {
+    public static String buildMethodId(ABIDefinition abiDefinition, CryptoSuite cryptoSuite) {
         byte[] inputs = getMethodIdBytes(abiDefinition);
         // 2019/11/27 support guomi
-        byte[] hash = Hash.sha3(inputs);
+        byte[] hash = cryptoSuite.hash(inputs);
         return Numeric.toHexString(hash).substring(0, 10);
     }
 
     /**
-     * get methodId bytes from AbiDefinition
+     * get methodId bytes from ABIDefinition
      * @return byte[]
      */
-    public static byte[] getMethodIdBytes(AbiDefinition abiDefinition) {
+    public static byte[] getMethodIdBytes(ABIDefinition abiDefinition) {
         StringBuilder result = new StringBuilder();
         result.append(abiDefinition.getName());
         result.append("(");
         String params = abiDefinition.getInputs().stream()
-                .map(AbiDefinition.NamedType::getType)
+                .map(ABIDefinition.NamedType::getType)
                 .collect(Collectors.joining(","));
         result.append(params);
         result.append(")");
@@ -92,27 +92,44 @@ public class Web3Tools {
 
 
     /**
-     * get AbiDefinition by Function name
+     * get ABIDefinition by Function name
      * @param funName
      * @param contractAbi
      * @return
      */
-    public static AbiDefinition getAbiDefinition(String funName, String contractAbi) {
+    public static ABIDefinition getAbiDefinition(String funName, String contractAbi) {
         if (StringUtils.isBlank(contractAbi)) {
             throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
         }
-        List<AbiDefinition> abiList = JsonTools.toJavaObjectList(contractAbi, AbiDefinition.class);
+        List<ABIDefinition> abiList = JsonTools.toJavaObjectList(contractAbi, ABIDefinition.class);
         if (abiList == null) {
             throw new BaseException(ConstantCode.FAIL_PARSE_JSON);
         }
-        AbiDefinition result = null;
-        for (AbiDefinition abiDefinition : abiList) {
-            if (ConstantProperties.TYPE_FUNCTION.equals(abiDefinition.getType())
+        ABIDefinition result = null;
+        for (ABIDefinition abiDefinition : abiList) {
+            if (TYPE_FUNCTION.equals(abiDefinition.getType())
                     && funName.equals(abiDefinition.getName())) {
                 result = abiDefinition;
                 break;
             }
         }
         return result;
+    }
+
+    /**
+     * get method from abi
+     */
+    public static List<Method> getMethodFromAbi(String abi, CryptoSuite cryptoSuite) throws IOException {
+        List<ABIDefinition> abiList = loadContractDefinition(abi);
+        List<Method> methodList = new ArrayList<>();
+        for (ABIDefinition abiDefinition : abiList) {
+            Method method = new Method();
+            method.setMethodType(abiDefinition.getType());
+//            method.setAbiInfo(JsonTools.toJSONString(abiDefinition));
+            method.setMethodName(abiDefinition.getName());
+            method.setMethodId(buildMethodId(abiDefinition, cryptoSuite));
+            methodList.add(method);
+        }
+        return methodList;
     }
 }
