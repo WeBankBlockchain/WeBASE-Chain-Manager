@@ -95,8 +95,10 @@ List log4j = [
 ]
 dependencies {
     compile springboot,spring,jaxb,jwt,swagger,jackson,mysql,log4j
-    compile 'org.fisco-bcos:web3sdk:2.6.2'
+//    compile 'org.fisco-bcos:web3sdk:2.6.2'
+    compile 'org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:2.7.2'
     compile "org.apache.commons:commons-lang3:3.8.1"
+    compile 'org.apache.commons:commons-collections4:4.4'
     compile "cn.hutool:hutool-all:4.1.19"
 
     compile 'com.jcraft:jsch:0.1.55'
