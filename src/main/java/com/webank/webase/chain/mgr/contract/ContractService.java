@@ -363,7 +363,7 @@ public class ContractService {
 
     /**
      * deploy by contractId.
-     *
+     * todo fix invalid signature, deploy success of /deploy api
      * @param req
      * @return
      */
@@ -391,6 +391,7 @@ public class ContractService {
 
         AbiDefinition abiDefinition = null;
         try {
+            // get constructor abi
             abiDefinition = ContractAbiUtil.getAbiDefinition(tbContract.getContractAbi());
         } catch (Exception e) {
             log.error("abi parse error. abi:{}", tbContract.getContractAbi());
@@ -409,12 +410,14 @@ public class ContractService {
         }
         // data sign
         String data = tbContract.getBytecodeBin() + encodedConstructor;
-        String signMsg = transService.signMessage(tbContract.getChainId(), tbContract.getGroupId(), req.getSignUserId(), rspUserInfo.getEncryptType(), "", data);
+        String signMsg = transService.signMessage(tbContract.getChainId(), tbContract.getGroupId(),
+            req.getSignUserId(), rspUserInfo.getEncryptType(), "", data);
         if (StringUtils.isBlank(signMsg)) {
             throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
         }
         // send transaction
-        TransactionReceipt receipt = frontInterface.sendSignedTransaction(tbContract.getChainId(), tbContract.getGroupId(), signMsg, true);
+        TransactionReceipt receipt = frontInterface.sendSignedTransaction(tbContract.getChainId(),
+            tbContract.getGroupId(), signMsg, true);
         String contractAddress = receipt.getContractAddress();
         if (StringUtils.isBlank(contractAddress)
                 || Address.DEFAULT.getValue().equals(contractAddress)) {
