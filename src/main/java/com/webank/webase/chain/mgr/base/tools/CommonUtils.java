@@ -465,6 +465,7 @@ public class CommonUtils {
         byte[] byteArr = Numeric.hexStringToByteArray(signatureData);
         // 从1开始，因为此处webase-sign返回的byteArr第0位是v
         byte signV = byteArr[0];
+        log.debug("stringToSignatureData v:{}", (int)signV);
         byte[] signR = new byte[32];
         System.arraycopy(byteArr, 1, signR, 0, signR.length);
         byte[] signS = new byte[32];
