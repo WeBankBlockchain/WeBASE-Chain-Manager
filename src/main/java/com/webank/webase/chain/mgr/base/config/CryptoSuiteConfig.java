@@ -30,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Data
 @Slf4j
 @Configuration
-@Deprecated
 public class CryptoSuiteConfig {
 
     @Bean
