@@ -109,7 +109,7 @@ public class ContractService {
      */
     @SuppressWarnings("unchecked")
     public List<RspContractCompile> compileContract(CompileInputParam inputParam)
-            throws BaseException, IOException {
+            throws BaseException {
 
         // check front
         TbFront tbFront =

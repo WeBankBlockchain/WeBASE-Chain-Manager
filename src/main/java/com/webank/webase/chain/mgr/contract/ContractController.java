@@ -57,6 +57,7 @@ public class ContractController extends BaseController {
 
     /**
      * compile deployInputParam.
+     * compile by front
      */
     @PostMapping(value = "/compile")
     public BaseResponse compileContract(@RequestBody @Valid CompileInputParam compileInputParam,
@@ -79,6 +80,7 @@ public class ContractController extends BaseController {
 
 
     /**
+     * compile locally
      * @param contractId
      * @return
      * @throws BaseException
@@ -273,6 +275,7 @@ public class ContractController extends BaseController {
 
     /**
      * deploy deployInputParam.
+     * deploy by front(with sign)
      */
     @PostMapping(value = "/deploy")
     public BaseResponse deployContract(@RequestBody @Valid DeployInputParam deployInputParam,
@@ -292,7 +295,13 @@ public class ContractController extends BaseController {
         return baseResponse;
     }
 
-
+    /**
+     * deploy and create raw transaction locally, sign by webase-sign and send to front (/trans/signed-transaction)
+     * @param deployInputParam
+     * @param result
+     * @return
+     * @throws BaseException
+     */
     @PostMapping(value = "/deployByContractId")
     public BaseResponse deployByContractId(@RequestBody @Valid ReqDeployByContractIdVO deployInputParam,
                                            BindingResult result) throws BaseException {
