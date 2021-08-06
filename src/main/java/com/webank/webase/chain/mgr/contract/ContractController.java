@@ -322,7 +322,9 @@ public class ContractController extends BaseController {
 
 
     /**
-     * send transaction.  改用：trans/sendByContractId
+     * send transaction by webase-transaction
+     *
+     * 改用：TransController: trans/sendByContractId
      */
     @Deprecated
     @PostMapping(value = "/transaction")
