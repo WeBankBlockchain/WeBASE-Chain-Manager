@@ -232,7 +232,9 @@ public class UserService {
         //query user
         String adminUserName = String.format(ConstantProperties.ADMIN_USER_FORMAT, group.getGroupName());
         TbUser adminUser = userManager.queryByChainAndGroupAndName(chainId, groupId, adminUserName);
-        if (Objects.nonNull(adminUser)) return adminUser;
+        if (Objects.nonNull(adminUser)) {
+            return adminUser;
+        }
 
         //new user param
         ReqNewUser reqNewUser = new ReqNewUser();
