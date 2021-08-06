@@ -458,6 +458,9 @@ public class CommonUtils {
     /**
      * stringToSignatureData. 19/12/24 support guomi： add byte[] pub in signatureData
      * byte array: [v + r + s + pub]
+     * 19/12/24 support guomi： add byte[] pub in signatureData
+     * 2021/08/05 webase-sign <=1.4.3, v=27 >=1.5.0, v=0 or 1 or 2
+     * if using web3sdk, v default 27, if using java-sdk, v default 0, and add 27 in RLP encode
      * @param signatureData signatureData
      * @return
      */
