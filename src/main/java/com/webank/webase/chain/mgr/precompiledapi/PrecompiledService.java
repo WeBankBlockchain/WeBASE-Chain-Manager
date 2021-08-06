@@ -234,6 +234,7 @@ public class PrecompiledService {
         TransactionReceipt recoverReceipt = new TransactionReceipt();
         BeanUtils.copyProperties(transResultDto, recoverReceipt);
         this.handleTransactionReceipt(recoverReceipt);
+        log.info("end addSealer recoverReceipt:{}", recoverReceipt);
 
         //start group
         groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
