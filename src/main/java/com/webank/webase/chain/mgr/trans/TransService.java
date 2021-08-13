@@ -14,13 +14,12 @@
 package com.webank.webase.chain.mgr.trans;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.PrecompiledTypes;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
-import com.webank.webase.chain.mgr.util.JsonTools;
-import com.webank.webase.chain.mgr.util.Web3Tools;
 import com.webank.webase.chain.mgr.contract.ContractManager;
 import com.webank.webase.chain.mgr.contract.entity.ContractFunction;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
@@ -31,29 +30,40 @@ import com.webank.webase.chain.mgr.sign.req.EncodeInfo;
 import com.webank.webase.chain.mgr.sign.rsp.RspUserInfo;
 import com.webank.webase.chain.mgr.trans.entity.ReqSendByContractIdVO;
 import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
-import com.webank.webase.chain.mgr.util.ContractAbiUtil;
-import com.webank.webase.chain.mgr.util.EncoderUtil;
+import com.webank.webase.chain.mgr.util.JsonTools;
+import com.webank.webase.chain.mgr.util.Web3Tools;
+import com.webank.webase.chain.mgr.util.web3.ContractAbiUtil;
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.abi.TypeReference;
-import org.fisco.bcos.web3j.abi.datatypes.Function;
-import org.fisco.bcos.web3j.abi.datatypes.Type;
-import org.fisco.bcos.web3j.crypto.ExtendedRawTransaction;
-import org.fisco.bcos.web3j.crypto.RawTransaction;
-import org.fisco.bcos.web3j.crypto.Sign;
-import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
-import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.fisco.bcos.web3j.utils.Numeric;
+import org.fisco.bcos.sdk.abi.FunctionEncoder;
+import org.fisco.bcos.sdk.abi.TypeReference;
+import org.fisco.bcos.sdk.abi.datatypes.Function;
+import org.fisco.bcos.sdk.abi.datatypes.Type;
+import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.crypto.CryptoSuite;
+import org.fisco.bcos.sdk.crypto.signature.SignatureResult;
+import org.fisco.bcos.sdk.model.NodeVersion.ClientVersion;
+import org.fisco.bcos.sdk.model.RetCode;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
+import org.fisco.bcos.sdk.transaction.codec.decode.ReceiptParser;
+import org.fisco.bcos.sdk.transaction.codec.encode.TransactionEncoderService;
+import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.transaction.model.po.RawTransaction;
+import org.fisco.bcos.sdk.utils.Numeric;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.math.BigInteger;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
 
 /**
  * services for contract data.
@@ -68,7 +78,7 @@ public class TransService {
     @Autowired
     private UserService userService;
     @Autowired
-    Map<Integer, EncoderUtil> encoderMap;
+    Map<Integer, CryptoSuite> cryptoSuiteMap;
 
 
     /**
@@ -127,61 +137,43 @@ public class TransService {
      */
     public String signMessage(int chainId, int groupId, String signUserId, int encryptType,
                               String contractAddress, String data) throws BaseException {
-        Random r = new Random();
+        Random r = new SecureRandom();
         BigInteger randomid = new BigInteger(250, r);
         BigInteger blockLimit = frontInterface.getLatestBlockNumber(chainId, groupId)
                 .add(ConstantProperties.LIMIT_VALUE);
-        NodeVersion.Version version = frontInterface.getClientVersion(chainId, groupId);
+        ClientVersion version = frontInterface.getClientVersion(chainId, groupId);
         String signMsg;
         log.info("signMessage encryptType: {}", encryptType);
-        EncoderUtil encoderUtil = getEncoderUtil(encryptType);
-        if (version.getVersion().contains("2.0.0-rc1")
-                || version.getVersion().contains("release-2.0.1")) {
-            RawTransaction rawTransaction = RawTransaction.createTransaction(randomid,
-                    ConstantProperties.GAS_PRICE, ConstantProperties.GAS_LIMIT, blockLimit, contractAddress,
-                    BigInteger.ZERO, data);
-            byte[] encodedTransaction = encoderUtil.encode(rawTransaction);
-            String encodedDataStr = Numeric.toHexString(encodedTransaction);
+//        if (version.getVersion().contains("2.0.0-rc1")
+//                || version.getVersion().contains("release-2.0.1")) {
+        TransactionEncoderService encoderService = new TransactionEncoderService(cryptoSuiteMap.get(encryptType));
 
-            EncodeInfo encodeInfo = new EncodeInfo();
-            encodeInfo.setSignUserId(signUserId);
-            encodeInfo.setEncodedDataStr(encodedDataStr);
-            String signDataStr = userService.getSignData(encodeInfo);
-            if (StringUtils.isBlank(signDataStr)) {
-                log.warn("deploySend get sign data error.");
-                return null;
-            }
+        String chainID = version.getChainId();
+        RawTransaction extendedRawTransaction =
+            RawTransaction.createTransaction(randomid, ConstantProperties.GAS_PRICE,
+                        ConstantProperties.GAS_LIMIT, blockLimit, contractAddress, BigInteger.ZERO, data,
+                        new BigInteger(chainID), BigInteger.valueOf(groupId), "");
+        byte[] encodedTransaction = encoderService.encode(extendedRawTransaction, null);
+        String encodedDataStr = Numeric.toHexString(encodedTransaction);
 
-            Sign.SignatureData signData = CommonUtils.stringToSignatureData(signDataStr, encryptType);
-            byte[] signedMessage = encoderUtil.encode(rawTransaction, signData);
-            signMsg = Numeric.toHexString(signedMessage);
-        } else {
-            String chainID = version.getChainID();
-            ExtendedRawTransaction extendedRawTransaction =
-                    ExtendedRawTransaction.createTransaction(randomid, ConstantProperties.GAS_PRICE,
-                            ConstantProperties.GAS_LIMIT, blockLimit, contractAddress, BigInteger.ZERO, data,
-                            new BigInteger(chainID), BigInteger.valueOf(groupId), "");
-            byte[] encodedTransaction = encoderUtil.encode(extendedRawTransaction);
-            String encodedDataStr = Numeric.toHexString(encodedTransaction);
+        EncodeInfo encodeInfo = new EncodeInfo();
+        encodeInfo.setSignUserId(signUserId);
+        encodeInfo.setEncodedDataStr(encodedDataStr);
 
-            EncodeInfo encodeInfo = new EncodeInfo();
-            encodeInfo.setSignUserId(signUserId);
-            encodeInfo.setEncodedDataStr(encodedDataStr);
+        Instant startTime = Instant.now();
+        String signDataStr = userService.getSignData(encodeInfo);
+        log.info("getSignData from sign useTime: {}",
+                Duration.between(startTime, Instant.now()).toMillis());
 
-            Instant startTime = Instant.now();
-            String signDataStr = userService.getSignData(encodeInfo);
-            log.info("getSignData from sign useTime: {}",
-                    Duration.between(startTime, Instant.now()).toMillis());
-
-            if (StringUtils.isBlank(signDataStr)) {
-                log.warn("deploySend get sign data error.");
-                return null;
-            }
-
-            Sign.SignatureData signData = CommonUtils.stringToSignatureData(signDataStr, encryptType);
-            byte[] signedMessage = encoderUtil.encode(extendedRawTransaction, signData);
-            signMsg = Numeric.toHexString(signedMessage);
+        if (StringUtils.isBlank(signDataStr)) {
+            log.warn("deploySend get sign data error.");
+            return null;
         }
+
+        SignatureResult signData = CommonUtils.stringToSignatureData(signDataStr, encryptType);
+        byte[] signedMessage = encoderService.encode(extendedRawTransaction, signData);
+        signMsg = Numeric.toHexString(signedMessage);
+
         return signMsg;
     }
 
@@ -191,7 +183,7 @@ public class TransService {
     private ContractFunction buildContractFunction(List<Object> functionAbi, String funcName,
                                                    List<Object> params) throws BaseException {
         // check function name
-        AbiDefinition abiDefinition = null;
+        ABIDefinition abiDefinition = null;
         try {
             abiDefinition =
                     ContractAbiUtil.getAbiDefinition(funcName, JsonTools.toJSONString(functionAbi));
@@ -228,11 +220,11 @@ public class TransService {
     /**
      * get EncoderUtil.
      */
-    public EncoderUtil getEncoderUtil(int encryptType) throws BaseException {
+    public CryptoSuite getCryptoSuite(int encryptType) throws BaseException {
         if (!EncryptTypeEnum.isInclude(encryptType)) {
             throw new BaseException(ConstantCode.INVALID_ENCRYPT_TYPE);
         }
-        return encoderMap.get(encryptType);
+        return cryptoSuiteMap.get(encryptType);
     }
 
 
@@ -282,12 +274,14 @@ public class TransService {
 
         // encode function
         Function function = new Function(funName, contractFunction.getFinalInputs(), contractFunction.getFinalOutputs());
-        String encodedFunction = getEncoderUtil(rspUserInfo.getEncryptType()).encode(function);
+        FunctionEncoder functionEncoder = new FunctionEncoder(cryptoSuiteMap.get(rspUserInfo.getEncryptType()));
+        String encodedFunction = functionEncoder.encode(function);
 
         //send transaction
         TransResultDto transResultDto = new TransResultDto();
         if (contractFunction.getConstant()) {
-            Object response = sendQueryTransaction(encodedFunction, contractAddress, funName, JsonTools.toJSONString(functionAbi), chainId, groupId);
+            Object response = sendQueryTransaction(encodedFunction, contractAddress, funName, JsonTools.toJSONString(functionAbi),
+                chainId, groupId);
             transResultDto.setQueryInfo(JsonTools.objToString(response));
             transResultDto.setConstant(true);
         } else {
@@ -306,5 +300,6 @@ public class TransService {
         log.debug("finish exec method[handleTransaction], result:{}", JsonTools.objToString(transResultDto));
         return transResultDto;
     }
+
 
 }

@@ -12,37 +12,31 @@
  * the License.
  */
 
-package com.webank.webase.chain.mgr.util;
+package com.webank.webase.chain.mgr.util.web3;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import lombok.extern.slf4j.Slf4j;
-import org.fisco.bcos.web3j.abi.EventValues;
-import org.fisco.bcos.web3j.abi.TypeReference;
-import org.fisco.bcos.web3j.abi.datatypes.DynamicArray;
-import org.fisco.bcos.web3j.abi.datatypes.Event;
-import org.fisco.bcos.web3j.abi.datatypes.Type;
-import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
-import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition.NamedType;
-import org.fisco.bcos.web3j.protocol.core.methods.response.Log;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.fisco.bcos.web3j.tx.Contract;
-import org.fisco.bcos.web3j.tx.txdecode.ConstantProperties;
-
+import com.webank.webase.chain.mgr.util.JsonTools;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import org.fisco.bcos.sdk.abi.TypeReference;
+import org.fisco.bcos.sdk.abi.datatypes.DynamicArray;
+import org.fisco.bcos.sdk.abi.datatypes.Type;
+import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition.NamedType;
 
 /**
  * ContractAbiUtil.
  */
 @Slf4j
 public class ContractAbiUtil {
-
+    public static final String TYPE_EVENT = "event";
+    public static final String TYPE_FUNCTION = "function";
+    public static final String TYPE_CONSTRUCTOR = "constructor";
     /**
      * saveSolFile.
      *
@@ -86,11 +80,11 @@ public class ContractAbiUtil {
      * @param contractAbi contractAbi
      * @return
      */
-    public static AbiDefinition getAbiDefinition(String contractAbi) {
-        List<AbiDefinition> abiArr = JsonTools.toJavaObjectList(contractAbi, AbiDefinition.class);
-        AbiDefinition result = null;
-        for (AbiDefinition abiDefinition : abiArr) {
-            if (ConstantProperties.TYPE_CONSTRUCTOR.equals(abiDefinition.getType())) {
+    public static ABIDefinition getAbiDefinition(String contractAbi) {
+        List<ABIDefinition> abiArr = JsonTools.toJavaObjectList(contractAbi, ABIDefinition.class);
+        ABIDefinition result = null;
+        for (ABIDefinition abiDefinition : abiArr) {
+            if (TYPE_CONSTRUCTOR.equals(abiDefinition.getType())) {
                 result = abiDefinition;
                 break;
             }
@@ -105,11 +99,11 @@ public class ContractAbiUtil {
      * @param contractAbi contractAbi
      * @return
      */
-    public static AbiDefinition getAbiDefinition(String name, String contractAbi) {
-        List<AbiDefinition> abiArr = JsonTools.toJavaObjectList(contractAbi, AbiDefinition.class);
-        AbiDefinition result = null;
-        for (AbiDefinition abiDefinition : abiArr) {
-            if (ConstantProperties.TYPE_FUNCTION.equals(abiDefinition.getType())
+    public static ABIDefinition getAbiDefinition(String name, String contractAbi) {
+        List<ABIDefinition> abiArr = JsonTools.toJavaObjectList(contractAbi, ABIDefinition.class);
+        ABIDefinition result = null;
+        for (ABIDefinition abiDefinition : abiArr) {
+            if (TYPE_FUNCTION.equals(abiDefinition.getType())
                     && name.equals(abiDefinition.getName())) {
                 result = abiDefinition;
                 break;
@@ -124,11 +118,11 @@ public class ContractAbiUtil {
      * @param contractAbi contractAbi
      * @return
      */
-    public static List<AbiDefinition> getEventAbiDefinitions(String contractAbi) {
-        List<AbiDefinition> abiArr = JsonTools.toJavaObjectList(contractAbi, AbiDefinition.class);
-        List<AbiDefinition> result = new ArrayList<>();
-        for (AbiDefinition abiDefinition : abiArr) {
-            if (ConstantProperties.TYPE_EVENT.equals(abiDefinition.getType())) {
+    public static List<ABIDefinition> getEventAbiDefinitions(String contractAbi) {
+        List<ABIDefinition> abiArr = JsonTools.toJavaObjectList(contractAbi, ABIDefinition.class);
+        List<ABIDefinition> result = new ArrayList<>();
+        for (ABIDefinition abiDefinition : abiArr) {
+            if (TYPE_EVENT.equals(abiDefinition.getType())) {
                 result.add(abiDefinition);
             }
         }
@@ -141,7 +135,7 @@ public class ContractAbiUtil {
      * @param abiDefinition abiDefinition
      * @return
      */
-    public static List<String> getFuncInputType(AbiDefinition abiDefinition) {
+    public static List<String> getFuncInputType(ABIDefinition abiDefinition) {
         List<String> inputList = new ArrayList<>();
         if (abiDefinition != null) {
             List<NamedType> inputs = abiDefinition.getInputs();
@@ -158,7 +152,7 @@ public class ContractAbiUtil {
      * @param abiDefinition abiDefinition
      * @return
      */
-    public static List<String> getFuncOutputType(AbiDefinition abiDefinition) {
+    public static List<String> getFuncOutputType(ABIDefinition abiDefinition) {
         List<String> outputList = new ArrayList<>();
         List<NamedType> outputs = abiDefinition.getOutputs();
         for (NamedType output : outputs) {
@@ -269,35 +263,35 @@ public class ContractAbiUtil {
         }
         return null;
     }
-
-    /**
-     * receiptParse.
-     *
-     * @param receipt info
-     * @param abiList info
-     * @return
-     */
-    public static Object receiptParse(TransactionReceipt receipt, List<AbiDefinition> abiList)
-            throws BaseException {
-        Map<String, Object> resultMap = new HashMap<>();
-        List<Log> logList = receipt.getLogs();
-        for (AbiDefinition abiDefinition : abiList) {
-            String eventName = abiDefinition.getName();
-            List<String> funcInputTypes = getFuncInputType(abiDefinition);
-            List<TypeReference<?>> finalOutputs = outputFormat(funcInputTypes);
-            Event event = new Event(eventName, finalOutputs);
-            Object result = null;
-            for (Log logInfo : logList) {
-                EventValues eventValues = Contract.staticExtractEventParameters(event, logInfo);
-                if (eventValues != null) {
-                    result = callResultParse(funcInputTypes, eventValues.getNonIndexedValues());
-                    break;
-                }
-            }
-            if (result != null) {
-                resultMap.put(eventName, result);
-            }
-        }
-        return resultMap;
-    }
+//
+//    /**
+//     * receiptParse.
+//     *
+//     * @param receipt info
+//     * @param abiList info
+//     * @return
+//     */
+//    public static Object receiptParse(TransactionReceipt receipt, List<ABIDefinition> abiList)
+//            throws BaseException {
+//        Map<String, Object> resultMap = new HashMap<>();
+//        List<Log> logList = receipt.getLogs();
+//        for (ABIDefinition abiDefinition : abiList) {
+//            String eventName = abiDefinition.getName();
+//            List<String> funcInputTypes = getFuncInputType(abiDefinition);
+//            List<TypeReference<?>> finalOutputs = outputFormat(funcInputTypes);
+//            Event event = new Event(eventName, finalOutputs);
+//            Object result = null;
+//            for (Log logInfo : logList) {
+//                EventValues eventValues = Contract.staticExtractEventParameters(event, logInfo);
+//                if (eventValues != null) {
+//                    result = callResultParse(funcInputTypes, eventValues.getNonIndexedValues());
+//                    break;
+//                }
+//            }
+//            if (result != null) {
+//                resultMap.put(eventName, result);
+//            }
+//        }
+//        return resultMap;
+//    }
 }
