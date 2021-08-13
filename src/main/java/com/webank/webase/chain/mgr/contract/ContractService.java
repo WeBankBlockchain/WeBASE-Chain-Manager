@@ -695,6 +695,7 @@ public class ContractService {
      * get contract path list
      */
     public List<TbContractPath> queryContractPathList(Integer chainId, Integer groupId) {
+        this.groupManager.requireGroupExist(chainId, groupId);
         List<TbContractPath> pathList = tbContractPathMapper.listContractPath(chainId, groupId);
         // not return null, but return empty list
         List<TbContractPath> resultList = new ArrayList<>();
@@ -732,8 +733,8 @@ public class ContractService {
             JsonTools.toJSONString(param));
         int chainId = param.getChainId();
         int groupId = param.getGroupId();
+        this.groupManager.requireGroupExist(chainId, groupId);
         List<String> pathList = param.getContractPathList();
-
         List<TbContract> resultList = new ArrayList<>();
         for (String path: pathList) {
             // query contract list
