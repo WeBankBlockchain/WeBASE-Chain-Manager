@@ -1,12 +1,11 @@
 package com.webank.webase.chain.mgr.contract.entity;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.fisco.bcos.web3j.abi.TypeReference;
-import org.fisco.bcos.web3j.abi.datatypes.Type;
-
-import java.util.List;
+import org.fisco.bcos.sdk.abi.TypeReference;
+import org.fisco.bcos.sdk.abi.datatypes.Type;
 
 /**
  * abi's function information.

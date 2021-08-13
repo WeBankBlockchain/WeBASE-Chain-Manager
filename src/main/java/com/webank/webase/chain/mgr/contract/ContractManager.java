@@ -3,20 +3,19 @@ package com.webank.webase.chain.mgr.contract;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbContractExample;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
+import com.webank.webase.chain.mgr.util.JsonTools;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -111,7 +110,7 @@ public class ContractManager {
         log.debug("start queryContract. queryParam:{}", JsonTools.toJSONString(queryParam));
         TbContract tbContract = this.tbContractMapper.getByParam(queryParam);
         log.debug("end queryContract. queryParam:{} tbContract:{}", JsonTools.toJSONString(queryParam),
-                JsonTools.toJSONString(tbContract));
+            JsonTools.toJSONString(tbContract));
         return tbContract;
     }
 
@@ -148,7 +147,24 @@ public class ContractManager {
 //        criteria.andContractAddressIsNull();
 //        criteria.andContractStatusNotEqualTo(ContractStatus.DEPLOYED.getValue());
         List<TbContract> contractList = this.tbContractMapper.selectByExampleWithBLOBs(example);
-        log.debug("end listContractByPath.");
+        log.debug("end listContractByPath. contractList size:{}", contractList.size());
+        return contractList;
+    }
+
+    /**
+     * list contract by path in chain group, path
+     * @param contractPath
+     * @return
+     */
+    public List<TbContract> listContractByPath(int chainId, int groupId, String contractPath) {
+        log.debug("start listContractByPath. chainId:{},groupId:{}contractPath:{}", chainId, groupId, contractPath);
+        TbContractExample example = new TbContractExample();
+        TbContractExample.Criteria criteria = example.createCriteria();
+        criteria.andChainIdEqualTo(chainId);
+        criteria.andGroupIdEqualTo(groupId);
+        criteria.andContractPathEqualTo(contractPath);
+        List<TbContract> contractList = this.tbContractMapper.selectByExampleWithBLOBs(example);
+        log.debug("end listContractByPath. contractList size:{}", contractList.size());
         return contractList;
     }
 

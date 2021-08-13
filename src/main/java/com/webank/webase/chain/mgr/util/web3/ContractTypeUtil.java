@@ -12,22 +12,30 @@
  * the License.
  */
 
-package com.webank.webase.chain.mgr.util;
+package com.webank.webase.chain.mgr.util.web3;
+
+import static org.fisco.bcos.sdk.abi.datatypes.Type.MAX_BYTE_LENGTH;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
-import org.fisco.bcos.web3j.abi.TypeReference;
-import org.fisco.bcos.web3j.abi.datatypes.*;
-import org.fisco.bcos.web3j.abi.datatypes.generated.*;
-import org.fisco.bcos.web3j.utils.Numeric;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-
-import static org.fisco.bcos.web3j.abi.datatypes.Type.MAX_BYTE_LENGTH;
+import org.fisco.bcos.sdk.abi.TypeReference;
+import org.fisco.bcos.sdk.abi.datatypes.Address;
+import org.fisco.bcos.sdk.abi.datatypes.Bool;
+import org.fisco.bcos.sdk.abi.datatypes.Bytes;
+import org.fisco.bcos.sdk.abi.datatypes.BytesType;
+import org.fisco.bcos.sdk.abi.datatypes.DynamicArray;
+import org.fisco.bcos.sdk.abi.datatypes.DynamicBytes;
+import org.fisco.bcos.sdk.abi.datatypes.NumericType;
+import org.fisco.bcos.sdk.abi.datatypes.Type;
+import org.fisco.bcos.sdk.abi.datatypes.Utf8String;
+import org.fisco.bcos.sdk.abi.datatypes.generated.*;
+import org.fisco.bcos.sdk.utils.Numeric;
 
 /**
  * ContractTypeUtil.

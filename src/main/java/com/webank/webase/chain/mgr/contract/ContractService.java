@@ -19,9 +19,21 @@ import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.util.JsonTools;
-import com.webank.webase.chain.mgr.util.Web3Tools;
-import com.webank.webase.chain.mgr.contract.entity.*;
+import com.webank.webase.chain.mgr.contract.entity.BaseContract;
+import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
+import com.webank.webase.chain.mgr.contract.entity.Contract;
+import com.webank.webase.chain.mgr.contract.entity.ContractParam;
+import com.webank.webase.chain.mgr.contract.entity.ContractPathParam;
+import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
+import com.webank.webase.chain.mgr.contract.entity.ReqContractByPath;
+import com.webank.webase.chain.mgr.contract.entity.ReqContractDeploy;
+import com.webank.webase.chain.mgr.contract.entity.ReqDeployByContractIdVO;
+import com.webank.webase.chain.mgr.contract.entity.ReqQueryContractPage;
+import com.webank.webase.chain.mgr.contract.entity.ReqSaveContractBatchVO;
+import com.webank.webase.chain.mgr.contract.entity.ReqTransSendInfoDto;
+import com.webank.webase.chain.mgr.contract.entity.RespContractDeploy;
+import com.webank.webase.chain.mgr.contract.entity.RspContractCompile;
+import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
@@ -30,32 +42,41 @@ import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.method.MethodService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbContractExample;
+import com.webank.webase.chain.mgr.repository.bean.TbContractPath;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbContractPathMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.sign.UserService;
 import com.webank.webase.chain.mgr.sign.rsp.RspUserInfo;
 import com.webank.webase.chain.mgr.trans.TransService;
-import com.webank.webase.chain.mgr.util.ContractAbiUtil;
-import com.webank.webase.chain.mgr.util.EncoderUtil;
 import com.webank.webase.chain.mgr.util.HttpEntityUtils;
+import com.webank.webase.chain.mgr.util.JsonTools;
+import com.webank.webase.chain.mgr.util.Web3Tools;
+import com.webank.webase.chain.mgr.util.web3.ContractAbiUtil;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.abi.datatypes.Address;
-import org.fisco.bcos.web3j.abi.datatypes.Type;
-import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.sdk.abi.FunctionEncoder;
+import org.fisco.bcos.sdk.abi.datatypes.Address;
+import org.fisco.bcos.sdk.abi.datatypes.Type;
+import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.util.*;
 
 /**
  * services for contract data.
@@ -84,14 +105,19 @@ public class ContractService {
     private TbGroupMapper groupMapper;
     @Autowired
     private GroupManager groupManager;
-
+    @Autowired
+    private ContractPathManager contractPathManager;
+    @Autowired
+    private TbContractPathMapper tbContractPathMapper;
+    @Autowired
+    private ContractPathService contractPathService;
 
     /**
      * compile contract.
      */
     @SuppressWarnings("unchecked")
     public List<RspContractCompile> compileContract(CompileInputParam inputParam)
-            throws BaseException, IOException {
+            throws BaseException {
 
         // check front
         TbFront tbFront =
@@ -210,7 +236,7 @@ public class ContractService {
     public TbContract newContract(Contract contract) {
         // check contract not exist.
         contractManager.verifyContractNotExistByName(contract.getChainId(), contract.getGroupId(),
-                contract.getContractName(), contract.getContractPath());
+            contract.getContractName(), contract.getContractPath());
 
         // add to database.
         TbContract tbContract = new TbContract();
@@ -220,8 +246,11 @@ public class ContractService {
         tbContract.setCreateTime(now);
         tbContract.setModifyTime(now);
         tbContractMapper.insertSelective(tbContract);
+        // if exist, auto not save (ignore)
+        contractPathService.save(contract.getChainId(), contract.getGroupId(), contract.getContractPath(),true);
         return this.tbContractMapper.selectByPrimaryKey(tbContract.getContractId());
     }
+
 
 
     /**
@@ -283,6 +312,8 @@ public class ContractService {
         // remove
         this.tbContractMapper.deleteByChainId(chainId);
         log.info("end deleteContractByChainId");
+        contractPathService.removeByChainId(chainId);
+        log.info("delete contract path by groupId");
     }
 
     /**
@@ -296,6 +327,8 @@ public class ContractService {
         }
         this.tbContractMapper.deleteByChainIdAndGroupId(chainId, groupId);
         log.info("finish deleteByGroupId chainId:{} groupId:{}", chainId, groupId);
+        contractPathService.removeByGroupId(chainId, groupId);
+        log.info("delete contract path by groupId");
     }
 
     /**
@@ -363,7 +396,7 @@ public class ContractService {
 
     /**
      * deploy by contractId.
-     *
+     * todo fix invalid signature, deploy success of /deploy api
      * @param req
      * @return
      */
@@ -389,8 +422,9 @@ public class ContractService {
         if (CollectionUtils.isEmpty(params))
             params = Arrays.asList();
 
-        AbiDefinition abiDefinition = null;
+        ABIDefinition abiDefinition = null;
         try {
+            // get constructor abi
             abiDefinition = ContractAbiUtil.getAbiDefinition(tbContract.getContractAbi());
         } catch (Exception e) {
             log.error("abi parse error. abi:{}", tbContract.getContractAbi());
@@ -405,16 +439,18 @@ public class ContractService {
         String encodedConstructor = "";
         if (funcInputTypes.size() > 0) {
             List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
-            encodedConstructor = EncoderUtil.encodeConstructor(finalInputs);
+            encodedConstructor = FunctionEncoder.encodeConstructor(finalInputs);
         }
         // data sign
         String data = tbContract.getBytecodeBin() + encodedConstructor;
-        String signMsg = transService.signMessage(tbContract.getChainId(), tbContract.getGroupId(), req.getSignUserId(), rspUserInfo.getEncryptType(), "", data);
+        String signMsg = transService.signMessage(tbContract.getChainId(), tbContract.getGroupId(),
+            req.getSignUserId(), rspUserInfo.getEncryptType(), "", data);
         if (StringUtils.isBlank(signMsg)) {
             throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
         }
         // send transaction
-        TransactionReceipt receipt = frontInterface.sendSignedTransaction(tbContract.getChainId(), tbContract.getGroupId(), signMsg, true);
+        TransactionReceipt receipt = frontInterface.sendSignedTransaction(tbContract.getChainId(),
+            tbContract.getGroupId(), signMsg, true);
         String contractAddress = receipt.getContractAddress();
         if (StringUtils.isBlank(contractAddress)
                 || Address.DEFAULT.getValue().equals(contractAddress)) {
@@ -454,7 +490,7 @@ public class ContractService {
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
 
-        List<AbiDefinition> abiArray = JsonTools.toJavaObjectList(inputParam.getContractAbi(), AbiDefinition.class);
+        List<ABIDefinition> abiArray = JsonTools.toJavaObjectList(inputParam.getContractAbi(), ABIDefinition.class);
         if (abiArray == null || abiArray.isEmpty()) {
             log.info("fail deployContract. abi is empty");
             throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
@@ -652,4 +688,61 @@ public class ContractService {
         return this.tbContractMapper.updateByPrimaryKeySelective(tbContract) == 1;
     }
 
+
+    /* contract path related method */
+
+    /**
+     * get contract path list
+     */
+    public List<TbContractPath> queryContractPathList(Integer chainId, Integer groupId) {
+        List<TbContractPath> pathList = tbContractPathMapper.listContractPath(chainId, groupId);
+        // not return null, but return empty list
+        List<TbContractPath> resultList = new ArrayList<>();
+        if (pathList != null) {
+            resultList.addAll(pathList);
+        }
+        return resultList;
+    }
+
+    public void deleteByContractPath(ContractPathParam param) {
+        log.debug("start deleteByContractPath ContractPathParam:{}", JsonTools.toJSONString(param));
+        int chainId = param.getChainId();
+        int groupId = param.getGroupId();
+        String contractPath = param.getContractPath();
+        List<TbContract> contractList = contractManager.listContractByPath(chainId, groupId, contractPath);
+        if (contractList == null || contractList.isEmpty()) {
+            log.debug("deleteByContractPath contract list empty, directly delete path");
+            contractPathService.removeByPathName(chainId, groupId, contractPath);
+            return;
+        }
+
+        // batch delete contract by path
+        log.debug("start batch delete contract in path:{}", contractPath);
+        contractList.forEach( c -> deleteContract(c.getChainId(), c.getContractId(), c.getGroupId()));
+        log.debug("deleteByContractPath delete path");
+        contractPathService.removeByPathName(chainId, groupId, contractPath);
+        log.debug("end deleteByContractPath. ");
+    }
+
+    /**
+     * query contract list by multi path
+     */
+    public List<TbContract> queryContractListMultiPath(ReqContractByPath param) throws BaseException {
+        log.debug("start queryContractListMultiPath ReqListContract:{}",
+            JsonTools.toJSONString(param));
+        int chainId = param.getChainId();
+        int groupId = param.getGroupId();
+        List<String> pathList = param.getContractPathList();
+
+        List<TbContract> resultList = new ArrayList<>();
+        for (String path: pathList) {
+            // query contract list
+            List<TbContract> contractList = contractManager.listContractByPath(chainId, groupId, path);
+            resultList.addAll(contractList);
+        }
+
+        log.debug("end queryContractListMultiPath listOfContract size:{}", resultList.size());
+        return resultList;
+    }
 }
+

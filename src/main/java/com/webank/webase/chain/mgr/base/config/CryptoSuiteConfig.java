@@ -15,9 +15,9 @@ package com.webank.webase.chain.mgr.base.config;
 
 
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
-import com.webank.webase.chain.mgr.util.EncoderUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.fisco.bcos.sdk.crypto.CryptoSuite;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -30,16 +30,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @Data
 @Slf4j
 @Configuration
-public class EncoderConfig {
+public class CryptoSuiteConfig {
 
     @Bean
-    public Map<Integer, EncoderUtil> encoderMap() {
+    public Map<Integer, CryptoSuite> cryptoSuiteMapMap() {
         log.info("*****init encoderMap.");
-        Map<Integer, EncoderUtil> encoderMap =
-                new ConcurrentHashMap<Integer, EncoderUtil>(EncryptTypeEnum.values().length);
+        Map<Integer, CryptoSuite> encoderMap =
+                new ConcurrentHashMap<Integer, CryptoSuite>(EncryptTypeEnum.values().length);
         for (EncryptTypeEnum encryptType : EncryptTypeEnum.values()) {
-            EncoderUtil encoderUtil = new EncoderUtil(encryptType.getType());
-            encoderMap.put(encryptType.getType(), encoderUtil);
+//            EncoderUtil encoderUtil = new EncoderUtil(encryptType.getType());
+            CryptoSuite cryptoSuite = new CryptoSuite(encryptType.getType());
+            encoderMap.put(encryptType.getType(), cryptoSuite);
         }
         return encoderMap;
     }

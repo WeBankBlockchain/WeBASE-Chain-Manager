@@ -26,9 +26,9 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.extern.log4j.Log4j2;
-import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
-import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.TransactionResult;
-import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
+import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
+import org.fisco.bcos.sdk.client.protocol.response.BcosBlock.Block;
+import org.fisco.bcos.sdk.client.protocol.response.BcosBlock.TransactionResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -66,7 +66,7 @@ public class BlockService {
         List<TransactionResult> transList = block.getTransactions();
         for (TransactionResult result : transList) {
             // save trans
-            Transaction trans = (Transaction) result.get();
+            JsonTransactionResponse trans = (JsonTransactionResponse) result;
             TbTransaction tbTransaction = new TbTransaction(chainId, groupId, trans.getHash(), trans.getBlockNumber(),
                     tbBlock.getBlockTimestamp(), JsonTools.objToString(trans));
             transactionService.addTransInfo(chainId, groupId, tbTransaction);
@@ -162,7 +162,7 @@ public class BlockService {
         if (block == null) {
             return null;
         }
-        LocalDateTime blockTimestamp = CommonUtils.timestamp2LocalDateTime(block.getTimestamp().longValue());
+        LocalDateTime blockTimestamp = CommonUtils.timestamp2LocalDateTime(Long.valueOf(block.getTimestamp()));
         int sealerIndex = Integer.parseInt(block.getSealer().substring(2), 16);
         List<String> sealerList = block.getSealerList();
         String sealer = "0x0";
