@@ -23,7 +23,9 @@ import com.webank.webase.chain.mgr.contract.entity.BaseContract;
 import com.webank.webase.chain.mgr.contract.entity.CompileInputParam;
 import com.webank.webase.chain.mgr.contract.entity.Contract;
 import com.webank.webase.chain.mgr.contract.entity.ContractParam;
+import com.webank.webase.chain.mgr.contract.entity.ContractPathParam;
 import com.webank.webase.chain.mgr.contract.entity.DeployInputParam;
+import com.webank.webase.chain.mgr.contract.entity.ReqContractByPath;
 import com.webank.webase.chain.mgr.contract.entity.ReqContractDeploy;
 import com.webank.webase.chain.mgr.contract.entity.ReqDeployByContractIdVO;
 import com.webank.webase.chain.mgr.contract.entity.ReqQueryContractPage;
@@ -40,9 +42,11 @@ import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.method.MethodService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
 import com.webank.webase.chain.mgr.repository.bean.TbContractExample;
+import com.webank.webase.chain.mgr.repository.bean.TbContractPath;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractMapper;
+import com.webank.webase.chain.mgr.repository.mapper.TbContractPathMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.sign.UserService;
 import com.webank.webase.chain.mgr.sign.rsp.RspUserInfo;
@@ -51,7 +55,6 @@ import com.webank.webase.chain.mgr.util.HttpEntityUtils;
 import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.util.Web3Tools;
 import com.webank.webase.chain.mgr.util.web3.ContractAbiUtil;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -102,7 +105,12 @@ public class ContractService {
     private TbGroupMapper groupMapper;
     @Autowired
     private GroupManager groupManager;
-
+    @Autowired
+    private ContractPathManager contractPathManager;
+    @Autowired
+    private TbContractPathMapper tbContractPathMapper;
+    @Autowired
+    private ContractPathService contractPathService;
 
     /**
      * compile contract.
@@ -673,4 +681,61 @@ public class ContractService {
         return this.tbContractMapper.updateByPrimaryKeySelective(tbContract) == 1;
     }
 
+
+    /* contract path related method */
+
+    /**
+     * get contract path list
+     */
+    public List<TbContractPath> queryContractPathList(Integer chainId, Integer groupId) {
+        List<TbContractPath> pathList = tbContractPathMapper.listContractPath(chainId, groupId);
+        // not return null, but return empty list
+        List<TbContractPath> resultList = new ArrayList<>();
+        if (pathList != null) {
+            resultList.addAll(pathList);
+        }
+        return resultList;
+    }
+
+    public void deleteByContractPath(ContractPathParam param) {
+        log.debug("start deleteByContractPath ContractPathParam:{}", JsonTools.toJSONString(param));
+        int chainId = param.getChainId();
+        int groupId = param.getGroupId();
+        String contractPath = param.getContractPath();
+        List<TbContract> contractList = contractManager.listContractByPath(chainId, groupId, contractPath);
+        if (contractList == null || contractList.isEmpty()) {
+            log.debug("deleteByContractPath contract list empty, directly delete path");
+            contractPathService.removeByPathName(chainId, groupId, contractPath);
+            return;
+        }
+
+        // batch delete contract by path
+        log.debug("start batch delete contract in path:{}", contractPath);
+        contractList.forEach( c -> deleteContract(c.getChainId(), c.getContractId(), c.getGroupId()));
+        log.debug("deleteByContractPath delete path");
+        contractPathService.removeByPathName(chainId, groupId, contractPath);
+        log.debug("end deleteByContractPath. ");
+    }
+
+    /**
+     * query contract list by multi path
+     */
+    public List<TbContract> queryContractListMultiPath(ReqContractByPath param) throws BaseException {
+        log.debug("start queryContractListMultiPath ReqListContract:{}",
+            JsonTools.toJSONString(param));
+        int chainId = param.getChainId();
+        int groupId = param.getGroupId();
+        List<String> pathList = param.getContractPathList();
+
+        List<TbContract> resultList = new ArrayList<>();
+        for (String path: pathList) {
+            // query contract list
+            List<TbContract> contractList = contractManager.listContractByPath(chainId, groupId, path);
+            resultList.addAll(contractList);
+        }
+
+        log.debug("end queryContractListMultiPath listOfContract size:{}", resultList.size());
+        return resultList;
+    }
 }
+
