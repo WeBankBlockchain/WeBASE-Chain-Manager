@@ -23,7 +23,7 @@ public interface TbContractPathMapper {
 
     @Delete({
         "select",
-        TbContractSqlProvider.ALL_COLUMN_FIELDS,
+        TbContractPathSqlProvider.ALL_COLUMN_FIELDS,
         "from tb_contract_path",
         "where chain_id = #{chainId,jdbcType=INTEGER} and group_id = #{groupId,jdbcType=INTEGER}",
         "and contract_path = #{contractPath}"
@@ -33,7 +33,7 @@ public interface TbContractPathMapper {
 
     @Select({
         "select",
-        TbContractSqlProvider.ALL_COLUMN_FIELDS,
+        TbContractPathSqlProvider.ALL_COLUMN_FIELDS,
         "from tb_contract_path",
         "where chain_id = #{chainId,jdbcType=INTEGER} and group_id = #{groupId,jdbcType=INTEGER}",
         "and contract_path = #{contractPath}"
@@ -43,7 +43,7 @@ public interface TbContractPathMapper {
 
     @Select({
         "select",
-        TbContractSqlProvider.ALL_COLUMN_FIELDS,
+        TbContractPathSqlProvider.ALL_COLUMN_FIELDS,
         "from tb_contract_path",
         "where chain_id = #{chainId,jdbcType=INTEGER} and group_id = #{groupId,jdbcType=INTEGER}"
     })
