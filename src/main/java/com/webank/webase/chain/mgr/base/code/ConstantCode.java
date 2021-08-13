@@ -243,4 +243,9 @@ public class ConstantCode {
     public static final RetCode PRECOMPILED_COMMON_TRANSFER_JSON_FAIL = RetCode.mark(205303, "precompiled common transfer to json fail");
     public static final RetCode TX_RECEIPT_OUTPUT_PARSE_JSON_FAIL = RetCode.mark(205304, "transaction receipt fail and parse output fail");
     public static final RetCode TX_RECEIPT_OUTPUT_NULL = RetCode.mark(205305, "transaction receipt fail and output is null");
+
+
+    // 1.5.3
+    public static final RetCode CONTRACT_PATH_IS_EXISTS = RetCode.mark(205310, "contract path is exists.");
+
 }
