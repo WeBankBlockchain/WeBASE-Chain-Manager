@@ -236,7 +236,7 @@ public class ContractService {
     public TbContract newContract(Contract contract) {
         // check contract not exist.
         contractManager.verifyContractNotExistByName(contract.getChainId(), contract.getGroupId(),
-                contract.getContractName(), contract.getContractPath());
+            contract.getContractName(), contract.getContractPath());
 
         // add to database.
         TbContract tbContract = new TbContract();
@@ -246,8 +246,11 @@ public class ContractService {
         tbContract.setCreateTime(now);
         tbContract.setModifyTime(now);
         tbContractMapper.insertSelective(tbContract);
+        // if exist, auto not save (ignore)
+        contractPathService.save(contract.getChainId(), contract.getGroupId(), contract.getContractPath(),true);
         return this.tbContractMapper.selectByPrimaryKey(tbContract.getContractId());
     }
+
 
 
     /**
@@ -309,6 +312,8 @@ public class ContractService {
         // remove
         this.tbContractMapper.deleteByChainId(chainId);
         log.info("end deleteContractByChainId");
+        contractPathService.removeByChainId(chainId);
+        log.info("delete contract path by groupId");
     }
 
     /**
@@ -322,6 +327,8 @@ public class ContractService {
         }
         this.tbContractMapper.deleteByChainIdAndGroupId(chainId, groupId);
         log.info("finish deleteByGroupId chainId:{} groupId:{}", chainId, groupId);
+        contractPathService.removeByGroupId(chainId, groupId);
+        log.info("delete contract path by groupId");
     }
 
     /**
