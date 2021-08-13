@@ -22,9 +22,7 @@ import org.apache.ibatis.type.JdbcType;
 public interface TbContractPathMapper {
 
     @Delete({
-        "select",
-        TbContractPathSqlProvider.ALL_COLUMN_FIELDS,
-        "from tb_contract_path",
+        "delete from tb_contract_path",
         "where chain_id = #{chainId,jdbcType=INTEGER} and group_id = #{groupId,jdbcType=INTEGER}",
         "and contract_path = #{contractPath}"
     })
