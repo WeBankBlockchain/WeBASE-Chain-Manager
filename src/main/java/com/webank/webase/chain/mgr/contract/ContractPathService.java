@@ -16,8 +16,10 @@ package com.webank.webase.chain.mgr.contract;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.repository.bean.TbContractPath;
 import com.webank.webase.chain.mgr.repository.mapper.TbContractPathMapper;
+import java.util.Date;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,8 @@ public class ContractPathService {
     private ContractPathManager contractPathManager;
     @Autowired
     private TbContractPathMapper tbContractPathMapper;
+    @Autowired
+    private GroupManager groupManager;
 
     /**
      * save not exist path
@@ -43,6 +47,7 @@ public class ContractPathService {
     public int save(Integer chainId, Integer groupId, String pathName, boolean ignoreRepeat) {
         log.info("save path chainId:{},groupId;{},pathName:{},ignoreRepeat:{}",
             chainId, groupId, pathName, ignoreRepeat);
+        this.groupManager.requireGroupExist(chainId, groupId);
         boolean exist =
                 contractPathManager.checkPathExist(chainId, groupId, pathName);
         if (exist) {
@@ -57,6 +62,9 @@ public class ContractPathService {
         contractPath.setContractPath(pathName);
         contractPath.setChainId(chainId);
         contractPath.setGroupId(groupId);
+        Date now = new Date();
+        contractPath.setCreateTime(now);
+        contractPath.setModifyTime(now);
         return tbContractPathMapper.insert(contractPath);
     }
 
