@@ -40,6 +40,7 @@ import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
 import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
+import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfConsensusStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfSyncStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
@@ -139,7 +140,7 @@ public class NodeService {
      * add new node data.
      */
     public void addNodeInfo(Integer chainId, Integer groupId, PeerInfo peerInfo)
-            throws BaseException {
+        throws BaseException {
 
         //add db
         TbNode tbNode = this.tbNodeMapper.selectByPrimaryKey(peerInfo.getNodeId(), chainId, groupId);
@@ -180,7 +181,7 @@ public class NodeService {
         try {
             Integer nodeCount = this.tbNodeMapper.countByParam(queryParam);
             log.debug("end countOfNode nodeCount:{} queryParam:{}", nodeCount,
-                    JsonTools.toJSONString(queryParam));
+                JsonTools.toJSONString(queryParam));
             return nodeCount;
         } catch (RuntimeException ex) {
             log.error("fail countOfNode . queryParam:{}", queryParam, ex);
@@ -332,20 +333,20 @@ public class NodeService {
             int nodeType = 0; // 0-consensus;1-observer
             if (observerList != null) {
                 nodeType = observerList.stream()
-                        .filter(observer -> observer.equals(tbNode.getNodeId())).map(c -> 1)
-                        .findFirst().orElse(0);
+                    .filter(observer -> observer.equals(tbNode.getNodeId())).map(c -> 1)
+                    .findFirst().orElse(0);
             }
 
             BigInteger latestNumber = getBlockNumberOfNodeOnChain(chainId, groupId, nodeId);// blockNumber
             BigInteger latestView =
-                    consensusList.stream().filter(cl -> nodeId.equals(cl.getNodeId()))
-                            .map(c -> c.getView()).findFirst().orElse(BigInteger.ZERO);// pbftView
+                consensusList.stream().filter(cl -> nodeId.equals(cl.getNodeId()))
+                    .map(c -> c.getView()).findFirst().orElse(BigInteger.ZERO);// pbftView
 
             if (nodeType == 0) { // 0-consensus;1-observer
                 if (localBlockNumber.equals(latestNumber) && localPbftView.equals(latestView)) {
                     log.warn(
-                            "node[{}] is invalid. localNumber:{} chainNumber:{} localView:{} chainView:{}",
-                            nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
+                        "node[{}] is invalid. localNumber:{} chainNumber:{} localView:{} chainView:{}",
+                        nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
                     tbNode.setNodeActive(DataStatus.INVALID.getValue());
                 } else {
                     tbNode.setBlockNumber(latestNumber.longValue());
@@ -355,8 +356,8 @@ public class NodeService {
             } else { // observer
                 if (!latestNumber.equals(frontInterface.getLatestBlockNumber(chainId, groupId))) {
                     log.warn(
-                            "node[{}] is invalid. localNumber:{} chainNumber:{} localView:{} chainView:{}",
-                            nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
+                        "node[{}] is invalid. localNumber:{} chainNumber:{} localView:{} chainView:{}",
+                        nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
                     tbNode.setNodeActive(DataStatus.INVALID.getValue());
                 } else {
                     tbNode.setBlockNumber(latestNumber.longValue());
@@ -380,7 +381,7 @@ public class NodeService {
         }
         List<PeerOfSyncStatus> peerList = syncStatus.getPeers();
         BigInteger latestNumber = peerList.stream().filter(peer -> nodeId.equals(peer.getNodeId()))
-                .map(s -> s.getBlockNumber()).findFirst().orElse(BigInteger.ZERO);// blockNumber
+            .map(s -> s.getBlockNumber()).findFirst().orElse(BigInteger.ZERO);// blockNumber
         return latestNumber;
     }
 
@@ -401,7 +402,7 @@ public class NodeService {
         for (int i = 0; i < jsonArr.size(); i++) {
             if (jsonArr.get(i) instanceof List) {
                 List<PeerOfConsensusStatus> tempList = JsonTools.toJavaObjectList(
-                        JsonTools.toJSONString(jsonArr.get(i)), PeerOfConsensusStatus.class);
+                    JsonTools.toJSONString(jsonArr.get(i)), PeerOfConsensusStatus.class);
                 if (tempList != null) {
                     dataIsList.addAll(tempList);
                 } else {
@@ -460,10 +461,10 @@ public class NodeService {
         List<String> nodeIdByAgency = frontManager.listNodeIdByAgency(agencyId);
 
         List<String> result = sealerAndObserverOnGroup
-                .stream()
-                .filter(node -> nodeIdByAgency.contains(node))
-                .distinct()
-                .collect(Collectors.toList());
+            .stream()
+            .filter(node -> nodeIdByAgency.contains(node))
+            .distinct()
+            .collect(Collectors.toList());
 
         log.debug("success listSealerAndObserverByGroupAndAgency chainId:{} groupId:{} agencyId:{} result:{}", chainId, groupId, agencyId, JsonTools.objToString(result));
         return result;
@@ -482,7 +483,7 @@ public class NodeService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public TbNode insert(int chainId, String nodeId, String nodeName, int groupId, String ip, int p2pPort,
-                         String description, final DataStatus dataStatus) throws BaseException {
+        String description, final DataStatus dataStatus) throws BaseException {
         if (!ValidateUtil.ipv4Valid(ip)) {
             throw new BaseException(ConstantCode.IP_FORMAT_ERROR);
         }
@@ -505,7 +506,7 @@ public class NodeService {
      * @param nodeId
      */
     public static void mvNodeOnRemoteHost(String ip, String rooDirOnHost, String chainName, int hostIndex, String nodeId,
-                                          String sshUser, int sshPort, String privateKey) {
+        String sshUser, int sshPort, String privateKey) {
         // create /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss as a parent
         String chainDeleteRootOnHost = PathService.getChainDeletedRootOnHost(rooDirOnHost, chainName);
         SshUtil.createDirOnRemote(ip, chainDeleteRootOnHost, sshUser, sshPort, privateKey);
@@ -517,7 +518,7 @@ public class NodeService {
 
         // move to /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss/[nodeid(128)]
         String dst_nodeDeletedRootOnHost =
-                PathService.getNodeDeletedRootOnHost(chainDeleteRootOnHost, nodeId);
+            PathService.getNodeDeletedRootOnHost(chainDeleteRootOnHost, nodeId);
         // move
         SshUtil.mvDirOnRemote(ip, src_nodeRootOnHost, dst_nodeDeletedRootOnHost, sshUser, sshPort, privateKey);
     }
@@ -530,8 +531,15 @@ public class NodeService {
      */
     public void requireNodeIdValid(int chainId, int groupId, String nodeId) {
         log.debug("start exec method[requireNodeExist] chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);
-
-        List<String> nodeIdList = frontInterface.getNodeIdList(chainId, groupId);
+        // fix: get nodeId list from specific front of nodeId
+//        List<String> nodeIdList = frontInterface.getNodeIdList(chainId, groupId);
+        TbFront front = frontService.getByChainIdAndNodeId(chainId, nodeId);
+        if (front == null) {
+            log.error("fail startGroupIfNotRunning node front not exists.");
+            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+        }
+        List<String> nodeIdList = frontInterface.getNodeIdListFromSpecificFront(front.getFrontPeerName(),
+            front.getFrontIp(), front.getFrontPort());
         if (CollectionUtils.isEmpty(nodeIdList))
             throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR.attach("query node list,but result is empty"));
 
