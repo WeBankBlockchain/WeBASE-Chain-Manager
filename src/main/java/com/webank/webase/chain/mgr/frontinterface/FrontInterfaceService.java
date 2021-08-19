@@ -73,11 +73,11 @@ public class FrontInterfaceService {
      * request from specific front.
      */
     private <T> T requestSpecificFront(Integer groupId, String frontIp, Integer frontPort,
-                                       HttpMethod method, String uri, HttpEntity entity, Class<T> clazz) {
+        HttpMethod method, String uri, HttpEntity entity, Class<T> clazz) {
         log.debug(
-                "start requestSpecificFront. groupId:{} frontIp:{} frontPort:{} "
-                        + "httpMethod:{} uri:{}",
-                groupId, frontIp, frontPort, method.toString(), uri);
+            "start requestSpecificFront. groupId:{} frontIp:{} frontPort:{} "
+                + "httpMethod:{} uri:{}",
+            groupId, frontIp, frontPort, method.toString(), uri);
 
         uri = FrontRestTools.uriAddGroupId(groupId, uri);
         RestTemplate restTemplate = frontRestTools.caseRestemplate(uri);
@@ -103,9 +103,9 @@ public class FrontInterfaceService {
      * get from specific front.
      */
     private <T> T getFromSpecificFront(Integer groupId, String frontIp, Integer frontPort,
-                                       String uri, HttpEntity entity, Class<T> clazz) {
+        String uri, HttpEntity entity, Class<T> clazz) {
         log.debug("start getFromSpecificFront. groupId:{} frontIp:{} frontPort:{}  uri:{}", groupId,
-                frontIp, frontPort.toString(), uri);
+            frontIp, frontPort.toString(), uri);
         return requestSpecificFront(groupId, frontIp, frontPort, HttpMethod.GET, uri, entity, clazz);
     }
 
@@ -114,20 +114,20 @@ public class FrontInterfaceService {
      */
     public <T> T postToSpecificFront(Integer groupId, String frontIp, Integer frontPort, String uri, HttpEntity entity, Class<T> clazz) {
         log.debug("start postToSpecificFront. groupId:{} frontIp:{} frontPort:{}  uri:{}", groupId,
-                frontIp, frontPort.toString(), uri);
+            frontIp, frontPort.toString(), uri);
         return requestSpecificFront(groupId, frontIp, frontPort, HttpMethod.POST, uri, entity,
-                clazz);
+            clazz);
     }
 
     /**
      * delete to specific front.
      */
     public <T> T deleteToSpecificFront(Integer groupId, String frontIp, Integer frontPort,
-                                       String uri, HttpEntity entity, Class<T> clazz) {
+        String uri, HttpEntity entity, Class<T> clazz) {
         log.debug("start deleteToSpecificFront. groupId:{} frontIp:{} frontPort:{}  uri:{}",
-                groupId, frontIp, frontPort.toString(), uri);
+            groupId, frontIp, frontPort.toString(), uri);
         return requestSpecificFront(groupId, frontIp, frontPort, HttpMethod.DELETE, uri, entity,
-                clazz);
+            clazz);
     }
 
 
@@ -140,6 +140,14 @@ public class FrontInterfaceService {
         return getFromSpecificFront(groupId, frontIp, frontPort, URI_GROUP_PLIST, entity, List.class);
     }
 
+    public List<String> getNodeIdListFromSpecificFront(String peerName, String frontIp, Integer frontPort) {
+        log.debug("start getNodeIdList. frontIp:{},frontPort:{}", frontIp, frontPort);
+        Integer groupId = Integer.MAX_VALUE;
+        HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
+        List<String> nodeIdList = getFromSpecificFront(groupId, frontIp, frontPort, URI_NODEID_LIST, entity, List.class);
+        log.debug("end getNodeIdList. nodeIdList:{}", JsonTools.toJSONString(nodeIdList));
+        return nodeIdList;
+    }
 
     /**
      * get groupPeers from specific front.
@@ -164,7 +172,7 @@ public class FrontInterfaceService {
     public SyncStatus getSyncStatusFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId) {
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         return getFromSpecificFront(groupId, frontIp, frontPort, URI_CSYNC_STATUS, entity,
-                SyncStatus.class);
+            SyncStatus.class);
     }
 
     /**
@@ -173,7 +181,7 @@ public class FrontInterfaceService {
     public List<String> getSealerListFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId) {
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         return getFromSpecificFront(groupId, frontIp, frontPort, FrontRestTools.URI_GET_SEALER_LIST, entity,
-                List.class);
+            List.class);
     }
 
     /**
@@ -181,11 +189,11 @@ public class FrontInterfaceService {
      */
     public Integer getEncryptTypeFromSpecificFront(String peerName, String nodeIp, Integer frontPort) {
         log.debug("start getEncryptTypeFromSpecificFront. nodeIp:{},frontPort:{}", nodeIp,
-                frontPort);
+            frontPort);
         Integer groupId = Integer.MAX_VALUE;
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         int encryptType =
-                getFromSpecificFront(groupId, nodeIp, frontPort, URI_ENCRYPT_TYPE, entity, Integer.class);
+            getFromSpecificFront(groupId, nodeIp, frontPort, URI_ENCRYPT_TYPE, entity, Integer.class);
         log.debug("end getEncryptTypeFromSpecificFront. encryptType:{}", encryptType);
         return encryptType;
     }
@@ -197,7 +205,7 @@ public class FrontInterfaceService {
      */
     public ClientVersionDTO getClientVersionFromSpecificFront(String peerName, String nodeIp, Integer frontPort) {
         log.debug("start getClientVersionFromSpecificFront. nodeIp:{},frontPort:{}", nodeIp,
-                frontPort);
+            frontPort);
         Integer groupId = Integer.MAX_VALUE;
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         ClientVersionDTO clientVersionDTO = getFromSpecificFront(groupId, nodeIp, frontPort, URI_CLIENT_VERSION, entity, ClientVersionDTO.class);
@@ -217,7 +225,7 @@ public class FrontInterfaceService {
     public BigInteger getBlockNumberFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId) {
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         return getFromSpecificFront(groupId, frontIp, frontPort, FrontRestTools.URI_BLOCK_NUMBER, entity,
-                BigInteger.class);
+            BigInteger.class);
     }
 
     public Block getBlockByNumberFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId, BigInteger blockNmber) {
@@ -229,7 +237,7 @@ public class FrontInterfaceService {
     public TransactionCount getTotalTransactionCountFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId) {
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         return getFromSpecificFront(groupId, frontIp, frontPort, FrontRestTools.URI_TRANS_TOTAL, entity,
-                TransactionCount.class);
+            TransactionCount.class);
     }
 
     public Transaction getTransactionByHashFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId, String transHash) {
@@ -245,13 +253,14 @@ public class FrontInterfaceService {
     }
 
 
+
     /**
      * get client version.
      */
     public NodeVersion.Version getClientVersion(Integer chainId, Integer groupId) {
         log.debug("start getClientVersion. groupId:{}", groupId);
         NodeVersion.Version clientVersionDTO = frontRestTools.getForEntity(chainId, groupId,
-                FrontRestTools.URI_CLIENT_VERSION, NodeVersion.Version.class);
+            FrontRestTools.URI_CLIENT_VERSION, NodeVersion.Version.class);
         log.debug("end getClientVersion. clientVersionDTO:{}", JsonTools.objToString(clientVersionDTO));
         return clientVersionDTO;
     }
@@ -267,9 +276,9 @@ public class FrontInterfaceService {
      * get contract code.
      */
     public String getContractCode(Integer chainId, Integer groupId, String address,
-                                  BigInteger blockNumber) throws BaseException {
+        BigInteger blockNumber) throws BaseException {
         log.debug("start getContractCode groupId:{} address:{} blockNumber:{}", groupId, address,
-                blockNumber);
+            blockNumber);
         String uri = String.format(FrontRestTools.URI_CODE, address, blockNumber);
         String contractCode = frontRestTools.getForEntity(chainId, groupId, uri, String.class);
         log.debug("end getContractCode. contractCode:{}", contractCode);
@@ -282,7 +291,7 @@ public class FrontInterfaceService {
     public List<String> getGroupPeers(Integer chainId, Integer groupId) {
         log.debug("start getGroupPeers. groupId:{}", groupId);
         List<String> groupPeers =
-                frontRestTools.getForEntity(chainId, groupId, URI_GROUP_PEERS, List.class);
+            frontRestTools.getForEntity(chainId, groupId, URI_GROUP_PEERS, List.class);
         log.debug("end getGroupPeers. groupPeers:{}", JsonTools.toJSONString(groupPeers));
         return groupPeers;
     }
@@ -293,7 +302,7 @@ public class FrontInterfaceService {
     public List<String> getObserverList(Integer chainId, Integer groupId) {
         log.debug("start getObserverList. groupId:{}", groupId);
         List<String> observers =
-                frontRestTools.getForEntity(chainId, groupId, URI_GET_OBSERVER_LIST, List.class);
+            frontRestTools.getForEntity(chainId, groupId, URI_GET_OBSERVER_LIST, List.class);
         log.info("end getObserverList. observers:{}", JsonTools.toJSONString(observers));
         return observers;
     }
@@ -304,7 +313,7 @@ public class FrontInterfaceService {
     public String getConsensusStatus(Integer chainId, Integer groupId) {
         log.debug("start getConsensusStatus. groupId:{}", groupId);
         String consensusStatus = frontRestTools.getForEntity(chainId, groupId,
-                FrontRestTools.URI_CONSENSUS_STATUS, String.class);
+            FrontRestTools.URI_CONSENSUS_STATUS, String.class);
         log.debug("end getConsensusStatus. consensusStatus:{}", consensusStatus);
         return consensusStatus;
     }
@@ -313,7 +322,7 @@ public class FrontInterfaceService {
     public List<String> getNodeIdList(Integer chainId, Integer groupId) {
         log.debug("start getNodeIdList. groupId:{}", groupId);
         List<String> nodeIdList = frontRestTools.getForEntity(chainId, groupId,
-                FrontRestTools.URI_NODEID_LIST, List.class);
+            FrontRestTools.URI_NODEID_LIST, List.class);
         log.debug("end getNodeIdList. nodeIdList:{}", JsonTools.toJSONString(nodeIdList));
         return nodeIdList;
     }
@@ -324,7 +333,7 @@ public class FrontInterfaceService {
     public SyncStatus getSyncStatus(Integer chainId, Integer groupId) {
         log.debug("start getSyncStatus. groupId:{}", groupId);
         SyncStatus ststus = frontRestTools.getForEntity(chainId, groupId,
-                FrontRestTools.URI_CSYNC_STATUS, SyncStatus.class);
+            FrontRestTools.URI_CSYNC_STATUS, SyncStatus.class);
         log.debug("end getSyncStatus. ststus:{}", JsonTools.toJSONString(ststus));
         return ststus;
     }
@@ -335,7 +344,7 @@ public class FrontInterfaceService {
     public BigInteger getLatestBlockNumber(Integer chainId, Integer groupId) {
         log.debug("start getLatestBlockNumber. groupId:{}", groupId);
         BigInteger latestBlockNmber = frontRestTools.getForEntity(chainId, groupId,
-                FrontRestTools.URI_BLOCK_NUMBER, BigInteger.class);
+            FrontRestTools.URI_BLOCK_NUMBER, BigInteger.class);
         log.debug("end getLatestBlockNumber. latestBlockNmber:{}", latestBlockNmber);
         return latestBlockNmber;
     }
@@ -343,33 +352,33 @@ public class FrontInterfaceService {
     public List<String> getSealerList(Integer chainId, Integer groupId) {
         log.debug("start getSealerList. groupId:{}", groupId);
         List getSealerList = frontRestTools.getForEntity(chainId, groupId,
-                FrontRestTools.URI_GET_SEALER_LIST, List.class);
+            FrontRestTools.URI_GET_SEALER_LIST, List.class);
         log.debug("end getSealerList. getSealerList:{}", JsonTools.toJSONString(getSealerList));
         return getSealerList;
     }
 
     public Object generateGroup(String peerName, String frontIp, Integer frontPort, GenerateGroupInfo param) {
         log.debug("start generateGroup groupId:{} frontIp:{} frontPort:{} param:{}",
-                param.getGenerateGroupId(), frontIp, frontPort, JsonTools.toJSONString(param));
+            param.getGenerateGroupId(), frontIp, frontPort, JsonTools.toJSONString(param));
         Integer groupId = Integer.MAX_VALUE;
         HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(peerName);
         HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, param);
         Object groupHandleResult = postToSpecificFront(groupId, frontIp, frontPort,
-                FrontRestTools.URI_GENERATE_GROUP, httpEntity, Object.class);
+            FrontRestTools.URI_GENERATE_GROUP, httpEntity, Object.class);
 
 
         log.debug("end generateGroup groupId:{} param:{}", param.getGenerateGroupId(),
-                JsonTools.toJSONString(param));
+            JsonTools.toJSONString(param));
         return groupHandleResult;
     }
 
     public Object operateGroup(String peerName, String frontIp, Integer frontPort, Integer groupId, String type) {
         log.debug("start operateGroup frontIp:{} frontPort:{} groupId:{}", frontIp, frontPort,
-                groupId);
+            groupId);
         String uri = String.format(FrontRestTools.URI_OPERATE_GROUP, type);
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         Object groupHandleResult =
-                getFromSpecificFront(groupId, frontIp, frontPort, uri, entity, Object.class);
+            getFromSpecificFront(groupId, frontIp, frontPort, uri, entity, Object.class);
 
         log.debug("end operateGroup");
         return groupHandleResult;
@@ -409,7 +418,7 @@ public class FrontInterfaceService {
 
 
     public Object getConsensusList(String peerName, String frontIp, Integer frontPort, Integer groupId,
-                                   Integer pageSize, Integer pageNumber) {
+        Integer pageSize, Integer pageNumber) {
         log.debug("start getConsensusList. groupId:{}" + groupId);
         Map<String, String> map = new HashMap<>();
         map.put("groupId", String.valueOf(groupId));
@@ -424,7 +433,7 @@ public class FrontInterfaceService {
     }
 
     public Object setConsensusStatus(String peerName, String frontIp, Integer frontPort,
-                                     ConsensusParam consensusParam) {
+        ConsensusParam consensusParam) {
         log.debug("start setConsensusStatus. consensusParam:{}", JsonTools.toJSONString(consensusParam));
         if (Objects.isNull(consensusParam)) {
             log.error("fail setConsensusStatus. request param is null");
@@ -437,13 +446,13 @@ public class FrontInterfaceService {
         HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(peerName);
         HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, consensusHandle);
         Object response = postToSpecificFront(consensusParam.getGroupId(), frontIp, frontPort,
-                FrontRestTools.URI_CONSENSUS, httpEntity, Object.class);
+            FrontRestTools.URI_CONSENSUS, httpEntity, Object.class);
         log.debug("end setConsensusStatus. response:{}", JsonTools.toJSONString(response));
         return response;
     }
 
     public Object getSysConfigList(String peerName, String frontIp, Integer frontPort, Integer groupId,
-                                   Integer pageSize, Integer pageNumber) {
+        Integer pageSize, Integer pageNumber) {
         log.debug("start getSysConfigListService. groupId:{}", groupId);
         Map<String, String> map = new HashMap<>();
         map.put("groupId", String.valueOf(groupId));
@@ -459,9 +468,9 @@ public class FrontInterfaceService {
     }
 
     public Object setSysConfigByKey(String peerName, String frontIp, Integer frontPort,
-                                    ReqSetSysConfig reqSetSysConfig) {
+        ReqSetSysConfig reqSetSysConfig) {
         log.debug("start setSysConfigByKey. reqSetSysConfig:{}",
-                JsonTools.toJSONString(reqSetSysConfig));
+            JsonTools.toJSONString(reqSetSysConfig));
         if (Objects.isNull(reqSetSysConfig)) {
             log.error("fail setSysConfigByKey. request param is null");
             throw new BaseException(ConstantCode.INVALID_PARAM_INFO);
@@ -473,13 +482,13 @@ public class FrontInterfaceService {
         HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(peerName);
         HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, sysConfigParam);
         Object frontRsp = postToSpecificFront(reqSetSysConfig.getGroupId(), frontIp, frontPort,
-                FrontRestTools.URI_SYS_CONFIG, httpEntity, Object.class);
+            FrontRestTools.URI_SYS_CONFIG, httpEntity, Object.class);
         log.debug("end setSysConfigByKey. frontRsp:{}", JsonTools.toJSONString(frontRsp));
         return frontRsp;
     }
 
     public Object getNetWorkData(String peerName, String frontIp, Integer frontPort, Integer groupId,
-                                 Integer pageSize, Integer pageNumber, LocalDateTime beginDate, LocalDateTime endDate) {
+        Integer pageSize, Integer pageNumber, LocalDateTime beginDate, LocalDateTime endDate) {
         log.debug("start getNetWorkData. groupId:{}", groupId);
         Map<String, String> map = new HashMap<>();
         map.put("groupId", String.valueOf(groupId));
@@ -493,7 +502,7 @@ public class FrontInterfaceService {
         }
 
         String uri =
-                HttpRequestTools.getQueryUri(FrontRestTools.URI_CHARGING_GET_NETWORK_DATA, map);
+            HttpRequestTools.getQueryUri(FrontRestTools.URI_CHARGING_GET_NETWORK_DATA, map);
 
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         Object frontRsp = getFromSpecificFront(groupId, frontIp, frontPort, uri, entity, Object.class);
@@ -502,7 +511,7 @@ public class FrontInterfaceService {
     }
 
     public Object getTxGasData(String peerName, String frontIp, Integer frontPort, Integer groupId, Integer pageSize,
-                               Integer pageNumber, LocalDateTime beginDate, LocalDateTime endDate, String transHash) {
+        Integer pageNumber, LocalDateTime beginDate, LocalDateTime endDate, String transHash) {
         log.debug("start getTxGasData. groupId:{}", groupId);
         Map<String, String> map = new HashMap<>();
         map.put("groupId", String.valueOf(groupId));
@@ -527,7 +536,7 @@ public class FrontInterfaceService {
     }
 
     public Object deleteLogData(String peerName, String frontIp, Integer frontPort, Integer groupId, Integer type,
-                                LocalDateTime keepEndDate) {
+        LocalDateTime keepEndDate) {
         log.debug("start deleteLogData. groupId:{}", groupId);
         Map<String, String> map = new HashMap<>();
         map.put("groupId", String.valueOf(groupId));
@@ -537,29 +546,29 @@ public class FrontInterfaceService {
         String uri = HttpRequestTools.getQueryUri(FrontRestTools.URI_CHARGING_DELETE_DATA, map);
 
         Object frontRsp =
-                deleteToSpecificFront(groupId, frontIp, frontPort, uri, null, Object.class);
+            deleteToSpecificFront(groupId, frontIp, frontPort, uri, null, Object.class);
         log.debug("end deleteLogData. frontRsp:{}", JsonTools.toJSONString(frontRsp));
         return frontRsp;
     }
 
 
     public TransactionReceipt sendSignedTransaction(Integer chainId, Integer groupId,
-                                                    String signMsg, Boolean sync) {
+        String signMsg, Boolean sync) {
         Instant startTime = Instant.now();
         Map<String, Object> params = new HashMap<>();
         params.put("groupId", groupId);
         params.put("signedStr", signMsg);
         params.put("sync", sync);
         TransactionReceipt receipt = frontRestTools.postForEntity(chainId, groupId,
-                FrontRestTools.URI_SIGNED_TRANSACTION, params, TransactionReceipt.class);
+            FrontRestTools.URI_SIGNED_TRANSACTION, params, TransactionReceipt.class);
         log.info("sendSignedTransaction to front useTime: {}",
-                Duration.between(startTime, Instant.now()).toMillis());
+            Duration.between(startTime, Instant.now()).toMillis());
         return receipt;
     }
 
     public Object sendQueryTransaction(Integer chainId, Integer groupId, Object params) {
         Object result = frontRestTools.postForEntity(chainId, groupId,
-                FrontRestTools.URI_QUERY_TRANSACTION, params, Object.class);
+            FrontRestTools.URI_QUERY_TRANSACTION, params, Object.class);
         return result;
     }
 
@@ -577,7 +586,7 @@ public class FrontInterfaceService {
 
 
     public Object getNodeMonitorInfo(String peerName, String frontIp, Integer frontPort, Integer groupId,
-                                     Map<String, String> map) {
+        Map<String, String> map) {
         String uri = HttpRequestTools.getQueryUri(FrontRestTools.URI_CHAIN, map);
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         Object frontRsp = getFromSpecificFront(groupId, frontIp, frontPort, uri, entity, Object.class);
@@ -588,7 +597,7 @@ public class FrontInterfaceService {
         String uri = HttpRequestTools.getQueryUri(FrontRestTools.FRONT_PERFORMANCE_RATIO, map);
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         Object frontRsp =
-                getFromSpecificFront(Integer.MAX_VALUE, frontIp, frontPort, uri, entity, Object.class);
+            getFromSpecificFront(Integer.MAX_VALUE, frontIp, frontPort, uri, entity, Object.class);
         return frontRsp;
     }
 
