@@ -812,7 +812,7 @@ public class FrontService {
             this.nodeService.insert(chainId, nodeId, nodeName, groupId, ip, p2pPort, nodeName, DataStatus.STARTING);
 
             // insert front group into db
-            this.frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), groupId);
+//            this.frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), groupId);
 
             // generate front application.yml
             ThymeleafUtil.newFrontConfig(nodeRoot, encryptType, channelPort, frontPort);
