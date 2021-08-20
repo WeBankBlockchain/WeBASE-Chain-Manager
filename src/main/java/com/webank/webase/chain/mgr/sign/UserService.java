@@ -75,7 +75,7 @@ public class UserService {
         }
 
         //query remote server
-        String signUserIdList = userList.stream().map(user -> user.getSignUserId()).collect(Collectors.joining(","));
+        String signUserIdList = userList.stream().map(TbUser::getSignUserId).collect(Collectors.joining(","));
         String url = String.format(SignRestTools.URI_USER_LIST, signRestTools.getBaseUrl(), appId, pageNumber, pageSize, signUserIdList);
         log.info("Request webase sign server:[{}]", url);
         BaseResponse restResponse = signRestTools.getFromSign(url, BaseResponse.class);
