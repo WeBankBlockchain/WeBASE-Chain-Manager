@@ -65,6 +65,8 @@ public class UserService {
         TbUserExample example = new TbUserExample();
         example.setStart(Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).filter(p -> p >= 0).orElse(1));
         example.setCount(pageSize);
+        // add order by
+        example.setOrderByClause("gmt_modified DESC");
         TbUserExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(tbGroup.getChainId());
         criteria.andGroupIdEqualTo(tbGroup.getGroupId());
