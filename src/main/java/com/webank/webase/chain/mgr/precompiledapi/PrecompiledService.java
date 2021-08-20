@@ -146,8 +146,6 @@ public class PrecompiledService {
         Set<String> errorMessages = new HashSet<>();
         for (String node : nodeIds) {
             try {
-                //check task
-//                taskManager.requireNotFoundTaskByChainAndGroupAndNode(param.getChainId(), param.getGroupId(), node);
 
                 //handle by type
                 String nodeType = nodeService.getNodeType(param.getChainId(), param.getGroupId(), node);
