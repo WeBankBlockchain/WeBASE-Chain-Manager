@@ -136,8 +136,10 @@ public class PrecompiledService {
     public RspAddSealerAsyncVO addSealerAsync(AddSealerAsyncParam param) {
         log.info("start exec method[checkAndAddSaveSealerTask] param:{}", JsonTools.objToString(param));
 
-        //check nodeId exist
+        //check nodeId exist (if success, front is already on
         Set<String> nodeIds = requireAllNodeValid(param.getChainId(), param.getGroupId(), param.getNodeIdList());
+        // todo if front is already on, refresh local front group map
+        groupService.resetGroupByChain(param.getChainId());
         //handle by node status
         Set<String> sealerNodes = new HashSet<>();
         Set<String> successNodes = new HashSet<>();
