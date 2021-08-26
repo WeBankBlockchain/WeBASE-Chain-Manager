@@ -291,7 +291,7 @@ public class ContractService {
      * @param force, if true, delete no matter deployed or not
      */
     public void deleteContract(int chainId, int contractId, int groupId, boolean force) throws BaseException {
-        log.info("start deleteContract contractId:{} groupId:{}", contractId, groupId);
+        log.info("start deleteContract contractId:{} groupId:{},force:{}", contractId, groupId, force);
         if (!force) {
             // check contract id
             contractManager.verifyContractNotDeploy(chainId, contractId, groupId);
