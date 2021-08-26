@@ -170,13 +170,15 @@ public class ContractController extends BaseController {
     @DeleteMapping(value = "/{chainId}/{groupId}/{contractId}")
     public BaseResponse deleteContract(@PathVariable("chainId") Integer chainId,
         @PathVariable("groupId") Integer groupId,
-        @PathVariable("contractId") Integer contractId) throws BaseException, Exception {
+        @PathVariable("contractId") Integer contractId,
+        @RequestParam(value = "force", defaultValue = "false", required = false) Boolean force)
+        throws BaseException, Exception {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start deleteContract startTime:{} contractId:{} groupId:{}",
             startTime.toEpochMilli(), contractId, groupId);
 
-        contractService.deleteContract(chainId, contractId, groupId);
+        contractService.deleteContract(chainId, contractId, groupId, force);
 
         log.info("end deleteContract useTime:{}",
             Duration.between(startTime, Instant.now()).toMillis());
@@ -200,7 +202,7 @@ public class ContractController extends BaseController {
         Instant startTime = Instant.now();
         log.info("start deleteContract startTime:{} param:{}", startTime.toEpochMilli(), JsonTools.objToString(param));
 
-        contractService.deleteByContractId(param.getContractId());
+        contractService.deleteByContractId(param.getContractId(), param.getForce());
 
         log.info("end deleteContract useTime:{}",
             Duration.between(startTime, Instant.now()).toMillis());
