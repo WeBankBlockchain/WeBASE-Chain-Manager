@@ -279,27 +279,30 @@ public class ContractService {
      * @param contractId
      * @throws BaseException
      */
-    public void deleteByContractId(int contractId) throws BaseException {
-        log.info("start deleteByContractId contractId:{}", contractId);
+    public void deleteByContractId(int contractId, boolean force) throws BaseException {
+        log.info("start deleteByContractId contractId:{},force:{}", contractId, force);
         TbContract tbContract = contractManager.verifyContractId(contractId);
-        deleteContract(tbContract.getChainId(), tbContract.getContractId(), tbContract.getGroupId());
+        deleteContract(tbContract.getChainId(), tbContract.getContractId(), tbContract.getGroupId(), force);
         log.info("finish deleteByContractId contractId:{}", contractId);
-
     }
 
     /**
      * delete contract by contractId.
+     * @param force, if true, delete no matter deployed or not
      */
-    public void deleteContract(int chainId, int contractId, int groupId) throws BaseException {
+    public void deleteContract(int chainId, int contractId, int groupId, boolean force) throws BaseException {
         log.info("start deleteContract contractId:{} groupId:{}", contractId, groupId);
-        // check contract id
-        contractManager.verifyContractNotDeploy(chainId, contractId, groupId);
+        if (!force) {
+            // check contract id
+            contractManager.verifyContractNotDeploy(chainId, contractId, groupId);
+        }
         // remove
         this.tbContractMapper.deleteByPrimaryKey(contractId);
         // delete method
         methodService.deleteByContractId(contractId);
         log.info("end deleteContract");
     }
+
 
     /**
      * delete contract by chainId.
@@ -719,7 +722,8 @@ public class ContractService {
 
         // batch delete contract by path
         log.debug("start batch delete contract in path:{}", contractPath);
-        contractList.forEach( c -> deleteContract(c.getChainId(), c.getContractId(), c.getGroupId()));
+        boolean force = param.getForce();
+        contractList.forEach(c -> deleteContract(c.getChainId(), c.getContractId(), c.getGroupId(), force));
         log.debug("deleteByContractPath delete path");
         contractPathService.removeByPathName(chainId, groupId, contractPath);
         log.debug("end deleteByContractPath. ");

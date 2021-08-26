@@ -28,4 +28,5 @@ public class ContractPathParam {
     @NotNull
     private Integer groupId;
     private String contractPath;
+    private Boolean force = false;
 }
