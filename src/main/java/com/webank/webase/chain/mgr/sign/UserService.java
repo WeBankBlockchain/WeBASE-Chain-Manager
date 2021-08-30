@@ -65,17 +65,20 @@ public class UserService {
         TbUserExample example = new TbUserExample();
         example.setStart(Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).filter(p -> p >= 0).orElse(1));
         example.setCount(pageSize);
+        // add order by
+        example.setOrderByClause("gmt_modified DESC");
         TbUserExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(tbGroup.getChainId());
         criteria.andGroupIdEqualTo(tbGroup.getGroupId());
         List<TbUser> userList = userMapper.selectByExample(example);
+        log.debug("getUserListByAppId userList:{}", userList);
         if (CollectionUtils.isEmpty(userList)) {
             log.info("finish exec method[getUserListByAppId], not found record");
             return new BasePageResponse(ConstantCode.SUCCESS);
         }
 
         //query remote server
-        String signUserIdList = userList.stream().map(user -> user.getSignUserId()).collect(Collectors.joining(","));
+        String signUserIdList = userList.stream().map(TbUser::getSignUserId).collect(Collectors.joining(","));
         String url = String.format(SignRestTools.URI_USER_LIST, signRestTools.getBaseUrl(), appId, pageNumber, pageSize, signUserIdList);
         log.info("Request webase sign server:[{}]", url);
         BaseResponse restResponse = signRestTools.getFromSign(url, BaseResponse.class);
