@@ -44,6 +44,12 @@
                     <span>群组管理</span>
                     </template>
                 </el-menu-item>
+                 <el-menu-item index="/list">
+                    <template slot="title">
+                    <i class="el-icon-location"></i>
+                    <span>合约列表</span>
+                    </template>
+                </el-menu-item>
                 
             </el-menu>
         </div>
