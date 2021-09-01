@@ -164,3 +164,11 @@ export function deleteChain(data) {
         method: 'delete'
     })
 }
+//queryContractList
+export function queryContractListUsingPOST (data) {
+    return post({
+        url: `${url.ORG_LIST}/contract/contractList`,
+        method: 'post',
+        data: data
+    })
+}
