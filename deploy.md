@@ -54,6 +54,8 @@ http://{deployIP}:{deployPort}/WeBASE-Chain-Manager
 示例：http://localhost:5005/WeBASE-Chain-Manager
 ```
 
+**注意**：使用接口搭链后，需要妥善保存项目目录（如`/dist`）中的`NODES_ROOT`目录，其中保存了链的相关证书与证书私钥。
+
 
 ## 5. 查看日志
 
