@@ -298,7 +298,7 @@ export default {
       return str;
     },
     changGroup: function (data) {
-      this.groupId = data;
+      //this.groupId = data;
       this.getGroupList();
     },
     getGroupList: function () {
@@ -309,6 +309,9 @@ export default {
             if (res.data.data.length) {
               this.groupId = res.data.data[0].groupId;
               this.getList();
+            } else {
+              this.groupId = "";
+              this.contractList = [];
             }
           } else {
             this.$message({
