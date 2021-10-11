@@ -13,18 +13,21 @@
  */
 package com.webank.webase.chain.mgr.base.exception;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.code.RetCode;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import java.util.Optional;
-import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.code.RetCode;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
+import com.webank.webase.chain.mgr.util.JsonTools;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * catch an handler exception.
@@ -34,18 +37,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class ExceptionsHandler {
 
     /**
-     * catch：NodeMgrException.
+     * catch：BaseException.
      */
     @ResponseBody
     @ExceptionHandler(value = BaseException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public BaseResponse myExceptionHandler(BaseException baseException) {
-        log.warn("catch business exception", baseException);
+        log.error("catch business exception", baseException);
         RetCode retCode = Optional.ofNullable(baseException).map(BaseException::getRetCode)
             .orElse(ConstantCode.SYSTEM_EXCEPTION);
 
         BaseResponse bre = new BaseResponse(retCode);
-        log.warn("business exception return:{}", JsonTools.toJSONString(bre));
+        log.error("business exception return:{}", JsonTools.toJSONString(bre));
         return bre;
     }
 
@@ -56,12 +59,12 @@ public class ExceptionsHandler {
     @ExceptionHandler(value = ParamException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public BaseResponse paramExceptionHandler(ParamException paramException) {
-        log.warn("catch param exception", paramException);
+        log.error("catch param exception", paramException);
         RetCode retCode = Optional.ofNullable(paramException).map(ParamException::getRetCode)
             .orElse(ConstantCode.SYSTEM_EXCEPTION);
 
         BaseResponse bre = new BaseResponse(retCode);
-        log.warn("param exception return:{}", JsonTools.toJSONString(bre));
+        log.error("param exception return:{}", JsonTools.toJSONString(bre));
         return bre;
     }
 
@@ -72,11 +75,11 @@ public class ExceptionsHandler {
     @ExceptionHandler(value = TypeMismatchException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public BaseResponse typeMismatchExceptionHandler(TypeMismatchException ex) {
-        log.warn("catch typeMismatchException", ex);
+        log.error("catch typeMismatchException", ex);
 
         RetCode retCode = new RetCode(ConstantCode.PARAM_EXCEPTION.getCode(), ex.getMessage());
         BaseResponse bre = new BaseResponse(retCode);
-        log.warn("typeMismatchException return:{}", JsonTools.toJSONString(bre));
+        log.error("typeMismatchException return:{}", JsonTools.toJSONString(bre));
         return bre;
     }
 
@@ -87,12 +90,12 @@ public class ExceptionsHandler {
     @ExceptionHandler(value = RuntimeException.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     public BaseResponse exceptionHandler(RuntimeException exc) {
-        log.warn("catch RuntimeException", exc);
+        log.error("catch RuntimeException", exc);
         // default system exception
         RetCode retCode = ConstantCode.SYSTEM_EXCEPTION;
 
         BaseResponse bre = new BaseResponse(retCode);
-        log.warn("system RuntimeException return:{}", JsonTools.toJSONString(bre));
+        log.error("system RuntimeException return:{}", JsonTools.toJSONString(bre));
         return bre;
     }
 }

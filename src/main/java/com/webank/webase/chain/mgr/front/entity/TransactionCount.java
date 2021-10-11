@@ -15,7 +15,7 @@
 package com.webank.webase.chain.mgr.front.entity;
 
 import java.math.BigInteger;
-import org.fisco.bcos.web3j.utils.Numeric;
+import org.fisco.bcos.sdk.utils.Numeric;
 
 public class TransactionCount {
 

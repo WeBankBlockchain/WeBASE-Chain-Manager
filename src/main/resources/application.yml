@@ -7,17 +7,20 @@ server:
 
 #mybatis config
 mybatis:
-  typeAliasesPackage: com.webank.webase.chain.mgr
+  configuration:
+    map-underscore-to-camel-case: true
+  typeAliasesPackage: com.webank.webase.chain.mgr.repository.bean
   mapperLocations: classpath:mapper/*.xml
+
 
 
 # database connection configuration
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/webasechainmanager?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull
-    username: "defaultAccount"
-    password: "defaultPassword"
+    url: jdbc:mysql://${WEBASE_DB_IP:127.0.0.1}:${WEBASE_DB_PORT:3306}/webasechainmanager?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    username: ${WEBASE_DB_UNAME:defaultAccount}
+    password: ${WEBASE_DB_PWD:defaultPassword}
 
 #log config
 logging:
@@ -28,7 +31,7 @@ logging:
 #constants
 constant:
   ###common
-  resetGroupListCycle: 600000
+  resetGroupListCycle: 300000
   groupInvalidGrayscaleValue: 1M    # y:year, M:month, d:day of month, h:hour, m:minute, n:forever valid
 
   ###front http request
@@ -38,9 +41,47 @@ constant:
   maxRequestFail: 3
   sleepWhenHttpMaxFail: 60000
 
+  ### change node type
+  maxBlockDifferenceOfNewSealer: 3  # The maximum allowable block difference of the new consensus node
+  addSealerNodeCycle: 30000
+
+  #### data related config
+  # if pull data(can change by interface)
+  ifPullData: true
+  ## data pull
+  startBlockNumber: 0
+  crawlBatchUnit: 50
+  dataPullCron: 0/10 * * * * ?
+  ## if multiLiving
+  multiLiving: false
+  ## group
+  refreshSubTableTaskFixedDelay: 5000
+  ## delete retain max block and trans data
+  isDeleteInfo: true
+  deleteInfoCron: "0 0/1 * * * ?"
+  blockRetainMax: 5000
+  transRetainMax: 10000
+  ## stat txn daily
+  statTxnDailyTaskFixedDelay: 60000
+
+  ## 部署配置
+  dockerRepository: fiscoorg/fisco-webase
+  dockerRestartPeriodTime: 30000
+  webaseSignAddress: ${WEBASE_SIGN:127.0.0.1:5004}
+  # SSH 免密登录的账号
+  sshDefaultUser: root
+  # SSH 服务的端口
+  sshDefaultPort: 22
+
+  # 链 chainId 和交易服地址的对应关系，可配置多行
+  # 1 表示链 id，127.0.0.1:5003 表示交易服地址
+  # 需要在部署链成功后，再启动交易服
+  transactionMap: # webase-transaction 配置，跟 ChainId 相关  TODO 已废弃，需移除
+    1: "127.0.0.1:5003"
+
 # executor config
 executor:
-  corePoolSize: 3
-  maxPoolSize: 10
+  corePoolSize: 10
+  maxPoolSize: 30
   queueSize: 50
   threadNamePrefix: "chain-mgr-async-"

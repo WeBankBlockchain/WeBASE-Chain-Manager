@@ -34,15 +34,15 @@ package com.webank.webase.chain.mgr.base.enums;
  * Enumeration of data status.
  */
 public enum DataStatus {
-    NORMAL(1), INVALID(2);
+    NORMAL((byte)1), INVALID((byte)2);
 
-    private int value;
+    private byte value;
 
-    private DataStatus(Integer dataStatus) {
+    private DataStatus(byte dataStatus) {
         this.value = dataStatus;
     }
 
-    public int getValue() {
+    public byte getValue() {
         return this.value;
     }
 }

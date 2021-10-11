@@ -25,8 +25,8 @@ import org.springframework.stereotype.Component;
 public class ExecutorProperties {
     public static final String EXECUTOR_PREFIX = "executor";
 
-    private Integer corePoolSize = 3;
-    private Integer maxPoolSize = 5;
+    private Integer corePoolSize = 10;
+    private Integer maxPoolSize = 30;
     private Integer queueSize = 50;
     private String threadNamePrefix = "chain-mgr-async-";
 

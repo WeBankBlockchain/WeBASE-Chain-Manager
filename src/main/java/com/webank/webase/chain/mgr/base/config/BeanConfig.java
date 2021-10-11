@@ -13,10 +13,8 @@
  */
 package com.webank.webase.chain.mgr.base.config;
 
-import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.base.properties.ExecutorProperties;
 import java.util.concurrent.ThreadPoolExecutor;
-import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +22,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.client.RestTemplate;
+
+import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
+import com.webank.webase.chain.mgr.base.properties.ExecutorProperties;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * config about bean.
@@ -75,17 +79,4 @@ public class BeanConfig {
         return factory;
     }
 
-    @Bean
-    public ThreadPoolTaskExecutor mgrAsyncExecutor() {
-        log.info("start mgrAsyncExecutor init..");
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(executorProperties.getCorePoolSize());
-        executor.setMaxPoolSize(executorProperties.getMaxPoolSize());
-        executor.setQueueCapacity(executorProperties.getQueueSize());
-        executor.setThreadNamePrefix(executorProperties.getThreadNamePrefix());
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        // init executor
-        executor.initialize();
-        return executor;
-    }
 }
