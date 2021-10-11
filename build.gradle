@@ -15,21 +15,20 @@ targetCompatibility = 1.8
 // In this section you declare where to find the dependencies of your project
 repositories {
     maven {url "http://maven.aliyun.com/nexus/content/groups/public/"}
-    
+    mavenCentral()
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     maven { url 'https://dl.bintray.com/ethereum/maven/' }
     mavenLocal()
-    mavenCentral()
 }
 
-def springboot_version="2.1.10.RELEASE"
+def springboot_version="2.1.18.RELEASE"
 List springboot = [
      "org.springframework.boot:spring-boot-starter-web:$springboot_version",
      "org.springframework.boot:spring-boot-starter-jdbc:$springboot_version"
 ]
 
 // cover old version
-def spring_version="5.1.15.RELEASE"
+def spring_version="5.1.20.RELEASE"
 List spring =[
     "org.springframework:spring-aop:$spring_version",
     "org.springframework:spring-core:$spring_version",
@@ -54,7 +53,7 @@ List jaxb = [
 ]
 
 List lombok = [
-    "org.projectlombok:lombok:1.18.2"
+    "org.projectlombok:lombok:1.18.12"
 ]
 
 List jwt = [
@@ -66,7 +65,7 @@ List swagger = [
     'io.springfox:springfox-swagger-ui:2.8.0'
 ]
 
-def jackson_version = "2.11.0"
+def jackson_version = "2.11.4"
 List jackson = [
     "com.fasterxml.jackson.core:jackson-databind:$jackson_version",
     "com.fasterxml.jackson.core:jackson-annotations:$jackson_version",
@@ -83,7 +82,8 @@ List mysql = [
 ]
 
 List test = [
-    "org.springframework.boot:spring-boot-starter-test:$springboot_version"
+    "org.springframework.boot:spring-boot-starter-test:$springboot_version",
+    "com.github.yuanmomo:mybatis-generator-plugin:1.0.10",
 ]
 
 def log4j_version="2.13.3"
@@ -95,11 +95,26 @@ List log4j = [
 ]
 dependencies {
     compile springboot,spring,jaxb,jwt,swagger,jackson,mysql,log4j
-    compile 'org.fisco-bcos:web3sdk:2.4.2'
+//    compile 'org.fisco-bcos:web3sdk:2.6.2'
+    compile 'org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:2.7.2'
     compile "org.apache.commons:commons-lang3:3.8.1"
+    compile 'org.apache.commons:commons-collections4:4.4'
+    compile "cn.hutool:hutool-all:4.1.19"
 
-    compile lombok
+    compile 'com.jcraft:jsch:0.1.55'
+    compile 'org.ini4j:ini4j:0.5.4'
+    compile ('com.github.docker-java:docker-java:3.2.1') {
+        exclude group: 'io.netty'
+    }
+    compile 'org.thymeleaf:thymeleaf:3.0.11.RELEASE'
+    compile 'ognl:ognl:3.2.14'
+
+    compileOnly lombok
     annotationProcessor lombok
+
+    testCompileOnly lombok
+    testAnnotationProcessor lombok
+
 
     testCompile test
 }
@@ -153,6 +168,10 @@ jar {
         copy {
             from file('script/')
             into 'dist/script'
+        }
+        copy {
+            from file('solc/')
+            into 'dist/solc'
         }
         copy {
             from configurations.runtime

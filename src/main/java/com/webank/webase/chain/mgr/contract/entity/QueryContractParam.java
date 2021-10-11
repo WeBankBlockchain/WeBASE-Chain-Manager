@@ -13,14 +13,14 @@
  */
 package com.webank.webase.chain.mgr.contract.entity;
 
-import javax.validation.constraints.NotNull;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class QueryContractParam {
-    @NotNull
+    private List<Integer> contractIdList;
     private Integer chainId;
-    @NotNull
     private Integer groupId;
     private String contractName;
     private String contractAddress;

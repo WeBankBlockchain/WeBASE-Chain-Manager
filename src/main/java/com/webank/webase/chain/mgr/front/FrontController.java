@@ -1,11 +1,11 @@
 /**
  * Copyright 2014-2019 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -14,33 +14,30 @@
 package com.webank.webase.chain.mgr.front;
 
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import com.webank.webase.chain.mgr.front.entity.FrontParam;
-import com.webank.webase.chain.mgr.front.entity.TbFront;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.List;
-import javax.validation.Valid;
+import com.webank.webase.chain.mgr.front.entity.ReqAbandonedFrontByAgencyIdVO;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * front controller
@@ -52,6 +49,10 @@ public class FrontController extends BaseController {
 
     @Autowired
     private FrontService frontService;
+    @Autowired
+    private TbFrontMapper tbFrontMapper;
+    @Autowired
+    private FrontManager frontManager;
 
     /**
      * add new front
@@ -77,33 +78,37 @@ public class FrontController extends BaseController {
      */
     @GetMapping(value = "/find")
     public BasePageResponse queryFrontList(
-            @RequestParam(value = "chainId", required = false) Integer chainId,
+            @RequestParam(value = "agencyId", required = false) Integer agencyId,
+            @RequestParam(value = "chainId") Integer chainId,
             @RequestParam(value = "frontId", required = false) Integer frontId,
             @RequestParam(value = "groupId", required = false) Integer groupId)
             throws BaseException {
-        BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
-        log.info("start queryFrontList startTime:{} frontId:{} groupId:{}",
-                startTime.toEpochMilli(), frontId, groupId);
+        log.info("start queryFrontList startTime:{} agencyId:{} chainId:{} frontId:{} groupId:{}",
+                startTime.toEpochMilli(), agencyId, chainId, frontId, groupId);
 
-        // param
-        FrontParam param = new FrontParam();
-        param.setChainId(chainId);
-        param.setFrontId(frontId);
-        param.setGroupId(groupId);
-
-        // query front info
-        int count = frontService.getFrontCount(param);
-        pagesponse.setTotalCount(count);
-        if (count > 0) {
-            List<TbFront> list = frontService.getFrontList(param);
-            pagesponse.setData(list);
+        BasePageResponse pageResponse = new BasePageResponse(ConstantCode.SUCCESS);
+        if (Objects.isNull(groupId)) {
+            //query from tb_Front
+            FrontParam param = new FrontParam();
+            param.setExtAgencyId(agencyId);
+            param.setChainId(chainId);
+            param.setFrontId(frontId);
+            pageResponse.setTotalCount(Long.valueOf(frontManager.countByParam(param)).intValue());
+            if (pageResponse.getTotalCount() > 0) {
+                pageResponse.setData(frontManager.listByParam(param));
+            }
+        } else {
+            List<TbFront> frontList = frontService.listFront(chainId, groupId, frontId, agencyId);
+            pageResponse.setTotalCount(frontList.size());
+            pageResponse.setData(frontList);
         }
+
 
         log.info("end queryFrontList useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
-                JsonTools.toJSONString(pagesponse));
-        return pagesponse;
+                JsonTools.toJSONString(pageResponse));
+        return pageResponse;
     }
 
     /**
@@ -126,16 +131,16 @@ public class FrontController extends BaseController {
 
     @GetMapping(value = "/mointorInfo/{frontId}")
     public BaseResponse getChainMoinntorInfo(@PathVariable("frontId") Integer frontId,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
-            @RequestParam(required = false, defaultValue = "1") int gap,
-            @RequestParam(required = false, defaultValue = "1") int groupId) throws BaseException {
+                                             @RequestParam(required = false) @DateTimeFormat(
+                                                     iso = ISO.DATE_TIME) LocalDateTime beginDate,
+                                             @RequestParam(required = false) @DateTimeFormat(
+                                                     iso = ISO.DATE_TIME) LocalDateTime endDate,
+                                             @RequestParam(required = false) @DateTimeFormat(
+                                                     iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
+                                             @RequestParam(required = false) @DateTimeFormat(
+                                                     iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
+                                             @RequestParam(required = false, defaultValue = "1") int gap,
+                                             @RequestParam(required = false, defaultValue = "1") int groupId) throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info(
@@ -158,15 +163,15 @@ public class FrontController extends BaseController {
      */
     @GetMapping(value = "/ratio/{frontId}")
     public BaseResponse getPerformanceRatio(@PathVariable("frontId") Integer frontId,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
-            @RequestParam(value = "gap", required = false, defaultValue = "1") int gap)
+                                            @RequestParam(required = false) @DateTimeFormat(
+                                                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
+                                            @RequestParam(required = false) @DateTimeFormat(
+                                                    iso = ISO.DATE_TIME) LocalDateTime endDate,
+                                            @RequestParam(required = false) @DateTimeFormat(
+                                                    iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
+                                            @RequestParam(required = false) @DateTimeFormat(
+                                                    iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
+                                            @RequestParam(value = "gap", required = false, defaultValue = "1") int gap)
             throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
@@ -235,4 +240,20 @@ public class FrontController extends BaseController {
                 Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
         return response;
     }
+
+    /**
+     * @param param
+     * @param result
+     * @return
+     */
+    @PostMapping("/abandonedByAgencyId")
+    public BaseResponse abandonedFrontByAgencyId(@RequestBody @Valid ReqAbandonedFrontByAgencyIdVO param, BindingResult result) {
+        checkBindResult(result);
+        Instant startTime = Instant.now();
+        log.info("start abandonedFrontByAgencyId. startTime:{} param:{}", startTime.toEpochMilli(), JsonTools.objToString(param));
+        frontService.abandonedFrontByAgencyId(param.getAgencyId());
+        log.info("end abandonedFrontByAgencyId. useTime:{}");
+        return BaseResponse.success(null);
+    }
+
 }

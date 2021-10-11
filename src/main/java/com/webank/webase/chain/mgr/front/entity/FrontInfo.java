@@ -16,17 +16,59 @@ package com.webank.webase.chain.mgr.front.entity;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
 public class FrontInfo {
-    @NotNull
+
+    @ApiModelProperty(value = "链id")
     private Integer chainId;
+
+    @ApiModelProperty(value = "k8s节点peerName", example = "abc.abc.abc")
+    private String frontPeerName;
+
+    @ApiModelProperty(value = "front的ip地址", example = "127.0.0.2", required = true)
     @NotBlank
     private String frontIp;
+
+    @ApiModelProperty(value = "主机所属公司 ID", example = "10")
+//    @Positive(message = "External company id error.")
+    private int extCompanyId;
+
+    @ApiModelProperty(value = "主机所属组织名称", required = true)
+//    @NotBlank
+    private String agency;
+
+    @ApiModelProperty(value = "主机所属组织 ID", example = "10", required = true)
+//    @Positive(message = "External agency id error.")
+    private int extAgencyId;
+
+    @ApiModelProperty(value = "主机ID", example = "10", required = true)
+//    @Positive(message = "External host id error.")
+    private int extHostId;
+
+    @ApiModelProperty(value = "主机 SSH 免密账号", example = "root")
+    private String sshUser;
+
+    @ApiModelProperty(value = "主机 SSH 端口", example = "22")
+    private Integer sshPort;
+
+    @ApiModelProperty(value = "front的端口号", example = "5002", required = true)
     @NotNull
     private Integer frontPort;
-    @NotBlank
-    private String agency;
+
+    @ApiModelProperty(value = "默认的 JSON-RPC 端口", example = "8545")
+    private Integer jsonrpcPort;
+
+    @ApiModelProperty(value = "默认的 P2P 端口 ", example = "30300")
+    private Integer p2pPort;
+
+    @ApiModelProperty(value = "默认的 Channel 端口", example = "20200")
+    private Integer channelPort;
+    @ApiModelProperty(value = "front关联的节点id,可空。优先调front接口获取nodeId,如果失败才取这个值")
+    private String nodeId;
     private String description;
 }

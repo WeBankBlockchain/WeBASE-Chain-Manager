@@ -13,37 +13,36 @@
  */
 package chain.mgr.test.frontGroupMap;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.Application;
-import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
-import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
-import com.webank.webase.chain.mgr.frontgroupmap.entity.MapListParam;
 import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.webank.webase.chain.mgr.Application;
+import com.webank.webase.chain.mgr.util.JsonTools;
+import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
+import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 public class FrontGroupMapServiceTest {
 
     @Autowired
-    private FrontGroupMapService frontGroupMapService;
+    private TbFrontGroupMapMapper tbFrontGroupMapMapper;
 
     @Test
     public void getListTest() {
-        MapListParam param = new MapListParam();
-        param.setGroupId(1);
-        List<FrontGroup> list = frontGroupMapService.getList(param);
+        List<FrontGroup> list = tbFrontGroupMapMapper.selectByGroupId(1);
         assert (list != null);
         System.out.println(JsonTools.toJSONString(list));
     }
 
     @Test
     public void listByGroupIdTest() {
-        List<FrontGroup> list = frontGroupMapService.listByGroupId(1);
+        List<FrontGroup> list = this.tbFrontGroupMapMapper.selectByGroupId(1);
         assert (list != null);
         System.out.println(JsonTools.toJSONString(list));
     }

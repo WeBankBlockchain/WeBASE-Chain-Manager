@@ -7,6 +7,7 @@ const front = resolve => require(['@/views/front'], resolve);
 const node = resolve => require(['@/views/group/compontents/node'], resolve);
 const chain = resolve => require(['@/views/chain/chain'], resolve);
 const hostDetail = resolve => require(['@/views/front/components/hostDetail'], resolve);
+const list = resolve => require(['@/views/list'], resolve);
 
 
 Vue.use(Router)
@@ -30,6 +31,9 @@ const routes = [
         },
         {
           path: '/node', component: node, name: '节点列表',nameKey: "node", menuShow: true, meta: { requireAuth: true }
+        },
+        {
+          path: '/list', component: list, name: '合约列表',nameKey: "node", menuShow: true, meta: { requireAuth: true }
         },
         {
           path: '/chain', component: chain, name: '区块链管理',nameKey: "chain", menuShow: true, meta: { requireAuth: true }

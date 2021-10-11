@@ -13,7 +13,7 @@
  */
 package chain.mgr.test.front;
 
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.Application;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import org.junit.Before;
@@ -55,7 +55,6 @@ public class FrontControllerTest {
         param.setFrontIp("localhost");
         param.setFrontPort(5302);
         param.setAgency("1fe");
-        param.setDescription("test");
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post( "/front/new").
             content(JsonTools.toJSONString(param)).
