@@ -103,7 +103,7 @@ List tomcat = [
 ]
 
 dependencies {
-    compile springboot,spring,jaxb,jwt,swagger,jackson,mysql,log4j
+    compile springboot,spring,jaxb,jwt,swagger,jackson,mysql,log4j,tomcat
     compile 'org.fisco-bcos:web3sdk:2.6.2'
     compile "org.apache.commons:commons-lang3:3.8.1"
     compile "org.apache.commons:commons-lang3:3.8.1"
