@@ -77,8 +77,8 @@ List jackson = [
 ]
 
 List mysql = [
-    'mysql:mysql-connector-java:8.0.13',
-    'org.mybatis:mybatis:3.2.8',
+    'mysql:mysql-connector-java:8.0.26',
+    'org.mybatis:mybatis:3.5.7',
     'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.0.0'
 ]
 
@@ -94,6 +94,14 @@ List log4j = [
         "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version",
         "org.apache.logging.log4j:log4j-web:$log4j_version"
 ]
+
+def tomcat_version="9.0.54"
+List tomcat = [
+    // cover old version
+    "org.apache.tomcat.embed:tomcat-embed-websocket:$tomcat_version",
+    "org.apache.tomcat.embed:tomcat-embed-core:$tomcat_version"
+]
+
 dependencies {
     compile springboot,spring,jaxb,jwt,swagger,jackson,mysql,log4j
     compile 'org.fisco-bcos:web3sdk:2.6.2'
