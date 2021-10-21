@@ -148,7 +148,7 @@ public class ConstantCode {
     public static final RetCode EXEC_BUILD_CHAIN_ERROR = RetCode.mark(205210, "Exec build chain script failed.");
     //    public static final RetCode IP_CONFIG_LINE_ERROR = RetCode.mark(205211, "ipconf line error.");
 //    public static final RetCode IP_NUM_ERROR = RetCode.mark(205212, "IP and num config error.");
-//    public static final RetCode AGENCY_NAME_CONFIG_ERROR = RetCode.mark(205213, "Agency name config error.");
+    public static final RetCode AGENCY_NAME_CONFIG_ERROR = RetCode.mark(205213, "Agency name config error.");
 //    public static final RetCode GROUPS_CONFIG_ERROR = RetCode.mark(205214, "Groups config error.");
     public static final RetCode HOST_CONNECT_ERROR = RetCode.mark(205215, "Connect to host error.");
     //    public static final RetCode INSERT_AGENCY_ERROR = RetCode.mark(205216, "Insert new agency failed.");
@@ -162,24 +162,24 @@ public class ConstantCode {
 //    public static final RetCode DEPLOY_WITH_UNKNOWN_EXCEPTION_ERROR = RetCode.mark(205224, "Unexpected exception occurred when deploy.");
     public static final RetCode UNSUPPORTED_PASSWORD_SSH_ERROR = RetCode.mark(205225, "SSH password login not supported yet.");
     //    public static final RetCode CHAIN_WITH_NO_AGENCY_ERROR = RetCode.mark(205226, "Chain has no agency.");
-//    public static final RetCode CHAIN_NAME_NOT_EXISTS_ERROR = RetCode.mark(205227, "Chain name not exists.");
+    public static final RetCode CHAIN_NAME_NOT_EXISTS_ERROR = RetCode.mark(205227, "Chain name not exists.");
     public static final RetCode IP_FORMAT_ERROR = RetCode.mark(205228, "IP format error.");
     //    public static final RetCode AGENCY_NAME_EMPTY_ERROR = RetCode.mark(205229, "Agency name is null when host ip is new.");
 //    public static final RetCode AGENCY_NAME_EXISTS_ERROR = RetCode.mark(205230, "Agency name exists when host ip is new.");
-//    public static final RetCode ADD_NODE_WITH_UNKNOWN_EXCEPTION_ERROR = RetCode.mark(205231, "Unexpected exception occurred when add new node.");
+    public static final RetCode ADD_NODE_WITH_UNKNOWN_EXCEPTION_ERROR = RetCode.mark(205231, "Unexpected exception occurred when add new node.");
     public static final RetCode CHAIN_CERT_NOT_EXISTS_ERROR = RetCode.mark(205232, "Chain cert directory not exists.");
-    //    public static final RetCode EXEC_GEN_AGENCY_ERROR = RetCode.mark(205233, "Exec generate agency script failed.");
+        public static final RetCode EXEC_GEN_AGENCY_ERROR = RetCode.mark(205233, "Exec generate agency script failed.");
 //    public static final RetCode HOST_WITH_NO_AGENCY_ERROR = RetCode.mark(205234, "Host's agency is null.");
 //    public static final RetCode NODES_NUM_ERROR = RetCode.mark(205235, "Num should be positive integer and less then 4.");
-//    public static final RetCode EXEC_GEN_SDK_ERROR = RetCode.mark(205236, "Exec generate node script to generate sdk dir failed.");
-//    public static final RetCode EXEC_GEN_NODE_ERROR = RetCode.mark(205237, "Exec generate node script to generate node dir failed.");
+    public static final RetCode EXEC_GEN_SDK_ERROR = RetCode.mark(205236, "Exec generate node script to generate sdk dir failed.");
+    public static final RetCode EXEC_GEN_NODE_ERROR = RetCode.mark(205237, "Exec generate node script to generate node dir failed.");
     public static final RetCode COPY_SDK_FILES_ERROR = RetCode.mark(205238, "Copy sdk config files error.");
     //    public static final RetCode SEND_SDK_FILES_ERROR = RetCode.mark(205239, "Send sdk config files error.");
 //    public static final RetCode SEND_NODE_FILES_ERROR = RetCode.mark(205240, "Send node config files error.");
     public static final RetCode COPY_GROUP_FILES_ERROR = RetCode.mark(205241, "Copy original group config files error.");
-    //    public static final RetCode DELETE_OLD_AGENCY_DIR_ERROR = RetCode.mark(205242, "Delete old agency config files error.");
-//    public static final RetCode DELETE_OLD_SDK_DIR_ERROR = RetCode.mark(205243, "Delete old sdk of host config files error.");
-//    public static final RetCode DELETE_OLD_NODE_DIR_ERROR = RetCode.mark(205244, "Delete old node config files error.");
+        public static final RetCode AGENCY_DIR_EXIST_ERROR = RetCode.mark(205242, "Agency config files already exist error.");
+    public static final RetCode DELETE_OLD_SDK_DIR_ERROR = RetCode.mark(205243, "Delete old sdk of host config files error.");
+    public static final RetCode DELETE_OLD_NODE_DIR_ERROR = RetCode.mark(205244, "Delete old node config files error.");
     public static final RetCode NODE_ID_NOT_EXISTS_ERROR = RetCode.mark(205245, "Nodeid not exists.");
     //    public static final RetCode STOP_NODE_ERROR = RetCode.mark(205246, "Stop node failed.");
     public static final RetCode START_NODE_ERROR = RetCode.mark(205247, "Start node failed.");
@@ -188,10 +188,10 @@ public class ConstantCode {
 //    public static final RetCode NODE_IN_GROUP_ERROR = RetCode.mark(205250, "Node still in group, remove before deleting.");
     public static final RetCode READ_NODE_CONFIG_ERROR = RetCode.mark(205251, "Read node config error.");
     public static final RetCode DELETE_NODE_DIR_ERROR = RetCode.mark(205252, "Delete node config files error.");
-    //    public static final RetCode NODE_RUNNING_ERROR = RetCode.mark(205253, "Node is running.");
+    public static final RetCode NODE_RUNNING_ERROR = RetCode.mark(205253, "Node is running, cannot be stopped.");
 //    public static final RetCode UPDATE_RELATED_NODE_ERROR = RetCode.mark(205254, "Update related nodes error.");
     public static final RetCode DELETE_CHAIN_ERROR = RetCode.mark(205255, "Delete chain error.");
-    //    public static final RetCode NODE_NEED_REMOVE_FROM_GROUP_ERROR = RetCode.mark(205256, "Node is sealer or observer, remove from group first.");
+        public static final RetCode NODE_NEED_REMOVE_FROM_GROUP_ERROR = RetCode.mark(205256, "Node is sealer or observer, remove from group first.");
     public static final RetCode LIST_HOST_NODE_DIR_ERROR = RetCode.mark(205257, "List node dirs of host error.");
     public static final RetCode GENERATE_FRONT_YML_ERROR = RetCode.mark(205258, "Generate front application.yml file failed.");
     public static final RetCode EXEC_HOST_INIT_SCRIPT_ERROR = RetCode.mark(205259, "Exec host init script failed.");
@@ -226,6 +226,12 @@ public class ConstantCode {
     public static final RetCode NOT_FOUND_GROUP_BY_AGENCY_AND_CHAIN = RetCode.mark(205287, "not found group by agency and chain");
     public static final RetCode NOT_FOUND_VALID_NODE = RetCode.mark(205288, "not found valid node");
     public static final RetCode NODE_ID_NOT_MATCH = RetCode.mark(205289, "node id not match");
+    // v0.9
+    public static final RetCode MANUALLY_ADDED_CHAIN_NOT_SUPPORT_ADD_NODE = RetCode.mark(205290, "manually added chain cannot add new nodes");
+    public static final RetCode ADD_NEW_NODES_MUST_USING_EXISTED_GROUP_ID = RetCode.mark(205291, "only support add new node in existed group");
+    public static final RetCode ONLY_SUPPORT_DELETE_ADDED_NODE_ERROR = RetCode.mark(205292, "only support delete new added error node");
+    public static final RetCode ONLY_SUPPORT_STOP_CHAIN_DEPLOY_NODE_ERROR = RetCode.mark(205293, "only support stop node deployed by chain");
+
     public static final RetCode IN_FUNCPARAM_ERROR = RetCode.mark(205290, "contract funcParam is error");
 
     public static final RetCode ABI_PARSE_ERROR = RetCode.mark(205291, "abi parse error");

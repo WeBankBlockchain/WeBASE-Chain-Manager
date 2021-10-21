@@ -28,7 +28,6 @@ import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
-import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.AddSealerAsyncParam;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
@@ -54,6 +53,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.sdk.model.RetCode;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
+import org.fisco.bcos.sdk.service.GroupService;
 import org.fisco.bcos.sdk.transaction.codec.decode.ReceiptParser;
 import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
 import org.springframework.beans.BeanUtils;
@@ -143,16 +143,16 @@ public class PrecompiledService {
     public RspAddSealerAsyncVO addSealerAsync(AddSealerAsyncParam param) {
         log.info("start exec method[checkAndAddSaveSealerTask] param:{}", JsonTools.objToString(param));
 
-        //check nodeId exist
+        //check nodeId exist (if success, front is already on
         Set<String> nodeIds = requireAllNodeValid(param.getChainId(), param.getGroupId(), param.getNodeIdList());
+        // todo if front is already on, refresh local front group map
+        groupService.resetGroupByChain(param.getChainId());
         //handle by node status
         Set<String> sealerNodes = new HashSet<>();
         Set<String> successNodes = new HashSet<>();
         Set<String> errorMessages = new HashSet<>();
         for (String node : nodeIds) {
             try {
-                //check task
-//                taskManager.requireNotFoundTaskByChainAndGroupAndNode(param.getChainId(), param.getGroupId(), node);
 
                 //handle by type
                 String nodeType = nodeService.getNodeType(param.getChainId(), param.getGroupId(), node);
