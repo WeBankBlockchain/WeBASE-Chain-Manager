@@ -14,7 +14,6 @@
 package com.webank.webase.chain.mgr.trans;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.PrecompiledTypes;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
@@ -54,11 +53,8 @@ import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.crypto.CryptoSuite;
 import org.fisco.bcos.sdk.crypto.signature.SignatureResult;
 import org.fisco.bcos.sdk.model.NodeVersion.ClientVersion;
-import org.fisco.bcos.sdk.model.RetCode;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
-import org.fisco.bcos.sdk.transaction.codec.decode.ReceiptParser;
 import org.fisco.bcos.sdk.transaction.codec.encode.TransactionEncoderService;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.transaction.model.po.RawTransaction;
 import org.fisco.bcos.sdk.utils.Numeric;
 import org.springframework.beans.BeanUtils;

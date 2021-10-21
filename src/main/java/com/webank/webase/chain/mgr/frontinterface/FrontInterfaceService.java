@@ -53,7 +53,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
 import org.fisco.bcos.sdk.client.protocol.response.BcosBlock.Block;
 import org.fisco.bcos.sdk.client.protocol.response.ConsensusStatus.ConsensusInfo;
-import org.fisco.bcos.sdk.model.NodeVersion;
 import org.fisco.bcos.sdk.model.NodeVersion.ClientVersion;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
