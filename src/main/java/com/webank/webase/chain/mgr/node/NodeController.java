@@ -29,10 +29,7 @@ import com.webank.webase.chain.mgr.node.entity.RspSimpleNodeInfoVo;
 import com.webank.webase.chain.mgr.repository.bean.TbFront;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
-<<<<<<< HEAD
 import com.webank.webase.chain.mgr.util.JsonTools;
-=======
->>>>>>> upstream/dev-merge
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
