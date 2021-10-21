@@ -16,7 +16,13 @@ package com.webank.webase.chain.mgr.group;
 import com.webank.webase.chain.mgr.agency.entity.RspAgencyVo;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
-import com.webank.webase.chain.mgr.base.enums.*;
+import com.webank.webase.chain.mgr.base.enums.DataStatus;
+import com.webank.webase.chain.mgr.base.enums.DeployTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
+import com.webank.webase.chain.mgr.base.enums.GroupOperateTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.GroupStatusEnum;
+import com.webank.webase.chain.mgr.base.enums.GroupType;
+import com.webank.webase.chain.mgr.base.enums.ScpTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
@@ -24,6 +30,7 @@ import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.contract.ContractService;
+import com.webank.webase.chain.mgr.deploy.config.NodeConfig;
 import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
 import com.webank.webase.chain.mgr.front.FrontManager;
@@ -41,13 +48,37 @@ import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.node.entity.RspNodeInfoVo;
-import com.webank.webase.chain.mgr.repository.bean.*;
+import com.webank.webase.chain.mgr.repository.bean.TbChain;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.TbGroup;
+import com.webank.webase.chain.mgr.repository.bean.TbGroupExample;
+import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.sign.UserService;
 import com.webank.webase.chain.mgr.task.TaskManager;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,17 +89,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-
-import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * services for group data.
@@ -494,9 +514,8 @@ public class GroupService {
                         GroupType.SYNC.getValue());
 
                 //save front-group
-//                    List<String> sealerList =    frontInterface.getSealerListFromSpecificFront(frontPeerName, frontIp, frontPort, gId);
                 List<PeerInfo> peerInfoList = nodeService.getSealerAndObserverListFromSpecificFront(gId, frontPeerName, frontIp, frontPort);
-                List<String> sealerAndObserverList = peerInfoList.stream().map(p -> p.getNodeId()).collect(Collectors.toList());
+                List<String> sealerAndObserverList = peerInfoList.stream().map(PeerInfo::getNodeId).collect(Collectors.toList());
                 if (sealerAndObserverList.contains(front.getNodeId())) {
                     frontGroupMapService.newFrontGroup(chainId, front.getFrontId(), gId);
                 } else {
@@ -1037,4 +1056,62 @@ public class GroupService {
         if (CollectionUtils.isEmpty(groupIdList) || !groupIdList.contains(groupId))
             throw new BaseException(ConstantCode.NOT_FOUND_GROUP_BY_AGENCY_AND_CHAIN.attach("agency:" + agencyId + " chain:" + chainId + " group:" + groupId));
     }
+
+    /**
+     * generate group.x.ini group.x.genesis
+     * @param chain
+     * @param groupId
+     * @param newFrontList
+     * @throws IOException
+     */
+    public void generateNewNodesGroupConfigsAndScp(TbChain chain, int groupId, List<TbFront> newFrontList) {
+        log.info("start generateNewNodesGroupConfigsAndScp chain:{},groupId:{},newFrontList:{}",
+            chain, groupId, newFrontList);
+        int chainId = chain.getChainId();
+        String chainName = chain.getChainName();
+
+        // 1.4.3 not support add group when add node
+        // long now = System.currentTimeMillis();
+        // List<String> nodeIdList = newFrontList.stream().map(TbFront::getNodeId)
+        //        .collect(Collectors.toList());
+
+        // copy group.x.[genesis|conf] from old front
+        TbNode oldNode = this.nodeService.getOldestNodeByChainIdAndGroupId(chainId, groupId);
+        TbFront oldFront = null;
+        if (oldNode != null) {
+            oldFront = this.tbFrontMapper.getByChainIdAndNodeId(chainId, oldNode.getNodeId());
+        }
+
+        for (TbFront newFront : newFrontList) {
+            String ip = newFront.getFrontIp();
+            // local node root
+            Path nodeRoot = this.pathService.getNodeRoot(chainName, ip, newFront.getHostIndex());
+
+            // 1.4.3 not support add group when add node
+            //if (newGroup) {
+            //    // generate conf/group.[groupId].ini
+            //    ThymeleafUtil.newGroupConfigs(nodeRoot, groupId, now, nodeIdList);
+            // copy old group files
+            if (oldFront != null) {
+                Path oldNodePath = this.pathService.getNodeRoot(chainName, oldFront.getFrontIp(), oldFront.getHostIndex());
+                NodeConfig.copyGroupConfigFiles(oldNodePath, nodeRoot, groupId);
+            }
+
+
+            // scp node to remote host
+            // NODES_ROOT/[chainName]/[ip]/node[index] as a {@link Path}, a directory.
+            String src = String.format("%s", nodeRoot.toAbsolutePath().toString());
+            String dst = PathService.getChainRootOnHost(newFront.getRootOnHost(), chainName);
+            String sshUser = newFront.getSshUser();
+            int sshPort = newFront.getSshPort();
+            log.info("generateNewNodesGroupConfigsAndScp Send files from:[{}] to:[{}:{}].", src, ip, dst);
+            try {
+                deployShellService.scp(ScpTypeEnum.UP, sshUser, ip, sshPort, src, dst);
+                log.info("generateNewNodesGroupConfigsAndScp scp success.");
+            } catch (Exception e) {
+                log.error("generateNewNodesGroupConfigsAndScp Send files from:[{}] to:[{}:{}] error.", src, ip, dst, e);
+            }
+        }
+    }
+
 }

@@ -1,4 +1,4 @@
-group = 'com.webank.webase.node.mgr'
+group = 'com.webank.webase.chain.mgr'
 version = '0.0.1-SNAPSHOT'
 
 apply plugin: 'maven'
@@ -16,6 +16,10 @@ targetCompatibility = 1.8
 repositories {
     maven {url "http://maven.aliyun.com/nexus/content/groups/public/"}
     mavenCentral()
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/dev-merge
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     maven { url 'https://dl.bintray.com/ethereum/maven/' }
     mavenLocal()
@@ -95,12 +99,18 @@ List log4j = [
 ]
 dependencies {
     compile springboot,spring,jaxb,jwt,swagger,jackson,mysql,log4j
+<<<<<<< HEAD
 //    compile 'org.fisco-bcos:web3sdk:2.6.2'
     compile 'org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:2.8.0'
     compile "org.apache.commons:commons-lang3:3.8.1"
     compile 'org.apache.commons:commons-collections4:4.4'
     compile "cn.hutool:hutool-all:4.1.19"
 
+=======
+    compile 'org.fisco-bcos:web3sdk:2.6.2'
+    compile "org.apache.commons:commons-lang3:3.8.1"
+    compile 'org.apache.commons:commons-compress:1.20'
+>>>>>>> upstream/dev-merge
     compile 'com.jcraft:jsch:0.1.55'
     compile 'org.ini4j:ini4j:0.5.4'
     compile ('com.github.docker-java:docker-java:3.2.1') {
