@@ -120,5 +120,7 @@ download
 dist
 /.idea/
 /src/main/resources/application-dev.yml
+solidity
+log
 generatorConfig.xml
 mbg.properties

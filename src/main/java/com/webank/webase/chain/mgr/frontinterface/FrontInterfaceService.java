@@ -13,13 +13,20 @@
  */
 package com.webank.webase.chain.mgr.frontinterface;
 
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_CLIENT_VERSION;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_CSYNC_STATUS;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_ENCRYPT_TYPE;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_GET_OBSERVER_LIST;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_GROUP_PEERS;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_GROUP_PLIST;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_NODEID_LIST;
+import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.URI_PEERS;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.base.tools.HttpRequestTools;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.contract.entity.ReqContractCompileDto;
 import com.webank.webase.chain.mgr.contract.entity.RspContractCompileDto;
 import com.webank.webase.chain.mgr.front.entity.ClientVersionDTO;
@@ -32,11 +39,23 @@ import com.webank.webase.chain.mgr.node.entity.ConsensusHandle;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.util.HttpEntityUtils;
+import com.webank.webase.chain.mgr.util.HttpRequestTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
+import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
-import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
-import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion;
-import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
+import org.fisco.bcos.sdk.client.protocol.response.BcosBlock.Block;
+import org.fisco.bcos.sdk.client.protocol.response.ConsensusStatus.ConsensusInfo;
+import org.fisco.bcos.sdk.model.NodeVersion.ClientVersion;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -47,17 +66,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
-import java.math.BigInteger;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static com.webank.webase.chain.mgr.frontinterface.FrontRestTools.*;
 
 
 @Log4j2
@@ -240,10 +248,10 @@ public class FrontInterfaceService {
             TransactionCount.class);
     }
 
-    public Transaction getTransactionByHashFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId, String transHash) {
+    public JsonTransactionResponse getTransactionByHashFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId, String transHash) {
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         String uri = String.format(FrontRestTools.URI_TRANS_BY_HASH, transHash);
-        return getFromSpecificFront(groupId, frontIp, frontPort, uri, entity, Transaction.class);
+        return getFromSpecificFront(groupId, frontIp, frontPort, uri, entity, JsonTransactionResponse.class);
     }
 
     public TransactionReceipt getTransactionReceiptFromSpecificFront(String peerName, String frontIp, Integer frontPort, Integer groupId, String transHash) {
@@ -257,10 +265,10 @@ public class FrontInterfaceService {
     /**
      * get client version.
      */
-    public NodeVersion.Version getClientVersion(Integer chainId, Integer groupId) {
+    public ClientVersion getClientVersion(Integer chainId, Integer groupId) {
         log.debug("start getClientVersion. groupId:{}", groupId);
-        NodeVersion.Version clientVersionDTO = frontRestTools.getForEntity(chainId, groupId,
-            FrontRestTools.URI_CLIENT_VERSION, NodeVersion.Version.class);
+        ClientVersion clientVersionDTO = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_CLIENT_VERSION, ClientVersion.class);
         log.debug("end getClientVersion. clientVersionDTO:{}", JsonTools.objToString(clientVersionDTO));
         return clientVersionDTO;
     }
@@ -310,10 +318,10 @@ public class FrontInterfaceService {
     /**
      * get consensusStatus
      */
-    public String getConsensusStatus(Integer chainId, Integer groupId) {
+    public ConsensusInfo getConsensusStatus(Integer chainId, Integer groupId) {
         log.debug("start getConsensusStatus. groupId:{}", groupId);
-        String consensusStatus = frontRestTools.getForEntity(chainId, groupId,
-            FrontRestTools.URI_CONSENSUS_STATUS, String.class);
+        ConsensusInfo consensusStatus = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_CONSENSUS_STATUS, ConsensusInfo.class);
         log.debug("end getConsensusStatus. consensusStatus:{}", consensusStatus);
         return consensusStatus;
     }
@@ -322,7 +330,7 @@ public class FrontInterfaceService {
     public List<String> getNodeIdList(Integer chainId, Integer groupId) {
         log.debug("start getNodeIdList. groupId:{}", groupId);
         List<String> nodeIdList = frontRestTools.getForEntity(chainId, groupId,
-            FrontRestTools.URI_NODEID_LIST, List.class);
+            URI_NODEID_LIST, List.class);
         log.debug("end getNodeIdList. nodeIdList:{}", JsonTools.toJSONString(nodeIdList));
         return nodeIdList;
     }
@@ -620,4 +628,34 @@ public class FrontInterfaceService {
     }
 
 
+    public JsonTransactionResponse getTransaction(Integer chainId, Integer groupId, String transHash)
+        throws BaseException {
+        if (StringUtils.isBlank(transHash)) {
+            return null;
+        }
+        String uri = String.format(FrontRestTools.URI_TRANS_BY_HASH, transHash);
+        JsonTransactionResponse transInfo =
+            frontRestTools.getForEntity(chainId, groupId, uri, JsonTransactionResponse.class);
+        return transInfo;
+    }
+
+    public Block getBlockByNumber(Integer chainId, Integer groupId, BigInteger blockNumber)
+        throws BaseException {
+        String uri = String.format(FrontRestTools.URI_BLOCK_BY_NUMBER, blockNumber);
+        Block block = null;
+        try {
+            block = frontRestTools.getForEntity(chainId, groupId, uri, Block.class);
+        } catch (Exception ex) {
+            log.info("fail getBlockByNumber,exception:{}", ex);
+        }
+        return block;
+    }
+
+    public TransactionReceipt getTransReceipt(Integer chainId, Integer groupId, String transHash)
+        throws BaseException {
+        String uri = String.format(FrontRestTools.URI_TRANS_RECEIPT, transHash);
+        TransactionReceipt transReceipt =
+            frontRestTools.getForEntity(chainId, groupId, uri, TransactionReceipt.class);
+        return transReceipt;
+    }
 }

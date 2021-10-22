@@ -4,17 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
-import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
-import lombok.extern.slf4j.Slf4j;
-import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
-import org.fisco.bcos.web3j.protocol.channel.StatusCode;
-import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
-
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Base64;
@@ -23,8 +15,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.fisco.bcos.web3j.precompile.common.PrecompiledCommon.Success;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CommUtils {
@@ -85,46 +76,45 @@ public class CommUtils {
     /**
      * handle receipt of precompiled
      *
-     * @throws TransactionException
      * @throws IOException
      */
-    public static void handleTransResultDto(TransResultDto receipt) throws BaseException {
-        log.debug("handle tx receipt of precompiled");
-        String status = receipt.getStatus();
-        if (!"0x0".equals(status)) {
-            throw new BaseException(ConstantCode.TX_RECEIPT_CODE_ERROR.getCode(),
-                    StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage()));
-        } else {
-            if (receipt.getOutput() != null) {
-                try {
-                    String codeMsgFromOutput = getJsonStr(receipt.getOutput());
-                    String resultMsg = PrecompiledUtils.handleReceiptOutput(codeMsgFromOutput);
-                    if (!String.valueOf(Success).equals(resultMsg)) {
-                        throw new BaseException(ConstantCode.TX_RECEIPT_CODE_ERROR.attach(resultMsg));
-                    }
-
-                } catch (IOException e) {
-                    log.error("handleTransactionReceipt getJsonStr of error tx receipt fail:[]", e);
-                    throw new BaseException(ConstantCode.TX_RECEIPT_OUTPUT_PARSE_JSON_FAIL.getCode(), e.getMessage());
-                }
-            } else {
-                throw new BaseException(ConstantCode.TX_RECEIPT_OUTPUT_NULL);
-            }
-        }
-    }
-
-
-    public static String getJsonStr(String output) throws IOException {
-        try {
-            int code = new BigInteger(output.substring(2), 16).intValue();
-            if (code == 1) {
-                code = Success;
-            }
-            return PrecompiledCommon.transferToJson(code);
-        } catch (NumberFormatException e) {
-            return "The call function does not exist.";
-        }
-    }
+//    public static void handleTransReceipt(TransactionReceipt receipt) throws BaseException {
+//        log.debug("handle tx receipt of precompiled");
+//        String status = receipt.getStatus();
+//        if (!"0x0".equals(status)) {
+//            throw new BaseException(ConstantCode.TX_RECEIPT_CODE_ERROR.getCode(),
+//                    StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage()));
+//        } else {
+//            if (receipt.getOutput() != null) {
+//                try {
+//                    String codeMsgFromOutput = getJsonStr(receipt.getOutput());
+//                    String resultMsg = PrecompiledUtils.handleReceiptOutput(codeMsgFromOutput);
+//                    if (!String.valueOf(Success).equals(resultMsg)) {
+//                        throw new BaseException(ConstantCode.TX_RECEIPT_CODE_ERROR.attach(resultMsg));
+//                    }
+//
+//                } catch (IOException e) {
+//                    log.error("handleTransactionReceipt getJsonStr of error tx receipt fail:[]", e);
+//                    throw new BaseException(ConstantCode.TX_RECEIPT_OUTPUT_PARSE_JSON_FAIL.getCode(), e.getMessage());
+//                }
+//            } else {
+//                throw new BaseException(ConstantCode.TX_RECEIPT_OUTPUT_NULL);
+//            }
+//        }
+//    }
+//
+//
+//    public static String getJsonStr(String output) throws IOException {
+//        try {
+//            int code = new BigInteger(output.substring(2), 16).intValue();
+//            if (code == 1) {
+//                code = Success;
+//            }
+//            return PrecompiledCommon.transferToJson(code);
+//        } catch (NumberFormatException e) {
+//            return "The call function does not exist.";
+//        }
+//    }
 
 
     /**

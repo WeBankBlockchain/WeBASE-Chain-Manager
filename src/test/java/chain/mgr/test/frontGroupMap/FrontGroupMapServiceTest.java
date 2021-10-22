@@ -22,7 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.webank.webase.chain.mgr.Application;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 

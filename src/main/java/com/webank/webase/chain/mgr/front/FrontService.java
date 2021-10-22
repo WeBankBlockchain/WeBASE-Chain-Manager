@@ -25,9 +25,7 @@ import com.webank.webase.chain.mgr.base.enums.ScpTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainService;
-import com.webank.webase.chain.mgr.deploy.config.NodeConfig;
 import com.webank.webase.chain.mgr.deploy.req.DeployHost;
 import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
@@ -39,7 +37,6 @@ import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
 import com.webank.webase.chain.mgr.group.GroupManager;
-import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
@@ -52,6 +49,7 @@ import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.util.NumberUtil;
 import com.webank.webase.chain.mgr.util.ThymeleafUtil;
 import com.webank.webase.chain.mgr.util.cmd.ExecuteResult;
@@ -81,7 +79,8 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
-import org.fisco.bcos.web3j.crypto.EncryptType;
+import org.fisco.bcos.sdk.model.CryptoType;
+import org.fisco.bcos.sdk.service.GroupService;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +90,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 /**
  * service of web3.
  */
@@ -878,7 +876,7 @@ public class FrontService {
                 continue;
             }
 
-            boolean guomi = encryptType == EncryptType.SM2_TYPE;
+            boolean guomi = encryptType == CryptoType.SM_TYPE;
             //int chainIdInConfigIni = this.constant.getDefaultChainId();
 
             // local node root
@@ -946,7 +944,7 @@ public class FrontService {
 
             TbFront tbFront = this.getByChainIdAndNodeId(chainId, node.getNodeId());
 
-            boolean guomi = encryptType == EncryptType.SM2_TYPE;
+            boolean guomi = encryptType == CryptoType.SM_TYPE;
 //            int chainIdInConfigIni = this.constant.getDefaultChainId();
 
             // local node root
