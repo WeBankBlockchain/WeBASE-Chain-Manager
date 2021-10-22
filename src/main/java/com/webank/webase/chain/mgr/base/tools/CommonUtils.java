@@ -17,12 +17,13 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.code.RetCode;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.tools.pagetools.entity.MapHandle;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import com.webank.webase.chain.mgr.util.JsonTools;
+import com.webank.webase.chain.mgr.util.pagetools.entity.MapHandle;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -30,14 +31,25 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.crypto.Sign;
-import org.fisco.bcos.web3j.utils.Numeric;
+import org.fisco.bcos.sdk.crypto.signature.ECDSASignatureResult;
+import org.fisco.bcos.sdk.crypto.signature.SM2SignatureResult;
+import org.fisco.bcos.sdk.crypto.signature.SignatureResult;
+import org.fisco.bcos.sdk.model.CryptoType;
+import org.fisco.bcos.sdk.utils.Numeric;
 
 /**
  * common method.
@@ -444,23 +456,50 @@ public class CommonUtils {
     }
 
     /**
-     * stringToSignatureData.
+     * stringToSignatureData. 19/12/24 support guomi： add byte[] pub in signatureData
+     * byte array: [v + r + s + pub]
      * 19/12/24 support guomi： add byte[] pub in signatureData
+     * 2021/08/05 webase-sign <=1.4.3, v=27 >=1.5.0, v=0 or 1 or 2
+     * if using web3sdk, v default 27, if using java-sdk, v default 0, and add 27 in RLP encode
      * @param signatureData signatureData
      * @return
      */
-    public static Sign.SignatureData stringToSignatureData(String signatureData, int encryptType) {
+    public static SignatureResult stringToSignatureData(String signatureData, int encryptType) {
         byte[] byteArr = Numeric.hexStringToByteArray(signatureData);
+        // 从1开始，因为此处webase-sign返回的byteArr第0位是v
+        byte signV = byteArr[0];
+        log.debug("stringToSignatureData v:{}", (int)signV);
         byte[] signR = new byte[32];
         System.arraycopy(byteArr, 1, signR, 0, signR.length);
         byte[] signS = new byte[32];
         System.arraycopy(byteArr, 1 + signR.length, signS, 0, signS.length);
-        if (encryptType == 1) {
+        if (encryptType == CryptoType.SM_TYPE) {
             byte[] pub = new byte[64];
             System.arraycopy(byteArr, 1 + signR.length + signS.length, pub, 0, pub.length);
-            return new Sign.SignatureData(byteArr[0], signR, signS, pub);
+            return new SM2SignatureResult(pub, signR, signS);
         } else {
-            return new Sign.SignatureData(byteArr[0], signR, signS);
+            return new ECDSASignatureResult(signV, signR, signS);
         }
     }
+
+//    /**
+//     * stringToSignatureData.
+//     * 19/12/24 support guomi： add byte[] pub in signatureData
+//     * @param signatureData signatureData
+//     * @return
+//     */
+//    public static Sign.SignatureData stringToSignatureData(String signatureData, int encryptType) {
+//        byte[] byteArr = Numeric.hexStringToByteArray(signatureData);
+//        byte[] signR = new byte[32];
+//        System.arraycopy(byteArr, 1, signR, 0, signR.length);
+//        byte[] signS = new byte[32];
+//        System.arraycopy(byteArr, 1 + signR.length, signS, 0, signS.length);
+//        if (encryptType == 1) {
+//            byte[] pub = new byte[64];
+//            System.arraycopy(byteArr, 1 + signR.length + signS.length, pub, 0, pub.length);
+//            return new Sign.SignatureData(byteArr[0], signR, signS, pub);
+//        } else {
+//            return new Sign.SignatureData(byteArr[0], signR, signS);
+//        }
+//    }
 }

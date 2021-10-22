@@ -31,6 +31,13 @@ public class ConstantCode {
     public static final RetCode SYSTEM_EXCEPTION_GET_PRIVATE_KEY_FAIL = RetCode.mark(105001, "system exception: please check front");
 
 
+    // front
+    public static final RetCode INVALID_BLOCK_NUMBER = RetCode.mark(210109, "invalid block number");
+    /* task code */
+    public static final RetCode TASK_RUNNING = RetCode.mark(210501, "task is still running");
+    public static final RetCode BLOCK_BEEN_RESET = RetCode.mark(210502, "block has been reset");
+
+
     // transaction
     public static final RetCode REQUEST_TRANSACTION_EXCEPTION = RetCode.mark(205101, "request transaction server exception");
 
@@ -58,7 +65,7 @@ public class ConstantCode {
     public static final RetCode REQUEST_FRONT_FAIL = RetCode.mark(205007, "request front fail, please check front");
 
     public static final RetCode CONTRACT_ABI_EMPTY =
-            RetCode.mark(205008, "abiInfo cannot be empty");
+        RetCode.mark(205008, "abiInfo cannot be empty");
 
     public static final RetCode CONTRACT_EXISTS = RetCode.mark(205009, "contract already exists");
 
@@ -67,19 +74,19 @@ public class ConstantCode {
     public static final RetCode INVALID_PARAM_INFO = RetCode.mark(205011, "invalid param info");
 
     public static final RetCode CONTRACT_NAME_REPEAT =
-            RetCode.mark(205012, "contract name cannot be repeated");
+        RetCode.mark(205012, "contract name cannot be repeated");
 
     public static final RetCode CONTRACT_NOT_DEPLOY =
-            RetCode.mark(205013, "contract has not deploy");
+        RetCode.mark(205013, "contract has not deploy");
 
     public static final RetCode CONTRACT_ADDRESS_INVALID =
-            RetCode.mark(205014, "invalid contract address");
+        RetCode.mark(205014, "invalid contract address");
 
     public static final RetCode CONTRACT_HAS_BEAN_DEPLOYED =
-            RetCode.mark(205015, "contract has been deployed");
+        RetCode.mark(205015, "contract has been deployed");
 
     public static final RetCode CONTRACT_DEPLOY_FAIL =
-            RetCode.mark(205016, "contract deploy not success");
+        RetCode.mark(205016, "contract deploy not success");
 
     public static final RetCode SERVER_CONNECT_FAIL = RetCode.mark(205017, "wrong host or port");
 
@@ -88,7 +95,7 @@ public class ConstantCode {
     public static final RetCode NODE_NOT_EXISTS = RetCode.mark(205019, "node front not exists");
 
     public static final RetCode ENCRYPT_TYPE_NOT_MATCH =
-            RetCode.mark(205020, "front's encrypt type not match");
+        RetCode.mark(205020, "front's encrypt type not match");
 
     public static final RetCode CHAIN_NAME_EXISTS = RetCode.mark(205021, "chain name already exists");
 
@@ -101,7 +108,7 @@ public class ConstantCode {
     public static final RetCode PUBLICKEY_NULL = RetCode.mark(205025, "publicKey cannot be empty");
 
     public static final RetCode PUBLICKEY_LENGTH_ERROR = RetCode
-            .mark(205026, "publicKey's length is 130,address's length is 42");
+        .mark(205026, "publicKey's length is 130,address's length is 42");
 
     public static final RetCode USER_ID_NULL = RetCode.mark(205027, "user id cannot be empty");
 
@@ -120,6 +127,10 @@ public class ConstantCode {
     public static final RetCode FAIL_PARSE_JSON = RetCode.mark(205034, "Fail to parse json");
     public static final RetCode CHAIN_ID_NOT_EXISTS = RetCode.mark(205035, "chain id not exists");
     public static final RetCode BUILD_TIME_NOT_MATCH = RetCode.mark(205036, "node's build time not match");
+
+    // contract
+    public static final RetCode CONTRACT_NOT_EXISTS = RetCode.mark(205037, "contract name or address not exists");
+
 
     /* param exception */
     public static final RetCode PARAM_EXCEPTION = RetCode.mark(205100, "param exception");
@@ -238,4 +249,9 @@ public class ConstantCode {
     public static final RetCode PRECOMPILED_COMMON_TRANSFER_JSON_FAIL = RetCode.mark(205303, "precompiled common transfer to json fail");
     public static final RetCode TX_RECEIPT_OUTPUT_PARSE_JSON_FAIL = RetCode.mark(205304, "transaction receipt fail and parse output fail");
     public static final RetCode TX_RECEIPT_OUTPUT_NULL = RetCode.mark(205305, "transaction receipt fail and output is null");
+
+
+    // 1.5.3
+    public static final RetCode CONTRACT_PATH_IS_EXISTS = RetCode.mark(205310, "contract path is exists.");
+
 }

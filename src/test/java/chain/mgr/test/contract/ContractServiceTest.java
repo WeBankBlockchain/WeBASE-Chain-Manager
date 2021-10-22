@@ -1,22 +1,14 @@
 package chain.mgr.test.contract;
 
-import com.webank.webase.chain.mgr.Application;
+import chain.mgr.test.TestBase;
 import com.webank.webase.chain.mgr.contract.CompileService;
 import com.webank.webase.chain.mgr.group.GroupManager;
+import java.util.Collections;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collections;
-
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class)
-public class ContractServiceTest {
+public class ContractServiceTest extends TestBase {
     @Autowired
     private CompileService compileService;
     @Autowired

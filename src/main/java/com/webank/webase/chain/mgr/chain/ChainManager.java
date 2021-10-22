@@ -2,7 +2,7 @@ package com.webank.webase.chain.mgr.chain;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -31,4 +31,6 @@ public class ChainManager {
         log.info("success exec method [requireChainIdExist]. result:{}", JsonTools.objToString(tbChain));
         return tbChain;
     }
+
+
 }

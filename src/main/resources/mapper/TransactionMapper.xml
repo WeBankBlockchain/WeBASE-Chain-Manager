@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--对应mapper接口 -->
+<mapper namespace="com.webank.webase.chain.mgr.data.transaction.TransactionMapper">
+    <resultMap id="transactionMap"
+               type="com.webank.webase.chain.mgr.data.transaction.entity.TbTransaction">
+        <id column="id" javaType="java.lang.Long" jdbcType="BIGINT"
+            property="id"/>
+        <result column="chain_id" javaType="java.lang.Integer"
+                jdbcType="INTEGER" property="chainId"/>
+        <result column="group_id" javaType="java.lang.Integer"
+                jdbcType="INTEGER" property="groupId"/>
+        <result column="chain_name" javaType="java.lang.String"
+                jdbcType="VARCHAR" property="chainName"/>
+        <result column="app_name" javaType="java.lang.String" jdbcType="VARCHAR"
+                property="appName"/>
+        <result column="trans_hash" javaType="java.lang.String" jdbcType="VARCHAR"
+                property="transHash"/>
+        <result column="block_number" javaType="java.math.BigInteger"
+                jdbcType="INTEGER" property="blockNumber"/>
+        <result column="block_timestamp" javaType="java.time.LocalDateTime"
+                jdbcType="TIMESTAMP" property="blockTimestamp"/>
+        <result column="trans_detail" javaType="java.lang.String" jdbcType="VARCHAR"
+                property="transDetail"/>
+        <result column="audit_flag" javaType="java.lang.Integer"
+                jdbcType="INTEGER" property="auditFlag"/>
+        <result column="create_time" javaType="java.time.LocalDateTime"
+                jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="modify_time" javaType="java.time.LocalDateTime"
+                jdbcType="TIMESTAMP" property="modifyTime"/>
+    </resultMap>
+
+    <insert id="add">
+        insert ignore into tb_transaction_#{chainId}_#{groupId}
+        (chain_id, group_id, chain_name, app_name, trans_hash, block_number, block_timestamp, trans_detail, create_time,
+         modify_time)
+        values (#{trans.chainId},
+                #{trans.groupId},
+                #{trans.chainName},
+                #{trans.appName},
+                #{trans.transHash},
+                #{trans.blockNumber},
+                #{trans.blockTimestamp},
+                #{trans.transDetail}, NOW(), NOW())
+    </insert>
+
+    <select id="getCount"
+            parameterType="com.webank.webase.chain.mgr.data.transaction.entity.TransListParam"
+            resultType="java.lang.Integer">
+        select count(1) from tb_transaction_#{chainId}_#{groupId} where 1=1
+        <if test="param.transHash != null and param.transHash != ''">
+            and trans_hash = #{param.transHash}
+        </if>
+        <if test="param.blockNumber != null">
+            and block_number = #{param.blockNumber}
+        </if>
+    </select>
+
+    <select id="getAllTranxTables" resultType="java.lang.String">
+        SELECT table_name
+        FROM information_schema.tables
+        where table_name like 'tb_transaction_%_%';
+    </select>
+
+    <select id="getAllTranxCount" resultType="java.lang.Integer">
+        select count(*)
+        from
+        <foreach collection="list" item="item" separator=" union all " open="(" close=")">
+            select * from ${item}
+        </foreach>
+        tmp1 where block_timestamp between from_unixtime(#{startTime}) and from_unixtime(#{endTime})
+    </select>
+
+
+    <select id="getAllTranxList" resultMap="transactionMap">
+        select *
+        from
+        <foreach collection="list" item="item" separator=" union all " open="(" close=")">
+            select * from ${item}
+        </foreach>
+        tmp1 where block_timestamp between from_unixtime(#{startTime}) and from_unixtime(#{endTime})
+    </select>
+
+
+    <select id="getCountByMinMax" resultType="java.lang.Integer">
+        select max(id) - min(id) + 1
+        from tb_transaction_#{chainId}_#{groupId}
+    </select>
+
+    <select id="getList"
+            parameterType="com.webank.webase.chain.mgr.data.transaction.entity.TransListParam"
+            resultMap="transactionMap">
+        select * from tb_transaction_#{chainId}_#{groupId} where 1=1
+        <if test="param.transHash != null and param.transHash != ''">
+            and trans_hash = #{param.transHash}
+        </if>
+        <if test="param.blockNumber != null">
+            and block_number = #{param.blockNumber}
+        </if>
+        <if test="param.start != null and param.pageSize != null">
+            limit #{param.start},#{param.pageSize}
+        </if>
+    </select>
+
+    <select id="getByHash" resultMap="transactionMap">
+        select *
+        from tb_transaction_#{chainId}_#{groupId}
+        where trans_hash = #{transHash}
+    </select>
+
+    <select id="listOfUnStatTransHash" resultType="java.lang.String">
+        select trans_hash
+        from tb_transaction_#{chainId}_#{groupId}
+        where audit_flag = 1
+        order by block_number
+        limit 2000
+    </select>
+
+    <select id="listOfUnStatTransactionByJob" resultMap="transactionMap">
+        select *
+        from tb_transaction_#{chainId}_#{groupId}
+        where audit_flag = 1
+          and MOD(block_number, #{shardingTotalCount}) = #{shardingItem}
+        order by block_number
+        limit 0,10000
+    </select>
+
+    <select id="queryMinMaxBlock"
+            resultType="com.webank.webase.chain.mgr.data.block.entity.MinMaxBlock">
+        select max(block_number) as maxBlockNumber,
+               min(block_number)
+                                 as minBLockNumber
+        from tb_transaction_#{chainId}_#{groupId}
+    </select>
+
+    <delete id="remove">
+        DELETE from tb_transaction_#{chainId}_#{groupId}
+<!--        where audit_flag = 2 only used in audit required circumstance -->
+        where block_number &lt;=
+        (select max(block_number) blockNumber from tb_txn_daily where chain_id = #{chainId} and group_id = #{groupId})
+        order by block_number
+        limit ${subTransNum}
+    </delete>
+
+    <update id="updateTransStatFlag">
+        update tb_transaction_#{chainId}_#{groupId}
+        set audit_flag = 2
+        where trans_hash = #{transHash}
+    </update>
+
+    <delete id="rollback">
+        DELETE
+        from tb_transaction_#{chainId}_#{groupId}
+        where block_number = #{blockNumber}
+    </delete>
+</mapper>

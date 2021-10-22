@@ -26,7 +26,6 @@ import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.deploy.config.NodeConfig;
 import com.webank.webase.chain.mgr.deploy.req.DeployHost;
@@ -40,11 +39,9 @@ import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
 import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
-import com.webank.webase.chain.mgr.frontinterface.FrontRestTools;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfConsensusStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfSyncStatus;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
-import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
@@ -54,6 +51,7 @@ import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ValidateUtil;
@@ -83,6 +81,9 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
+import org.fisco.bcos.sdk.client.protocol.response.ConsensusStatus.ConsensusInfo;
+import org.fisco.bcos.sdk.client.protocol.response.ConsensusStatus.ViewInfo;
+import com.webank.webase.chain.mgr.group.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -385,33 +386,25 @@ public class NodeService {
         return latestNumber;
     }
 
+
     /**
      * get peer of consensusStatus
      */
     private List<PeerOfConsensusStatus> getPeerOfConsensusStatus(int chainId, int groupId) {
-        String consensusStatusJson = frontInterface.getConsensusStatus(chainId, groupId);
-        if (StringUtils.isBlank(consensusStatusJson)) {
+        ConsensusInfo consensusInfo = frontInterface.getConsensusStatus(chainId, groupId);
+        if (consensusInfo == null) {
+            log.debug("getPeerOfConsensusStatus is null");
             return null;
         }
-        List jsonArr = JsonTools.toJavaObject(consensusStatusJson, List.class);
-        if (jsonArr == null) {
-            log.error("getPeerOfConsensusStatus error");
-            throw new BaseException(ConstantCode.FAIL_PARSE_JSON);
-        }
         List<PeerOfConsensusStatus> dataIsList = new ArrayList<>();
-        for (int i = 0; i < jsonArr.size(); i++) {
-            if (jsonArr.get(i) instanceof List) {
-                List<PeerOfConsensusStatus> tempList = JsonTools.toJavaObjectList(
-                    JsonTools.toJSONString(jsonArr.get(i)), PeerOfConsensusStatus.class);
-                if (tempList != null) {
-                    dataIsList.addAll(tempList);
-                } else {
-                    throw new BaseException(ConstantCode.FAIL_PARSE_JSON);
-                }
-            }
+        List<ViewInfo> viewInfos = consensusInfo.getViewInfos();
+        for (ViewInfo viewInfo : viewInfos) {
+            dataIsList.add(
+                new PeerOfConsensusStatus(viewInfo.getNodeId(), new BigInteger(viewInfo.getView())));
         }
         return dataIsList;
     }
+
 
     /**
      * add sealer and observer in NodeList return: List<String> nodeIdList

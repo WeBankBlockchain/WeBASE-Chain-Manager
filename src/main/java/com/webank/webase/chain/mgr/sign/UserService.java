@@ -7,7 +7,7 @@ import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.repository.bean.*;
@@ -65,10 +65,13 @@ public class UserService {
         TbUserExample example = new TbUserExample();
         example.setStart(Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).filter(p -> p >= 0).orElse(1));
         example.setCount(pageSize);
+        // add order by
+        example.setOrderByClause("gmt_modified DESC");
         TbUserExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(tbGroup.getChainId());
         criteria.andGroupIdEqualTo(tbGroup.getGroupId());
         List<TbUser> userList = userMapper.selectByExample(example);
+        log.debug("getUserListByAppId userList:{}", userList);
         if (CollectionUtils.isEmpty(userList)) {
             log.info("finish exec method[getUserListByAppId], not found record");
             return new BasePageResponse(ConstantCode.SUCCESS);
@@ -232,7 +235,9 @@ public class UserService {
         //query user
         String adminUserName = String.format(ConstantProperties.ADMIN_USER_FORMAT, group.getGroupName());
         TbUser adminUser = userManager.queryByChainAndGroupAndName(chainId, groupId, adminUserName);
-        if (Objects.nonNull(adminUser)) return adminUser;
+        if (Objects.nonNull(adminUser)) {
+            return adminUser;
+        }
 
         //new user param
         ReqNewUser reqNewUser = new ReqNewUser();

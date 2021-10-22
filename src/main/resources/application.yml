@@ -1,5 +1,5 @@
 # server version
-version: v1.5.2
+version: v1.5.4
 
 #server config
 server:
@@ -13,6 +13,7 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
   typeAliasesPackage: com.webank.webase.chain.mgr.repository.bean
+  mapperLocations: classpath:mapper/*.xml
 
 
 
@@ -47,10 +48,29 @@ constant:
   maxBlockDifferenceOfNewSealer: 3  # The maximum allowable block difference of the new consensus node
   addSealerNodeCycle: 30000
 
+  #### data related config
+  # if pull data(can change by interface)
+  ifPullData: true
+  ## data pull
+  startBlockNumber: 0
+  crawlBatchUnit: 50
+  dataPullCron: 0/10 * * * * ?
+  ## if multiLiving
+  multiLiving: false
+  ## group
+  refreshSubTableTaskFixedDelay: 5000
+  ## delete retain max block and trans data
+  isDeleteInfo: true
+  deleteInfoCron: "0 0/1 * * * ?"
+  blockRetainMax: 5000
+  transRetainMax: 10000
+  ## stat txn daily
+  statTxnDailyTaskFixedDelay: 60000
+
   ## 部署配置
   dockerRepository: fiscoorg/fisco-webase
   dockerRestartPeriodTime: 30000
-  webaseSignAddress: ${WEBASE_SIGN:"127.0.0.1:5004"}
+  webaseSignAddress: ${WEBASE_SIGN:127.0.0.1:5004}
   # SSH 免密登录的账号
   sshDefaultUser: root
   # SSH 服务的端口
@@ -64,7 +84,7 @@ constant:
 
 # executor config
 executor:
-  corePoolSize: 5
-  maxPoolSize: 15
+  corePoolSize: 10
+  maxPoolSize: 30
   queueSize: 50
   threadNamePrefix: "chain-mgr-async-"

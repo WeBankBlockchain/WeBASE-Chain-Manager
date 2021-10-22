@@ -21,6 +21,10 @@ import org.apache.ibatis.annotations.SelectProvider;
 
 public interface TbGroupMapper {
 
+    @Select({ "select ", TbGroupSqlProvider.ALL_COLUMN_FIELDS, " from tb_group ",
+        "where chain_id = #{chainId} and group_id = #{groupId}" })
+    TbGroup getGroupById(@Param("chainId") int chainId, @Param("groupId") int groupId);
+
     @Select({ "select max(group_id) from tb_group  where chain_id = #{chainId}" })
     int getMaxGroup(@Param("chainId") int chainId);
 
@@ -201,4 +205,5 @@ public interface TbGroupMapper {
     @SelectProvider(type = TbGroupSqlProvider.class, method = "getOneByExample")
     @Results({ @Result(column = "group_id", property = "groupId", jdbcType = JdbcType.INTEGER, id = true), @Result(column = "chain_id", property = "chainId", jdbcType = JdbcType.INTEGER, id = true), @Result(column = "group_name", property = "groupName", jdbcType = JdbcType.VARCHAR), @Result(column = "group_status", property = "groupStatus", jdbcType = JdbcType.TINYINT), @Result(column = "node_count", property = "nodeCount", jdbcType = JdbcType.INTEGER), @Result(column = "description", property = "description", jdbcType = JdbcType.VARCHAR), @Result(column = "group_type", property = "groupType", jdbcType = JdbcType.TINYINT), @Result(column = "create_time", property = "createTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "modify_time", property = "modifyTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "group_timestamp", property = "groupTimestamp", jdbcType = JdbcType.VARCHAR), @Result(column = "epoch_sealer_num", property = "epochSealerNum", jdbcType = JdbcType.INTEGER), @Result(column = "node_id_list", property = "nodeIdList", jdbcType = JdbcType.LONGVARCHAR) })
     Optional<TbGroup> getOneByExample(TbGroupExample example);
+
 }

@@ -1,8 +1,7 @@
 package com.webank.webase.chain.mgr.contract.entity;
 
-import lombok.Data;
-
 import javax.validation.constraints.NotNull;
+import lombok.Data;
 
 /**
  *
@@ -11,4 +10,8 @@ import javax.validation.constraints.NotNull;
 public class ReqContractVO {
     @NotNull
     private Integer contractId;
+    /**
+     * if force, delete no matter deployed
+     */
+    private Boolean force = false;
 }

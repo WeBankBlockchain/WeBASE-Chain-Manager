@@ -22,7 +22,7 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.fisco.bcos.web3j.crypto.EncryptType;
+import org.fisco.bcos.sdk.model.CryptoType;
 import org.ini4j.Ini;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
@@ -83,7 +83,7 @@ public class NodeConfig {
     public static void initSdkDir(byte encryptType, Path sdk) {
         if (Files.exists(sdk)) {
             Path sdkConfig = sdk.resolve("conf");
-            if (encryptType == EncryptType.SM2_TYPE) {
+            if (encryptType == CryptoType.SM_TYPE) {
                 sdkConfig = sdkConfig.resolve("origin_cert");
             }
 

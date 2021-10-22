@@ -13,18 +13,21 @@
  */
 package com.webank.webase.chain.mgr.precompiledapi;
 
+import static org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusPrecompiled.FUNC_ADDOBSERVER;
+import static org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusPrecompiled.FUNC_ADDSEALER;
+import static org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusPrecompiled.FUNC_REMOVE;
+
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
+import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.PrecompiledTypes;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
-import com.webank.webase.chain.mgr.base.tools.JsonTools;
 import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
-import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.AddSealerAsyncParam;
 import com.webank.webase.chain.mgr.node.entity.ConsensusParam;
@@ -34,25 +37,29 @@ import com.webank.webase.chain.mgr.sign.UserService;
 import com.webank.webase.chain.mgr.task.TaskManager;
 import com.webank.webase.chain.mgr.trans.TransService;
 import com.webank.webase.chain.mgr.trans.entity.TransResultDto;
-import com.webank.webase.chain.mgr.util.CommUtils;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import io.jsonwebtoken.lang.Collections;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
+import org.fisco.bcos.sdk.model.RetCode;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
+import com.webank.webase.chain.mgr.group.GroupService;
+import org.fisco.bcos.sdk.transaction.codec.decode.ReceiptParser;
+import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigInteger;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.fisco.bcos.web3j.precompile.consensus.Consensus.FUNC_ADDOBSERVER;
-import static org.fisco.bcos.web3j.precompile.consensus.Consensus.FUNC_ADDSEALER;
-import static org.fisco.bcos.web3j.precompile.permission.Permission.FUNC_REMOVE;
-
 
 /**
  * Precompiled common service including management of CNS, node consensus status, CRUD based on
@@ -224,7 +231,10 @@ public class PrecompiledService {
                 PrecompiledTypes.CONSENSUS, FUNC_ADDSEALER, funcParams);
 
         //check trans's result
-        CommUtils.handleTransResultDto(transResultDto);
+        TransactionReceipt recoverReceipt = new TransactionReceipt();
+        BeanUtils.copyProperties(transResultDto, recoverReceipt);
+        this.handleTransactionReceipt(recoverReceipt);
+        log.info("end addSealer recoverReceipt:{}", recoverReceipt);
 
         //start group
         groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
@@ -259,7 +269,9 @@ public class PrecompiledService {
                 PrecompiledTypes.CONSENSUS, FUNC_ADDOBSERVER, funcParams);
 
         //check trans's result
-        CommUtils.handleTransResultDto(transResultDto);
+        TransactionReceipt recoverReceipt = new TransactionReceipt();
+        BeanUtils.copyProperties(transResultDto, recoverReceipt);
+        this.handleTransactionReceipt(recoverReceipt);
 
         //start group
         groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
@@ -301,7 +313,9 @@ public class PrecompiledService {
         }
 
         //check trans's result
-        CommUtils.handleTransResultDto(transResultDto);
+        TransactionReceipt recoverReceipt = new TransactionReceipt();
+        BeanUtils.copyProperties(transResultDto, recoverReceipt);
+        this.handleTransactionReceipt(recoverReceipt);
 
         //remove front-group map
         frontGroupMapService.removeByChainAndGroupAndNode(chainId, groupId, nodeId);
@@ -390,7 +404,7 @@ public class PrecompiledService {
             return nodeIds;
         }
 
-        Set<String> nodeIdIsObserver = nodeIds.stream().filter(node -> observerList.contains(node)).collect(Collectors.toSet());
+        Set<String> nodeIdIsObserver = nodeIds.stream().filter(observerList::contains).collect(Collectors.toSet());
         if (CollectionUtils.isNotEmpty(nodeIdIsObserver))
             throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are observers:%s", JsonTools.objToString(nodeIdIsObserver))));
 
@@ -411,7 +425,7 @@ public class PrecompiledService {
         //can not remove all sealer nodes
         List<String> nodesOfSealerType = nodeService.getNodeIds(chainId, groupId, PrecompiledUtils.NODE_TYPE_SEALER);
         if (Collections.size(nodeIds) >= Collections.size(nodesOfSealerType)) {
-            long inputSealerNodesCount = nodeIds.stream().filter(inputNode -> nodesOfSealerType.contains(inputNode)).count();
+            long inputSealerNodesCount = nodeIds.stream().filter(nodesOfSealerType::contains).count();
             log.info("inputSealerNodesCount:{}", inputSealerNodesCount);
             if (inputSealerNodesCount >= Collections.size(nodesOfSealerType))
                 throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("can not remove all sealer, input:%s foundSealerList:%s", JsonTools.objToString(nodeIds), JsonTools.objToString(nodesOfSealerType))));
@@ -459,9 +473,9 @@ public class PrecompiledService {
             throw new BaseException(ConstantCode.NODE_PARAM_EMPTY);
 
         //check nodeId exist
-        nodeIdList.stream().forEach(node -> nodeService.requireNodeIdValid(chainId, groupId, node));
+        nodeIdList.forEach(node -> nodeService.requireNodeIdValid(chainId, groupId, node));
 
-        Set<String> nodeIds = nodeIdList.stream().collect(Collectors.toSet());
+        Set<String> nodeIds = new HashSet<>(nodeIdList);
         log.info("success exec method[requireAllNodeValid]. result:{}", JsonTools.objToString(nodeIds));
         return nodeIds;
     }
@@ -512,21 +526,21 @@ public class PrecompiledService {
         final List<String> allPeersOnGroupFinal = allPeersOnGroup;
         List<Integer> frontIdsNotInGroup = frontList.stream()
                 .filter(front -> !allPeersOnGroupFinal.contains(front.getNodeId()))
-                .map(f -> f.getFrontId())
+                .map(TbFront::getFrontId)
                 .distinct()
                 .collect(Collectors.toList());
         frontGroupMapService.removeByFrontListAndChain(chainId, frontIdsNotInGroup);
         frontGroupMapCache.clearMapList(chainId);
 
-        List<String> nodesFromDbByAgency = frontOfAgencyOnDb.stream().map(front -> front.getNodeId()).collect(Collectors.toList());
-        List<String> peersOfAgency = allPeersOnGroup.stream().filter(peer -> nodesFromDbByAgency.contains(peer)).distinct().collect(Collectors.toList());
+        List<String> nodesFromDbByAgency = frontOfAgencyOnDb.stream().map(TbFront::getNodeId).collect(Collectors.toList());
+        List<String> peersOfAgency = allPeersOnGroup.stream().filter(nodesFromDbByAgency::contains).distinct().collect(Collectors.toList());
         String signUserId = userService.createAdminIfNonexistence(chainId, groupId).getSignUserId();
         log.info("peersOfAgency:{}", JsonTools.objToString(peersOfAgency));
         for (String nodeId : peersOfAgency) {
             try {
                 removeNode(chainId, groupId, signUserId, nodeId);
             } catch (BaseException ex) {
-                List<Integer> lastSealerArray = Arrays.asList(PrecompiledCommon.LastSealer_RC1, PrecompiledCommon.LastSealer, PrecompiledCommon.LastSealer_RC3);
+                List<Integer> lastSealerArray = Arrays.asList(-51101, 51101, 100);
                 if (!lastSealerArray.contains(ex.getRetCode().getCode()))
                     throw ex;
                 log.info("remove the last node:{}", nodeId);
@@ -538,6 +552,28 @@ public class PrecompiledService {
         }
         log.info("success exec method[removeAgencyFromGroup] agencyId:{} chainId:{} groupId:{}", agencyId, chainId, groupId);
     }
+
+    /**
+     * handle receipt of precompiled
+     * @related: PrecompiledRetCode and ReceiptParser
+     * return: {"code":1,"msg":"Success"} => {"code":0,"message":"Success"}
+     */
+    private String handleTransactionReceipt(TransactionReceipt receipt) {
+        log.debug("handle tx receipt of precompiled");
+        try {
+            RetCode sdkRetCode = ReceiptParser.parseTransactionReceipt(receipt);
+            log.info("handleTransactionReceipt sdkRetCode:{}", sdkRetCode);
+            if (sdkRetCode.getCode() >= 0) {
+                return new BaseResponse(ConstantCode.SUCCESS, sdkRetCode.getMessage()).toString();
+            } else {
+                throw new BaseException(sdkRetCode.getCode(), sdkRetCode.getMessage());
+            }
+        } catch (ContractException e) {
+            log.error("handleTransactionReceipt e:[]", e);
+            throw new BaseException(e.getErrorCode(), e.getMessage());
+        }
+    }
+
 }
 
 

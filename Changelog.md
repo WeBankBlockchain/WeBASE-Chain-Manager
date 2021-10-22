@@ -1,8 +1,23 @@
+### v1.5.3(2021-09-27)
+
+**Add**
+- 切换到Java-SDK
+- 新增区块、交易数据浏览接口
+- 新增强制删除合约接口
+- web页面新增合约列表页面
+
+**兼容性**
+- 支持FISCO-BCOS v2.4.x 及以上版本
+- WeBASE-Front v1.5.0+
+- WeBASE-Sign v1.4.3+
+
+详细了解,请阅读[**技术文档**](https://webasedoc.readthedocs.io/zh_CN/latest/)。
+
 ### v1.4.3 (2021-01-27)
 
 **Fix**
 
--  web3sdk升级为2.4.2
+- web3sdk升级为2.4.2
 - 优化合约字段长度
 
 **兼容性**
