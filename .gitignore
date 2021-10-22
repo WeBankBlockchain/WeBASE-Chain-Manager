@@ -122,3 +122,5 @@ dist
 /src/main/resources/application-dev.yml
 solidity
 log
+generatorConfig.xml
+mbg.properties

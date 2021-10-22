@@ -154,6 +154,14 @@ public class ChainController extends BaseController {
     }
 
 
+    /**
+     * 1. check local docker image & generate chain config files & init chain db data(include chain, front, node, group db data etc.)
+     * 2. init host and start node (init hosts' image & scp config files to host)
+     * @param reqDeploy
+     * @param result
+     * @return
+     * @throws BaseException
+     */
     @ApiOperation(value = "部署链")
     @PostMapping(value = "deploy")
     public BaseResponse deploy(
@@ -170,13 +178,13 @@ public class ChainController extends BaseController {
                 reqDeploy.setChainName(String.valueOf(reqDeploy.getChainId()));
             }
 
-            //verify dockerImageType
+            // verify dockerImageType
             DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqDeploy.getDockerImageType());
 
             // generate node config and return shell execution log
             this.deployService.deployChain(reqDeploy, imageTypeEnum);
 
-            // init host and start node
+            // init host and start node (init image/scp config files)
             this.nodeAsyncService.asyncDeployChain(reqDeploy, OptionType.DEPLOY_CHAIN, imageTypeEnum);
 
             return new BaseResponse(ConstantCode.SUCCESS);
@@ -196,8 +204,16 @@ public class ChainController extends BaseController {
         log.info("Start:[{}] add node:[{}] ", startTime, JsonTools.toJSONString(reqAddNode));
 
         try {
+            // check chain name
+            if (StringUtils.isBlank(reqAddNode.getChainName())) {
+                reqAddNode.setChainName(String.valueOf(reqAddNode.getChainId()));
+            }
+
+            // verify dockerImageType
+            DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqAddNode.getDockerImageType());
+
             // generate node config and return shell execution log
-//            this.deployService.addNode(reqAddNode);
+            this.deployService.addNodes(reqAddNode, imageTypeEnum);
 
             return new BaseResponse(ConstantCode.SUCCESS);
         } catch (BaseException e) {
@@ -224,7 +240,7 @@ public class ChainController extends BaseController {
 
     @ApiOperation(value = "查询镜像获取方式")
     @GetMapping("/image/type")
-    public BaseResponse getChain() throws BaseException {
+    public BaseResponse getImageType() throws BaseException {
 
         Instant startTime = Instant.now();
         log.info("Start:[{}] get image type ", startTime);
@@ -258,5 +274,47 @@ public class ChainController extends BaseController {
             log.error("fail initHostList with Exception", e);
             return new BaseResponse(ConstantCode.HOST_INIT_NOT_SUCCESS);
         }
+    }
+
+    /**
+     * delete by chainId
+     */
+    @ApiOperation(value = "删除新增的节点")
+    @DeleteMapping("/node/delete/{chainId}/{nodeId}")
+    public BaseResponse deleteNode(@PathVariable("chainId") Integer chainId,
+        @PathVariable("nodeId") String nodeId) {
+        Instant startTime = Instant.now();
+        log.info("start deleteNode startTime:{} chainId:{},nodeId:{}",
+            startTime.toEpochMilli(), chainId, nodeId);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+
+        // delete node
+        deployService.deleteNode(chainId, nodeId);
+
+        log.info("end deleteNode useTime:{} result:{}",
+            Duration.between(startTime, Instant.now()).toMillis(),
+            JsonTools.toJSONString(baseResponse));
+        return baseResponse;
+    }
+
+    /**
+     * delete by chainId
+     */
+    @ApiOperation(value = "停止新增的节点")
+    @DeleteMapping("/node/stop/{chainId}/{nodeId}")
+    public BaseResponse stopNewNode(@PathVariable("chainId") Integer chainId,
+        @PathVariable("nodeId") String nodeId) {
+        Instant startTime = Instant.now();
+        log.info("start stopNewNode startTime:{} chainId:{},nodeId:{}",
+            startTime.toEpochMilli(), chainId, nodeId);
+        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
+
+        // delete node
+        deployService.stopNode(chainId, nodeId);
+
+        log.info("end stopNewNode useTime:{} result:{}",
+            Duration.between(startTime, Instant.now()).toMillis(),
+            JsonTools.toJSONString(baseResponse));
+        return baseResponse;
     }
 }

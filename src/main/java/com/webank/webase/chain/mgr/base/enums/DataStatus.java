@@ -34,7 +34,15 @@ package com.webank.webase.chain.mgr.base.enums;
  * Enumeration of data status.
  */
 public enum DataStatus {
-    NORMAL((byte)1), INVALID((byte)2);
+    NORMAL((byte)1), INVALID((byte)2),
+    /**
+     * used in visual deploy node status(not front status)
+     */
+    STARTING((byte)3),
+    /**
+     * node is down, but front is normal; used in manually deploy
+     */
+    DOWN((byte)4);
 
     private byte value;
 

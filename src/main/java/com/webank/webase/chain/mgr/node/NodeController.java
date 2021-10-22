@@ -72,6 +72,7 @@ public class NodeController extends BaseController {
     @Autowired
     private FrontInterfaceService frontInterfaceService;
 
+
     @GetMapping(value = "/all")
     public BaseResponse allNode() throws BaseException {
         Instant startTime = Instant.now();
