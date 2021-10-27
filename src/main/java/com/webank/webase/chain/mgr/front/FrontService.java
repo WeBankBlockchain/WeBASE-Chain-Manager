@@ -80,7 +80,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.fisco.bcos.sdk.model.CryptoType;
-import org.fisco.bcos.sdk.service.GroupService;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,8 +102,6 @@ public class FrontService {
     private TbFrontMapper tbFrontMapper;
     @Autowired
     private TbFrontGroupMapMapper tbFrontGroupMapMapper;
-    @Autowired
-    private GroupService groupService;
     @Autowired
     private NodeService nodeService;
     @Autowired
