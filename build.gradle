@@ -15,11 +15,10 @@ targetCompatibility = 1.8
 // In this section you declare where to find the dependencies of your project
 repositories {
     maven {url "http://maven.aliyun.com/nexus/content/groups/public/"}
-    
+    mavenCentral()
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     maven { url 'https://dl.bintray.com/ethereum/maven/' }
     mavenLocal()
-    mavenCentral()
 }
 
 def springboot_version="2.1.18.RELEASE"
@@ -87,12 +86,12 @@ List test = [
     "com.github.yuanmomo:mybatis-generator-plugin:1.0.10",
 ]
 
-def log4j_version="2.13.3"
+def log4j_version="2.15.0"
 List log4j = [
-        "org.apache.logging.log4j:log4j-api:$log4j_version",
-        "org.apache.logging.log4j:log4j-core:$log4j_version",
-        "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version",
-        "org.apache.logging.log4j:log4j-web:$log4j_version"
+    "org.apache.logging.log4j:log4j-api:$log4j_version",
+    "org.apache.logging.log4j:log4j-core:$log4j_version",
+    "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version",
+    "org.apache.logging.log4j:log4j-web:$log4j_version"
 ]
 
 def tomcat_version="9.0.54"
@@ -104,7 +103,9 @@ List tomcat = [
 
 dependencies {
     compile springboot,spring,jaxb,jwt,swagger,jackson,mysql,log4j,tomcat
-    compile 'org.fisco-bcos:web3sdk:2.6.2'
+    compile('org.fisco-bcos:web3sdk:2.6.2')  {
+        exclude group: 'org.ethereum'
+    }
     compile "org.apache.commons:commons-lang3:3.8.1"
     compile "org.apache.commons:commons-lang3:3.8.1"
 
