@@ -143,14 +143,17 @@ public class FrontManager {
         if (Objects.nonNull(param.getFrontId()))
             criteria.andFrontIdEqualTo(param.getFrontId());
 
-        if (Objects.nonNull(param.getFrontId()))
-            criteria.andFrontIdEqualTo(param.getFrontId());
+        if (Objects.nonNull(param.getFrontIp()))
+            criteria.andFrontIpEqualTo(param.getFrontIp());
 
         if (Objects.nonNull(param.getNodeId()))
             criteria.andNodeIdEqualTo(param.getNodeId());
 
         if (CollectionUtils.isNotEmpty(param.getNodeIdList()))
             criteria.andNodeIdIn(param.getNodeIdList());
+        // list by front ip list
+        if (CollectionUtils.isNotEmpty(param.getFrontIpList()))
+            criteria.andFrontIpIn(param.getFrontIpList());
 
         if (Objects.nonNull(param.getFrontStatus())){
             criteria.andFrontStatusEqualTo(param.getFrontStatus());

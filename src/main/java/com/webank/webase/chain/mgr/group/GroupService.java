@@ -495,6 +495,7 @@ public class GroupService {
             try {
                 groupIdList = frontInterface.getGroupListFromSpecificFront(frontPeerName, frontIp, frontPort);
             } catch (Exception ex) {
+                // skip new added front
                 log.error("fail getGroupListFromSpecificFront frontId:{}.", front.getFrontId(), ex);
                 continue;
             }
