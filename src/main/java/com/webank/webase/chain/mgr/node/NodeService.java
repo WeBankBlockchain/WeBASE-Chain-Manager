@@ -531,6 +531,11 @@ public class NodeService {
             log.error("fail startGroupIfNotRunning node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
         }
+        // 2021/11/03 fix adding nodes,request return null because new node not in group
+//        if (FrontTypeEnum.DEPLOY_ADD.getId() == front.getFrontType()){
+//            log.info("skip requireNodeIdValid for node is [DEPLOY_ADD]");
+//            return;
+//        }
         List<String> nodeIdList = frontInterface.getNodeIdListFromSpecificFront(front.getFrontPeerName(),
             front.getFrontIp(), front.getFrontPort());
         if (CollectionUtils.isEmpty(nodeIdList))

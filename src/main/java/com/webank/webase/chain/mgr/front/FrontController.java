@@ -19,6 +19,7 @@ import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import com.webank.webase.chain.mgr.front.entity.ReqListByIp;
 import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import com.webank.webase.chain.mgr.front.entity.FrontParam;
@@ -256,4 +257,27 @@ public class FrontController extends BaseController {
         return BaseResponse.success(null);
     }
 
+    /**
+     * qurey front info list.
+     */
+    @PostMapping(value = "/listByIp")
+    public BasePageResponse listFrontByIp(@Valid @RequestBody ReqListByIp listByIp)
+        throws BaseException {
+        Instant startTime = Instant.now();
+        log.info("start queryFrontList startTime:{},listByIp:{}", startTime.toEpochMilli(), listByIp);
+
+        BasePageResponse pageResponse = new BasePageResponse(ConstantCode.SUCCESS);
+        //query from tb_Front
+        FrontParam param = new FrontParam();
+        param.setFrontIpList(listByIp.getFrontIpList());
+        pageResponse.setTotalCount(Long.valueOf(frontManager.countByParam(param)).intValue());
+        if (pageResponse.getTotalCount() > 0) {
+            pageResponse.setData(frontManager.listByParam(param));
+        }
+
+        log.info("end queryFrontList useTime:{} result:{}",
+            Duration.between(startTime, Instant.now()).toMillis(),
+            JsonTools.toJSONString(pageResponse));
+        return pageResponse;
+    }
 }
