@@ -44,7 +44,7 @@ public class ContractPathService {
      * @param pathName
      * @return
      */
-    public int save(Integer chainId, Integer groupId, String pathName, boolean ignoreRepeat) {
+    public int save(String chainId, String groupId, String pathName, boolean ignoreRepeat) {
         log.info("save path chainId:{},groupId;{},pathName:{},ignoreRepeat:{}",
             chainId, groupId, pathName, ignoreRepeat);
         this.groupManager.requireGroupExist(chainId, groupId);
@@ -83,17 +83,17 @@ public class ContractPathService {
         return tbContractPathMapper.deleteByPrimaryKey(pathId);
     }
 
-    public int removeByPathName(Integer chainId, Integer groupId, String contractPath) {
+    public int removeByPathName(String chainId, String groupId, String contractPath) {
         log.info("removeByPathName chainId:{},groupId;{},contractPath:{}", chainId, groupId, contractPath);
         return tbContractPathMapper.removeByPathName(chainId, groupId, contractPath);
     }
 
-    public int removeByGroupId(Integer chainId, Integer groupId) {
+    public int removeByGroupId(String chainId, String groupId) {
         log.info("removeByGroupId chainId:{},groupId:{}", chainId, groupId);
         return tbContractPathMapper.removeByGroupId(chainId, groupId);
     }
 
-    public int removeByChainId(Integer chainId) {
+    public int removeByChainId(String chainId) {
         log.info("removeByChainId chainId:{}", chainId);
         return tbContractPathMapper.removeByChainId(chainId);
     }

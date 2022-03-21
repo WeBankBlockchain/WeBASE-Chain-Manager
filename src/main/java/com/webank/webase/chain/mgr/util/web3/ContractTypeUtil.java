@@ -14,27 +14,18 @@
 
 package com.webank.webase.chain.mgr.util.web3;
 
-import static org.fisco.bcos.sdk.abi.datatypes.Type.MAX_BYTE_LENGTH;
+
+import static org.fisco.bcos.sdk.codec.datatypes.Type.MAX_BYTE_LENGTH;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Hex;
-
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-import org.fisco.bcos.sdk.abi.TypeReference;
-import org.fisco.bcos.sdk.abi.datatypes.Address;
-import org.fisco.bcos.sdk.abi.datatypes.Bool;
-import org.fisco.bcos.sdk.abi.datatypes.Bytes;
-import org.fisco.bcos.sdk.abi.datatypes.BytesType;
-import org.fisco.bcos.sdk.abi.datatypes.DynamicArray;
-import org.fisco.bcos.sdk.abi.datatypes.DynamicBytes;
-import org.fisco.bcos.sdk.abi.datatypes.NumericType;
-import org.fisco.bcos.sdk.abi.datatypes.Type;
-import org.fisco.bcos.sdk.abi.datatypes.Utf8String;
-import org.fisco.bcos.sdk.abi.datatypes.generated.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Hex;
+import org.fisco.bcos.sdk.codec.datatypes.*;
+import org.fisco.bcos.sdk.codec.datatypes.generated.*;
 import org.fisco.bcos.sdk.utils.Numeric;
 
 /**

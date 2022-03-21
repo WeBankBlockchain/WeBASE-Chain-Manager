@@ -36,24 +36,24 @@ public interface DataGroupMapper {
     /**
      * remove by id.
      */
-    int remove(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId);
+    int remove(@Param("chainId") String chainId, @Param("groupId") String groupId);
 
     /**
      * update status.
      */
-    int updateStatus(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId,
+    int updateStatus(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("groupStatus") Integer groupStatus);
 
     /**
      * query group count.
      */
-    int getCount(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId,
+    int getCount(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("groupStatus") Integer groupStatus);
 
     /**
      * query general info.
      */
-    GroupGeneral getGeneral(@Param("chainId") Integer chainId, @Param("groupId") Integer groupId);
+    GroupGeneral getGeneral(@Param("chainId") String chainId, @Param("groupId") String groupId);
 
     /**
      * query all block counts.
@@ -68,51 +68,51 @@ public interface DataGroupMapper {
     /**
      * query block count.
      */
-    Integer countOfBlock(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer countOfBlock(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("param") BlockListParam param);
 
     /**
      * query list of block by page.
      */
-    List<TbBlock> queryBlockList(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    List<TbBlock> queryBlockList(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("param") BlockListParam param);
 
     /**
      * query trans count.
      */
-    Integer countOfTrans(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer countOfTrans(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("param") TransListParam param);
 
     /**
      * query list of trans by page.
      */
-    List<TbTransaction> queryTransList(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    List<TbTransaction> queryTransList(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("param") TransListParam param);
 
 
     /**
      * query count of trans by app
      */
-    Integer queryTransCountByApp(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer queryTransCountByApp(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("appName") String appName);
 
 
     /**
      * query count of trans by contract
      */
-    Integer queryTransCountByContract(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer queryTransCountByContract(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("contractAddress") String contractAddress);
 
     /**
      * query contract count.
      */
-    Integer countOfContract(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer countOfContract(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("param") BaseQueryParam param);
 
     /**
      * query list of contract by page.
      */
-    List<ContractInfoDto> queryContractList(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    List<ContractInfoDto> queryContractList(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("param") BaseQueryParam param);
 
     /**

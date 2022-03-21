@@ -131,7 +131,7 @@ public class NodeAsyncService {
      * @param chainId
      */
     @Async("deployAsyncScheduler")
-    public void asyncStartChain(int chainId, OptionType optionType, ChainStatusEnum success, ChainStatusEnum failed,
+    public void asyncStartChain(String chainId, OptionType optionType, ChainStatusEnum success, ChainStatusEnum failed,
                                 FrontStatusEnum frontBefore, FrontStatusEnum frontSuccess, FrontStatusEnum frontFailed) {
         final boolean startSuccess = this.restartChain(chainId, optionType, frontBefore, frontSuccess, frontFailed);
         threadPoolTaskScheduler.schedule(() -> {
@@ -146,7 +146,7 @@ public class NodeAsyncService {
      * @param optionType
      */
     @Async("deployAsyncScheduler")
-    public void asyncRestartRelatedFront(int chainId, Set<Integer> groupIdSet, OptionType optionType,
+    public void asyncRestartRelatedFront(String chainId, Set<String> groupIdSet, OptionType optionType,
                                          FrontStatusEnum frontBefore, FrontStatusEnum frontSuccess, FrontStatusEnum frontFailed) {
 
         // update chain to updating
@@ -170,7 +170,7 @@ public class NodeAsyncService {
 //    @Async("deployAsyncScheduler")
 //    public void asyncAddNode(TbChain chain, TbHost host, TbGroup group, OptionType optionType, List<TbFront> newFrontList) {
 //        try {
-//            int groupId = group.getGroupId();
+//            String groupId = group.getGroupId();
 //            boolean initSuccess = this.hostService.initHostList(chain, Arrays.asList(host), false);
 //            log.info("Init host:[{}], result:[{}]", host.getIp(), initSuccess);
 //            if (initSuccess) {
@@ -193,7 +193,7 @@ public class NodeAsyncService {
      * @param groupIdSet
      * @param optionType
      */
-    private boolean restartFrontOfGroupSet(int chainId, Set<Integer> groupIdSet, OptionType optionType,
+    private boolean restartFrontOfGroupSet(String chainId, Set<String> groupIdSet, OptionType optionType,
                                            FrontStatusEnum frontBefore, FrontStatusEnum frontSuccess, FrontStatusEnum frontFailed) {
         List<TbFront> frontList = this.frontService.selectFrontListByGroupIdSet(chainId, groupIdSet);
         if (CollectionUtils.isEmpty(frontList)) {
@@ -216,7 +216,7 @@ public class NodeAsyncService {
      * @return
      * @throws InterruptedException
      */
-    private boolean restartChain(int chainId, OptionType optionType,
+    private boolean restartChain(String chainId, OptionType optionType,
                                  FrontStatusEnum before, FrontStatusEnum success, FrontStatusEnum failed) {
         // host of chain
         List<TbFront> frontList = this.frontMapper.selectByChainId(chainId);
@@ -235,7 +235,7 @@ public class NodeAsyncService {
      * @return
      * @throws InterruptedException
      */
-    private boolean restartFrontByHost(int chainId, OptionType optionType, Map<String, List<TbFront>> hostFrontListMap,
+    private boolean restartFrontByHost(String chainId, OptionType optionType, Map<String, List<TbFront>> hostFrontListMap,
                                        FrontStatusEnum before, FrontStatusEnum success, FrontStatusEnum failed) {
         final CountDownLatch startLatch = new CountDownLatch(CollectionUtils.size(hostFrontListMap));
 

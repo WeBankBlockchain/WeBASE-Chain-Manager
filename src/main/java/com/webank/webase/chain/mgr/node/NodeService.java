@@ -13,6 +13,7 @@
  */
 package com.webank.webase.chain.mgr.node;
 
+import cn.hutool.core.date.DateTime;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
@@ -33,11 +34,11 @@ import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
 import com.webank.webase.chain.mgr.util.PrecompiledUtils;
 import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ValidateUtil;
+import com.webank.webase.chain.mgr.util.entity.NodeStatusInfo;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.sdk.client.protocol.response.ConsensusStatus.ConsensusInfo;
-import org.fisco.bcos.sdk.client.protocol.response.ConsensusStatus.ViewInfo;
+import org.fisco.bcos.sdk.client.protocol.response.ConsensusStatus.ConsensusStatusInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -75,7 +76,7 @@ public class NodeService {
     /**
      * add new node data.
      */
-    public void addNodeInfo(Integer chainId, Integer groupId, PeerInfo peerInfo)
+    public void addNodeInfo(String chainId, String groupId, PeerInfo peerInfo)
             throws BaseException {
 
         //add db
@@ -141,7 +142,7 @@ public class NodeService {
     /**
      * query node by groupId
      */
-    public List<TbNode> queryByGroupId(int chainId, int groupId) {
+    public List<TbNode> queryByGroupId(String chainId, String groupId) {
         NodeParam nodeParam = new NodeParam();
         nodeParam.setChainId(chainId);
         nodeParam.setGroupId(groupId);
@@ -196,7 +197,7 @@ public class NodeService {
     /**
      * delete by node and group.
      */
-    public void deleteByNodeAndGroupId(String nodeId, int groupId) throws BaseException {
+    public void deleteByNodeAndGroupId(String nodeId, String groupId) throws BaseException {
         log.debug("start deleteByNodeAndGroupId nodeId:{} groupId:{}", nodeId, groupId);
         tbNodeMapper.deleteByNodeIdAndGroupId(nodeId, groupId);
         log.debug("end deleteByNodeAndGroupId");
@@ -205,8 +206,8 @@ public class NodeService {
     /**
      * delete by groupId.
      */
-    public void deleteByGroupId(int chainId, int groupId) {
-        if (chainId == 0 || groupId == 0) {
+    public void deleteByGroupId(String chainId, String groupId) {
+        if (chainId.isEmpty() || groupId.isEmpty()) {
             return;
         }
         tbNodeMapper.deleteByChainIdAndGroupId(chainId, groupId);
@@ -215,8 +216,8 @@ public class NodeService {
     /**
      * delete by chainId.
      */
-    public void deleteByChainId(int chainId) {
-        if (chainId == 0) {
+    public void deleteByChainId(String chainId) {
+        if (chainId.isEmpty()) {
             return;
         }
         this.tbNodeMapper.deleteByChainId(chainId);
@@ -225,7 +226,7 @@ public class NodeService {
     /**
      * check node status
      */
-    public void checkAndUpdateNodeStatus(int chainId) {
+    public void checkAndUpdateNodeStatus(String chainId) {
 
         List<TbGroup> tbGroups = tbGroupMapper.selectByChainId(chainId);
         if (CollectionUtils.isEmpty(tbGroups)) {
@@ -237,80 +238,99 @@ public class NodeService {
         }
     }
 
-    public void checkAndUpdateNodeStatus(int chainId, int groupId) {
+    public void checkAndUpdateNodeStatus(String chainId, String groupId) {
         // get local node list
         List<TbNode> nodeList = queryByGroupId(chainId, groupId);
 
-        // getPeerOfConsensusStatus
-        List<PeerOfConsensusStatus> consensusList = getPeerOfConsensusStatus(chainId, groupId);
-        if (Objects.isNull(consensusList)) {
-            log.error("fail checkNodeStatus, consensusList is null");
-            return;
-        }
-
-        // getObserverList
-        List<String> observerList = frontInterface.getObserverList(chainId, groupId);
-        int nodeCount = CollectionUtils.size(consensusList) + CollectionUtils.size(observerList);
-
+		//todo check
+        List<NodeStatusInfo> nodeStatusInfoList = frontInterface.getNodeStatusList(chainId,groupId);
         for (TbNode tbNode : nodeList) {
             String nodeId = tbNode.getNodeId();
-            BigInteger localBlockNumber = BigInteger.valueOf(tbNode.getBlockNumber());
-            BigInteger localPbftView = BigInteger.valueOf(tbNode.getPbftView());
-            LocalDateTime modifyTime = CommonUtils.timestamp2LocalDateTime(tbNode.getModifyTime().getTime());
-            LocalDateTime createTime = CommonUtils.timestamp2LocalDateTime(tbNode.getCreateTime().getTime());
 
-            Duration duration = Duration.between(modifyTime, LocalDateTime.now());
-            Long subTime = duration.toMillis();
-            if (subTime < (nodeCount * 1000 + EXT_CHECK_NODE_WAIT_MIN_MILLIS) && createTime.isBefore(modifyTime)) {
-                log.warn("checkNodeStatus jump over. for time internal subTime:{}", subTime);
-                return;
+            NodeStatusInfo nodeStatusInfo = nodeStatusInfoList.stream()
+                .filter(status -> status.getNodeId().equalsIgnoreCase(nodeId))
+                .findFirst().orElse(null);
+            if (nodeStatusInfo == null) {
+                log.info("checkAndUpdateNodeStatus not found status of :{}", nodeId);
+                continue;
             }
-
-            int nodeType = 0; // 0-consensus;1-observer
-            if (observerList != null) {
-                nodeType = observerList.stream()
-                        .filter(observer -> observer.equals(tbNode.getNodeId())).map(c -> 1)
-                        .findFirst().orElse(0);
-            }
-
-            BigInteger latestNumber = getBlockNumberOfNodeOnChain(chainId, groupId, nodeId);// blockNumber
-            BigInteger latestView =
-                    consensusList.stream().filter(cl -> nodeId.equals(cl.getNodeId()))
-                            .map(c -> c.getView()).findFirst().orElse(BigInteger.ZERO);// pbftView
-
-            if (nodeType == 0) { // 0-consensus;1-observer
-                if (localBlockNumber.equals(latestNumber) && localPbftView.equals(latestView)) {
-                    log.warn(
-                            "node[{}] is invalid. localNumber:{} chainNumber:{} localView:{} chainView:{}",
-                            nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
-                    tbNode.setNodeActive(DataStatus.INVALID.getValue());
-                } else {
-                    tbNode.setBlockNumber(latestNumber.longValue());
-                    tbNode.setPbftView(latestView.longValue());
-                    tbNode.setNodeActive(DataStatus.NORMAL.getValue());
-                }
-            } else { // observer
-                if (!latestNumber.equals(frontInterface.getLatestBlockNumber(chainId, groupId))) {
-                    log.warn(
-                            "node[{}] is invalid. localNumber:{} chainNumber:{} localView:{} chainView:{}",
-                            nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
-                    tbNode.setNodeActive(DataStatus.INVALID.getValue());
-                } else {
-                    tbNode.setBlockNumber(latestNumber.longValue());
-                    tbNode.setPbftView(latestView.longValue());
-                    tbNode.setNodeActive(DataStatus.NORMAL.getValue());
-                }
-            }
-
-            // update node
+            tbNode.setBlockNumber(nodeStatusInfo.getBlockNumber());
+//            tbNode.setPbftView(new BigInteger(String.valueOf(nodeStatusInfo.getPbftView())));
+            tbNode.setNodeActive(nodeStatusInfo.getStatus() == 1 ? DataStatus.NORMAL.getValue() : DataStatus.INVALID.getValue());
+            tbNode.setModifyTime(DateTime.now());
+            //update node
             updateNode(tbNode);
         }
+//        // getPeerOfConsensusStatus
+//        List<PeerOfConsensusStatus> consensusList = getPeerOfConsensusStatus(chainId, groupId);
+//        if (Objects.isNull(consensusList)) {
+//            log.error("fail checkNodeStatus, consensusList is null");
+//            return;
+//        }
+//
+//        // getObserverList
+//        List<String> observerList = frontInterface.getObserverList(chainId, groupId);
+//        int nodeCount = CollectionUtils.size(consensusList) + CollectionUtils.size(observerList);
+//
+//        for (TbNode tbNode : nodeList) {
+//            String nodeId = tbNode.getNodeId();
+//            BigInteger localBlockNumber = BigInteger.valueOf(tbNode.getBlockNumber());
+//            BigInteger localPbftView = BigInteger.valueOf(tbNode.getPbftView());
+//            LocalDateTime modifyTime = CommonUtils.timestamp2LocalDateTime(tbNode.getModifyTime().getTime());
+//            LocalDateTime createTime = CommonUtils.timestamp2LocalDateTime(tbNode.getCreateTime().getTime());
+//
+//            Duration duration = Duration.between(modifyTime, LocalDateTime.now());
+//            Long subTime = duration.toMillis();
+//            if (subTime < (nodeCount * 1000 + EXT_CHECK_NODE_WAIT_MIN_MILLIS) && createTime.isBefore(modifyTime)) {
+//                log.warn("checkNodeStatus jump over. for time internal subTime:{}", subTime);
+//                return;
+//            }
+//
+//            int nodeType = 0; // 0-consensus;1-observer
+//            if (observerList != null) {
+//                nodeType = observerList.stream()
+//                        .filter(observer -> observer.equals(tbNode.getNodeId())).map(c -> 1)
+//                        .findFirst().orElse(0);
+//            }
+//
+//            BigInteger latestNumber = getBlockNumberOfNodeOnChain(chainId, groupId, nodeId);// blockNumber
+//            BigInteger latestView =
+//                    consensusList.stream().filter(cl -> nodeId.equals(cl.getNodeId()))
+//                            .map(c -> c.getView()).findFirst().orElse(BigInteger.ZERO);// pbftView
+//
+//            if (nodeType == 0) { // 0-consensus;1-observer
+//                if (localBlockNumber.equals(latestNumber) && localPbftView.equals(latestView)) {
+//                    log.warn(
+//                            "node[{}] is invalid. localNumber:{} chainNumber:{} localView:{} chainView:{}",
+//                            nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
+//                    tbNode.setNodeActive(DataStatus.INVALID.getValue());
+//                } else {
+//                    tbNode.setBlockNumber(latestNumber.longValue());
+//                    tbNode.setPbftView(latestView.longValue());
+//                    tbNode.setNodeActive(DataStatus.NORMAL.getValue());
+//                }
+//            } else { // observer
+//                if (!latestNumber.equals(frontInterface.getLatestBlockNumber(chainId, groupId))) {
+//                    log.warn(
+//                            "node[{}] is invalid. localNumber:{} chainNumber:{} localView:{} chainView:{}",
+//                            nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
+//                    tbNode.setNodeActive(DataStatus.INVALID.getValue());
+//                } else {
+//                    tbNode.setBlockNumber(latestNumber.longValue());
+//                    tbNode.setPbftView(latestView.longValue());
+//                    tbNode.setNodeActive(DataStatus.NORMAL.getValue());
+//                }
+//            }
+//
+//            // update node
+//            updateNode(tbNode);
+//        }
     }
 
     /**
      * get latest number of peer on chain.
      */
-    public BigInteger getBlockNumberOfNodeOnChain(int chainId, int groupId, String nodeId) {
+    public BigInteger getBlockNumberOfNodeOnChain(String chainId, String groupId, String nodeId) {
         SyncStatus syncStatus = frontInterface.getSyncStatus(chainId, groupId);
         if (nodeId.equals(syncStatus.getNodeId())) {
             return syncStatus.getBlockNumber();
@@ -325,26 +345,24 @@ public class NodeService {
     /**
      * get peer of consensusStatus
      */
-    private List<PeerOfConsensusStatus> getPeerOfConsensusStatus(int chainId, int groupId) {
-        ConsensusInfo consensusInfo = frontInterface.getConsensusStatus(chainId, groupId);
+    private List<PeerOfConsensusStatus> getPeerOfConsensusStatus(String chainId, String groupId) {
+        ConsensusStatusInfo consensusInfo = frontInterface.getConsensusStatus(chainId,groupId);
         if (consensusInfo == null) {
             log.debug("getPeerOfConsensusStatus is null");
             return null;
         }
         List<PeerOfConsensusStatus> dataIsList = new ArrayList<>();
-        List<ViewInfo> viewInfos = consensusInfo.getViewInfos();
-        for (ViewInfo viewInfo : viewInfos) {
-            dataIsList.add(
-                new PeerOfConsensusStatus(viewInfo.getNodeId(), new BigInteger(viewInfo.getView())));
-        }
+        PeerOfConsensusStatus peer = new PeerOfConsensusStatus();
+        peer.setNodeId(consensusInfo.getNodeID());
         return dataIsList;
     }
+
 
 
     /**
      * add sealer and observer in NodeList return: List<String> nodeIdList
      */
-    public List<PeerInfo> getSealerAndObserverListFromSpecificFront(int groupId, String peerName, String frontIp, Integer frontPort) {
+    public List<PeerInfo> getSealerAndObserverListFromSpecificFront(String groupId, String peerName, String frontIp, Integer frontPort) {
         log.debug("start getSealerAndObserverListFromSpecificFront groupId:{}", groupId);
         List<String> sealerList = frontInterface.getSealerListFromSpecificFront(peerName, frontIp, frontPort, groupId);
         List<String> observerList = frontInterface.getObserverListFromSpecificFront(peerName, frontIp, frontPort, groupId);
@@ -361,7 +379,7 @@ public class NodeService {
      * @param groupId
      * @return
      */
-    public List<String> getSealerAndObserverList(int chainId, int groupId) {
+    public List<String> getSealerAndObserverList(String chainId, String groupId) {
         log.debug("start getSealerAndObserverList chainId:{} groupId:{}", chainId, groupId);
         List<String> sealerList = frontInterface.getSealerList(chainId, groupId);
         List<String> observerList = frontInterface.getObserverList(chainId, groupId);
@@ -382,7 +400,7 @@ public class NodeService {
      * @param agencyId
      * @return
      */
-    public List<String> listSealerAndObserverByGroupAndAgency(int chainId, int groupId, int agencyId) {
+    public List<String> listSealerAndObserverByGroupAndAgency(String chainId, String groupId, int agencyId) {
         log.debug("start listSealerAndObserverByGroupAndAgency chainId:{} groupId:{} agencyId:{}", chainId, groupId, agencyId);
 
         List<String> sealerAndObserverOnGroup = getSealerAndObserverList(chainId, groupId);
@@ -405,12 +423,12 @@ public class NodeService {
      * @param nodeId
      * @return
      */
-    public static String getNodeName(int chainId, int groupId, String nodeId) {
+    public static String getNodeName(String chainId, String groupId, String nodeId) {
         return String.format("%s_%s_%s", chainId, groupId, nodeId);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public TbNode insert(int chainId, String nodeId, String nodeName, int groupId, String ip, int p2pPort,
+    public TbNode insert(String chainId, String nodeId, String nodeName, String groupId, String ip, int p2pPort,
                          String description, final DataStatus dataStatus) throws BaseException {
         if (!ValidateUtil.ipv4Valid(ip)) {
             throw new BaseException(ConstantCode.IP_FORMAT_ERROR);
@@ -457,7 +475,7 @@ public class NodeService {
      * @param nodeId
      * @return
      */
-    public void requireNodeIdValid(int chainId, int groupId, String nodeId) {
+    public void requireNodeIdValid(String chainId, String groupId, String nodeId) {
         log.debug("start exec method[requireNodeExist] chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);
 
         List<String> nodeIdList = frontInterface.getNodeIdList(chainId, groupId);
@@ -477,7 +495,7 @@ public class NodeService {
      * @param nodeTypes
      * @return
      */
-    public List<String> getNodeIdByTypes(int chainId, int groupId, List<String> nodeTypes) {
+    public List<String> getNodeIdByTypes(String chainId, String groupId, List<String> nodeTypes) {
 
         if (CollectionUtils.isEmpty(nodeTypes))
             return getNodeIds(chainId, groupId, null);
@@ -497,7 +515,7 @@ public class NodeService {
      * @param nodeType
      * @return
      */
-    public List<String> getNodeIds(int chainId, int groupId, String nodeType) {
+    public List<String> getNodeIds(String chainId, String groupId, String nodeType) {
 
         if (StringUtils.isBlank(nodeType)) {
             List<String> nodeIdList = frontInterface.getNodeIdList(chainId, groupId);
@@ -539,7 +557,7 @@ public class NodeService {
      * @param nodeId
      * @return
      */
-    public String getNodeType(int chainId, int groupId, String nodeId) {
+    public String getNodeType(String chainId, String groupId, String nodeId) {
         log.info("start exec method[getNodeType]. chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);
 
         List<String> sealerList = frontInterface.getSealerList(chainId, groupId);

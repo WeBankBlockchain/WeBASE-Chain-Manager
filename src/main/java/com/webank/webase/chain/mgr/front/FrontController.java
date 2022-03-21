@@ -79,9 +79,9 @@ public class FrontController extends BaseController {
     @GetMapping(value = "/find")
     public BasePageResponse queryFrontList(
             @RequestParam(value = "agencyId", required = false) Integer agencyId,
-            @RequestParam(value = "chainId") Integer chainId,
+            @RequestParam(value = "chainId") String chainId,
             @RequestParam(value = "frontId", required = false) Integer frontId,
-            @RequestParam(value = "groupId", required = false) Integer groupId)
+            @RequestParam(value = "groupId", required = false) String groupId)
             throws BaseException {
         Instant startTime = Instant.now();
         log.info("start queryFrontList startTime:{} agencyId:{} chainId:{} frontId:{} groupId:{}",
@@ -140,7 +140,7 @@ public class FrontController extends BaseController {
                                              @RequestParam(required = false) @DateTimeFormat(
                                                      iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
                                              @RequestParam(required = false, defaultValue = "1") int gap,
-                                             @RequestParam(required = false, defaultValue = "1") int groupId) throws BaseException {
+                                             @RequestParam(required = false, defaultValue = "1") String groupId) throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
         log.info(

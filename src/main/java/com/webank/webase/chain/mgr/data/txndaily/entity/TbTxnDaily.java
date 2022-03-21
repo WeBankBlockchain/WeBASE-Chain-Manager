@@ -22,8 +22,8 @@ import lombok.Data;
  */
 @Data
 public class TbTxnDaily {
-    private Integer chainId;
-    private Integer groupId;
+    private String chainId;
+    private String groupId;
     private LocalDate statDate;
     private Integer txn;
     private BigInteger blockNumber;

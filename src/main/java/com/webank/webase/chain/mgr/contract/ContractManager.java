@@ -42,7 +42,7 @@ public class ContractManager {
     /**
      * verify that the contract does not exist.
      */
-    public void verifyContractNotExistByName(int chainId, int groupId, String name, String path) {
+    public void verifyContractNotExistByName(String chainId, String groupId, String name, String path) {
         TbContract contract = tbContractMapper.getContract(chainId, groupId, name, path);
         if (Objects.nonNull(contract)) {
             log.warn("contract is exist. groupId:{} name:{} path:{}", groupId, name, path);
@@ -50,7 +50,7 @@ public class ContractManager {
         }
     }
 
-    public void verifyContractNotExistByName(int contractId, int chainId, int groupId, String name, String path) {
+    public void verifyContractNotExistByName(int contractId, String chainId, String groupId, String name, String path) {
         TbContractExample example = new TbContractExample();
         TbContractExample.Criteria criteria = example.createCriteria();
         criteria.andChainIdEqualTo(chainId);
@@ -68,7 +68,7 @@ public class ContractManager {
     /**
      * verify that the contract had not deployed.
      */
-    public TbContract verifyContractNotDeploy(int chainId, int contractId, int groupId) {
+    public TbContract verifyContractNotDeploy(String chainId, int contractId, String groupId) {
         TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
         if (ContractStatus.DEPLOYED.getValue() == contract.getContractStatus()) {
             log.info("contract had bean deployed contractId:{}", contractId);
@@ -80,7 +80,7 @@ public class ContractManager {
     /**
      * verify that the contract had bean deployed.
      */
-    public TbContract verifyContractDeploy(int chainId, int contractId, int groupId) {
+    public TbContract verifyContractDeploy(String chainId, int contractId, String groupId) {
         TbContract contract = verifyContractIdExist(chainId, contractId, groupId);
         if (ContractStatus.DEPLOYED.getValue() != contract.getContractStatus()) {
             log.info("contract had bean deployed contractId:{}", contractId);
@@ -92,7 +92,7 @@ public class ContractManager {
     /**
      * verify that the contractId is exist.
      */
-    public TbContract verifyContractIdExist(int chainId, int contractId, int groupId) {
+    public TbContract verifyContractIdExist(String chainId, int contractId, String groupId) {
         ContractParam param = new ContractParam(chainId, contractId, groupId);
         TbContract contract = queryContract(param);
         if (Objects.isNull(contract)) {
@@ -122,7 +122,7 @@ public class ContractManager {
      * @param groupId
      * @return
      */
-    public List<TbContract> listToolingContractByChainAndGroup(int chainId, int groupId) {
+    public List<TbContract> listToolingContractByChainAndGroup(String chainId, String groupId) {
         log.debug("start listContractByChainAndGroup. chainId:{} groupId:{}", chainId, groupId);
         TbContractExample example = new TbContractExample();
         TbContractExample.Criteria criteria = example.createCriteria();
@@ -156,7 +156,7 @@ public class ContractManager {
      * @param contractPath
      * @return
      */
-    public List<TbContract> listContractByPath(int chainId, int groupId, String contractPath) {
+    public List<TbContract> listContractByPath(String chainId, String groupId, String contractPath) {
         log.debug("start listContractByPath. chainId:{},groupId:{}contractPath:{}", chainId, groupId, contractPath);
         TbContractExample example = new TbContractExample();
         TbContractExample.Criteria criteria = example.createCriteria();
@@ -174,7 +174,7 @@ public class ContractManager {
      * @param agencyId
      * @return
      */
-    public long getCountOfContract(int chainId, Integer groupId, Integer agencyId) {
+    public long getCountOfContract(String chainId, String groupId, Integer agencyId) {
         log.info("start getCountOfContract. chainId:{} groupId:{} agencyId:{}", chainId, groupId, agencyId);
         TbContractExample example = new TbContractExample();
         TbContractExample.Criteria criteria = example.createCriteria();
@@ -197,11 +197,10 @@ public class ContractManager {
      * @param groupId
      * @param path
      */
-    public void deleteByChainAndGroupAndPath(int chainId, int groupId, String path) {
+    public void deleteByChainAndGroupAndPath(String chainId, String groupId, String path) {
         log.info("start deleteByChainAndGroupAndPath. chainId:{} groupId:{} path:{}", chainId, groupId, path);
-        if (chainId <= 0 || groupId <= 0 || StringUtils.isBlank(path))
-            throw new BaseException(ConstantCode.INVALID_PARAM_INFO.attach("require chainId>0 and groupId>0 and path not empty"));
-
+        if (chainId.isEmpty() || groupId.isEmpty() || StringUtils.isBlank(path))
+            throw new BaseException(ConstantCode.INVALID_PARAM_INFO.attach("require chainId>0 and groupId not empty and path not empty"));
 
         TbContractExample example = new TbContractExample();
         TbContractExample.Criteria criteria = example.createCriteria();

@@ -120,8 +120,8 @@ public class GroupController extends BaseController {
      * operate group.
      */
     @GetMapping("/operate/{chainId}/{groupId}/{nodeId}/{type}")
-    public Object operateGroup(@PathVariable("chainId") Integer chainId,
-                               @PathVariable("nodeId") String nodeId, @PathVariable("groupId") Integer groupId,
+    public Object operateGroup(@PathVariable("chainId") String chainId,
+                               @PathVariable("nodeId") String nodeId, @PathVariable("groupId") String groupId,
                                @PathVariable("type") String type) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start operateGroup startTime:{} groupId:{}", startTime.toEpochMilli(), groupId);
@@ -169,8 +169,8 @@ public class GroupController extends BaseController {
      * get group general.
      */
     @GetMapping("/general/{chainId}/{groupId}")
-    public BaseResponse getGroupGeneral(@PathVariable("chainId") Integer chainId,
-                                        @PathVariable("groupId") Integer groupId) throws BaseException {
+    public BaseResponse getGroupGeneral(@PathVariable("chainId") String chainId,
+                                        @PathVariable("groupId") String groupId) throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start getGroupGeneral startTime:{} groupId:{}", startTime.toEpochMilli(),
@@ -187,7 +187,7 @@ public class GroupController extends BaseController {
      * query all group.
      */
     @GetMapping("/all/{chainId}")
-    public BasePageResponse getAllGroup(@PathVariable("chainId") Integer chainId)
+    public BasePageResponse getAllGroup(@PathVariable("chainId") String chainId)
             throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
@@ -215,8 +215,8 @@ public class GroupController extends BaseController {
      * get node consensus list.
      */
     @GetMapping("getConsensusList/{chainId}/{groupId}/{nodeId}")
-    public Object getConsensusList(@PathVariable("chainId") Integer chainId,
-                                   @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+    public Object getConsensusList(@PathVariable("chainId") String chainId,
+                                   @PathVariable("groupId") String groupId, @PathVariable("nodeId") String nodeId,
                                    @RequestParam(defaultValue = "10") Integer pageSize,
                                    @RequestParam(defaultValue = "1") Integer pageNumber) {
 
@@ -289,8 +289,8 @@ public class GroupController extends BaseController {
      * getSysConfigList.
      */
     @GetMapping("getSysConfigList/{chainId}/{groupId}/{nodeId}")
-    public Object getSysConfigList(@PathVariable("chainId") Integer chainId,
-                                   @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+    public Object getSysConfigList(@PathVariable("chainId") String chainId,
+                                   @PathVariable("groupId") String groupId, @PathVariable("nodeId") String nodeId,
                                    @RequestParam(defaultValue = "10") int pageSize,
                                    @RequestParam(defaultValue = "1") int pageNumber) {
 
@@ -343,8 +343,8 @@ public class GroupController extends BaseController {
      * getNetWorkData.
      */
     @GetMapping("/charging/getNetWorkData/{chainId}/{groupId}/{nodeId}")
-    public Object getNetWorkData(@PathVariable("chainId") Integer chainId,
-                                 @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+    public Object getNetWorkData(@PathVariable("chainId") String chainId,
+                                 @PathVariable("groupId") String groupId, @PathVariable("nodeId") String nodeId,
                                  @RequestParam(defaultValue = "10") int pageSize,
                                  @RequestParam(defaultValue = "1") int pageNumber,
                                  @RequestParam(required = false) @DateTimeFormat(
@@ -374,8 +374,8 @@ public class GroupController extends BaseController {
      * getNetWorkData.
      */
     @GetMapping("/charging/getTxGasData/{chainId}/{groupId}/{nodeId}")
-    public Object getTxGasData(@PathVariable("chainId") Integer chainId,
-                               @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+    public Object getTxGasData(@PathVariable("chainId") String chainId,
+                               @PathVariable("groupId") String groupId, @PathVariable("nodeId") String nodeId,
                                @RequestParam(defaultValue = "10") int pageSize,
                                @RequestParam(defaultValue = "1") int pageNumber,
                                @RequestParam(required = false) @DateTimeFormat(
@@ -407,8 +407,8 @@ public class GroupController extends BaseController {
      * delete charging Data.
      */
     @DeleteMapping("/charging/deleteData/{chainId}/{groupId}/{nodeId}")
-    public Object deleteData(@PathVariable("chainId") Integer chainId,
-                             @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+    public Object deleteData(@PathVariable("chainId") String chainId,
+                             @PathVariable("groupId") String groupId, @PathVariable("nodeId") String nodeId,
                              @RequestParam(required = true) int type, @RequestParam(required = true) @DateTimeFormat(
             iso = ISO.DATE_TIME) LocalDateTime keepEndDate) {
 
@@ -435,15 +435,15 @@ public class GroupController extends BaseController {
      * get node consensus list.
      */
     @GetMapping("consensus/list/{chainId}/{groupId}")
-    public Object getConsensusList(@PathVariable("chainId") Integer chainId,
-                                   @PathVariable("groupId") Integer groupId,
+    public Object getConsensusList(@PathVariable("chainId") String chainId,
+                                   @PathVariable("groupId") String groupId,
                                    @RequestParam(defaultValue = "10") Integer pageSize,
                                    @RequestParam(defaultValue = "1") Integer pageNumber) {
 
         Instant startTime = Instant.now();
         log.info("sta   rt consensus list startTime:{}", startTime.toEpochMilli());
 
-        int newGroupId = groupId == null || groupId <= 0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
+        String newGroupId = groupId == null || groupId.isEmpty() ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
 
         // get front
         List<TbFrontGroupMap> frontGroupMapList = frontGroupMapService.listByChainAndGroup(chainId, newGroupId);
@@ -464,7 +464,7 @@ public class GroupController extends BaseController {
 
 
     @GetMapping("page/{chainId}")
-    public BasePageResponse queryGroupByPage(@PathVariable("chainId") Integer chainId,
+    public BasePageResponse queryGroupByPage(@PathVariable("chainId") String chainId,
                                              @RequestParam(name = "agency", required = false) Integer agencyId,
                                              @RequestParam(defaultValue = "10") Integer pageSize,
                                              @RequestParam(defaultValue = "1") Integer pageNumber,
@@ -485,8 +485,8 @@ public class GroupController extends BaseController {
      * @return
      */
     @GetMapping("{chainId}/{groupId}/detail")
-    public BaseResponse detail(@PathVariable("chainId") Integer chainId,
-                               @PathVariable("groupId") Integer groupId) {
+    public BaseResponse detail(@PathVariable("chainId") String chainId,
+                               @PathVariable("groupId") String groupId) {
         Instant startTime = Instant.now();
         log.info("start queryGroupDetail startTime:{} chainId:{} groupId:{}", startTime.toEpochMilli(), chainId, groupId);
 

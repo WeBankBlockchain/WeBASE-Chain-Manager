@@ -40,4 +40,8 @@ public class BaseException extends RuntimeException {
     public RetCode getRetCode() {
         return retCode;
     }
+
+    public BaseException(String msg) {
+        super(msg);
+    }
 }

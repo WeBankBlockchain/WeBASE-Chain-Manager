@@ -26,7 +26,7 @@ import java.util.List;
 public class ChainInfo {
     @NotNull
     @ApiModelProperty(value = "链id")
-    private Integer chainId;
+    private String chainId;
     @NotBlank
     @ApiModelProperty(value = "链名称")
     private String chainName;

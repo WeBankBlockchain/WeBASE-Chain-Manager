@@ -10,7 +10,7 @@ public class ClientVersionDTO {
     @JsonProperty("Build Type")
     private String buildType;
     @JsonProperty("Chain Id")
-    private Integer chainId;
+    private String chainId;
     @JsonProperty("FISCO-BCOS Version")
     private String version;
     @JsonProperty("Git Branch")

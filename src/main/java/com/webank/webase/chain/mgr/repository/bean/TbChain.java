@@ -16,7 +16,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class TbChain implements Serializable {
 
-    public static TbChain init(int chainId, String chainName, String description, String version, String consensusType, String storageType, EncryptTypeEnum encryptTypeEnum, ChainStatusEnum status, DeployTypeEnum deployTypeEnum) {
+    public static TbChain init(String chainId, String chainName, String description, String version, String consensusType, String storageType, EncryptTypeEnum encryptTypeEnum, ChainStatusEnum status, DeployTypeEnum deployTypeEnum) {
         Date now = new Date();
         TbChain chain = new TbChain();
         chain.setChainId(chainId);
@@ -44,7 +44,7 @@ public class TbChain implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer chainId;
+    private String chainId;
 
     /**
      *

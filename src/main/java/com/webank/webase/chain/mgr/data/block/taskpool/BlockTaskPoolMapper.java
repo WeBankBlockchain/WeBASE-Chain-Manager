@@ -26,46 +26,46 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BlockTaskPoolMapper {
 
-    Integer saveAll(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer saveAll(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("list") List<TbBlockTaskPool> list);
 
-    BigInteger getLatestBlockNumber(@Param("chainId") int chainId, @Param("groupId") int groupId);
+    BigInteger getLatestBlockNumber(@Param("chainId") String chainId, @Param("groupId") String groupId);
 
     List<TbBlockTaskPool> findBySyncStatusOrderByBlockHeightLimit(
         @Param("tableName") String tableName,
-        @Param("chainId") int chainId, @Param("groupId") int groupId,
+        @Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("syncStatus") int syncStatus,
         @Param("limit") int limit);
 
-    TbBlockTaskPool findByBlockNumber(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    TbBlockTaskPool findByBlockNumber(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("blockNumber") long blockNumber);
 
-    Integer setSyncStatusByBlockHeight(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer setSyncStatusByBlockHeight(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("syncStatus") int syncStatus, @Param("blockNumber") long blockNumber);
 
-    List<TbBlockTaskPool> findByCertainty(@Param("chainId") int chainId,
-        @Param("groupId") int groupId,
+    List<TbBlockTaskPool> findByCertainty(@Param("chainId") String chainId,
+        @Param("groupId") String groupId,
         @Param("certainty") int certainty);
 
-    Integer setCertaintyByBlockHeight(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer setCertaintyByBlockHeight(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("certainty") int certainty, @Param("blockNumber") long blockNumber);
 
-    Integer setSyncStatusAndCertaintyByBlockHeight(@Param("chainId") int chainId,
-        @Param("groupId") int groupId,
+    Integer setSyncStatusAndCertaintyByBlockHeight(@Param("chainId") String chainId,
+        @Param("groupId") String groupId,
         @Param("syncStatus") int syncStatus, @Param("certainty") int certainty,
         @Param("blockNumber") long blockNumber);
 
-    List<TbBlockTaskPool> findUnNormalRecords(@Param("chainId") int chainId,
-        @Param("groupId") int groupId);
+    List<TbBlockTaskPool> findUnNormalRecords(@Param("chainId") String chainId,
+        @Param("groupId") String groupId);
 
-    List<TbBlockTaskPool> findByBlockHeightRange(@Param("chainId") int chainId,
-        @Param("groupId") int groupId,
+    List<TbBlockTaskPool> findByBlockHeightRange(@Param("chainId") String chainId,
+        @Param("groupId") String groupId,
         @Param("startNumber") long startNumber, @Param("endNumber") long endNumber);
 
-    List<TbBlockTaskPool> findBySyncStatusAndDepotUpdatetimeLessThan(@Param("chainId") int chainId,
-        @Param("groupId") int groupId, @Param("syncStatus") int syncStatus,
+    List<TbBlockTaskPool> findBySyncStatusAndDepotUpdatetimeLessThan(@Param("chainId") String chainId,
+        @Param("groupId") String groupId, @Param("syncStatus") int syncStatus,
         @Param("time") Date time);
 
-    long countByBlockHeightRange(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    long countByBlockHeightRange(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("startNumber") long startNumber, @Param("endNumber") long endNumber);
 }

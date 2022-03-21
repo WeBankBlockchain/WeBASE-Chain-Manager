@@ -30,9 +30,9 @@ import lombok.Data;
 @Data
 public class ReqContractDeploy {
     @NotNull
-    private Integer chainId;
+    private String chainId;
     @NotNull
-    private Integer groupId;
+    private String groupId;
     @NotBlank
     private String signUserId;
     @NotBlank

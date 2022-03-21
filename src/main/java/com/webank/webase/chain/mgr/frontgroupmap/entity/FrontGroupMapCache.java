@@ -29,19 +29,19 @@ public class FrontGroupMapCache {
 
     @Autowired private TbFrontGroupMapMapper tbFrontGroupMapMapper;
 
-    private static Map<Integer, List<FrontGroup>> mapList = new ConcurrentHashMap<>();
+    private static Map<String, List<FrontGroup>> mapList = new ConcurrentHashMap<String, List<FrontGroup>>();
 
     /**
      * clear mapList.
      */
-    public void clearMapList(int chainId) {
+    public void clearMapList(String chainId) {
         mapList.remove(chainId);
     }
 
     /**
      * reset mapList.
      */
-    public Map<Integer, List<FrontGroup>> resetMapList(int chainId) {
+    public Map<String, List<FrontGroup>> resetMapList(String chainId) {
         mapList.put(chainId, this.tbFrontGroupMapMapper.selectByChainId(chainId));
         return mapList;
     }
@@ -49,7 +49,7 @@ public class FrontGroupMapCache {
     /**
      * get mapList.
      */
-    public List<FrontGroup> getMapListByChainId(int chainId, int groupId) {
+    public List<FrontGroup> getMapListByChainId(String chainId, String groupId) {
         List<FrontGroup> list = getAllMap(chainId);
         if (list == null) {
             return null;
@@ -62,7 +62,7 @@ public class FrontGroupMapCache {
     /**
      * get all mapList.
      */
-    public List<FrontGroup> getAllMap(int chainId) {
+    public List<FrontGroup> getAllMap(String chainId) {
         if (mapList == null || mapList.get(chainId) == null) {
             mapList = resetMapList(chainId);
         }

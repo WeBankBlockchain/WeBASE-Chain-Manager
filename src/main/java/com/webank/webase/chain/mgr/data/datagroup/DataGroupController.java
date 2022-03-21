@@ -133,7 +133,7 @@ public class DataGroupController extends BaseController {
      */
     @GetMapping("/list")
     public BasePageResponse getGroupList(
-        @RequestParam(value = "chainId", required = false) Integer chainId)
+        @RequestParam(value = "chainId", required = false) String chainId)
         throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
@@ -158,8 +158,8 @@ public class DataGroupController extends BaseController {
      * query node info list.
      */
     @GetMapping(value = "/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}")
-    public BasePageResponse queryNodeList(@PathVariable("chainId") Integer chainId,
-                                          @PathVariable("groupId") Integer groupId,
+    public BasePageResponse queryNodeList(@PathVariable("chainId") String chainId,
+                                          @PathVariable("groupId") String groupId,
                                           @PathVariable("pageNumber") Integer pageNumber,
                                           @PathVariable("pageSize") Integer pageSize) throws BaseException {
         BasePageResponse pagesponse = new BasePageResponse(ConstantCode.SUCCESS);
@@ -201,8 +201,8 @@ public class DataGroupController extends BaseController {
      * get group general.
      */
     @GetMapping("/general/{chainId}/{groupId}")
-    public BaseResponse getGroupGeneral(@PathVariable("chainId") Integer chainId,
-                                        @PathVariable("groupId") Integer groupId) throws BaseException {
+    public BaseResponse getGroupGeneral(@PathVariable("chainId") String chainId,
+                                        @PathVariable("groupId") String groupId) throws BaseException {
         Instant startTime = Instant.now();
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
         log.info("start getGroupGeneral. groupId:{}", groupId);
@@ -222,8 +222,8 @@ public class DataGroupController extends BaseController {
      * get trans daily.
      */
     @GetMapping("/txnDaily/{chainId}/{groupId}")
-    public BaseResponse getTransDaily(@PathVariable("chainId") Integer chainId,
-                                      @PathVariable("groupId") Integer groupId) {
+    public BaseResponse getTransDaily(@PathVariable("chainId") String chainId,
+                                      @PathVariable("groupId") String groupId) {
         BaseResponse pagesponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start getTransDaily.");
@@ -244,8 +244,8 @@ public class DataGroupController extends BaseController {
      * query block list.
      */
     @GetMapping(value = "/blockList/{chainId}/{groupId}/{pageNumber}/{pageSize}")
-    public BasePageResponse queryBlockList(@PathVariable("chainId") Integer chainId,
-                                           @PathVariable("groupId") Integer groupId,
+    public BasePageResponse queryBlockList(@PathVariable("chainId") String chainId,
+                                           @PathVariable("groupId") String groupId,
                                            @PathVariable("pageNumber") Integer pageNumber,
                                            @PathVariable("pageSize") Integer pageSize,
                                            @RequestParam(value = "blockHash", required = false) String blockHash,
@@ -282,8 +282,8 @@ public class DataGroupController extends BaseController {
      * query trans list.
      */
     @GetMapping(value = "/transList/{chainId}/{groupId}/{pageNumber}/{pageSize}")
-    public BasePageResponse queryTransList(@PathVariable("chainId") Integer chainId,
-                                           @PathVariable("groupId") Integer groupId,
+    public BasePageResponse queryTransList(@PathVariable("chainId") String chainId,
+                                           @PathVariable("groupId") String groupId,
                                            @PathVariable("pageNumber") Integer pageNumber,
                                            @PathVariable("pageSize") Integer pageSize,
                                            @RequestParam(value = "transHash", required = false) String transHash,
@@ -321,8 +321,8 @@ public class DataGroupController extends BaseController {
      * get transaction receipt.
      */
     @GetMapping("/transactionReceipt/{chainId}/{groupId}/{transHash}")
-    public BaseResponse getTransReceipt(@PathVariable("chainId") Integer chainId,
-        @PathVariable("groupId") Integer groupId,
+    public BaseResponse getTransReceipt(@PathVariable("chainId") String chainId,
+        @PathVariable("groupId") String groupId,
         @PathVariable("transHash") String transHash) {
         Instant startTime = Instant.now();
         log.info("start getTransReceipt startTime:{} groupId:{} transaction:{}",
@@ -339,8 +339,8 @@ public class DataGroupController extends BaseController {
      * get transaction info by hash.
      */
     @GetMapping("/transInfo/{chainId}/{groupId}/{transHash}")
-    public BaseResponse getTransaction(@PathVariable("chainId") Integer chainId,
-        @PathVariable("groupId") Integer groupId,
+    public BaseResponse getTransaction(@PathVariable("chainId") String chainId,
+        @PathVariable("groupId") String groupId,
         @PathVariable("transHash") String transHash) {
         Instant startTime = Instant.now();
         log.info("start getTransaction startTime:{} groupId:{} transaction:{}",
@@ -357,8 +357,8 @@ public class DataGroupController extends BaseController {
      * get block by number.
      */
     @GetMapping("/blockByNumber/{chainId}/{groupId}/{blockNumber}")
-    public BaseResponse getBlockByNumber(@PathVariable("chainId") Integer chainId,
-        @PathVariable("groupId") Integer groupId,
+    public BaseResponse getBlockByNumber(@PathVariable("chainId") String chainId,
+        @PathVariable("groupId") String groupId,
         @PathVariable("blockNumber") BigInteger blockNumber) {
 
         Instant startTime = Instant.now();
@@ -377,8 +377,8 @@ public class DataGroupController extends BaseController {
      * query count of trans by contract
      */
     @GetMapping(value = "/transCountByContract/{chainId}/{groupId}/{contractName}")
-    public BaseResponse queryTransCountByContract(@PathVariable("chainId") Integer chainId,
-                                                  @PathVariable("groupId") Integer groupId,
+    public BaseResponse queryTransCountByContract(@PathVariable("chainId") String chainId,
+                                                  @PathVariable("groupId") String groupId,
                                                   @PathVariable("contractName") String contractName) {
         BaseResponse pageResponse = new BaseResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();

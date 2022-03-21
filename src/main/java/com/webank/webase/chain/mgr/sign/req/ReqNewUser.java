@@ -37,7 +37,7 @@ public class ReqNewUser {
     private String signUserId;
     @Deprecated
     @ApiModelProperty(value = "所属链Id", example = "1", required = true)
-    private Integer chainId;
+    private String chainId;
 	@ApiModelProperty(value = "所属应用id（群组名称或群组id）", example = "group_1_1", required = true)
     @NotBlank
     private String appId;

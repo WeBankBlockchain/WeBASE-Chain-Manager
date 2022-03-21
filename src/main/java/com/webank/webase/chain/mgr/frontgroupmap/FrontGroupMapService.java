@@ -49,7 +49,7 @@ public class FrontGroupMapService {
      * add new mapping
      */
     @Transactional
-    public TbFrontGroupMap newFrontGroup(Integer chainId, Integer frontId, Integer groupId) {
+    public TbFrontGroupMap newFrontGroup(String chainId, Integer frontId, String groupId) {
 
         //add db
         TbFrontGroupMap exists = this.tbFrontGroupMapMapper.selectByChainIdAndFrontIdAndGroupId(chainId, frontId, groupId);
@@ -75,8 +75,8 @@ public class FrontGroupMapService {
     /**
      * remove by chainId
      */
-    public void removeByChainId(int chainId) {
-        if (chainId == 0) {
+    public void removeByChainId(String chainId) {
+        if (chainId.isEmpty()) {
             return;
         }
         //remove by chainId
@@ -86,8 +86,8 @@ public class FrontGroupMapService {
     /**
      * remove by groupId
      */
-    public void removeByGroupId(int chainId, int groupId) {
-        if (chainId == 0 || groupId == 0) {
+    public void removeByGroupId(String chainId, String groupId) {
+        if (chainId.isEmpty() || groupId.isEmpty()) {
             return;
         }
         //remove by groupId
@@ -106,13 +106,13 @@ public class FrontGroupMapService {
         this.tbFrontGroupMapMapper.deleteByFrontId(frontId);
     }
 
-    public void removeByFrontListAndChain(int chainId, List<Integer> frontIdList) {
+    public void removeByFrontListAndChain(String chainId, List<Integer> frontIdList) {
         if (CollectionUtils.isEmpty(frontIdList))
             return;
 
         TbFrontGroupMapExample example = new TbFrontGroupMapExample();
         TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chainId);
+        criteria.equals(chainId);
         criteria.andFrontIdIn(frontIdList);
 
         tbFrontGroupMapMapper.deleteByExample(example);
@@ -123,15 +123,15 @@ public class FrontGroupMapService {
     /**
      * get map list by groupId
      */
-    public List<TbFrontGroupMap> listByChainAndGroup(Integer chainId, Integer groupId) {
+    public List<TbFrontGroupMap> listByChainAndGroup(String chainId, String groupId) {
         log.info("start exec method[listByChainAndGroup], chainId:{} groupId:{}", chainId, groupId);
 
         //param
         TbFrontGroupMapExample example = new TbFrontGroupMapExample();
         TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chainId);
+        criteria.equals(chainId);
         if (Objects.nonNull(groupId)) {
-            criteria.andGroupIdEqualTo(groupId);
+            criteria.equals(groupId);
         }
 
         List<TbFrontGroupMap> frontGroupMapList = tbFrontGroupMapMapper.selectByExample(example);
@@ -144,7 +144,7 @@ public class FrontGroupMapService {
      * @param frontIdList
      * @return
      */
-    public List<Pair<Integer, Integer>> listGroupByFronts(List<Integer> frontIdList) {
+    public List<Pair<String, String>> listGroupByFronts(List<Integer> frontIdList) {
         log.info("start exec method[listGroupByFronts], frontIdList:{}", JsonTools.objToString(frontIdList));
         if (CollectionUtils.isEmpty(frontIdList)) return Collections.EMPTY_LIST;
 
@@ -157,7 +157,7 @@ public class FrontGroupMapService {
         List<TbFrontGroupMap> frontGroupMapList = tbFrontGroupMapMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(frontGroupMapList)) return Collections.EMPTY_LIST;
 
-        List<Pair<Integer, Integer>> chainGroupPairList = frontGroupMapList.stream().map(map -> Pair.of(map.getChainId(), map.getGroupId())).distinct().collect(Collectors.toList());
+        List<Pair<String, String>> chainGroupPairList = frontGroupMapList.stream().map(map -> Pair.of(map.getChainId(), map.getGroupId())).distinct().collect(Collectors.toList());
         log.info("success exec method[listGroupByFronts], frontIdList:{} result:{}", JsonTools.objToString(frontIdList), JsonTools.objToString(chainGroupPairList));
         return chainGroupPairList;
     }
@@ -168,14 +168,14 @@ public class FrontGroupMapService {
      * @param frontIdList
      * @return
      */
-    public List<Integer> listGroupIdByChainAndFronts(int chainId, List<Integer> frontIdList) {
+    public List<String> listGroupIdByChainAndFronts(String chainId, List<Integer> frontIdList) {
         log.info("start exec method[listGroupIdByChainAndFronts], chainId:{} frontIdList:{}", chainId, JsonTools.objToString(frontIdList));
         if (CollectionUtils.isEmpty(frontIdList)) return Collections.EMPTY_LIST;
 
         //param
         TbFrontGroupMapExample example = new TbFrontGroupMapExample();
         TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chainId);
+        criteria.equals(chainId);
         criteria.andFrontIdIn(frontIdList);
 
         //query
@@ -183,7 +183,7 @@ public class FrontGroupMapService {
         log.info("frontGroupMapList:{}", JsonTools.objToString(frontGroupMapList));
 
         if (CollectionUtils.isEmpty(frontGroupMapList)) return Collections.EMPTY_LIST;
-        List<Integer> groupIdList = frontGroupMapList.stream().map(map -> map.getGroupId()).distinct().collect(Collectors.toList());
+        List<String> groupIdList = frontGroupMapList.stream().map(map -> map.getGroupId()).distinct().collect(Collectors.toList());
         log.info("success exec method[listGroupIdByChainAndFronts], frontIdList:{} result:{}", JsonTools.objToString(frontIdList), JsonTools.objToString(groupIdList));
         return groupIdList;
     }
@@ -194,18 +194,18 @@ public class FrontGroupMapService {
      * @param frontId
      * @return
      */
-    public List<Integer> getGroupByChainAndFront(int chainId, int frontId) {
+    public List<String> getGroupByChainAndFront(String chainId, int frontId) {
         log.info("start exec method[getGroupByChainAndFront], chainId:{} frontId:{}", chainId, frontId);
         //param
         TbFrontGroupMapExample example = new TbFrontGroupMapExample();
         TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chainId);
+        criteria.equals(chainId);
         criteria.andFrontIdEqualTo(frontId);
 
         //query
         List<TbFrontGroupMap> frontGroupMapList = tbFrontGroupMapMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(frontGroupMapList)) return Collections.EMPTY_LIST;
-        List<Integer> groupIdList = frontGroupMapList.stream().map(map -> map.getGroupId()).distinct().collect(Collectors.toList());
+        List<String> groupIdList = frontGroupMapList.stream().map(map -> map.getGroupId()).distinct().collect(Collectors.toList());
 
         log.info("success exec method[listGroupByFronts], chainId:{} frontId:{} result:{}", chainId, frontId, JsonTools.objToString(groupIdList));
         return groupIdList;
@@ -218,7 +218,7 @@ public class FrontGroupMapService {
      * @param group
      * @param node
      */
-    public void removeByChainAndGroupAndNode(int chain, int group, String node) {
+    public void removeByChainAndGroupAndNode(String chain, String group, String node) {
         log.info("start exec method[removeByChainAndGroupAndNode], chain:{},  group:{}, node:{}", chain, group, node);
         TbFront tbFront = frontMapper.getByChainIdAndNodeId(chain, node);
         if (Objects.isNull(tbFront)) {
@@ -229,8 +229,8 @@ public class FrontGroupMapService {
         //param
         TbFrontGroupMapExample example = new TbFrontGroupMapExample();
         TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chain);
-        criteria.andGroupIdEqualTo(group);
+        criteria.equals(chain);
+        criteria.equals(group);
         criteria.andFrontIdEqualTo(tbFront.getFrontId());
 
         //delete
@@ -243,7 +243,7 @@ public class FrontGroupMapService {
 
 
 //    @Transactional(propagation = Propagation.REQUIRED)
-//    public void updateFrontMapStatus(int chainId,int frontId, GroupStatus status) {
+//    public void updateFrontMapStatus(String chainId,int frontId, GroupStatus status) {
 //        // update status
 //        log.info("Update front:[{}] all group map to status:[{}]", frontId, status);
 //        tbFrontGroupMapMapper.updateAllGroupsStatus(frontId,status.getValue());
@@ -251,7 +251,7 @@ public class FrontGroupMapService {
 //    }
 //
 //    @Transactional(propagation = Propagation.REQUIRED)
-//    public void updateFrontMapStatus(int chainId, int frontId, int groupId, GroupStatus status) {
+//    public void updateFrontMapStatus(String chainId, int frontId, String groupId, GroupStatus status) {
 //        // update status
 //        log.info("Update front:[{}] group:[{}] map to status:[{}]", frontId, groupId, status);
 //        tbFrontGroupMapMapper.updateOneGroupStatus(frontId,status.getValue(),groupId);

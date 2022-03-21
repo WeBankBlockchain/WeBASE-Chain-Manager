@@ -126,7 +126,7 @@ public class GroupService {
      *
      * @return
      */
-    public void generateExistGroupToSingleNode(int chainId, int groupId, String nodeId) {
+    public void generateExistGroupToSingleNode(String chainId, String groupId, String nodeId) {
         log.info("start exec method[generateExistGroupToSingleNode] chainId:{},  groupId:{},  nodeId:{}", chainId, groupId, nodeId);
         TbGroup existsGroup = this.tbGroupMapper.selectByPrimaryKey(groupId, chainId);
         if (Objects.isNull(existsGroup))
@@ -179,8 +179,8 @@ public class GroupService {
     @Transactional
     public TbGroup generateToSingleNode(String nodeId, ReqGenerateGroup req) {
         // check id
-        Integer chainId = req.getChainId();
-        Integer generateGroupId = req.getGenerateGroupId();
+        String chainId = req.getChainId();
+        String generateGroupId = req.getGenerateGroupId();
         Assert.notNull(req.getGenerateGroupId(), "generateGroupId can not be null");
         Assert.notNull(req.getTimestamp(), "timestamp can not be null");
 
@@ -220,13 +220,13 @@ public class GroupService {
 //        resetGroupList();
 
         // check id
-        Integer chainId = req.getChainId();
+        String chainId = req.getChainId();
         TbChain tbChain = chainManager.requireChainIdExist(chainId);
 
         //set groupId
-        Integer generateGroupId = req.getGenerateGroupId();
+        String generateGroupId = req.getGenerateGroupId();
         if (Objects.isNull(generateGroupId)) {
-            generateGroupId = tbGroupMapper.getMaxGroup(req.getChainId()) + 1;
+            generateGroupId = tbGroupMapper.getMaxGroup(req.getChainId()) + "1";
         }
         checkGroupIdExisted(chainId, generateGroupId);
 
@@ -311,7 +311,7 @@ public class GroupService {
      * @param type
      * @return
      */
-    public Object operateGroup(Integer chainId, String nodeId, Integer groupId, String type) {
+    public Object operateGroup(String chainId, String nodeId, String groupId, String type) {
         // get front
         TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
         if (tbFront == null) {
@@ -341,7 +341,7 @@ public class GroupService {
      * @param req
      */
     public void batchStartGroup(ReqStartGroup req) {
-        Integer groupId = req.getGenerateGroupId();
+        String groupId = req.getGenerateGroupId();
         // check id
         checkGroupIdValid(req.getChainId(), groupId);
         for (String nodeId : req.getNodeList()) {
@@ -364,7 +364,7 @@ public class GroupService {
     /**
      * query all group info.
      */
-    public List<TbGroup> getGroupList(Integer chainId, Byte groupStatus) throws BaseException {
+    public List<TbGroup> getGroupList(String chainId, Byte groupStatus) throws BaseException {
         log.debug("start getGroupList");
         try {
             List<TbGroup> groupList = new ArrayList<>();
@@ -387,7 +387,7 @@ public class GroupService {
     /**
      * update status.
      */
-    public void updateGroupStatus(int chainId, int groupId, int groupStatus) {
+    public void updateGroupStatus(String chainId, String groupId, int groupStatus) {
         log.info("start updateGroupStatus groupId:{} groupStatus:{}", groupId, groupStatus);
         this.tbGroupMapper.updateStatus(chainId, groupId, groupStatus);
         log.info("end updateGroupStatus groupId:{} groupStatus:{}", groupId, groupStatus);
@@ -396,7 +396,7 @@ public class GroupService {
     /**
      * query group overview information.
      */
-    public GroupGeneral queryGroupGeneral(int chainId, int groupId) throws BaseException {
+    public GroupGeneral queryGroupGeneral(String chainId, String groupId) throws BaseException {
         log.debug("start queryGroupGeneral groupId:{}", groupId);
         GroupGeneral generalInfo = this.tbGroupMapper.getGeneral(chainId, groupId);
         return generalInfo;
@@ -451,7 +451,7 @@ public class GroupService {
      * @param chainId
      */
     @Transactional
-    public void resetGroupByChain(int chainId) {
+    public void resetGroupByChain(String chainId) {
         Instant startTime = Instant.now();
         log.info("start exec method [resetGroupByChain] chainId:{} startTime:{}", chainId, startTime.toEpochMilli());
 
@@ -463,7 +463,7 @@ public class GroupService {
         }
 
         // all groupId from chain
-        Set<Integer> allGroupSet = new HashSet<>();
+        Set<String> allGroupSet = new HashSet<>();
 
         // get group from chain
         for (TbFront front : frontList) {
@@ -484,7 +484,7 @@ public class GroupService {
                 continue;
             }
             for (String groupId : groupIdList) {
-                Integer gId = Integer.valueOf(groupId);
+                String gId = groupId;
                 allGroupSet.add(gId);
                 // peer in group
                 List<String> groupPeerList =
@@ -514,7 +514,7 @@ public class GroupService {
             }
 
             //remove front-group-map by invalid group
-            List<Integer> groupOnMapList = frontGroupMapService.getGroupByChainAndFront(chainId, front.getFrontId());
+            List<String> groupOnMapList = frontGroupMapService.getGroupByChainAndFront(chainId, front.getFrontId());
             if (CollectionUtils.isEmpty(groupOnMapList)) continue;
             groupOnMapList.stream()
                     .filter(g -> !groupIdList.contains(String.valueOf(g)))
@@ -535,7 +535,7 @@ public class GroupService {
     /**
      * Check the validity of the groupId.
      */
-    public void checkGroupIdExisted(Integer chainId, Integer groupId) throws BaseException {
+    public void checkGroupIdExisted(String chainId, String groupId) throws BaseException {
         log.debug("start checkGroupIdExisted groupId:{}", groupId);
 
         if (groupId == null) {
@@ -554,7 +554,7 @@ public class GroupService {
     /**
      * Check the validity of the groupId.
      */
-    public void checkGroupIdValid(Integer chainId, Integer groupId) throws BaseException {
+    public void checkGroupIdValid(String chainId, String groupId) throws BaseException {
         log.debug("start checkGroupIdValid groupId:{}", groupId);
 
         if (groupId == null) {
@@ -573,7 +573,7 @@ public class GroupService {
     /**
      * save new peers.
      */
-    private void savePeerList(int chainId, String frontPeerName, String frontIp, Integer frontPort, int groupId,
+    private void savePeerList(String chainId, String frontPeerName, String frontIp, Integer frontPort, String groupId,
                               List<String> groupPeerList) {
         // get all local nodes
         List<TbNode> localNodeList = nodeService.queryByGroupId(chainId, groupId);
@@ -596,7 +596,7 @@ public class GroupService {
     /**
      * remove all group.
      */
-    private void removeAllGroup(Integer chainId) {
+    private void removeAllGroup(String chainId) {
         log.info("start remove all group.");
         List<TbGroup> allGroup = getGroupList(chainId, null);
         if (CollectionUtils.isEmpty(allGroup)) {
@@ -611,8 +611,8 @@ public class GroupService {
     /**
      * remove invalid peer.
      */
-    private void removeInvalidPeer(int chainId, int groupId, String peerName, String frontIp, Integer frontPort, List<String> groupPeerList) {
-        if (groupId == 0) {
+    private void removeInvalidPeer(String chainId, String groupId, String peerName, String frontIp, Integer frontPort, List<String> groupPeerList) {
+        if (groupId.isEmpty()) {
             return;
         }
         // get local peers
@@ -635,7 +635,7 @@ public class GroupService {
      * @param nodeId
      * @return
      */
-    private boolean checkSealerAndObserverListContains(int groupId, String peerName, String frontIp, Integer frontPort, String nodeId) {
+    private boolean checkSealerAndObserverListContains(String groupId, String peerName, String frontIp, Integer frontPort, String nodeId) {
         log.debug("checkSealerAndObserverListNotContains  groupId:{} peerName:{} frontIp:{} frontPort:{} nodeId:{}", groupId, peerName, frontIp, frontPort, nodeId);
         // get sealer and observer on chain
         List<PeerInfo> sealerAndObserverList =
@@ -652,8 +652,8 @@ public class GroupService {
     /**
      * check group status.
      */
-    private void checkGroupStatusAndRemoveInvalidGroup(Integer chainId,
-                                                       Set<Integer> allGroupOnChain) {
+    private void checkGroupStatusAndRemoveInvalidGroup(String chainId,
+                                                       Set<String> allGroupOnChain) {
         log.info("start exec method [checkGroupStatusAndRemoveInvalidGroup] chain:{} allGroupOnChain:{}", chainId, JsonTools.objToString(allGroupOnChain));
         if (CollectionUtils.isEmpty(allGroupOnChain))
             return;
@@ -663,8 +663,9 @@ public class GroupService {
             return;
 
         for (TbGroup localGroup : allLocalGroup) {
-            int localGroupId = localGroup.getGroupId();
-            long count = allGroupOnChain.stream().filter(id -> id.intValue() == localGroupId).count();
+            String localGroupId = localGroup.getGroupId();
+            //todo check "filter(id -> id == localGroupId).count()"
+            long count = allGroupOnChain.stream().filter(id -> id == localGroupId).count();
             try {
                 if (count > 0) {
                     log.info("group check pass, chainId:{} localGroupId:{}", chainId, localGroupId);
@@ -700,8 +701,8 @@ public class GroupService {
     /**
      * remove by groupId.
      */
-    private void removeByGroupId(int chainId, int groupId) {
-        if (chainId == 0 || groupId == 0) {
+    private void removeByGroupId(String chainId, String groupId) {
+        if (chainId.isEmpty() || groupId.isEmpty()) {
             return;
         }
         // remove groupId.
@@ -719,8 +720,8 @@ public class GroupService {
     /**
      * remove by chainId.
      */
-    public void removeByChainId(int chainId) {
-        if (chainId == 0) {
+    public void removeByChainId(String chainId) {
+        if (chainId.isEmpty()) {
             return;
         }
         // remove chainId.
@@ -731,14 +732,14 @@ public class GroupService {
      * update status.
      */
     @Transactional
-    public void updateGroupNodeCount(int chainId, int groupId, int nodeCount) {
+    public void updateGroupNodeCount(String chainId, String groupId, int nodeCount) {
         log.debug("start updateGroupNodeCount groupId:{} nodeCount:{}", groupId, nodeCount);
         this.tbGroupMapper.updateNodeCount(chainId, groupId, nodeCount);
         log.debug("end updateGroupNodeCount groupId:{} nodeCount:{}", groupId, nodeCount);
 
     }
 
-    private void pullAllGroupFiles(int generateGroupId, TbFront tbFront) {
+    private void pullAllGroupFiles(String generateGroupId, TbFront tbFront) {
         this.pullGroupStatusFile(generateGroupId, tbFront);
         this.pullGroupConfigFile(generateGroupId, tbFront);
     }
@@ -750,7 +751,7 @@ public class GroupService {
      *
      * @include group.x.genesis, group.x.ini, .group_status
      */
-    private void pullGroupConfigFile(int generateGroupId, TbFront tbFront) {
+    private void pullGroupConfigFile(String generateGroupId, TbFront tbFront) {
         // only support docker node/front
         String chainName = tbFront.getChainName();
         int nodeIndex = tbFront.getHostIndex();
@@ -780,7 +781,7 @@ public class GroupService {
     }
 
 
-    private void pullGroupStatusFile(int generateGroupId, TbFront tbFront) {
+    private void pullGroupStatusFile(String generateGroupId, TbFront tbFront) {
         // only support docker node/front
         String chainName = tbFront.getChainName();
         int nodeIndex = tbFront.getHostIndex();
@@ -816,7 +817,7 @@ public class GroupService {
      * @param pageNumber
      * @return
      */
-    public BasePageResponse queryGroupByPage(Integer chainId, Integer agencyId, Integer pageSize, Integer pageNumber, Byte status, String sortType) {
+    public BasePageResponse queryGroupByPage(String chainId, Integer agencyId, Integer pageSize, Integer pageNumber, Byte status, String sortType) {
         // check id
         chainManager.requireChainIdExist(chainId);
         //reset all local group
@@ -827,16 +828,16 @@ public class GroupService {
         example.setCount(pageSize);
         example.setOrderByClause(String.format(ConstantProperties.ORDER_BY_CREATE_TIME_FORMAT, sortType));
         TbGroupExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chainId);
+        criteria.equals(chainId);
         if (Objects.nonNull(status)) {
             criteria.andGroupStatusEqualTo(status);
         }
 
         //query by agencyId
         if (Objects.nonNull(agencyId)) {
-            List<Integer> groupIdList = listGroupIdByChainAndAgencyId(chainId, agencyId);
+            List<String> groupIdList = listGroupIdByChainAndAgencyId(chainId, agencyId);
             if (CollectionUtils.isEmpty(groupIdList)) {
-                criteria.andGroupIdEqualTo(-10);
+                criteria.equals(-10);
             } else {
                 criteria.andGroupIdIn(groupIdList);
             }
@@ -874,7 +875,7 @@ public class GroupService {
      * @param agencyId
      * @return
      */
-    public List<Integer> listGroupIdByChainAndAgencyId(int chainId, int agencyId) {
+    public List<String> listGroupIdByChainAndAgencyId(String chainId, int agencyId) {
         log.info("start exec method[listGroupIdByChainAndAgencyId] chainId:{} agencyId:{}", chainId, agencyId);
 
         //list frontId
@@ -885,7 +886,7 @@ public class GroupService {
         }
 
         //list group
-        List<Integer> groupIdList = frontGroupMapService.listGroupIdByChainAndFronts(chainId, frontIdList);
+        List<String> groupIdList = frontGroupMapService.listGroupIdByChainAndFronts(chainId, frontIdList);
         log.info("success exec method[listGroupIdByChainAndAgencyId] chainId:{} agencyId:{} result:{}", chainId, agencyId, JsonTools.objToString(groupIdList));
         return groupIdList;
     }
@@ -896,9 +897,9 @@ public class GroupService {
      * @param agencyId
      * @return
      */
-    public List<TbGroup> listGroupByChainAndAgencyId(int chainId, int agencyId) {
+    public List<TbGroup> listGroupByChainAndAgencyId(String chainId, int agencyId) {
         log.info("start exec method[listGroupByChainAndAgencyId] chainId:{} agencyId:{}", chainId, agencyId);
-        List<Integer> groupIdList = listGroupIdByChainAndAgencyId(chainId, agencyId);
+        List<String> groupIdList = listGroupIdByChainAndAgencyId(chainId, agencyId);
         log.info("groupIdList:{}", JsonTools.objToString(groupIdList));
         if (CollectionUtils.isEmpty(groupIdList))
             return Collections.EMPTY_LIST;
@@ -919,7 +920,7 @@ public class GroupService {
      * @param nodeId
      * @param groupId
      */
-    public void startGroupIfNotRunning(Integer chainId, String nodeId, Integer groupId) {
+    public void startGroupIfNotRunning(String chainId, String nodeId, String groupId) {
         log.info("start exec method[startGroupIfNotRunning] chainId:{} nodeId:{} groupId:{}", chainId, nodeId, groupId);
         // get front
         TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
@@ -946,7 +947,7 @@ public class GroupService {
      * @param nodeId
      * @param groupId
      */
-    public void stopGroupIfRunning(Integer chainId, String nodeId, Integer groupId) {
+    public void stopGroupIfRunning(String chainId, String nodeId, String groupId) {
         log.info("start exec method[stopGroupIfRunning] chainId:{} nodeId:{} groupId:{}", chainId, nodeId, groupId);
         // get front
         TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
@@ -973,7 +974,7 @@ public class GroupService {
      * @param group
      * @return
      */
-    public RspGroupDetailVo queryGroupDetail(int chain, int group) {
+    public RspGroupDetailVo queryGroupDetail(String chain, String group) {
         log.info("start exec method[queryGroupDetail] chainId:{}  groupId:{}", chain, group);
 
         // query by private key
@@ -1032,8 +1033,8 @@ public class GroupService {
      * @param chainId
      * @param groupId
      */
-    public void requireFoundGroupByChainAndGroup(int agencyId, int chainId, int groupId) {
-        List<Integer> groupIdList = listGroupIdByChainAndAgencyId(chainId, agencyId);
+    public void requireFoundGroupByChainAndGroup(int agencyId, String chainId, String groupId) {
+        List<String> groupIdList = listGroupIdByChainAndAgencyId(chainId, agencyId);
         if (CollectionUtils.isEmpty(groupIdList) || !groupIdList.contains(groupId))
             throw new BaseException(ConstantCode.NOT_FOUND_GROUP_BY_AGENCY_AND_CHAIN.attach("agency:" + agencyId + " chain:" + chainId + " group:" + groupId));
     }

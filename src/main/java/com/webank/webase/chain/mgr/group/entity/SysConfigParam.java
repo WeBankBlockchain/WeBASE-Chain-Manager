@@ -19,7 +19,7 @@ import lombok.Data;
 
 @Data
 public class SysConfigParam {
-    private int groupId;
+    private String groupId;
     private String signUserId;
     private String configKey;
     private String configValue;

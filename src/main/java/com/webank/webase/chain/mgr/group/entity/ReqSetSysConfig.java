@@ -19,8 +19,8 @@ import lombok.Data;
 
 @Data
 public class ReqSetSysConfig {
-    private Integer chainId;
-    private Integer groupId;
+    private String chainId;
+    private String groupId;
     private String nodeId;
     private String signUserId;
     private String configKey;

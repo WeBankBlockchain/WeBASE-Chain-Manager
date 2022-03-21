@@ -38,7 +38,7 @@ public class TbMethod implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer chainId;
+    private String chainId;
 
     /**
      *
@@ -47,7 +47,7 @@ public class TbMethod implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer groupId;
+    private String groupId;
 
     /**
      *

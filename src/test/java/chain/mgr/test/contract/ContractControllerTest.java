@@ -50,9 +50,9 @@ import java.util.*;
 public class ContractControllerTest {
 
     private MockMvc mockMvc;
-    private Integer chainId = 1;
+    private String chainId = "chain0";
     private String nodeId = "51b04e53c1ea3f779462713f2b7979c5c46a4b31a3b94556a04f0c76473920b34704618e3f392ef619938fac6852465b31fc3d061d8cbf1e7862a11d92858441";
-    private Integer groupId = 1;
+    private String groupId = "group0";
     private String appId = "chain_1_group_1";
     // user name to check exsit
     private String signUserName = "user123";

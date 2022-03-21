@@ -26,8 +26,8 @@ public class RspUserInfo {
     private Integer id;
     private String signUserId;
     private String appId;
-    private Integer groupId;
-    private Integer chainId;
+    private String groupId;
+    private String chainId;
     private String address;
     private String publicKey;
     // not return privateKey
