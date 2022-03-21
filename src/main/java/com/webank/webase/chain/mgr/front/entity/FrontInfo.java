@@ -25,7 +25,7 @@ import lombok.Data;
 public class FrontInfo {
 
     @ApiModelProperty(value = "链id")
-    private Integer chainId;
+    private String chainId;
 
     @ApiModelProperty(value = "k8s节点peerName", example = "abc.abc.abc")
     private String frontPeerName;

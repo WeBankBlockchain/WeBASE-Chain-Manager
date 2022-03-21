@@ -28,13 +28,13 @@ public class UserManager {
      * @param userName
      * @return
      */
-    public TbUser queryByChainAndGroupAndName(int chainId, int groupId, String userName) {
+    public TbUser queryByChainAndGroupAndName(String chainId, String groupId, String userName) {
         log.info("start method[queryByChainAndGroupAndName] chain:{} group:{} user:{}", chainId, groupId, userName);
         //param
         TbUserExample example = new TbUserExample();
         TbUserExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chainId);
-        criteria.andGroupIdEqualTo(groupId);
+        criteria.equals(chainId);
+        criteria.equals(groupId);
         criteria.andUserNameEqualTo(userName);
 
         //query
@@ -49,7 +49,7 @@ public class UserManager {
      * @param groupId
      * @param userName
      */
-    public void requireUserNameNotFound(int chainId, int groupId, String userName) {
+    public void requireUserNameNotFound(String chainId, String groupId, String userName) {
         log.info("start method[requireUserNameNotFound] chain:{} group:{} user:{}", chainId, groupId, userName);
         TbUser tbUser = queryByChainAndGroupAndName(chainId, groupId, userName);
         if (Objects.nonNull(tbUser)) {

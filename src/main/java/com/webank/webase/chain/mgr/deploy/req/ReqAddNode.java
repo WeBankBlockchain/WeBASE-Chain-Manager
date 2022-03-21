@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReqAddNode {
     @Positive(message = "chain id error.")
-    private int chainId;
+    private String chainId;
 
     @Positive(message = "Tag id error.")
     private int tagId;

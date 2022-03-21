@@ -241,7 +241,7 @@ public class PathService {
      * @param nodePath
      * @return
      */
-    public static Path getGroupGenesisPath(Path nodePath,int groupId) {
+    public static Path getGroupGenesisPath(Path nodePath,String groupId) {
         return nodePath.resolve("conf").resolve(String.format("group.%s.genesis",groupId));
     }
     /**

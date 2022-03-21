@@ -323,53 +323,14 @@ public class TbFrontGroupMapExample {
             return (Criteria) this;
         }
 
-        public Criteria andChainIdEqualTo(Integer value) {
-            addCriterion("chain_id =", value, "chainId");
-            return (Criteria) this;
-        }
 
-        public Criteria andChainIdNotEqualTo(Integer value) {
-            addCriterion("chain_id <>", value, "chainId");
-            return (Criteria) this;
-        }
-
-        public Criteria andChainIdGreaterThan(Integer value) {
-            addCriterion("chain_id >", value, "chainId");
-            return (Criteria) this;
-        }
-
-        public Criteria andChainIdGreaterThanOrEqualTo(Integer value) {
-            addCriterion("chain_id >=", value, "chainId");
-            return (Criteria) this;
-        }
-
-        public Criteria andChainIdLessThan(Integer value) {
-            addCriterion("chain_id <", value, "chainId");
-            return (Criteria) this;
-        }
-
-        public Criteria andChainIdLessThanOrEqualTo(Integer value) {
-            addCriterion("chain_id <=", value, "chainId");
-            return (Criteria) this;
-        }
-
-        public Criteria andChainIdIn(List<Integer> values) {
+        public Criteria andChainIdIn(List<String> values) {
             addCriterion("chain_id in", values, "chainId");
             return (Criteria) this;
         }
 
-        public Criteria andChainIdNotIn(List<Integer> values) {
+        public Criteria andChainIdNotIn(List<String> values) {
             addCriterion("chain_id not in", values, "chainId");
-            return (Criteria) this;
-        }
-
-        public Criteria andChainIdBetween(Integer value1, Integer value2) {
-            addCriterion("chain_id between", value1, value2, "chainId");
-            return (Criteria) this;
-        }
-
-        public Criteria andChainIdNotBetween(Integer value1, Integer value2) {
-            addCriterion("chain_id not between", value1, value2, "chainId");
             return (Criteria) this;
         }
 
@@ -443,53 +404,13 @@ public class TbFrontGroupMapExample {
             return (Criteria) this;
         }
 
-        public Criteria andGroupIdEqualTo(Integer value) {
-            addCriterion("group_id =", value, "groupId");
-            return (Criteria) this;
-        }
-
-        public Criteria andGroupIdNotEqualTo(Integer value) {
-            addCriterion("group_id <>", value, "groupId");
-            return (Criteria) this;
-        }
-
-        public Criteria andGroupIdGreaterThan(Integer value) {
-            addCriterion("group_id >", value, "groupId");
-            return (Criteria) this;
-        }
-
-        public Criteria andGroupIdGreaterThanOrEqualTo(Integer value) {
-            addCriterion("group_id >=", value, "groupId");
-            return (Criteria) this;
-        }
-
-        public Criteria andGroupIdLessThan(Integer value) {
-            addCriterion("group_id <", value, "groupId");
-            return (Criteria) this;
-        }
-
-        public Criteria andGroupIdLessThanOrEqualTo(Integer value) {
-            addCriterion("group_id <=", value, "groupId");
-            return (Criteria) this;
-        }
-
-        public Criteria andGroupIdIn(List<Integer> values) {
+        public Criteria andGroupIdIn(List<String> values) {
             addCriterion("group_id in", values, "groupId");
             return (Criteria) this;
         }
 
-        public Criteria andGroupIdNotIn(List<Integer> values) {
+        public Criteria andGroupIdNotIn(List<String> values) {
             addCriterion("group_id not in", values, "groupId");
-            return (Criteria) this;
-        }
-
-        public Criteria andGroupIdBetween(Integer value1, Integer value2) {
-            addCriterion("group_id between", value1, value2, "groupId");
-            return (Criteria) this;
-        }
-
-        public Criteria andGroupIdNotBetween(Integer value1, Integer value2) {
-            addCriterion("group_id not between", value1, value2, "groupId");
             return (Criteria) this;
         }
 

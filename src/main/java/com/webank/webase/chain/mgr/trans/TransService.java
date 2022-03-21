@@ -14,11 +14,9 @@
 package com.webank.webase.chain.mgr.trans;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.PrecompiledTypes;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.contract.ContractManager;
 import com.webank.webase.chain.mgr.contract.entity.ContractFunction;
@@ -34,7 +32,6 @@ import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.util.Web3Tools;
 import com.webank.webase.chain.mgr.util.web3.ContractAbiUtil;
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -42,24 +39,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.sdk.abi.FunctionEncoder;
-import org.fisco.bcos.sdk.abi.TypeReference;
-import org.fisco.bcos.sdk.abi.datatypes.Function;
-import org.fisco.bcos.sdk.abi.datatypes.Type;
-import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.client.protocol.model.tars.TransactionData;
+import org.fisco.bcos.sdk.codec.abi.FunctionEncoder;
+import org.fisco.bcos.sdk.codec.datatypes.Function;
+import org.fisco.bcos.sdk.codec.datatypes.Type;
+import org.fisco.bcos.sdk.codec.datatypes.TypeReference;
+import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.crypto.CryptoSuite;
 import org.fisco.bcos.sdk.crypto.signature.SignatureResult;
 import org.fisco.bcos.sdk.model.NodeVersion.ClientVersion;
-import org.fisco.bcos.sdk.model.RetCode;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
-import org.fisco.bcos.sdk.transaction.codec.decode.ReceiptParser;
+import org.fisco.bcos.sdk.transaction.builder.TransactionBuilderInterface;
+import org.fisco.bcos.sdk.transaction.builder.TransactionBuilderService;
 import org.fisco.bcos.sdk.transaction.codec.encode.TransactionEncoderService;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
-import org.fisco.bcos.sdk.transaction.model.po.RawTransaction;
 import org.fisco.bcos.sdk.utils.Numeric;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +66,9 @@ import org.springframework.stereotype.Service;
 @Log4j2
 @Service
 public class TransService {
+
+    private BigInteger DEFAULT_BLOCK_NUMBER_INTERVAL = BigInteger.valueOf(3600 * 24 * 7);
+
     @Autowired
     private ContractManager contractManager;
     @Autowired
@@ -93,8 +91,8 @@ public class TransService {
         TbContract tbContract = contractManager.verifyContractId(req.getContractId());
 
         //handle transaction
-        int chain = tbContract.getChainId();
-        int group = tbContract.getGroupId();
+        String chain = tbContract.getChainId();
+        String group = tbContract.getGroupId();
         String user = req.getSignUserId();
         String address = tbContract.getContractAddress();
         String abi = tbContract.getContractAbi();
@@ -114,7 +112,7 @@ public class TransService {
     }
 
     public Object sendQueryTransaction(String encodeStr, String contractAddress, String funcName,
-                                       String functionAbi, int chainId, int groupId) {
+                                       String functionAbi, String chainId, String groupId) {
         // transaction param
         Map<String, Object> params = new HashMap<>();
         params.put("groupId", groupId);
@@ -135,25 +133,14 @@ public class TransService {
      * @param data            info
      * @return
      */
-    public String signMessage(int chainId, int groupId, String signUserId, int encryptType,
-                              String contractAddress, String data) throws BaseException {
-        Random r = new SecureRandom();
-        BigInteger randomid = new BigInteger(250, r);
-        BigInteger blockLimit = frontInterface.getLatestBlockNumber(chainId, groupId)
-                .add(ConstantProperties.LIMIT_VALUE);
-        ClientVersion version = frontInterface.getClientVersion(chainId, groupId);
+    public String signMessage(String chainId, String groupId, String signUserId, int encryptType,
+        String contractAddress, String data) throws BaseException {
         String signMsg;
         log.info("signMessage encryptType: {}", encryptType);
-//        if (version.getVersion().contains("2.0.0-rc1")
-//                || version.getVersion().contains("release-2.0.1")) {
-        TransactionEncoderService encoderService = new TransactionEncoderService(cryptoSuiteMap.get(encryptType));
-
-        String chainID = version.getChainId();
-        RawTransaction extendedRawTransaction =
-            RawTransaction.createTransaction(randomid, ConstantProperties.GAS_PRICE,
-                        ConstantProperties.GAS_LIMIT, blockLimit, contractAddress, BigInteger.ZERO, data,
-                        new BigInteger(chainID), BigInteger.valueOf(groupId), "");
-        byte[] encodedTransaction = encoderService.encode(extendedRawTransaction, null);
+        TransactionEncoderService encoderService = new TransactionEncoderService(
+            cryptoSuiteMap.get(encryptType));
+        TransactionData extendedRawTransaction = new TransactionData();
+        byte[] encodedTransaction = encoderService.encode(extendedRawTransaction);
         String encodedDataStr = Numeric.toHexString(encodedTransaction);
 
         EncodeInfo encodeInfo = new EncodeInfo();
@@ -163,7 +150,7 @@ public class TransService {
         Instant startTime = Instant.now();
         String signDataStr = userService.getSignData(encodeInfo);
         log.info("getSignData from sign useTime: {}",
-                Duration.between(startTime, Instant.now()).toMillis());
+            Duration.between(startTime, Instant.now()).toMillis());
 
         if (StringUtils.isBlank(signDataStr)) {
             log.warn("deploySend get sign data error.");
@@ -171,22 +158,110 @@ public class TransService {
         }
 
         SignatureResult signData = CommonUtils.stringToSignatureData(signDataStr, encryptType);
-        byte[] signedMessage = encoderService.encode(extendedRawTransaction, signData);
+        //todo check "attribute"
+        byte[] signedMessage = encoderService.encodeToTransactionBytes(extendedRawTransaction,signData,1);
         signMsg = Numeric.toHexString(signedMessage);
 
         return signMsg;
+    }
+
+
+
+    /**
+     * get EncoderUtil.
+     */
+    public CryptoSuite getCryptoSuite(int encryptType) throws BaseException {
+        if (!EncryptTypeEnum.isInclude(encryptType)) {
+            throw new BaseException(ConstantCode.INVALID_ENCRYPT_TYPE);
+        }
+        return cryptoSuiteMap.get(encryptType);
+    }
+
+
+    /**
+     * send tx with sign for precomnpiled contract
+     *
+     * @param precompiledType enum of precompiled contract
+     * @param funcName        precompiled contract function name
+     */
+    public TransResultDto transHandleWithSignForPrecompile(String chainId, String groupId, String signUserId,
+                                                   PrecompiledTypes precompiledType, String funcName, List<Object> funcParams) {
+
+        // get address and abi of precompiled contract
+        String contractAddress = PrecompiledCommonInfo.getAddress(precompiledType);
+        String abiStr = PrecompiledCommonInfo.getAbi(precompiledType);
+
+        // trans handle
+        return handleTransaction(chainId, groupId, signUserId, contractAddress, abiStr, funcName, funcParams);
+    }
+
+
+    /**
+     * @param chainId
+     * @param groupId
+     * @param signUserId
+     * @param contractAddress
+     * @param contractAbi
+     * @param funName
+     * @param funcParams
+     * @return
+     */
+    private TransResultDto handleTransaction(String chainId, String groupId, String signUserId, String contractAddress,
+                                             String contractAbi, String funName, List<Object> funcParams) {
+        log.debug("start exec method[handleTransaction],chainId:{} groupId:{} signUserId:{}" +
+                        " contractAddress:{} contractAbi:{} funcName:{} funcParams:{}", chainId, groupId,
+                signUserId, contractAddress, contractAbi, funName, JsonTools.objToString(funcParams));
+        //checkSignUserId
+        RspUserInfo rspUserInfo = userService.checkSignUserId(signUserId);
+        if (rspUserInfo == null) {
+            log.error("checkSignUserId fail.");
+            throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
+        }
+
+        // check param ,get function of abi
+        List<Object> functionAbi = Arrays.asList(Web3Tools.getAbiDefinition(funName, contractAbi));
+        ContractFunction contractFunction = buildContractFunction(functionAbi, funName, funcParams);
+
+        // encode function
+        Function function = new Function(funName, contractFunction.getFinalInputs(), contractFunction.getFinalOutputs());
+        FunctionEncoder functionEncoder = new FunctionEncoder(cryptoSuiteMap.get(rspUserInfo.getEncryptType()));
+        byte[] encodedFunction = functionEncoder.encode(function);
+
+        //send transaction
+        TransResultDto transResultDto = new TransResultDto();
+        if (contractFunction.getConstant()) {
+            //todo check "encodedFunction.toString()"
+            Object response = sendQueryTransaction(encodedFunction.toString(), contractAddress, funName, JsonTools.toJSONString(functionAbi),
+                chainId, groupId);
+            transResultDto.setQueryInfo(JsonTools.objToString(response));
+            transResultDto.setConstant(true);
+        } else {
+            // data sign
+            String signMsg = signMessage(chainId, groupId, signUserId, rspUserInfo.getEncryptType(),
+                    contractAddress, encodedFunction.toString());
+            if (StringUtils.isBlank(signMsg)) {
+                throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
+            }
+            // send transaction
+            TransactionReceipt receipt = frontInterface.sendSignedTransaction(chainId, groupId, signMsg, true);
+            BeanUtils.copyProperties(receipt, transResultDto);
+            transResultDto.setConstant(false);
+        }
+
+        log.debug("finish exec method[handleTransaction], result:{}", JsonTools.objToString(transResultDto));
+        return transResultDto;
     }
 
     /**
      * build Function with abi.
      */
     private ContractFunction buildContractFunction(List<Object> functionAbi, String funcName,
-                                                   List<Object> params) throws BaseException {
+        List<Object> params) throws BaseException {
         // check function name
         ABIDefinition abiDefinition = null;
         try {
             abiDefinition =
-                    ContractAbiUtil.getAbiDefinition(funcName, JsonTools.toJSONString(functionAbi));
+                ContractAbiUtil.getAbiDefinition(funcName, JsonTools.toJSONString(functionAbi));
         } catch (Exception e) {
             log.error("abi parse error. abi:{}", JsonTools.toJSONString(functionAbi));
             throw new BaseException(ConstantCode.ABI_PARSE_ERROR);
@@ -210,95 +285,11 @@ public class TransService {
 
         // build ContractFunction
         ContractFunction cf =
-                ContractFunction.builder().funcName(funcName).constant(abiDefinition.isConstant())
-                        .inputList(funcInputTypes).outputList(funOutputTypes)
-                        .finalInputs(finalInputs).finalOutputs(finalOutputs).build();
+            ContractFunction.builder().funcName(funcName).constant(abiDefinition.isConstant())
+                .inputList(funcInputTypes).outputList(funOutputTypes)
+                .finalInputs(finalInputs).finalOutputs(finalOutputs).build();
+
         return cf;
-    }
-
-
-    /**
-     * get EncoderUtil.
-     */
-    public CryptoSuite getCryptoSuite(int encryptType) throws BaseException {
-        if (!EncryptTypeEnum.isInclude(encryptType)) {
-            throw new BaseException(ConstantCode.INVALID_ENCRYPT_TYPE);
-        }
-        return cryptoSuiteMap.get(encryptType);
-    }
-
-
-    /**
-     * send tx with sign for precomnpiled contract
-     *
-     * @param precompiledType enum of precompiled contract
-     * @param funcName        precompiled contract function name
-     */
-    public TransResultDto transHandleWithSignForPrecompile(int chainId, int groupId, String signUserId,
-                                                   PrecompiledTypes precompiledType, String funcName, List<Object> funcParams) {
-
-        // get address and abi of precompiled contract
-        String contractAddress = PrecompiledCommonInfo.getAddress(precompiledType);
-        String abiStr = PrecompiledCommonInfo.getAbi(precompiledType);
-
-        // trans handle
-        return handleTransaction(chainId, groupId, signUserId, contractAddress, abiStr, funcName, funcParams);
-    }
-
-
-    /**
-     * @param chainId
-     * @param groupId
-     * @param signUserId
-     * @param contractAddress
-     * @param contractAbi
-     * @param funName
-     * @param funcParams
-     * @return
-     */
-    private TransResultDto handleTransaction(int chainId, int groupId, String signUserId, String contractAddress,
-                                             String contractAbi, String funName, List<Object> funcParams) {
-        log.debug("start exec method[handleTransaction],chainId:{} groupId:{} signUserId:{}" +
-                        " contractAddress:{} contractAbi:{} funcName:{} funcParams:{}", chainId, groupId,
-                signUserId, contractAddress, contractAbi, funName, JsonTools.objToString(funcParams));
-        //checkSignUserId
-        RspUserInfo rspUserInfo = userService.checkSignUserId(signUserId);
-        if (rspUserInfo == null) {
-            log.error("checkSignUserId fail.");
-            throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
-        }
-
-        // check param ,get function of abi
-        List<Object> functionAbi = Arrays.asList(Web3Tools.getAbiDefinition(funName, contractAbi));
-        ContractFunction contractFunction = buildContractFunction(functionAbi, funName, funcParams);
-
-        // encode function
-        Function function = new Function(funName, contractFunction.getFinalInputs(), contractFunction.getFinalOutputs());
-        FunctionEncoder functionEncoder = new FunctionEncoder(cryptoSuiteMap.get(rspUserInfo.getEncryptType()));
-        String encodedFunction = functionEncoder.encode(function);
-
-        //send transaction
-        TransResultDto transResultDto = new TransResultDto();
-        if (contractFunction.getConstant()) {
-            Object response = sendQueryTransaction(encodedFunction, contractAddress, funName, JsonTools.toJSONString(functionAbi),
-                chainId, groupId);
-            transResultDto.setQueryInfo(JsonTools.objToString(response));
-            transResultDto.setConstant(true);
-        } else {
-            // data sign
-            String signMsg = signMessage(chainId, groupId, signUserId, rspUserInfo.getEncryptType(),
-                    contractAddress, encodedFunction);
-            if (StringUtils.isBlank(signMsg)) {
-                throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
-            }
-            // send transaction
-            TransactionReceipt receipt = frontInterface.sendSignedTransaction(chainId, groupId, signMsg, true);
-            BeanUtils.copyProperties(receipt, transResultDto);
-            transResultDto.setConstant(false);
-        }
-
-        log.debug("finish exec method[handleTransaction], result:{}", JsonTools.objToString(transResultDto));
-        return transResultDto;
     }
 
 

@@ -44,7 +44,7 @@ import org.springframework.web.context.WebApplicationContext;
 public class GroupControllerTest {
     
     private MockMvc mockMvc;
-    private Integer chainId = 1001;
+    private String chainId = "chain0";
     private String nodeId = "6d8d03b04da71c48273a19a24a34d9fe7b48155d3450e697f6a7c6012d0b22a82b53c25ecbe455c8fa439ceb556dd8c885c3d82309d375d355d6ae662f00a2ac";
 
     @Autowired

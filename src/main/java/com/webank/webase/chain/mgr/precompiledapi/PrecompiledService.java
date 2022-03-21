@@ -105,8 +105,8 @@ public class PrecompiledService {
         Set<String> nodeIds = checkBeforeSetConsensusStatus(consensusParam);
 
         //get signUserId
-        int chainId = consensusParam.getChainId();
-        int groupId = consensusParam.getGroupId();
+        String chainId = consensusParam.getChainId();
+        String groupId = consensusParam.getGroupId();
         String signUserId = consensusParam.getSignUserId();
         if (StringUtils.isBlank(signUserId))
             signUserId = userService.createAdminIfNonexistence(chainId, groupId).getSignUserId();
@@ -193,7 +193,7 @@ public class PrecompiledService {
     }
 
     @Transactional
-    public void addObserverAndSaveSealerTask(int chainId, int groupId, String nodeId) {
+    public void addObserverAndSaveSealerTask(String chainId, String groupId, String nodeId) {
         log.info("start exec method[addObserverAndSaveSealerTask] chain:{} chain:{} node:{}", chainId, groupId, nodeId);
 
 //        checkBeforeAddObserver(chainId, groupId, SetUtils.hashSet(nodeId));
@@ -207,7 +207,7 @@ public class PrecompiledService {
     }
 
 
-    public void addSealer(int chainId, int groupId, String nodeId) {
+    public void addSealer(String chainId, String groupId, String nodeId) {
         //signUser
         String signUserId = userService.createAdminIfNonexistence(chainId, groupId).getSignUserId();
         addSealer(chainId, groupId, signUserId, nodeId);
@@ -217,7 +217,7 @@ public class PrecompiledService {
     /**
      * consensus: add sealer through webase-sign
      */
-    public void addSealer(int chainId, int groupId, String signUserId, String nodeId) {
+    public void addSealer(String chainId, String groupId, String signUserId, String nodeId) {
         log.info("start addSealer chainId:{} groupId:{} nodeId:{}", chainId, groupId, nodeId);
         // params
         List<Object> funcParams = new ArrayList<>();
@@ -246,7 +246,7 @@ public class PrecompiledService {
      * @param groupId
      * @param nodeId
      */
-    public void addObserver(int chainId, int groupId, String nodeId) {
+    public void addObserver(String chainId, String groupId, String nodeId) {
         //signUser
         String signUserId = userService.createAdminIfNonexistence(chainId, groupId).getSignUserId();
         addObserver(chainId, groupId, signUserId, nodeId);
@@ -256,7 +256,7 @@ public class PrecompiledService {
     /**
      * consensus: add observer through webase-sign
      */
-    public void addObserver(int chainId, int groupId, String signUserId, String nodeId) {
+    public void addObserver(String chainId, String groupId, String signUserId, String nodeId) {
         // params
         List<Object> funcParams = new ArrayList<>();
         funcParams.add(nodeId);
@@ -281,7 +281,7 @@ public class PrecompiledService {
     /**
      * consensus: remove node from list through webase-sign
      */
-    public void removeNode(int chainId, int groupId, String signUserId, String nodeId) {
+    public void removeNode(String chainId, String groupId, String signUserId, String nodeId) {
         log.info("start method [removeNode] chainId:{} groupId：{} signUserId：{} nodeId：{}", chainId, groupId, signUserId, nodeId);
 
         // params
@@ -363,7 +363,7 @@ public class PrecompiledService {
      * @param nodeIds
      * @return
      */
-    public Set<String> checkBeforeAddSealer(int chainId, int groupId, Set<String> nodeIds) {
+    public Set<String> checkBeforeAddSealer(String chainId, String groupId, Set<String> nodeIds) {
         log.info("start exec method[checkBeforeAddSealer]. chainId:{} groupId:{} nodeIds:{}", chainId, groupId, JsonTools.objToString(nodeIds));
 
         //require nodeId is observer
@@ -394,7 +394,7 @@ public class PrecompiledService {
      * @param nodeIds
      * @return
      */
-    private Set<String> checkBeforeAddObserver(int chainId, int groupId, Set<String> nodeIds) {
+    private Set<String> checkBeforeAddObserver(String chainId, String groupId, Set<String> nodeIds) {
         log.info("start exec method[checkBeforeAddObserver]. chainId:{} groupId:{} nodeIdList:{}", chainId, groupId, JsonTools.objToString(nodeIds));
 
         //require nodeId is observer
@@ -419,7 +419,7 @@ public class PrecompiledService {
      * @param nodeIds
      * @return
      */
-    private Set<String> checkBeforeAddNodeOfRemoveType(int chainId, int groupId, Set<String> nodeIds) {
+    private Set<String> checkBeforeAddNodeOfRemoveType(String chainId, String groupId, Set<String> nodeIds) {
         log.info("start exec method[checkBeforeAddObserver]. chainId:{} groupId:{} nodeIdList:{}", chainId, groupId, JsonTools.objToString(nodeIds));
 
         //can not remove all sealer nodes
@@ -466,7 +466,7 @@ public class PrecompiledService {
      * @param nodeIdList
      * @return
      */
-    private Set<String> requireAllNodeValid(int chainId, int groupId, List<String> nodeIdList) {
+    private Set<String> requireAllNodeValid(String chainId, String groupId, List<String> nodeIdList) {
         log.info("start exec method[requireAllNodeValid]. chainId:{} groupId:{} nodeIdList:{}", chainId, groupId, JsonTools.objToString(nodeIdList));
 
         if (CollectionUtils.isEmpty(nodeIdList))
@@ -489,7 +489,7 @@ public class PrecompiledService {
      * @param chainId
      * @param groupId
      */
-    public void removeAgencyFromGroup(int agencyId, int chainId, int groupId) {
+    public void removeAgencyFromGroup(int agencyId, String chainId, String groupId) {
         log.info("start exec method[removeAgencyFromGroup] agencyId:{} chainId:{} groupId:{}", agencyId, chainId, groupId);
         groupService.requireFoundGroupByChainAndGroup(agencyId, chainId, groupId);
 

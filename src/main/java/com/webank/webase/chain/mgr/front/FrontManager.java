@@ -58,13 +58,13 @@ public class FrontManager {
      * @param chainId
      * @return
      */
-    public List<TbFront> listByChain(int chainId) {
+    public List<TbFront> listByChain(String chainId) {
         log.info("start exec method [listByChain]. chainId:{}", chainId);
 
         //param
         TbFrontExample example = new TbFrontExample();
         TbFrontExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chainId);
+        criteria.equals(chainId);
         criteria.andFrontStatusNotEqualTo(FrontStatusEnum.ABANDONED.getId());
 
         //query
@@ -78,13 +78,13 @@ public class FrontManager {
      * @param nodeIdList
      * @return
      */
-    public List<TbFront> listByChainAndNodeIds(int chainId, List<String> nodeIdList) {
+    public List<TbFront> listByChainAndNodeIds(String chainId, List<String> nodeIdList) {
         log.info("start exec method [listByChainAndNodeIds]. chainId:{} nodeIds:{}", chainId, JsonTools.objToString(nodeIdList));
 
         //param
         TbFrontExample example = new TbFrontExample();
         TbFrontExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chainId);
+        criteria.equals(chainId);
         criteria.andNodeIdIn(nodeIdList);
         criteria.andFrontStatusNotEqualTo(FrontStatusEnum.ABANDONED.getId());
 
@@ -135,7 +135,7 @@ public class FrontManager {
         TbFrontExample.Criteria criteria = example.createCriteria();
 
         if (Objects.nonNull(param.getChainId()))
-            criteria.andChainIdEqualTo(param.getChainId());
+            criteria.equals(param.getChainId());
 
         if (Objects.nonNull(param.getExtAgencyId()))
             criteria.andExtAgencyIdEqualTo(param.getExtAgencyId());
@@ -183,7 +183,7 @@ public class FrontManager {
      * @param agencyId
      * @return
      */
-    public List<TbFront> listFrontByChainAndAgency(int chainId, int agencyId) {
+    public List<TbFront> listFrontByChainAndAgency(String chainId, int agencyId) {
         log.debug("start exec method [listFrontByChainAndAgency]. chainId:{} agencyId:{}", chainId, agencyId);
         FrontParam frontParam = new FrontParam();
         frontParam.setChainId(chainId);
@@ -198,7 +198,7 @@ public class FrontManager {
      * @param agencyId
      * @return
      */
-    public List<Integer> listFrontIdByChainAndAgency(int chainId, int agencyId) {
+    public List<Integer> listFrontIdByChainAndAgency(String chainId, int agencyId) {
         log.debug("start exec method [listFrontIdByAgency]. chainId:{} agencyId:{}", chainId, agencyId);
         List<TbFront> frontList = listFrontByChainAndAgency(chainId, agencyId);
         if (CollectionUtils.isEmpty(frontList))
@@ -229,11 +229,11 @@ public class FrontManager {
      * @param chainId
      * @param nodeId
      */
-    public void requireNotFoundFront(int chainId, String nodeId, String frontPeerName) {
+    public void requireNotFoundFront(String chainId, String nodeId, String frontPeerName) {
         log.info("start exec method[requireNotFoundFront] chainId:{} nodeId:{} frontPeerName:{}", chainId, nodeId, frontPeerName);
         TbFrontExample example = new TbFrontExample();
         TbFrontExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(chainId);
+        criteria.equals(chainId);
         criteria.andNodeIdEqualTo(nodeId);
 
         tbFrontMapper.getOneByExample(example).ifPresent(front -> {
@@ -246,7 +246,7 @@ public class FrontManager {
         if (StringUtils.isNotBlank(frontPeerName)) {
             TbFrontExample example1 = new TbFrontExample();
             TbFrontExample.Criteria criteria1 = example1.createCriteria();
-            criteria1.andChainIdEqualTo(chainId);
+            criteria1.equals(chainId);
             criteria1.andFrontPeerNameEqualTo(frontPeerName);
 
             tbFrontMapper.getOneByExample(example1).ifPresent(front -> {

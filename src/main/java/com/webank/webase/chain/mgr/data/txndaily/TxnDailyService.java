@@ -38,7 +38,7 @@ public class TxnDailyService {
     private TableService tableService;
 
     @Async("asyncExecutor")
-    public void statProcess(CountDownLatch latch, int chainId, int groupId) {
+    public void statProcess(CountDownLatch latch, String chainId, String groupId) {
         log.debug("start statProcess. chainId:{} groupId:{}", chainId, groupId);
         try {
             // check table
@@ -63,7 +63,7 @@ public class TxnDailyService {
     /**
      * save latest transaction count.
      */
-    private void saveLatestTransCount(LatestTransCount latestTransCount, int chainId, int groupId) {
+    private void saveLatestTransCount(LatestTransCount latestTransCount, String chainId, String groupId) {
         TbTxnDaily tbTxnDaily = new TbTxnDaily();
         tbTxnDaily.setChainId(chainId);
         tbTxnDaily.setGroupId(groupId);
@@ -74,7 +74,7 @@ public class TxnDailyService {
     /**
      * query Trading within seven days.
      */
-    public List<TbTxnDaily> listSeventDayOfTrans(int chainId, int groupId) throws BaseException {
+    public List<TbTxnDaily> listSeventDayOfTrans(String chainId, String groupId) throws BaseException {
         try {
             List<TbTxnDaily> transList = txnDailyMapper.listSeventDayOfTransDaily(chainId, groupId);
             return transList;
@@ -87,8 +87,8 @@ public class TxnDailyService {
     /**
      * delete by chainId.
      */
-    public void deleteByChainId(int chainId) {
-        if (chainId == 0) {
+    public void deleteByChainId(String chainId) {
+        if (chainId.isEmpty()) {
             return;
         }
         txnDailyMapper.deleteByChainId(chainId);
@@ -97,8 +97,8 @@ public class TxnDailyService {
     /**
      * delete by groupId.
      */
-    public void deleteByGroupId(int chainId, int groupId) {
-        if (chainId == 0 || groupId == 0) {
+    public void deleteByGroupId(String chainId, String groupId) {
+        if (chainId.isEmpty() || groupId.isEmpty()) {
             return;
         }
         txnDailyMapper.deleteByGroupId(chainId, groupId);

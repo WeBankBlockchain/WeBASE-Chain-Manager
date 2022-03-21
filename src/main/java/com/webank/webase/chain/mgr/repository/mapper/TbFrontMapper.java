@@ -23,19 +23,19 @@ import org.apache.ibatis.annotations.UpdateProvider;
 public interface TbFrontMapper {
 
     @Select({ "select * from tb_front where chain_id = #{chainId} and node_id = #{nodeId}" })
-    TbFront getByChainIdAndNodeId(@Param("chainId") int chainId, @Param("nodeId") String nodeId);
+    TbFront getByChainIdAndNodeId(@Param("chainId") String chainId, @Param("nodeId") String nodeId);
 
     @Delete({ "delete from tb_front where chain_id=#{chainId}" })
-    int deleteByChainId(@Param("chainId") int chainId);
+    int deleteByChainId(@Param("chainId") String chainId);
 
     @Select({ "select ", TbFrontSqlProvider.ALL_COLUMN_FIELDS, " from tb_front where chain_id=#{chainId}" })
-    List<TbFront> selectByChainId(@Param("chainId") int chainId);
+    List<TbFront> selectByChainId(@Param("chainId") String chainId);
 
     @Select({ "select ", TbFrontSqlProvider.ALL_COLUMN_FIELDS, " from tb_front where chain_id=#{chainId} and front_status=#{frontStatus}" })
-    List<TbFront> selectByChainIdAndStatus(@Param("chainId") int chainId, @Param("frontStatus") int frontStatus);
+    List<TbFront> selectByChainIdAndStatus(@Param("chainId") String chainId, @Param("frontStatus") int frontStatus);
 
     @Select({ "select ", TbFrontSqlProvider.ALL_COLUMN_FIELDS, " from tb_front where chain_id=#{chainId} and ext_agency_id=#{agencyId}" })
-    List<TbFront> selectByChainIdAndAgencyId(@Param("chainId") int chainId, @Param("agencyId") int agencyId);
+    List<TbFront> selectByChainIdAndAgencyId(@Param("chainId") String chainId, @Param("agencyId") int agencyId);
 
     @Update({ "update tb_front set `front_status`=#{frontStatus},modify_time=NOW() where front_id = #{frontId}" })
     int updateStatus(@Param("frontId") int frontId, @Param("frontStatus") int frontStatus);

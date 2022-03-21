@@ -28,8 +28,8 @@ public class OverviewController {
      * query trans all
      */
     @GetMapping(value = "/transCountAll/{chainId}/{groupId}/{startTime}/{endTime}")
-    public BaseResponse queryTransCountAll(@PathVariable("chainId") Integer chainId,
-                                           @PathVariable("groupId") Integer groupId,
+    public BaseResponse queryTransCountAll(@PathVariable("chainId") String chainId,
+                                           @PathVariable("groupId") String groupId,
                                            @PathVariable("startTime") Long startTime,
                                            @PathVariable("endTime") Long endTime) {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
@@ -48,8 +48,8 @@ public class OverviewController {
      * query trans all
      */
     @GetMapping(value = "/transListAll/{chainId}/{groupId}/{startTime}/{endTime}")
-    public BasePageResponse queryTransListAll(@PathVariable("chainId") Integer chainId,
-                                              @PathVariable("groupId") Integer groupId,
+    public BasePageResponse queryTransListAll(@PathVariable("chainId") String chainId,
+                                              @PathVariable("groupId") String groupId,
                                               @PathVariable("startTime") Long startTime,
                                               @PathVariable("endTime") Long endTime) {
         BasePageResponse pageResponse = new BasePageResponse(ConstantCode.SUCCESS);

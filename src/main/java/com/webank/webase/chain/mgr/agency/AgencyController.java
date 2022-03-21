@@ -63,8 +63,8 @@ public class AgencyController extends BaseController {
 
     @ApiOperation(value = "查询机构列表")
     @GetMapping("/list")
-    public BaseResponse queryAgencyList(@RequestParam("chainId") Integer chainId,
-                                        @RequestParam(name = "groupId", required = false) Integer groupId,
+    public BaseResponse queryAgencyList(@RequestParam("chainId") String chainId,
+                                        @RequestParam(name = "groupId", required = false) String groupId,
                                         @RequestParam(value = "nodeTypes", required = false) List<String> nodeTypes) {
         Instant startTime = Instant.now();
         log.info("start queryAgencyList startTime:{} chainId:{} groupId:{} nodeTypes:{}", startTime.toEpochMilli(), chainId, groupId, JsonTools.objToString(nodeTypes));
@@ -74,7 +74,6 @@ public class AgencyController extends BaseController {
         if (CollectionUtils.isNotEmpty(agencyList)) {
             baseResponse.setData(agencyList.stream().map(agency -> agency.getAgencyId()).distinct().collect(Collectors.toList()));
         }
-
 
         log.info("end queryAgencyList useTime:{} result:{}",
                 Duration.between(startTime, Instant.now()).toMillis(),
@@ -92,8 +91,8 @@ public class AgencyController extends BaseController {
      * @return
      */
     @GetMapping(value = "/count")
-    public BaseResponse getAgencyCount(@RequestParam("chainId") Integer chainId,
-                                       @RequestParam(name = "groupId", required = false) Integer groupId,
+    public BaseResponse getAgencyCount(@RequestParam("chainId") String chainId,
+                                       @RequestParam(name = "groupId", required = false) String groupId,
                                        @RequestParam(value = "nodeTypes", required = false) List<String> nodeTypes) {
         Instant startTime = Instant.now();
         log.info("start getAgencyCount startTime:{}, chainId:{} groupId:{} nodeTypes:{}",

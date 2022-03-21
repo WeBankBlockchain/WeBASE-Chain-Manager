@@ -22,7 +22,7 @@ public class ReqDeploy {
 
     @ApiModelProperty(value = "Chain id，由 WebServer 生成", example = "10", required = true)
 //    @NotNull(message = "chain id error.")
-    private int chainId;
+    private String chainId;
 
     @ApiModelProperty(value = "Docker 镜像版本", example = "v2.5.0", required = true)
     @NotBlank(message = "Image tag version error.")

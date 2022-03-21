@@ -90,6 +90,8 @@ public class FrontRestTools {
     public static final String URI_CONSENSUS = "precompiled/consensus";
     public static final String URI_CONTRACT_STATUS_MANAGE = "precompiled/contractStatusManage";
 
+    public static final String URI_NODE_STATUS_LIST = "web3/nodeStatusList";
+
     public static final String URI_CERT = "cert";
     public static final String URI_ENCRYPT_TYPE = "encrypt";
 
@@ -121,7 +123,7 @@ public class FrontRestTools {
     /**
      * append groupId to uri.
      */
-    public static String uriAddGroupId(Integer groupId, String uri) {
+    public static String uriAddGroupId(String groupId, String uri) {
         if (groupId == null || StringUtils.isBlank(uri)) {
             return null;
         }
@@ -250,14 +252,14 @@ public class FrontRestTools {
     /**
      * get from front for entity.
      */
-    public <T> T getForEntity(Integer chainId, Integer groupId, String uri, Class<T> clazz) {
+    public <T> T getForEntity(String chainId, String groupId, String uri, Class<T> clazz) {
         return restTemplateExchange(chainId, groupId, uri, HttpMethod.GET, null, clazz);
     }
 
     /**
      * post from front for entity.
      */
-    public <T> T postForEntity(Integer chainId, Integer groupId, String uri, Object params,
+    public <T> T postForEntity(String chainId, String groupId, String uri, Object params,
                                Class<T> clazz) {
         return restTemplateExchange(chainId, groupId, uri, HttpMethod.POST, params, clazz);
     }
@@ -265,7 +267,7 @@ public class FrontRestTools {
     /**
      * delete from front for entity.
      */
-    public <T> T deleteForEntity(Integer chainId, Integer groupId, String uri, Object params,
+    public <T> T deleteForEntity(String chainId, String groupId, String uri, Object params,
                                  Class<T> clazz) {
         return restTemplateExchange(chainId, groupId, uri, HttpMethod.DELETE, params, clazz);
     }
@@ -273,7 +275,7 @@ public class FrontRestTools {
     /**
      * restTemplate exchange.
      */
-    private <T> T restTemplateExchange(Integer chainId, Integer groupId, String uri,
+    private <T> T restTemplateExchange(String chainId, String groupId, String uri,
                                        HttpMethod method, Object param, Class<T> clazz) {
         List<FrontGroup> frontList = frontGroupMapCache.getMapListByChainId(chainId, groupId);
         if (frontList == null || frontList.size() == 0) {

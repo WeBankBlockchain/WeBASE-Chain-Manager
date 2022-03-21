@@ -68,8 +68,9 @@ public class UserService {
         // add order by
         example.setOrderByClause("gmt_modified DESC");
         TbUserExample.Criteria criteria = example.createCriteria();
-        criteria.andChainIdEqualTo(tbGroup.getChainId());
-        criteria.andGroupIdEqualTo(tbGroup.getGroupId());
+        //todo check "criteria.equals"
+        criteria.equals(tbGroup.getChainId());
+        criteria.equals(tbGroup.getGroupId());
         List<TbUser> userList = userMapper.selectByExample(example);
         log.debug("getUserListByAppId userList:{}", userList);
         if (CollectionUtils.isEmpty(userList)) {
@@ -210,7 +211,7 @@ public class UserService {
      * @param groupId
      * @return
      */
-    private String buildUserId(int chainId, int groupId) {
+    private String buildUserId(String chainId, String groupId) {
         String uuid = UUID.randomUUID().toString().replace("-", "");
         String signUserId = String.join(ConstantProperties.SEPARATOR, String.valueOf(chainId), String.valueOf(groupId), uuid);
         log.info("userId:{}", signUserId);
@@ -224,7 +225,7 @@ public class UserService {
      * @return
      */
     @Transactional
-    public TbUser createAdminIfNonexistence(int chainId, int groupId) {
+    public TbUser createAdminIfNonexistence(String chainId, String groupId) {
         log.info("start exec method [createAdminIfNonexistence], chain:{} group:{}", chainId, groupId);
 
         //query group
@@ -274,8 +275,8 @@ public class UserService {
 
             for (TbGroup tbGroup : groupList) {
                 TbUserExample.Criteria criteria = example.createCriteria();
-                criteria.andChainIdEqualTo(tbGroup.getChainId());
-                criteria.andGroupIdEqualTo(tbGroup.getGroupId());
+                criteria.equals(tbGroup.getChainId());
+                criteria.equals(tbGroup.getGroupId());
                 example.or(criteria);
             }
         }

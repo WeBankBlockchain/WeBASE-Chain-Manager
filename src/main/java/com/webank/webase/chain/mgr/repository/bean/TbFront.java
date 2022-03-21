@@ -29,7 +29,7 @@ public class TbFront implements Serializable {
         return Objects.hash(frontId);
     }
 
-    public static TbFront build(int chainId, String nodeId, String ip, int frontPort, String agencyName, String description, FrontStatusEnum status, String version, String containerName, int jsonrpcPort, int p2pPort, int channelPort, String chainName, int extCompanyId, int extAgencyId, int extHostId, int hostIndex, String sshUser, int sshPort, int dockerPort, String rootOnHost, String nodeRootOnHost) {
+    public static TbFront build(String chainId, String nodeId, String ip, int frontPort, String agencyName, String description, FrontStatusEnum status, String version, String containerName, int jsonrpcPort, int p2pPort, int channelPort, String chainName, int extCompanyId, int extAgencyId, int extHostId, int hostIndex, String sshUser, int sshPort, int dockerPort, String rootOnHost, String nodeRootOnHost) {
         Date now = new Date();
         TbFront tbFront = new TbFront();
         tbFront.setChainId(chainId);
@@ -75,7 +75,7 @@ public class TbFront implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer chainId;
+    private String chainId;
 
     /**
      *

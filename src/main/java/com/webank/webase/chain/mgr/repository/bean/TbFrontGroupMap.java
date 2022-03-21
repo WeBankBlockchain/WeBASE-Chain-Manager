@@ -13,7 +13,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class TbFrontGroupMap implements Serializable {
 
-    public TbFrontGroupMap(Integer chainId, Integer frontId, Integer groupId) {
+    public TbFrontGroupMap(String chainId, Integer frontId, String groupId) {
         this.chainId = chainId;
         this.frontId = frontId;
         this.groupId = groupId;
@@ -38,7 +38,7 @@ public class TbFrontGroupMap implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer chainId;
+    private String chainId;
 
     /**
      *
@@ -56,7 +56,7 @@ public class TbFrontGroupMap implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer groupId;
+    private String groupId;
 
     /**
      *

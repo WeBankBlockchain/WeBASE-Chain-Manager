@@ -25,8 +25,8 @@ import java.util.Set;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class NodeParam extends BaseQueryParam {
-    private Integer chainId;
-    private Integer groupId;
+    private String chainId;
+    private String groupId;
     private String nodeId;
     private Integer p2pPort;
     private String nodeIp;

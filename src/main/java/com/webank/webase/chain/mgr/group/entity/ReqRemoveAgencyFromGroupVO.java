@@ -9,7 +9,7 @@ public class ReqRemoveAgencyFromGroupVO {
     @NotNull
     private Integer agencyId;
     @NotNull
-    private Integer chainId;
+    private String chainId;
     @NotNull
-    private Integer groupId;
+    private String groupId;
 }

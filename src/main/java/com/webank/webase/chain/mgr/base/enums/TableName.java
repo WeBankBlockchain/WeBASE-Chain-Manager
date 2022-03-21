@@ -30,11 +30,11 @@ public enum TableName {
         return value;
     }
 
-    public String getTableName(int chainId, int groupId) {
+    public String getTableName(String chainId, String groupId) {
         return value + chainId + "_" + groupId;
     }
 
-    public String getEventInfoTableName(int chainId, int groupId, int eventExportId) {
+    public String getEventInfoTableName(String chainId, String groupId, int eventExportId) {
         return value + chainId + "_" + groupId + "_" + eventExportId;
     }
 }

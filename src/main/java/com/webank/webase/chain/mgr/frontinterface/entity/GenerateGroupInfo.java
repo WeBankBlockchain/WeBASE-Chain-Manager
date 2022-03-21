@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GenerateGroupInfo {
-    private Integer generateGroupId;
+    private String generateGroupId;
     private BigInteger timestamp;
     private List<String> nodeList;
 }

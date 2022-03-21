@@ -67,7 +67,7 @@ public class BlockTaskPoolService {
     private TableService tableService;
 
     @Async("asyncExecutor")
-    public void pullBlockProcess(CountDownLatch latch, int chainId, int groupId) {
+    public void pullBlockProcess(CountDownLatch latch, String chainId, String groupId) {
         log.info("start pullBlockProcess. chainId:{} groupId:{}", chainId, groupId);
         try {
             // check table
@@ -122,7 +122,7 @@ public class BlockTaskPoolService {
         return height > cProperties.getStartBlockNumber() ? height : cProperties.getStartBlockNumber();
     }
 
-    public long getTaskPoolHeight(int chainId, int groupId) {
+    public long getTaskPoolHeight(String chainId, String groupId) {
         long height = 0;
         BigInteger localMaxBlockNumber = taskPoolMapper.getLatestBlockNumber(chainId, groupId);
         if (Objects.nonNull(localMaxBlockNumber)) {
@@ -132,7 +132,7 @@ public class BlockTaskPoolService {
     }
 
     @Transactional
-    public void prepareTask(int chainId, int groupId, long begin, long end, boolean certainty) {
+    public void prepareTask(String chainId, String groupId, long begin, long end, boolean certainty) {
         log.debug("Begin to prepare sync blocks from {} to {}", begin, end);
         List<TbBlockTaskPool> list = Lists.newArrayList();
         for (long i = begin; i <= end; i++) {
@@ -153,7 +153,7 @@ public class BlockTaskPoolService {
         log.debug("Sync blocks from {} to {} are prepared.", begin, end);
     }
 
-    public List<Block> fetchData(int chainId, int groupId, int count) {
+    public List<Block> fetchData(String chainId, String groupId, int count) {
         List<TbBlockTaskPool> tasks = taskPoolMapper.findBySyncStatusOrderByBlockHeightLimit(
             TableName.TASK.getValue(),
                 chainId, groupId, TxInfoStatusEnum.INIT.getStatus(), count);
@@ -164,7 +164,7 @@ public class BlockTaskPoolService {
         }
     }
 
-    public List<Block> getTasks(int chainId, int groupId, List<TbBlockTaskPool> tasks) {
+    public List<Block> getTasks(String chainId, String groupId, List<TbBlockTaskPool> tasks) {
         List<Block> result = new ArrayList<>();
         List<TbBlockTaskPool> pools = new ArrayList<>();
         for (TbBlockTaskPool task : tasks) {
@@ -187,31 +187,31 @@ public class BlockTaskPoolService {
     }
 
     @Async("asyncExecutor")
-    public void handleSingleBlock(int chainId, int groupId, Block b, long total) {
+    public void handleSingleBlock(String chainId, String groupId, Block b, long total) {
         process(chainId, groupId, b, total);
     }
 
-    public void processDataSequence(int chainId, int groupId, List<Block> data, long total) {
+    public void processDataSequence(String chainId, String groupId, List<Block> data, long total) {
         for (Block b : data) {
             process(chainId, groupId, b, total);
         }
     }
 
-    public void process(int chainId, int groupId, Block b, long total) {
+    public void process(String chainId, String groupId, Block b, long total) {
         try {
             log.info("process chainId:{} groupId:{} number:{}.", chainId, groupId, b.getNumber());
             blockService.saveBlockInfo(b, chainId, groupId);
             taskPoolMapper.setSyncStatusByBlockHeight(chainId, groupId, TxInfoStatusEnum.DONE.getStatus(),
-                    b.getNumber().longValue());
-            log.debug("Block {} of {} sync block succeed.", b.getNumber().longValue(), total);
+                    b.getNumber());
+            log.debug("Block {} of {} sync block succeed.", b.getNumber(), total);
         } catch (Exception e) {
-            log.error("block {}, exception occur in job processing: {}", b.getNumber().longValue(), e.getMessage());
+            log.error("block {}, exception occur in job processing: {}", b.getNumber(), e.getMessage());
             taskPoolMapper.setSyncStatusByBlockHeight(chainId, groupId, TxInfoStatusEnum.ERROR.getStatus(),
-                    b.getNumber().longValue());
+                    b.getNumber());
         }
     }
 
-    public void resetDataByBlockNumber(int chainId, int groupId, long blockNumber) {
+    public void resetDataByBlockNumber(String chainId, String groupId, long blockNumber) {
         TbBlockTaskPool blockTaskPool = taskPoolMapper.findByBlockNumber(chainId, groupId, blockNumber);
         if (Objects.isNull(blockTaskPool)) {
             throw new BaseException(ConstantCode.INVALID_BLOCK_NUMBER);
@@ -226,7 +226,7 @@ public class BlockTaskPoolService {
         taskPoolMapper.setSyncStatusByBlockHeight(chainId, groupId, TxInfoStatusEnum.INIT.getStatus(), blockNumber);
     }
 
-    public void checkForks(int chainId, int groupId, long currentBlockHeight) throws IOException {
+    public void checkForks(String chainId, String groupId, long currentBlockHeight) throws IOException {
         log.debug("current block height is {}, and begin to check forks", currentBlockHeight);
         List<TbBlockTaskPool> uncertainBlocks = taskPoolMapper.findByCertainty(chainId, groupId,
                 BlockCertaintyEnum.UNCERTAIN.getCertainty());
@@ -261,7 +261,7 @@ public class BlockTaskPoolService {
         }
     }
 
-    public void checkTaskCount(int chainId, int groupId, long startBlockNumber, long currentMaxTaskPoolNumber) {
+    public void checkTaskCount(String chainId, String groupId, long startBlockNumber, long currentMaxTaskPoolNumber) {
         log.debug("Check task count from {} to {}", startBlockNumber, currentMaxTaskPoolNumber);
         if (isComplete(chainId, groupId, startBlockNumber, currentMaxTaskPoolNumber)) {
             return;
@@ -286,7 +286,7 @@ public class BlockTaskPoolService {
         taskPoolMapper.saveAll(chainId, groupId, supplements);
     }
 
-    public void checkTimeOut(int chainId, int groupId) {
+    public void checkTimeOut(String chainId, String groupId) {
         DateTime offsetDate = DateUtil.offsetSecond(DateUtil.date(), 0 - ConstantProperties.DEPOT_TIME_OUT);
         log.debug("Begin to check timeout transactions which is ealier than {}", offsetDate);
         List<TbBlockTaskPool> list = taskPoolMapper.findBySyncStatusAndDepotUpdatetimeLessThan(chainId, groupId,
@@ -302,7 +302,7 @@ public class BlockTaskPoolService {
         });
     }
 
-    public void processErrors(int chainId, int groupId) {
+    public void processErrors(String chainId, String groupId) {
         log.debug("Begin to check error records");
         List<TbBlockTaskPool> unnormalRecords = taskPoolMapper.findUnNormalRecords(chainId, groupId);
         if (CollectionUtils.isEmpty(unnormalRecords)) {
@@ -317,7 +317,7 @@ public class BlockTaskPoolService {
         }
     }
 
-    private Optional<List<TbBlockTaskPool>> findMissingPoolRecords(int chainId, int groupId, long startIndex,
+    private Optional<List<TbBlockTaskPool>> findMissingPoolRecords(String chainId, String groupId, long startIndex,
             long endIndex) {
         if (isComplete(chainId, groupId, startIndex, endIndex)) {
             return Optional.empty();
@@ -338,7 +338,7 @@ public class BlockTaskPoolService {
         return Optional.of(supplements);
     }
 
-    private boolean isComplete(int chainId, int groupId, long startBlockNumber, long currentMaxTaskPoolNumber) {
+    private boolean isComplete(String chainId, String groupId, long startBlockNumber, long currentMaxTaskPoolNumber) {
         long deserveCount = currentMaxTaskPoolNumber - startBlockNumber + 1;
         long actualCount = taskPoolMapper.countByBlockHeightRange(chainId, groupId, startBlockNumber,
                 currentMaxTaskPoolNumber);

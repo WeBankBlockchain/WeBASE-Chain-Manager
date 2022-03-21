@@ -114,7 +114,7 @@ public class ChainController extends BaseController {
      */
     @ApiOperation(value = "删除链")
     @DeleteMapping("{chainId}")
-    public BaseResponse removeChain(@PathVariable("chainId") Integer chainId) {
+    public BaseResponse removeChain(@PathVariable("chainId") String chainId) {
         Instant startTime = Instant.now();
         log.info("start removeChain startTime:{} chainId:{}", startTime.toEpochMilli(), chainId);
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
@@ -207,7 +207,7 @@ public class ChainController extends BaseController {
 
     @ApiOperation(value = "查询单链信息")
     @GetMapping("/get/{chainId}")
-    public BaseResponse getChain(@PathVariable("chainId") int chainId)
+    public BaseResponse getChain(@PathVariable("chainId") String chainId)
             throws BaseException {
 
         Instant startTime = Instant.now();

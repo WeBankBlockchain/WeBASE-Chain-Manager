@@ -85,7 +85,7 @@ public class GroupManager {
      * @param groupId
      * @param description
      */
-    public void updateDescription(int chainId, int groupId, String description) {
+    public void updateDescription(String chainId, String groupId, String description) {
         log.info("start exec method[updateDescription] chainId:{} groupId:{} description:{}", chainId, groupId, description);
         TbGroup tbGroup = requireGroupExist(chainId, groupId);
         tbGroup.setDescription(description);
@@ -99,7 +99,7 @@ public class GroupManager {
      * @param groupId
      * @return
      */
-    public TbGroup requireGroupExist(int chainId, int groupId) {
+    public TbGroup requireGroupExist(String chainId, String groupId) {
         log.info("start exec method[requireGroupExist] chainId:{} groupId:{}", chainId, groupId);
         TbGroup exist = tbGroupMapper.selectByPrimaryKey(groupId, chainId);
         if (Objects.isNull(exist))
@@ -114,9 +114,9 @@ public class GroupManager {
      * save group id
      */
     @Transactional
-    public TbGroup saveGroup(String groupName, BigInteger timestamp, int groupId, int chainId, List<String> genesisNodeList, int nodeCount, String description,
+    public TbGroup saveGroup(String groupName, BigInteger timestamp, String groupId, String chainId, List<String> genesisNodeList, int nodeCount, String description,
                              int groupType) {
-        if (groupId == 0) {
+        if (groupId.isEmpty()) {
             return null;
         }
 
@@ -160,7 +160,7 @@ public class GroupManager {
         return groupList;
     }
 
-    public int countByChainIdAndGroupStatus(int chainId, byte groupStatus) {
+    public int countByChainIdAndGroupStatus(String chainId, byte groupStatus) {
         log.info("start exec method[countByChainIdAndGroupStatus] chainId:{},groupStatus:{}", chainId, groupStatus);
         int count = tbGroupMapper.countByChainIdAndGroupStatus(chainId, groupStatus);
         log.info("success exec method[countByChainIdAndGroupStatus] result:{}", groupStatus);

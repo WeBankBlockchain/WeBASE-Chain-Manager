@@ -35,8 +35,8 @@ import org.springframework.web.context.WebApplicationContext;
 @WebAppConfiguration
 public class DataGroupControllerTest {
 
-    private static final int chainId = 1;
-    private static final int groupId = 1;
+    private static final String chainId = "chain0";
+    private static final String groupId = "group0";
     private static final int pageNumber = 1;
     private static final int pageSize = 5;
     private String transHash = "0xfcb5e3a06c90b3b82757aa014e8fdef56976f4c77f83511b52b6ec228ba5d99b";

@@ -111,7 +111,7 @@ public class FrontService {
     public TbFront newFront(FrontInfo frontInfo) {
         log.debug("start newFront frontInfo:{}", frontInfo);
         // check chainId
-        Integer chainId = frontInfo.getChainId();
+        String chainId = frontInfo.getChainId();
         TbChain tbChain = tbChainMapper.selectByPrimaryKey(chainId);
         if (tbChain == null) {
             throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
@@ -132,7 +132,7 @@ public class FrontService {
         String newNodeId = null;
         if (CollectionUtils.isNotEmpty(groupIdList)) {
             SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontPeerName, frontIp, frontPort,
-                    Integer.valueOf(groupIdList.get(0)));
+                    groupIdList.get(0));
             newNodeId = syncStatus.getNodeId();
         }
         if (StringUtils.isBlank(newNodeId)) //TODO 临时方案，最终等front有nodeInfo接口后改成调nodeInfo接口
@@ -166,7 +166,7 @@ public class FrontService {
 
         if (CollectionUtils.isNotEmpty(groupIdList)) {
             for (String groupId : groupIdList) {
-                Integer group = Integer.valueOf(groupId);
+                String group = groupId;
                 // peer in group
                 List<String> groupPeerList =
                         frontInterface.getGroupPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
@@ -202,8 +202,8 @@ public class FrontService {
      *
      * @param groupId
      */
-    public void refreshSealerAndObserverInNodeList(String frontPeerName, String frontIp, int frontPort, int chainId,
-                                                   int groupId) {
+    public void refreshSealerAndObserverInNodeList(String frontPeerName, String frontIp, int frontPort, String chainId,
+                                                   String groupId) {
         log.debug("start refreshSealerAndObserverInNodeList frontIp:{}, frontPort:{}, groupId:{}",
                 frontIp, frontPort, groupId);
         List<String> sealerList =
@@ -236,7 +236,7 @@ public class FrontService {
      */
     public Object getNodeMonitorInfo(Integer frontId, LocalDateTime beginDate,
                                      LocalDateTime endDate, LocalDateTime contrastBeginDate, LocalDateTime contrastEndDate,
-                                     int gap, int groupId) {
+                                     int gap, String groupId) {
         log.debug(
                 "start getNodeMonitorInfo.  frontId:{} beginDate:{} endDate:{}"
                         + " contrastBeginDate:{} contrastEndDate:{} gap:{} groupId:{}",
@@ -376,7 +376,7 @@ public class FrontService {
     /**
      * query front by nodeId.
      */
-    public TbFront getByChainIdAndNodeId(Integer chainId, String nodeId) {
+    public TbFront getByChainIdAndNodeId(String chainId, String nodeId) {
         if (chainId == null || StringUtils.isBlank(nodeId)) {
             return null;
         }
@@ -426,8 +426,8 @@ public class FrontService {
     /**
      * remove front by chainId
      */
-    public void removeByChainId(int chainId) {
-        if (chainId == 0) {
+    public void removeByChainId(String chainId) {
+        if (chainId.isEmpty()) {
             return;
         }
         log.info("Delete front data by chain id:[{}].", chainId);
@@ -489,7 +489,7 @@ public class FrontService {
      * @return
      */
     @Transactional(rollbackFor = Throwable.class)
-    public boolean restart(int chainId, String nodeId, OptionType optionType, FrontStatusEnum before,
+    public boolean restart(String chainId, String nodeId, OptionType optionType, FrontStatusEnum before,
                            FrontStatusEnum success, FrontStatusEnum failed) {
         TbChain chain = this.tbChainMapper.selectByPrimaryKey(chainId);
         if (chain == null) {
@@ -531,7 +531,7 @@ public class FrontService {
      * @param groupId
      * @return
      */
-    public List<TbFront> selectFrontListByGroupId(int chainId, int groupId) {
+    public List<TbFront> selectFrontListByGroupId(String chainId, String groupId) {
         // select all agencies by chainId
         List<TbFrontGroupMap> frontGroupMapList = this.tbFrontGroupMapMapper.selectListByGroupId(chainId, groupId);
         if (CollectionUtils.isEmpty(frontGroupMapList)) {
@@ -557,7 +557,7 @@ public class FrontService {
      * @param groupIdSet
      * @return
      */
-    public List<TbFront> selectFrontListByGroupIdSet(int chainId, Set<Integer> groupIdSet) {
+    public List<TbFront> selectFrontListByGroupIdSet(String chainId, Set<String> groupIdSet) {
         // select all fronts of all group id
         List<TbFront> allTbFrontList = groupIdSet.stream()
                 .map((groupId) -> this.selectFrontListByGroupId(chainId, groupId))
@@ -577,7 +577,7 @@ public class FrontService {
     /**
      * @param chainId
      */
-    public int frontProgress(int chainId) {
+    public int frontProgress(String chainId) {
         // check host init
         int frontFinishCount = 0;
         List<TbFront> frontList = this.tbFrontMapper.selectByChainId(chainId);
@@ -629,7 +629,7 @@ public class FrontService {
      * @param agencyId
      * @return
      */
-    public List<TbFront> listFront(int chainId, int groupId, Integer frontId, Integer agencyId) {
+    public List<TbFront> listFront(String chainId, String groupId, Integer frontId, Integer agencyId) {
         log.info("start exec method[listFront] chainId:{} groupId:{} frontId:{} agencyId:{}", chainId, groupId, frontId, agencyId);
 
         //query nodeIdList from group
@@ -655,12 +655,12 @@ public class FrontService {
      * @param nodeIds
      * @return
      */
-    public List<TbFront> selectFrontByNodeIdListAndChain(int chainId, List<String> nodeIds) {
+    public List<TbFront> selectFrontByNodeIdListAndChain(String chainId, List<String> nodeIds) {
         log.info("start exec method [selectFrontByNodeIdListAndChain]. chainId:{} nodeIds:{}", chainId, JsonTools.objToString(nodeIds));
         TbFrontExample example = new TbFrontExample();
         TbFrontExample.Criteria criteria = example.createCriteria();
         criteria.andNodeIdIn(nodeIds);
-        criteria.andChainIdEqualTo(chainId);
+        criteria.equals(chainId);
         criteria.andFrontStatusNotEqualTo(FrontStatusEnum.ABANDONED.getId());
         List<TbFront> frontList = tbFrontMapper.selectByExample(example);
         log.info("success exec method [selectFrontByNodeIdListAndChain]. result:{}", JsonTools.objToString(frontList));

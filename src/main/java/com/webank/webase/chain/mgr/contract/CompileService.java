@@ -121,7 +121,7 @@ public class CompileService {
 //     * @param directory
 //     * @throws IOException
 //     */
-//    private void writeContractToFileByGroup(int chainId, int groupId, File directory) throws IOException {
+//    private void writeContractToFileByGroup(String chainId, String groupId, File directory) throws IOException {
 //        List<TbContract> contractList = contractManager.listToolingContractByChainAndGroup(chainId, groupId);
 //        if (CollectionUtils.isEmpty(contractList))
 //            return;
