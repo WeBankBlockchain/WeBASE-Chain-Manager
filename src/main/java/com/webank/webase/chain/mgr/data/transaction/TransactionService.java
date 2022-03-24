@@ -26,6 +26,7 @@ import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.util.JsonTools;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -59,12 +60,14 @@ public class TransactionService {
     /**
      * add trans hash info.
      */
-    public void addTransInfo(int chainId, int groupId, TbTransaction tbTransaction) throws BaseException {
+    public void addTransInfo(String chainId, String groupId, TbTransaction tbTransaction)
+        throws BaseException {
         TbChain tbChain = chainMapper.selectByPrimaryKey(chainId);
         if (!ObjectUtils.isEmpty(tbChain)) {
             tbTransaction.setChainName(tbChain.getChainName());
         }
         TbGroup tbGroup = groupMapper.getGroupById(chainId, groupId);
+        //todo check
 //        if (!ObjectUtils.isEmpty(tbGroup)) {
 //            tbTransaction.setAppName(tbGroup.getAppName());
 //        }
@@ -78,39 +81,44 @@ public class TransactionService {
         public long startTime;
         public long endTime;
 
-        public QueryParams(int chainId, int groupId, long start, long end) {
-            List<String> tables = transactionMapper.getAllTranxTables();
-            for (String table : tables) {
-                String[] infos = table.split("_");
-                int tChainId = Integer.parseInt(infos[infos.length - 2]);
-                int tGroupId = Integer.parseInt(infos[infos.length - 1]);
-                if (chainId < 0 || chainId == tChainId) {
-                    if (groupId < 0 || groupId == tGroupId) {
-                        countTables.add(table);
-                    }
-                }
-            }
-            startTime = start < 0 ? 0 : start;
-            endTime = end < 0 ? System.currentTimeMillis() / 1000 : end;
+        public QueryParams(String chainId, String groupId, long start, long end) {
+            //todo check
+//            List<String> tables = transactionMapper.getAllTranxTables();
+//            for (String table : tables) {
+//                String[] infos = table.split("_");
+//                int tChainId = Integer.parseInt(infos[infos.length - 2]);
+//                int tGroupId = Integer.parseInt(infos[infos.length - 1]);
+//                if (chainId < 0 || chainId == tChainId) {
+//                    if (groupId < 0 || groupId == tGroupId) {
+//                        countTables.add(table);
+//                    }
+//                }
+//            }
+//            startTime = start < 0 ? 0 : start;
+//            endTime = end < 0 ? System.currentTimeMillis() / 1000 : end;
         }
     }
 
-    public int getTranxCountAll(int chainId, int groupId, long start, long end) {
+    public int getTranxCountAll(String chainId, String groupId, long start, long end) {
 
         QueryParams queryParams = new QueryParams(chainId, groupId, start, end);
-        return transactionMapper.getAllTranxCount(queryParams.countTables, queryParams.startTime, queryParams.endTime);
+        return transactionMapper.getAllTranxCount(queryParams.countTables, queryParams.startTime,
+            queryParams.endTime);
     }
 
 
-    public List<TbTransaction> getTranxListAll(Integer chainId, Integer groupId, Long start, Long end) {
+    public List<TbTransaction> getTranxListAll(String chainId, String groupId, Long start,
+        Long end) {
         QueryParams queryParams = new QueryParams(chainId, groupId, start, end);
-        return transactionMapper.getAllTranxList(queryParams.countTables, queryParams.startTime, queryParams.endTime);
+        return transactionMapper.getAllTranxList(queryParams.countTables, queryParams.startTime,
+            queryParams.endTime);
     }
 
     /**
      * query trans list.
      */
-    public List<TbTransaction> queryTransList(int chainId, int groupId, TransListParam param) throws BaseException {
+    public List<TbTransaction> queryTransList(String chainId, String groupId, TransListParam param)
+        throws BaseException {
         List<TbTransaction> listOfTran = null;
         try {
             listOfTran = transactionMapper.getList(chainId, groupId, param);
@@ -124,7 +132,8 @@ public class TransactionService {
     /**
      * query count of trans hash.
      */
-    public Integer queryCountOfTran(int chainId, int groupId, TransListParam queryParam) throws BaseException {
+    public Integer queryCountOfTran(String chainId, String groupId, TransListParam queryParam)
+        throws BaseException {
         try {
             Integer count = transactionMapper.getCount(chainId, groupId, queryParam);
             return count;
@@ -137,7 +146,7 @@ public class TransactionService {
     /**
      * query count of trans by minus max and min trans_number
      */
-    public Integer queryCountOfTranByMinus(int chainId, int groupId) throws BaseException {
+    public Integer queryCountOfTranByMinus(String chainId, String groupId) throws BaseException {
         try {
             Integer count = transactionMapper.getCountByMinMax(chainId, groupId);
             log.info("end queryCountOfTranByMinus. count:{}", count);
@@ -159,10 +168,11 @@ public class TransactionService {
     /**
      * query min and max block number.
      */
-    public List<MinMaxBlock> queryMinMaxBlock(int chainId, int groupId) throws BaseException {
+    public List<MinMaxBlock> queryMinMaxBlock(String chainId, String groupId) throws BaseException {
         log.debug("start queryMinMaxBlock");
         try {
-            List<MinMaxBlock> listMinMaxBlock = transactionMapper.queryMinMaxBlock(chainId, groupId);
+            List<MinMaxBlock> listMinMaxBlock = transactionMapper.queryMinMaxBlock(chainId,
+                groupId);
             int listSize = Optional.ofNullable(listMinMaxBlock).map(list -> list.size()).orElse(0);
             log.info("end queryMinMaxBlock listMinMaxBlockSize:{}", listSize);
             return listMinMaxBlock;
@@ -175,7 +185,7 @@ public class TransactionService {
     /**
      * query un statistics transaction hash list.
      */
-    public List<String> queryUnStatTransHashList(int chainId, int groupId) {
+    public List<String> queryUnStatTransHashList(String chainId, String groupId) {
         List<String> list = transactionMapper.listOfUnStatTransHash(chainId, groupId);
         return list;
     }
@@ -183,27 +193,28 @@ public class TransactionService {
     /**
      * update trans statistic flag.
      */
-    public void updateTransStatFlag(int chainId, int groupId, String transHash) {
+    public void updateTransStatFlag(String chainId, String groupId, String transHash) {
         transactionMapper.updateTransStatFlag(chainId, groupId, transHash);
     }
 
     /**
      * getTbTransByHash.
      */
-    public TbTransaction getTbTransByHash(int chainId, Integer groupId, String transHash) {
+    public TbTransaction getTbTransByHash(String chainId, String groupId, String transHash) {
         return transactionMapper.getByHash(chainId, groupId, transHash);
     }
 
     /**
      * request front for transaction by hash.
      */
-    public TbTransaction getTbTransFromFrontByHash(int chainId, Integer groupId, String transHash)
-            throws BaseException {
+    public TbTransaction getTbTransFromFrontByHash(String chainId, String groupId, String transHash)
+        throws BaseException {
         JsonTransactionResponse trans = frontInterface.getTransaction(chainId, groupId, transHash);
         TbTransaction tbTransaction = null;
         if (trans != null) {
-            tbTransaction = new TbTransaction(chainId, groupId, transHash, trans.getBlockNumber(), null,
-                    JsonTools.objToString(trans));
+            tbTransaction = new TbTransaction(chainId, groupId, transHash,
+                BigInteger.valueOf(trans.getBlockLimit()),
+                null, JsonTools.objToString(trans));
         }
         return tbTransaction;
     }
@@ -211,21 +222,21 @@ public class TransactionService {
 //    /**
 //     * get transaction info
 //     */
-//    public Transaction getTransaction(int chainId, int groupId, String transHash) {
+//    public Transaction getTransaction(String chainId, String groupId, String transHash) {
 //        return frontInterface.getTransaction(chainId, groupId, transHash);
 //    }
 //
 //    /**
 //     * get transaction receipt
 //     */
-//    public TransactionReceipt getTransReceipt(int chainId, int groupId, String transHash) {
+//    public TransactionReceipt getTransReceipt(String chainId, String groupId, String transHash) {
 //        return frontInterface.getTransReceipt(chainId, groupId, transHash);
 //    }
 
     /**
      * Remove trans info.
      */
-    public Integer remove(Integer chainId, Integer groupId, Integer subTransNum) {
+    public Integer remove(String chainId, String groupId, Integer subTransNum) {
         Integer affectRow = transactionMapper.remove(chainId, groupId, subTransNum);
         return affectRow;
     }

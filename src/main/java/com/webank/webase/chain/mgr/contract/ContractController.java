@@ -168,8 +168,8 @@ public class ContractController extends BaseController {
      * delete contract by id.
      */
     @DeleteMapping(value = "/{chainId}/{groupId}/{contractId}")
-    public BaseResponse deleteContract(@PathVariable("chainId") Integer chainId,
-        @PathVariable("groupId") Integer groupId,
+    public BaseResponse deleteContract(@PathVariable("chainId") String chainId,
+        @PathVariable("groupId") String groupId,
         @PathVariable("contractId") Integer contractId,
         @RequestParam(value = "force", defaultValue = "false", required = false) Boolean force)
         throws BaseException, Exception {
@@ -224,7 +224,7 @@ public class ContractController extends BaseController {
 
         //get groupId which status is normal
         List<TbGroup> groupList = groupService.getGroupList(inputParam.getChainId(), DataStatus.NORMAL.getValue());
-        List<Integer> groupIds = null;
+        List<String> groupIds = null;
         if (CollectionUtils.isNotEmpty(groupList))
             groupIds = groupList.stream().map(g -> g.getGroupId()).distinct().collect(Collectors.toList());
 
@@ -359,20 +359,20 @@ public class ContractController extends BaseController {
     /**
      * contract status manage.
      */
-    @PostMapping(value = "/statusManage")
-    public Object statusManage(@RequestBody @Valid ContractManageParam param, BindingResult result)
-        throws BaseException {
-        checkBindResult(result);
-        Instant startTime = Instant.now();
-        log.info("start statusManage startTime:{} param:{}", startTime.toEpochMilli(),
-            JsonTools.toJSONString(param));
-
-        Object contractStatusManageResult = contractService.statusManage(param);
-
-        log.info("end statusManage useTime:{}",
-            Duration.between(startTime, Instant.now()).toMillis());
-        return contractStatusManageResult;
-    }
+//    @PostMapping(value = "/statusManage")
+//    public Object statusManage(@RequestBody @Valid ContractManageParam param, BindingResult result)
+//        throws BaseException {
+//        checkBindResult(result);
+//        Instant startTime = Instant.now();
+//        log.info("start statusManage startTime:{} param:{}", startTime.toEpochMilli(),
+//            JsonTools.toJSONString(param));
+//
+//        Object contractStatusManageResult = contractService.statusManage(param);
+//
+//        log.info("end statusManage useTime:{}",
+//            Duration.between(startTime, Instant.now()).toMillis());
+//        return contractStatusManageResult;
+//    }
 
     /**
      * deploy deployInputParam.
@@ -414,8 +414,8 @@ public class ContractController extends BaseController {
      * @return
      */
     @GetMapping(value = "/count")
-    public BaseResponse getContractCount(@RequestParam("chainId") Integer chainId,
-        @RequestParam(value = "groupId", required = false) Integer groupId,
+    public BaseResponse getContractCount(@RequestParam("chainId") String chainId,
+        @RequestParam(value = "groupId", required = false) String groupId,
         @RequestParam(value = "agencyId", required = false) Integer agencyId) {
         Instant startTime = Instant.now();
         log.info("start getContractCount startTime:{}, chainId:{} groupId:{} agencyId:{}",
@@ -436,8 +436,8 @@ public class ContractController extends BaseController {
      * @return
      */
     @DeleteMapping("/batch/{chainId}/{groupId}")
-    public BaseResponse deleteContractBatch(@PathVariable int chainId,
-        @PathVariable int groupId,
+    public BaseResponse deleteContractBatch(@PathVariable String chainId,
+        @PathVariable String groupId,
         @RequestParam(value = "contractPath") String contractPath) {
         Instant startTime = Instant.now();
         log.info("start deleteContractBatch startTime:{}, chainId:{} groupId:{} contractPath:{}", startTime, chainId, groupId, contractPath);
@@ -474,8 +474,8 @@ public class ContractController extends BaseController {
      * query contract info list.
      */
     @PostMapping(value = "/contractPath/list/{chainId}/{groupId}")
-    public BasePageResponse queryContractPathList(@PathVariable("chainId") Integer chainId,
-        @PathVariable("groupId") Integer groupId) {
+    public BasePageResponse queryContractPathList(@PathVariable("chainId") String chainId,
+        @PathVariable("groupId") String groupId) {
         BasePageResponse pageResponse = new BasePageResponse(ConstantCode.SUCCESS);
         Instant startTime = Instant.now();
         log.info("start queryContractPathList. startTime:{},chainId:{},groupId:{}",

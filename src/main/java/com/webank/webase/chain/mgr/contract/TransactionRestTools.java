@@ -14,6 +14,7 @@
 
 package com.webank.webase.chain.mgr.contract;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import java.util.Map;
 import java.util.Objects;
 
@@ -31,7 +32,6 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.util.JsonTools;
@@ -60,7 +60,7 @@ public class TransactionRestTools {
      * @param chainId
      * @return
      */
-    public String getBaseUrl(int chainId){
+    public String getBaseUrl(String chainId){
         String transactionServer = constantProperties.getTransactionMap().get(chainId);
         if (StringUtils.isBlank(transactionServer)) {
             // no transaction server for chain id, use default

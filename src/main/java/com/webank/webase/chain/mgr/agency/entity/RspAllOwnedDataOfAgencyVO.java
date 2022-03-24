@@ -10,7 +10,7 @@ import java.util.List;
  */
 @Data
 public class RspAllOwnedDataOfAgencyVO {
-    private List<Integer> chainIdList;
+    private List<String> chainIdList;
     private List<OwnedGroup> groupList;
     private List<OwnedFront> frontList;
     private List<OwnedContract> contractList;
@@ -19,15 +19,15 @@ public class RspAllOwnedDataOfAgencyVO {
     @Data
     @NoArgsConstructor
     public static class OwnedGroup {
-        private Integer chainId;
-        private Integer groupId;
+        private String chainId;
+        private String groupId;
         private String groupName;
     }
 
     @Data
     @NoArgsConstructor
     public static class OwnedFront {
-        private Integer chainId;
+        private String chainId;
         private Integer frontId;
         private String nodeId;
         private String frontPeerName;
@@ -40,8 +40,8 @@ public class RspAllOwnedDataOfAgencyVO {
     @Data
     @NoArgsConstructor
     public static class OwnedContract {
-        private Integer chainId;
-        private Integer groupId;
+        private String chainId;
+        private String groupId;
         private Integer contractId;
         private String contractPath;
         private String contractName;
@@ -54,8 +54,8 @@ public class RspAllOwnedDataOfAgencyVO {
     @Data
     @NoArgsConstructor
     public static class ContractAddedByShelf {
-        private Integer chainId;
-        private Integer groupId;
+        private String chainId;
+        private String groupId;
         private Integer contractId;
         private String contractPath;
         private String contractName;

@@ -21,9 +21,9 @@ import lombok.Data;
 @Data
 public class ReqContractByPath {
     @NotNull
-    private Integer chainId;
+    private String chainId;
     @NotNull
-    private Integer groupId;
+    private String groupId;
     /**
      * list contract by multi path
      */

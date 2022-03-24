@@ -22,8 +22,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BaseQueryParam {
 
-    private Integer chainId;
-    private Integer groupId;
+    private String chainId;
+    private String groupId;
     private String comVariable;
     private Integer start;
     private Integer pageSize;

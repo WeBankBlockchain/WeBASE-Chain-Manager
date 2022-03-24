@@ -8,9 +8,9 @@ import java.util.List;
 @Data
 public class ReqSaveContractBatchVO {
     @NotNull
-    private Integer chainId;
+    private String chainId;
     @NotNull
-    private Integer groupId;
+    private String groupId;
     private Integer agencyId;
     @NotNull
     private List<BaseContract> contractList;

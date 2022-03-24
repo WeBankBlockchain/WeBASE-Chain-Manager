@@ -57,7 +57,7 @@ public class BlockService {
      */
     @Transactional
     @SuppressWarnings("rawtypes")
-    public void saveBlockInfo(Block block, int chainId, int groupId) throws BaseException {
+    public void saveBlockInfo(Block block, String chainId, String groupId) throws BaseException {
         // save block info
         TbBlock tbBlock = chainBlock2TbBlock(block);
         addBlockInfo(tbBlock, chainId, groupId);
@@ -67,8 +67,9 @@ public class BlockService {
         for (TransactionResult result : transList) {
             // save trans
             JsonTransactionResponse trans = (JsonTransactionResponse) result;
-            TbTransaction tbTransaction = new TbTransaction(chainId, groupId, trans.getHash(), trans.getBlockNumber(),
-                    tbBlock.getBlockTimestamp(), JsonTools.objToString(trans));
+            TbTransaction tbTransaction = new TbTransaction(chainId, groupId, trans.getHash(),
+                BigInteger.valueOf(trans.getBlockLimit()),
+                tbBlock.getBlockTimestamp(), JsonTools.objToString(trans));
             transactionService.addTransInfo(chainId, groupId, tbTransaction);
             // save receipt
 //            receiptService.handleReceiptInfo(chainId, groupId, trans.getHash(), tbBlock.getBlockTimestamp());
@@ -84,7 +85,7 @@ public class BlockService {
     /**
      * add block info to db.
      */
-    public void addBlockInfo(TbBlock tbBlock, int chainId, int groupId) throws BaseException {
+    public void addBlockInfo(TbBlock tbBlock, String chainId, String groupId) throws BaseException {
         // save block info
         blockMapper.add(chainId, groupId, tbBlock);
     }
@@ -92,7 +93,8 @@ public class BlockService {
     /**
      * query block info list.
      */
-    public List<TbBlock> queryBlockList(int chainId, int groupId, BlockListParam queryParam) throws BaseException {
+    public List<TbBlock> queryBlockList(String chainId, String groupId, BlockListParam queryParam)
+        throws BaseException {
         List<TbBlock> listOfBlock = blockMapper.getList(chainId, groupId, queryParam);
         return listOfBlock;
     }
@@ -100,11 +102,13 @@ public class BlockService {
     /**
      * query count of block.
      */
-    public Integer queryCountOfBlock(int chainId, int groupId, String blockHash, BigInteger blockNumber)
-            throws BaseException {
+    public Integer queryCountOfBlock(String chainId, String groupId, String blockHash,
+        BigInteger blockNumber)
+        throws BaseException {
         try {
             Integer count = blockMapper.getCount(chainId, groupId, blockHash, blockNumber);
-            log.info("end countOfBlock groupId:{} blockHash:{} count:{}", groupId, blockHash, count);
+            log.info("end countOfBlock groupId:{} blockHash:{} count:{}", groupId, blockHash,
+                count);
             if (count == null) {
                 return 0;
             }
@@ -115,11 +119,11 @@ public class BlockService {
         }
     }
 
-    public TbBlock getBlockByBlockNumber(int chainId, int groupId, long blockNumber) {
+    public TbBlock getBlockByBlockNumber(String chainId, String groupId, long blockNumber) {
         return blockMapper.findByBlockNumber(chainId, groupId, blockNumber);
     }
 
-    public Integer queryCountOfBlockByMinus(int chainId, int groupId) {
+    public Integer queryCountOfBlockByMinus(String chainId, String groupId) {
         try {
             Integer count = blockMapper.getBlockCountByMinMax(chainId, groupId);
             log.info("end queryCountOfBlockByMinus groupId:{} count:{}", groupId, count);
@@ -136,7 +140,8 @@ public class BlockService {
     /**
      * remove block into.
      */
-    public Integer remove(int chainId, int groupId, BigInteger blockRetainMax) throws BaseException {
+    public Integer remove(String chainId, String groupId, BigInteger blockRetainMax)
+        throws BaseException {
         Integer affectRow = blockMapper.remove(chainId, groupId, blockRetainMax);
         return affectRow;
     }
@@ -144,14 +149,14 @@ public class BlockService {
     /**
      * get latest block number
      */
-    public BigInteger getLatestBlockNumber(int chainId, int groupId) {
+    public BigInteger getLatestBlockNumber(String chainId, String groupId) {
         return blockMapper.getLatestBlockNumber(chainId, groupId);
     }
 
     /**
      * get block by block from front server
      */
-    public Block getBlockFromFrontByNumber(int chainId, int groupId, BigInteger blockNumber) {
+    public Block getBlockFromFrontByNumber(String chainId, String groupId, BigInteger blockNumber) {
         return frontInterface.getBlockByNumber(chainId, groupId, blockNumber);
     }
 
@@ -162,8 +167,9 @@ public class BlockService {
         if (block == null) {
             return null;
         }
-        LocalDateTime blockTimestamp = CommonUtils.timestamp2LocalDateTime(Long.valueOf(block.getTimestamp()));
-        int sealerIndex = Integer.parseInt(block.getSealer().substring(2), 16);
+        LocalDateTime blockTimestamp = CommonUtils.timestamp2LocalDateTime(
+            Long.valueOf(block.getTimestamp()));
+        int sealerIndex = Integer.parseInt(String.valueOf(block.getSealer()).substring(2), 16);
         List<String> sealerList = block.getSealerList();
         String sealer = "0x0";
         if (!CollectionUtils.isEmpty(sealerList)) {
@@ -174,8 +180,9 @@ public class BlockService {
             }
         }
         // save block info
-        TbBlock tbBlock = new TbBlock(block.getHash(), block.getNumber(), blockTimestamp,
-                block.getTransactions().size(), sealerIndex, sealer, JsonTools.objToString(block));
+        TbBlock tbBlock = new TbBlock(block.getHash(), BigInteger.valueOf(block.getNumber()),
+            blockTimestamp,
+            block.getTransactions().size(), sealerIndex, sealer, JsonTools.objToString(block));
         return tbBlock;
     }
 }

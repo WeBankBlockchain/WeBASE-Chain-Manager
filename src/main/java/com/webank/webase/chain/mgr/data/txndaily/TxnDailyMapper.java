@@ -33,23 +33,23 @@ public interface TxnDailyMapper {
     /**
      * listSeventDayOfTransDaily.
      */
-    List<TbTxnDaily> listSeventDayOfTransDaily(@Param(value = "chainId") int chainId,
-        @Param("groupId") int groupId);
+    List<TbTxnDaily> listSeventDayOfTransDaily(@Param(value = "chainId") String chainId,
+        @Param("groupId") String groupId);
 
     /**
      * queryLatestTransCount.
      */
-    List<LatestTransCount> queryLatestTransCount(@Param(value = "chainId") int chainId,
-        @Param(value = "groupId") int groupId);
+    List<LatestTransCount> queryLatestTransCount(@Param(value = "chainId") String chainId,
+        @Param(value = "groupId") String groupId);
 
     /**
      * delete by chainId.
      */
-    Integer deleteByChainId(@Param(value = "chainId") int chainId);
+    Integer deleteByChainId(@Param(value = "chainId") String chainId);
 
     /**
      * delete by groupId.
      */
-    Integer deleteByGroupId(@Param(value = "chainId") int chainId,
-        @Param(value = "groupId") int groupId);
+    Integer deleteByGroupId(@Param(value = "chainId") String chainId,
+        @Param(value = "groupId") String groupId);
 }

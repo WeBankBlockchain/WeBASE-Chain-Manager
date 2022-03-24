@@ -25,8 +25,8 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper = true)
 public class Contract extends BaseContract {
     @NotNull
-    private Integer chainId;
+    private String chainId;
     @NotNull
-    private Integer groupId;
+    private String groupId;
     private Integer agencyId;
 }

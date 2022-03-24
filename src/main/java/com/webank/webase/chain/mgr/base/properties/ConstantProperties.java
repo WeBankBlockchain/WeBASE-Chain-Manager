@@ -78,7 +78,7 @@ public class ConstantProperties {
 
 
     //************************8 add by deploy
-    public static final int DEFAULT_GROUP_ID = 1;
+    public static final String DEFAULT_GROUP_ID = "group0";
 
     private boolean useDockerSDK = false;
     public int dockerDaemonPort = 3000;

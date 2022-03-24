@@ -24,9 +24,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ContractPathParam {
     @NotNull
-    private Integer chainId;
+    private String chainId;
     @NotNull
-    private Integer groupId;
+    private String groupId;
     private String contractPath;
     private Boolean force = false;
 }

@@ -15,14 +15,14 @@ package com.webank.webase.chain.mgr.frontinterface.entity;
 
 import java.util.List;
 import lombok.Data;
-import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
 
 /**
  * abiMeta interface parameter.
  */
 @Data
 public class PostAbiInfo {
-    private Integer groupId;
+    private String groupId;
     private String contractName;
     private String address;
     private List<ABIDefinition> abiInfo;

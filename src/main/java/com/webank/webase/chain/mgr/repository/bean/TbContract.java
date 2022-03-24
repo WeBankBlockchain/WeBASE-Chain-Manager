@@ -47,7 +47,7 @@ public class TbContract implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer chainId;
+    private String chainId;
 
     /**
      *
@@ -56,7 +56,7 @@ public class TbContract implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer groupId;
+    private String groupId;
 
     /**
      *

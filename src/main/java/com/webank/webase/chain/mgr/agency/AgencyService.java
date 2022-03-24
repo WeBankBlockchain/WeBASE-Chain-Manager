@@ -51,7 +51,6 @@ public class AgencyService {
      */
     public static AtomicBoolean isDeleting = new AtomicBoolean(false);
 
-
     @Autowired
     private FrontService frontService;
     @Autowired
@@ -86,11 +85,11 @@ public class AgencyService {
         }).collect(Collectors.toList());
 
         //chainIdList
-        List<Integer> chainIdList = frontList.stream().map(front -> front.getChainId()).distinct().collect(Collectors.toList());
+        List<String> chainIdList = frontList.stream().map(front -> front.getChainId()).distinct().collect(Collectors.toList());
 
         //group list
         List<RspAllOwnedDataOfAgencyVO.OwnedGroup> ownedGroupList = null;
-        for (int chainId : CollectionUtils.emptyIfNull(chainIdList)) {
+        for (String chainId : CollectionUtils.emptyIfNull(chainIdList)) {
             List<TbGroup> groupList = groupService.listGroupByChainAndAgencyId(chainId, agencyId);
             if (CollectionUtils.isNotEmpty(groupList)) {
                 ownedGroupList = groupList.stream().map(group -> {
@@ -107,8 +106,8 @@ public class AgencyService {
         List<RspAllOwnedDataOfAgencyVO.OwnedContract> ownedContractList = new ArrayList<>();
         List<RspAllOwnedDataOfAgencyVO.ContractAddedByShelf> contractListAddedByShelf = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(ownedGroupList)) {
-            for (Integer chainId : chainIdList) {
-                List<Integer> groupIdList = ownedGroupList.stream()
+            for (String chainId : chainIdList) {
+                List<String> groupIdList = ownedGroupList.stream()
                         .filter(group -> chainId.equals(group.getChainId()))
                         .map(g -> g.getGroupId())
                         .distinct()
@@ -152,7 +151,7 @@ public class AgencyService {
      * @param groupId
      * @return
      */
-    public List<RspAgencyVo> queryAgencyList(Integer chainId, Integer groupId, List<String> nodeTypes) {
+    public List<RspAgencyVo> queryAgencyList(String chainId, String groupId, List<String> nodeTypes) {
         log.info("start exec method [queryAgencyList]. chainId:{} groupId:{} nodeTypes:{}", chainId, groupId, JsonTools.objToString(nodeTypes));
 
         //query by chain if group is null
@@ -185,7 +184,7 @@ public class AgencyService {
      * @param chainId
      * @return
      */
-    public List<RspAgencyVo> listAgencyByChain(int chainId) {
+    public List<RspAgencyVo> listAgencyByChain(String chainId) {
         log.info("start exec method [listAgencyByChainAndNodeIds]. chainId:{}", chainId);
 
         //query front list
@@ -203,7 +202,7 @@ public class AgencyService {
      * @param chainId
      * @return
      */
-    public List<RspAgencyVo> listAgencyByChainAndNodeIds(int chainId, List<String> nodeIds) {
+    public List<RspAgencyVo> listAgencyByChainAndNodeIds(String chainId, List<String> nodeIds) {
         log.info("start exec method [listAgencyByChainAndNodeIds]. chainId:{} nodeIds:{}", chainId, JsonTools.objToString(nodeIds));
 
         //query front list

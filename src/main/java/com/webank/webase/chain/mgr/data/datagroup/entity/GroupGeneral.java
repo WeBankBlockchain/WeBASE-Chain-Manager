@@ -21,15 +21,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GroupGeneral {
 
-    private Integer chainId;
-    private Integer groupId;
+    private String chainId;
+    private String groupId;
     private int nodeCount = 0;
     private int userCount = 0;
     private int contractCount = 0;
     private BigInteger txnCount = BigInteger.ZERO;
     private BigInteger blockNumber = BigInteger.ZERO;
 
-    public GroupGeneral(Integer chainId, Integer groupId, int nodeCount, int contractCount) {
+    public GroupGeneral(String chainId, String groupId, int nodeCount, int contractCount) {
         this.chainId = chainId;
         this.groupId = groupId;
         this.nodeCount = nodeCount;

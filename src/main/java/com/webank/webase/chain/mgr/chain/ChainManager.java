@@ -21,7 +21,7 @@ public class ChainManager {
      * @param chainId
      * @return
      */
-    public TbChain requireChainIdExist(int chainId) {
+    public TbChain requireChainIdExist(String chainId) {
         log.info("start exec method [requireChainIdExist]. chainId:{}", chainId);
         TbChain tbChain = chainMapper.selectByPrimaryKey(chainId);
         if (Objects.isNull(tbChain)) {

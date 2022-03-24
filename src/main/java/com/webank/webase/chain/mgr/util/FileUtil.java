@@ -2,6 +2,7 @@ package com.webank.webase.chain.mgr.util;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.ssl.SSLContexts;
@@ -124,4 +125,28 @@ public class FileUtil {
         return Files.notExists(path);
     }
 
+    /**
+     * create file if not exist.
+     */
+    public static void createFileIfNotExist(File targetFile, boolean deleteOld) throws IOException {
+        Objects.requireNonNull(targetFile, "fail create file. targetFile is null");
+        File parentFile = targetFile.getParentFile();
+        if (!parentFile.exists()) {
+            boolean mkdirResult = parentFile.mkdirs();
+            log.info("createFileIfNotExist mkdirResult:{}", mkdirResult);
+        }
+        if (deleteOld) {
+            targetFile.deleteOnExit();
+        }
+
+        if (!targetFile.exists()) {
+            if (targetFile.isFile()) {
+                boolean newFileResult = targetFile.createNewFile();
+                log.info("createFileIfNotExist newFileResult:{}", newFileResult);
+            } else if (targetFile.isDirectory()) {
+                boolean newDirResult = targetFile.mkdir();
+                log.info("createFileIfNotExist mkdirResult:{}", newDirResult);
+            }
+        }
+    }
 }

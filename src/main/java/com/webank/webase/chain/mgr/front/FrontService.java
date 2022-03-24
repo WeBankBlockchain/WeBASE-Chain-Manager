@@ -111,7 +111,7 @@ public class FrontService {
     public TbFront newFront(FrontInfo frontInfo) {
         log.debug("start newFront frontInfo:{}", frontInfo);
         // check chainId
-        Integer chainId = frontInfo.getChainId();
+        String chainId = frontInfo.getChainId();
         TbChain tbChain = tbChainMapper.selectByPrimaryKey(chainId);
         if (tbChain == null) {
             throw new BaseException(ConstantCode.INVALID_CHAIN_ID);
@@ -132,7 +132,7 @@ public class FrontService {
         String newNodeId = null;
         if (CollectionUtils.isNotEmpty(groupIdList)) {
             SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontPeerName, frontIp, frontPort,
-                    Integer.valueOf(groupIdList.get(0)));
+                    groupIdList.get(0));
             newNodeId = syncStatus.getNodeId();
         }
         if (StringUtils.isBlank(newNodeId)) //TODO 临时方案，最终等front有nodeInfo接口后改成调nodeInfo接口
@@ -166,7 +166,7 @@ public class FrontService {
 
         if (CollectionUtils.isNotEmpty(groupIdList)) {
             for (String groupId : groupIdList) {
-                Integer group = Integer.valueOf(groupId);
+                String group = groupId;
                 // peer in group
                 List<String> groupPeerList =
                         frontInterface.getGroupPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
@@ -202,8 +202,8 @@ public class FrontService {
      *
      * @param groupId
      */
-    public void refreshSealerAndObserverInNodeList(String frontPeerName, String frontIp, int frontPort, int chainId,
-                                                   int groupId) {
+    public void refreshSealerAndObserverInNodeList(String frontPeerName, String frontIp, int frontPort, String chainId,
+                                                   String groupId) {
         log.debug("start refreshSealerAndObserverInNodeList frontIp:{}, frontPort:{}, groupId:{}",
                 frontIp, frontPort, groupId);
         List<String> sealerList =
@@ -231,136 +231,136 @@ public class FrontService {
         log.debug("end addSealerAndObserver");
     }
 
-    /**
-     * get monitor info.
-     */
-    public Object getNodeMonitorInfo(Integer frontId, LocalDateTime beginDate,
-                                     LocalDateTime endDate, LocalDateTime contrastBeginDate, LocalDateTime contrastEndDate,
-                                     int gap, int groupId) {
-        log.debug(
-                "start getNodeMonitorInfo.  frontId:{} beginDate:{} endDate:{}"
-                        + " contrastBeginDate:{} contrastEndDate:{} gap:{} groupId:{}",
-                frontId, beginDate, endDate, contrastBeginDate, contrastEndDate, gap, groupId);
+//    /**
+//     * get monitor info.
+//     */
+//    public Object getNodeMonitorInfo(Integer frontId, LocalDateTime beginDate,
+//                                     LocalDateTime endDate, LocalDateTime contrastBeginDate, LocalDateTime contrastEndDate,
+//                                     int gap, String groupId) {
+//        log.debug(
+//                "start getNodeMonitorInfo.  frontId:{} beginDate:{} endDate:{}"
+//                        + " contrastBeginDate:{} contrastEndDate:{} gap:{} groupId:{}",
+//                frontId, beginDate, endDate, contrastBeginDate, contrastEndDate, gap, groupId);
+//
+//        // query by front Id
+//        TbFront tbFront = frontService.getById(frontId);
+//        if (tbFront == null) {
+//            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
+//        }
+//
+//        Map<String, String> map = new HashMap<>();
+//        map.put("groupId", String.valueOf(groupId));
+//        map.put("gap", String.valueOf(gap));
+//        if (beginDate != null) {
+//            map.put("beginDate", String.valueOf(beginDate));
+//        }
+//        if (endDate != null) {
+//            map.put("endDate", String.valueOf(endDate));
+//        }
+//        if (contrastBeginDate != null) {
+//            map.put("contrastBeginDate", String.valueOf(contrastBeginDate));
+//        }
+//        if (contrastEndDate != null) {
+//            map.put("contrastEndDate", String.valueOf(contrastEndDate));
+//        }
+//
+//        Object rspObj = frontInterface.getNodeMonitorInfo(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
+//                tbFront.getFrontPort(), groupId, map);
+//        log.debug("end getNodeMonitorInfo. rspObj:{}", JsonTools.toJSONString(rspObj));
+//        return rspObj;
+//    }
 
-        // query by front Id
-        TbFront tbFront = frontService.getById(frontId);
-        if (tbFront == null) {
-            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
-        }
+//    /**
+//     * get ratio of performance.
+//     */
+//    public Object getPerformanceRatio(Integer frontId, LocalDateTime beginDate,
+//                                      LocalDateTime endDate, LocalDateTime contrastBeginDate, LocalDateTime contrastEndDate,
+//                                      int gap) {
+//        log.debug(
+//                "start getPerformanceRatio.  frontId:{} beginDate:{} endDate:{}"
+//                        + " contrastBeginDate:{} contrastEndDate:{} gap:{}",
+//                frontId, beginDate, endDate, contrastBeginDate, contrastEndDate, gap);
+//
+//        // query by front Id
+//        TbFront tbFront = frontService.getById(frontId);
+//        if (tbFront == null) {
+//            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
+//        }
+//
+//        Map<String, String> map = new HashMap<>();
+//        map.put("gap", String.valueOf(gap));
+//        if (beginDate != null) {
+//            map.put("beginDate", String.valueOf(beginDate));
+//        }
+//        if (endDate != null) {
+//            map.put("endDate", String.valueOf(endDate));
+//        }
+//        if (contrastBeginDate != null) {
+//            map.put("contrastBeginDate", String.valueOf(contrastBeginDate));
+//        }
+//        if (contrastEndDate != null) {
+//            map.put("contrastEndDate", String.valueOf(contrastEndDate));
+//        }
+//
+//        Object rspObj = frontInterface.getPerformanceRatio(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
+//                tbFront.getFrontPort(), map);
+//        log.debug("end getPerformanceRatio. rspObj:{}", JsonTools.toJSONString(rspObj));
+//        return rspObj;
+//    }
 
-        Map<String, String> map = new HashMap<>();
-        map.put("groupId", String.valueOf(groupId));
-        map.put("gap", String.valueOf(gap));
-        if (beginDate != null) {
-            map.put("beginDate", String.valueOf(beginDate));
-        }
-        if (endDate != null) {
-            map.put("endDate", String.valueOf(endDate));
-        }
-        if (contrastBeginDate != null) {
-            map.put("contrastBeginDate", String.valueOf(contrastBeginDate));
-        }
-        if (contrastEndDate != null) {
-            map.put("contrastEndDate", String.valueOf(contrastEndDate));
-        }
-
-        Object rspObj = frontInterface.getNodeMonitorInfo(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
-                tbFront.getFrontPort(), groupId, map);
-        log.debug("end getNodeMonitorInfo. rspObj:{}", JsonTools.toJSONString(rspObj));
-        return rspObj;
-    }
-
-    /**
-     * get ratio of performance.
-     */
-    public Object getPerformanceRatio(Integer frontId, LocalDateTime beginDate,
-                                      LocalDateTime endDate, LocalDateTime contrastBeginDate, LocalDateTime contrastEndDate,
-                                      int gap) {
-        log.debug(
-                "start getPerformanceRatio.  frontId:{} beginDate:{} endDate:{}"
-                        + " contrastBeginDate:{} contrastEndDate:{} gap:{}",
-                frontId, beginDate, endDate, contrastBeginDate, contrastEndDate, gap);
-
-        // query by front Id
-        TbFront tbFront = frontService.getById(frontId);
-        if (tbFront == null) {
-            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
-        }
-
-        Map<String, String> map = new HashMap<>();
-        map.put("gap", String.valueOf(gap));
-        if (beginDate != null) {
-            map.put("beginDate", String.valueOf(beginDate));
-        }
-        if (endDate != null) {
-            map.put("endDate", String.valueOf(endDate));
-        }
-        if (contrastBeginDate != null) {
-            map.put("contrastBeginDate", String.valueOf(contrastBeginDate));
-        }
-        if (contrastEndDate != null) {
-            map.put("contrastEndDate", String.valueOf(contrastEndDate));
-        }
-
-        Object rspObj = frontInterface.getPerformanceRatio(tbFront.getFrontPeerName(), tbFront.getFrontIp(),
-                tbFront.getFrontPort(), map);
-        log.debug("end getPerformanceRatio. rspObj:{}", JsonTools.toJSONString(rspObj));
-        return rspObj;
-    }
-
-    /**
-     * get config of performance.
-     */
-    public Object getPerformanceConfig(int frontId) {
-        log.debug("start getPerformanceConfig.  frontId:{} ", frontId);
-
-        // query by front Id
-        TbFront tbFront = frontService.getById(frontId);
-        if (tbFront == null) {
-            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
-        }
-
-        Object rspObj =
-                frontInterface.getPerformanceConfig(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort());
-        log.debug("end getPerformanceConfig. frontRsp:{}", JsonTools.toJSONString(rspObj));
-        return rspObj;
-    }
-
-    /**
-     * check node process.
-     */
-    public Object checkNodeProcess(int frontId) {
-        log.debug("start checkNodeProcess. frontId:{} ", frontId);
-
-        // query by front Id
-        TbFront tbFront = frontService.getById(frontId);
-        if (tbFront == null) {
-            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
-        }
-
-        Object rspObj =
-                frontInterface.checkNodeProcess(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort());
-        log.debug("end checkNodeProcess. response:{}", JsonTools.toJSONString(rspObj));
-        return rspObj;
-    }
-
-    /**
-     * check node process.
-     */
-    public Object getGroupSizeInfos(int frontId) {
-        log.debug("start getGroupSizeInfos. frontId:{} ", frontId);
-
-        // query by front Id
-        TbFront tbFront = frontService.getById(frontId);
-        if (tbFront == null) {
-            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
-        }
-
-        Object rspObj =
-                frontInterface.getGroupSizeInfos(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort());
-        log.debug("end getGroupSizeInfos. response:{}", JsonTools.toJSONString(rspObj));
-        return rspObj;
-    }
+//    /**
+//     * get config of performance.
+//     */
+//    public Object getPerformanceConfig(int frontId) {
+//        log.debug("start getPerformanceConfig.  frontId:{} ", frontId);
+//
+//        // query by front Id
+//        TbFront tbFront = frontService.getById(frontId);
+//        if (tbFront == null) {
+//            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
+//        }
+//
+//        Object rspObj =
+//                frontInterface.getPerformanceConfig(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort());
+//        log.debug("end getPerformanceConfig. frontRsp:{}", JsonTools.toJSONString(rspObj));
+//        return rspObj;
+//    }
+//
+//    /**
+//     * check node process.
+//     */
+//    public Object checkNodeProcess(int frontId) {
+//        log.debug("start checkNodeProcess. frontId:{} ", frontId);
+//
+//        // query by front Id
+//        TbFront tbFront = frontService.getById(frontId);
+//        if (tbFront == null) {
+//            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
+//        }
+//
+//        Object rspObj =
+//                frontInterface.checkNodeProcess(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort());
+//        log.debug("end checkNodeProcess. response:{}", JsonTools.toJSONString(rspObj));
+//        return rspObj;
+//    }
+//
+//    /**
+//     * check node process.
+//     */
+//    public Object getGroupSizeInfos(int frontId) {
+//        log.debug("start getGroupSizeInfos. frontId:{} ", frontId);
+//
+//        // query by front Id
+//        TbFront tbFront = frontService.getById(frontId);
+//        if (tbFront == null) {
+//            throw new BaseException(ConstantCode.INVALID_FRONT_ID);
+//        }
+//
+//        Object rspObj =
+//                frontInterface.getGroupSizeInfos(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort());
+//        log.debug("end getGroupSizeInfos. response:{}", JsonTools.toJSONString(rspObj));
+//        return rspObj;
+//    }
 
 
     /**
@@ -376,7 +376,7 @@ public class FrontService {
     /**
      * query front by nodeId.
      */
-    public TbFront getByChainIdAndNodeId(Integer chainId, String nodeId) {
+    public TbFront getByChainIdAndNodeId(String chainId, String nodeId) {
         if (chainId == null || StringUtils.isBlank(nodeId)) {
             return null;
         }
@@ -426,8 +426,8 @@ public class FrontService {
     /**
      * remove front by chainId
      */
-    public void removeByChainId(int chainId) {
-        if (chainId == 0) {
+    public void removeByChainId(String chainId) {
+        if (chainId.isEmpty()) {
             return;
         }
         log.info("Delete front data by chain id:[{}].", chainId);
@@ -489,7 +489,7 @@ public class FrontService {
      * @return
      */
     @Transactional(rollbackFor = Throwable.class)
-    public boolean restart(int chainId, String nodeId, OptionType optionType, FrontStatusEnum before,
+    public boolean restart(String chainId, String nodeId, OptionType optionType, FrontStatusEnum before,
                            FrontStatusEnum success, FrontStatusEnum failed) {
         TbChain chain = this.tbChainMapper.selectByPrimaryKey(chainId);
         if (chain == null) {
@@ -531,7 +531,7 @@ public class FrontService {
      * @param groupId
      * @return
      */
-    public List<TbFront> selectFrontListByGroupId(int chainId, int groupId) {
+    public List<TbFront> selectFrontListByGroupId(String chainId, String groupId) {
         // select all agencies by chainId
         List<TbFrontGroupMap> frontGroupMapList = this.tbFrontGroupMapMapper.selectListByGroupId(chainId, groupId);
         if (CollectionUtils.isEmpty(frontGroupMapList)) {
@@ -557,7 +557,7 @@ public class FrontService {
      * @param groupIdSet
      * @return
      */
-    public List<TbFront> selectFrontListByGroupIdSet(int chainId, Set<Integer> groupIdSet) {
+    public List<TbFront> selectFrontListByGroupIdSet(String chainId, Set<String> groupIdSet) {
         // select all fronts of all group id
         List<TbFront> allTbFrontList = groupIdSet.stream()
                 .map((groupId) -> this.selectFrontListByGroupId(chainId, groupId))
@@ -577,7 +577,7 @@ public class FrontService {
     /**
      * @param chainId
      */
-    public int frontProgress(int chainId) {
+    public int frontProgress(String chainId) {
         // check host init
         int frontFinishCount = 0;
         List<TbFront> frontList = this.tbFrontMapper.selectByChainId(chainId);
@@ -629,7 +629,7 @@ public class FrontService {
      * @param agencyId
      * @return
      */
-    public List<TbFront> listFront(int chainId, int groupId, Integer frontId, Integer agencyId) {
+    public List<TbFront> listFront(String chainId, String groupId, Integer frontId, Integer agencyId) {
         log.info("start exec method[listFront] chainId:{} groupId:{} frontId:{} agencyId:{}", chainId, groupId, frontId, agencyId);
 
         //query nodeIdList from group
@@ -643,6 +643,7 @@ public class FrontService {
         param.setChainId(chainId);
         param.setFrontId(frontId);
         param.setExtAgencyId(agencyId);
+        param.setFrontStatus(1);
 
         List<TbFront> frontList = frontManager.listByParam(param);
         log.info("success exec method[listFront] result:{}", JsonTools.objToString(frontList));
@@ -655,7 +656,7 @@ public class FrontService {
      * @param nodeIds
      * @return
      */
-    public List<TbFront> selectFrontByNodeIdListAndChain(int chainId, List<String> nodeIds) {
+    public List<TbFront> selectFrontByNodeIdListAndChain(String chainId, List<String> nodeIds) {
         log.info("start exec method [selectFrontByNodeIdListAndChain]. chainId:{} nodeIds:{}", chainId, JsonTools.objToString(nodeIds));
         TbFrontExample example = new TbFrontExample();
         TbFrontExample.Criteria criteria = example.createCriteria();

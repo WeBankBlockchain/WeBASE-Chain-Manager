@@ -90,8 +90,8 @@ public class NodeController extends BaseController {
      * qurey node info list.
      */
     @GetMapping(value = "/nodeList/{chainId}/{groupId}/{pageNumber}/{pageSize}")
-    public BasePageResponse queryNodeList(@PathVariable("chainId") Integer chainId,
-                                          @PathVariable("groupId") Integer groupId,
+    public BasePageResponse queryNodeList(@PathVariable("chainId") String chainId,
+                                          @PathVariable("groupId") String groupId,
                                           @PathVariable("pageNumber") Integer pageNumber,
                                           @PathVariable("pageSize") Integer pageSize,
                                           @RequestParam(value = "agencyId", required = false) Integer agencyId,
@@ -103,7 +103,7 @@ public class NodeController extends BaseController {
                 "start queryNodeList startTime:{} groupId:{} pageNumber:{} pageSize:{} agencyId:{} frontPeerName:{} nodeId:{}",
                 startTime.toEpochMilli(), groupId, pageNumber, pageSize, agencyId, frontPeerName, nodeId);
 
-        int newGroupId = groupId == null || groupId <= 0 ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
+        String newGroupId = groupId == null || groupId.equals("group0") ? ConstantProperties.DEFAULT_GROUP_ID : groupId;
 
         // check node status before query
         try {
@@ -176,8 +176,8 @@ public class NodeController extends BaseController {
      * @throws BaseException
      */
     @GetMapping(value = "/nodeIdList/{chainId}/{groupId}")
-    public BaseResponse queryNodeIdList(@PathVariable("chainId") Integer chainId,
-                                        @PathVariable("groupId") Integer groupId,
+    public BaseResponse queryNodeIdList(@PathVariable("chainId") String chainId,
+                                        @PathVariable("groupId") String groupId,
                                         @RequestParam(value = "agencyId", required = false) Integer agencyId,
                                         @RequestParam(value = "nodeTypes", required = false) List<String> nodeTypes) throws BaseException {
         BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
@@ -225,8 +225,8 @@ public class NodeController extends BaseController {
      * get block number.
      */
     @GetMapping("/getBlockNumber/{chainId}/{groupId}/{nodeId}")
-    public BaseResponse getBlockNumber(@PathVariable("chainId") Integer chainId,
-                                       @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId)
+    public BaseResponse getBlockNumber(@PathVariable("chainId") String chainId,
+                                       @PathVariable("groupId") String groupId, @PathVariable("nodeId") String nodeId)
             throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getBlockNumber startTime:{} chainId:{} groupId:{}",
@@ -254,8 +254,8 @@ public class NodeController extends BaseController {
      * get block by number.
      */
     @GetMapping("/getBlockByNumber/{chainId}/{groupId}/{nodeId}/{blockNumber}")
-    public BaseResponse getBlockByNumber(@PathVariable("chainId") Integer chainId,
-                                         @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+    public BaseResponse getBlockByNumber(@PathVariable("chainId") String chainId,
+                                         @PathVariable("groupId") String groupId, @PathVariable("nodeId") String nodeId,
                                          @PathVariable("blockNumber") BigInteger blockNumber) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getBlockByNumber startTime:{} groupId:{} blockNumber:{}",
@@ -283,8 +283,8 @@ public class NodeController extends BaseController {
      * get total transaction count.
      */
     @GetMapping("/getTotalTransactionCount/{chainId}/{groupId}/{nodeId}")
-    public BaseResponse getTotalTransactionCount(@PathVariable("chainId") Integer chainId,
-                                                 @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId)
+    public BaseResponse getTotalTransactionCount(@PathVariable("chainId") String chainId,
+                                                 @PathVariable("groupId") String groupId, @PathVariable("nodeId") String nodeId)
             throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTotalTransactionCount startTime:{} chainId:{} groupId:{}",
@@ -313,8 +313,8 @@ public class NodeController extends BaseController {
      * get transaction by hash.
      */
     @GetMapping("/getTransactionByHash/{chainId}/{groupId}/{nodeId}/{transHash}")
-    public BaseResponse getTransactionByHash(@PathVariable("chainId") Integer chainId,
-                                             @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+    public BaseResponse getTransactionByHash(@PathVariable("chainId") String chainId,
+                                             @PathVariable("groupId") String groupId, @PathVariable("nodeId") String nodeId,
                                              @PathVariable("transHash") String transHash) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTransactionByHash startTime:{} groupId:{} blockNumber:{}",
@@ -342,8 +342,8 @@ public class NodeController extends BaseController {
      * get transaction receipt by hash.
      */
     @GetMapping("/getTransactionReceipt/{chainId}/{groupId}/{nodeId}/{transHash}")
-    public BaseResponse getTransactionReceipt(@PathVariable("chainId") Integer chainId,
-                                              @PathVariable("groupId") Integer groupId, @PathVariable("nodeId") String nodeId,
+    public BaseResponse getTransactionReceipt(@PathVariable("chainId") String chainId,
+                                              @PathVariable("groupId") String groupId, @PathVariable("nodeId") String nodeId,
                                               @PathVariable("transHash") String transHash) throws BaseException {
         Instant startTime = Instant.now();
         log.info("start getTransactionReceipt startTime:{} groupId:{} blockNumber:{}",

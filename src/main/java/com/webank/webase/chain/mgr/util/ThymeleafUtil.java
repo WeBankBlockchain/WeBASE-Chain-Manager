@@ -106,7 +106,7 @@ public class ThymeleafUtil {
      */
     public static void newNodeConfigIni(Path nodeRoot, int channelPort, int p2pPort,
                                         int jsonrpcPort, List<TbNode> peerList, boolean guomi,
-                                        int chainIdInConfigIni) throws IOException {
+                                        String chainIdInConfigIni) throws IOException {
         String nodeConfigIni = ThymeleafUtil.generate(ThymeleafUtil.NODE_CONFIG_INI,
                 Pair.of("channelPort", channelPort), Pair.of("p2pPort", p2pPort),
                 Pair.of("jsonrpcPort", jsonrpcPort), Pair.of("nodeList", peerList),
@@ -125,7 +125,7 @@ public class ThymeleafUtil {
      * @param groupId
      * @throws IOException
      */
-    public static void newGroupConfigs(Path nodeRoot, int groupId,
+    public static void newGroupConfigs(Path nodeRoot, String groupId,
                                        long timestamp, List<String> nodeIdList) throws IOException {
         String nodeConfigIni = ThymeleafUtil.generate(ThymeleafUtil.NODE_GROUP_INI);
         Files.write(nodeRoot.resolve(String.format("conf/group.%s.ini",groupId)), nodeConfigIni.getBytes());

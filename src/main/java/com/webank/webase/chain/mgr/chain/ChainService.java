@@ -248,7 +248,7 @@ public class ChainService {
      * remove chain
      */
     @Transactional
-    public void removeChain(Integer chainId) {
+    public void removeChain(String chainId) {
         // check chainId
         TbChain chain = tbChainMapper.selectByPrimaryKey(chainId);
         if (chain == null) {
@@ -444,7 +444,7 @@ public class ChainService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public TbChain insert(int chainId, String chainName, String chainDesc, String version, EncryptTypeEnum encryptType, ChainStatusEnum status,
+    public TbChain insert(String chainId, String chainName, String chainDesc, String version, EncryptTypeEnum encryptType, ChainStatusEnum status,
                           String consensusType, String storageType, DeployTypeEnum deployTypeEnum) throws BaseException {
         TbChain chain = TbChain.init(chainId, chainName, chainDesc, version, consensusType, storageType, encryptType, status, deployTypeEnum);
 
@@ -461,7 +461,7 @@ public class ChainService {
      * @return
      */
     @Transactional(propagation = Propagation.REQUIRED)
-    public boolean updateStatus(int chainId, ChainStatusEnum newStatus, String remark) {
+    public boolean updateStatus(String chainId, ChainStatusEnum newStatus, String remark) {
         log.info("Update chain:[{}] status to:[{}]", chainId, newStatus.toString());
         TbChain newChain = new TbChain();
         newChain.setChainId(chainId);

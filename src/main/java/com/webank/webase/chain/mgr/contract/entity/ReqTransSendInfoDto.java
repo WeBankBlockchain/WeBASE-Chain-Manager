@@ -28,9 +28,9 @@ import lombok.Data;
 @Data
 public class ReqTransSendInfoDto {
     @NotNull
-    private Integer chainId;
+    private String chainId;
     @NotNull
-    private Integer groupId;
+    private String groupId;
     @NotBlank
     private String contractAddress;
     @NotBlank

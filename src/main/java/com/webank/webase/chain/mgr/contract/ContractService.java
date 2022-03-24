@@ -66,10 +66,8 @@ import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.sdk.abi.FunctionEncoder;
-import org.fisco.bcos.sdk.abi.datatypes.Address;
-import org.fisco.bcos.sdk.abi.datatypes.Type;
-import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.codec.datatypes.Address;
+import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,7 +119,7 @@ public class ContractService {
 
         // check front
         TbFront tbFront =
-                frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
+            frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
         if (tbFront == null) {
             log.error("fail deployContract node front not exists.");
             throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
@@ -133,8 +131,9 @@ public class ContractService {
         HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(tbFront.getFrontPeerName());
         HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, params);
         List<RspContractCompile> compileInfos = frontInterface.postToSpecificFront(
-                Integer.MIN_VALUE, tbFront.getFrontIp(), tbFront.getFrontPort(),
-                FrontRestTools.URI_MULTI_CONTRACT_COMPILE, httpEntity, List.class);
+            //todo check groupId
+            "group0", tbFront.getFrontIp(), tbFront.getFrontPort(),
+            FrontRestTools.URI_MULTI_CONTRACT_COMPILE, httpEntity, List.class);
 
         log.debug("end compileContract.");
         return compileInfos;
@@ -290,7 +289,7 @@ public class ContractService {
      * delete contract by contractId.
      * @param force, if true, delete no matter deployed or not
      */
-    public void deleteContract(int chainId, int contractId, int groupId, boolean force) throws BaseException {
+    public void deleteContract(String chainId, int contractId, String groupId, boolean force) throws BaseException {
         log.info("start deleteContract contractId:{} groupId:{},force:{}", contractId, groupId, force);
         if (!force) {
             // check contract id
@@ -307,9 +306,9 @@ public class ContractService {
     /**
      * delete contract by chainId.
      */
-    public void deleteContractByChainId(int chainId) throws BaseException {
+    public void deleteContractByChainId(String chainId) throws BaseException {
         log.info("start deleteContractByChainId chainId:{}", chainId);
-        if (chainId == 0) {
+        if (chainId.isEmpty()) {
             return;
         }
         // remove
@@ -322,10 +321,10 @@ public class ContractService {
     /**
      * delete by groupId
      */
-    public void deleteByGroupId(int chainId, int groupId) {
+    public void deleteByGroupId(String chainId, String groupId) {
         log.info("start deleteByGroupId chainId:{} groupId:{}", chainId, groupId);
 
-        if (chainId == 0 || groupId == 0) {
+        if (chainId.isEmpty()|| StringUtils.isBlank(groupId)) {
             return;
         }
         this.tbContractMapper.deleteByChainIdAndGroupId(chainId, groupId);
@@ -381,7 +380,7 @@ public class ContractService {
     /**
      * query DeployInputParam By Address.
      */
-//    public List<TbContract> queryContractByBin(Integer groupId, String contractBin)
+//    public List<TbContract> queryContractByBin(String groupId, String contractBin)
 //            throws BaseException {
 //        try {
 //            if (StringUtils.isEmpty(contractBin)) {
@@ -441,8 +440,14 @@ public class ContractService {
         // Constructor encode
         String encodedConstructor = "";
         if (funcInputTypes.size() > 0) {
-            List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
-            encodedConstructor = FunctionEncoder.encodeConstructor(finalInputs);
+            //todo check the class
+//            List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
+//            encodedConstructor = FunctionEncoder.encodeConstructor(finalInputs);
+
+//            List<Object> params = req.getFuncParam() == null ? new ArrayList<>() : req.getFuncParam();
+//            ABICodec abiCodec = new ABICodec(web3ApiService.getCryptoSuite(groupId), false);
+//            byte[] encodedConstructor;
+//             encodedConstructor = abiCodec.encodeConstructor(abiStr, bytecodeBin, params);
         }
         // data sign
         String data = tbContract.getBytecodeBin() + encodedConstructor;
@@ -477,7 +482,7 @@ public class ContractService {
      */
     public TbContract deployContract(DeployInputParam inputParam) throws BaseException {
         log.info("start deployContract. inputParam:{}", JsonTools.toJSONString(inputParam));
-        int groupId = inputParam.getGroupId();
+        String groupId = inputParam.getGroupId();
         String contractName = inputParam.getContractName();
         // check contract
         contractManager.verifyContractNotDeploy(inputParam.getChainId(), inputParam.getContractId(),
@@ -577,41 +582,41 @@ public class ContractService {
     }
 
 
-    /**
-     * contract manage.
-     */
-    public Object statusManage(ContractManageParam inputParam) throws BaseException {
-        log.debug("start statusManage. param:{}", JsonTools.toJSONString(inputParam));
-        // check front
-        TbFront tbFront =
-                frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
-        if (tbFront == null) {
-            log.error("fail statusManage node front not exists.");
-            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
-        }
-
-        // transaction param
-        Map<String, Object> params = new HashMap<>();
-        params.put("groupId", inputParam.getGroupId());
-        params.put("contractAddress", inputParam.getContractAddress());
-        params.put("handleType", inputParam.getHandleType());
-        params.put("signUserId", inputParam.getSignUserId());
-        params.put("grantAddress", inputParam.getGrantAddress());
-
-        //httpEntity
-        HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(tbFront.getFrontPeerName());
-        HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, params);
-
-        // send transaction
-        Object contractStatusManageResult =
-                frontInterface.postToSpecificFront(inputParam.getGroupId(), tbFront.getFrontIp(),
-                        tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_STATUS_MANAGE, httpEntity,
-                        Object.class);
-
-        log.debug("end statusManage. contractStatusManageResult:{}",
-                JsonTools.toJSONString(contractStatusManageResult));
-        return contractStatusManageResult;
-    }
+//    /**
+//     * contract manage.
+//     */
+//    public Object statusManage(ContractManageParam inputParam) throws BaseException {
+//        log.debug("start statusManage. param:{}", JsonTools.toJSONString(inputParam));
+//        // check front
+//        TbFront tbFront =
+//                frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
+//        if (tbFront == null) {
+//            log.error("fail statusManage node front not exists.");
+//            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+//        }
+//
+//        // transaction param
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("groupId", inputParam.getGroupId());
+//        params.put("contractAddress", inputParam.getContractAddress());
+//        params.put("handleType", inputParam.getHandleType());
+//        params.put("signUserId", inputParam.getSignUserId());
+//        params.put("grantAddress", inputParam.getGrantAddress());
+//
+//        //httpEntity
+//        HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(tbFront.getFrontPeerName());
+//        HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, params);
+//
+//        // send transaction
+//        Object contractStatusManageResult =
+//                frontInterface.postToSpecificFront(inputParam.getGroupId(), tbFront.getFrontIp(),
+//                        tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_STATUS_MANAGE, httpEntity,
+//                        Object.class);
+//
+//        log.debug("end statusManage. contractStatusManageResult:{}",
+//                JsonTools.toJSONString(contractStatusManageResult));
+//        return contractStatusManageResult;
+//    }
 
 
     /**
@@ -697,7 +702,7 @@ public class ContractService {
     /**
      * get contract path list
      */
-    public List<TbContractPath> queryContractPathList(Integer chainId, Integer groupId) {
+    public List<TbContractPath> queryContractPathList(String chainId, String groupId) {
         this.groupManager.requireGroupExist(chainId, groupId);
         List<TbContractPath> pathList = tbContractPathMapper.listContractPath(chainId, groupId);
         // not return null, but return empty list
@@ -710,8 +715,8 @@ public class ContractService {
 
     public void deleteByContractPath(ContractPathParam param) {
         log.debug("start deleteByContractPath ContractPathParam:{}", JsonTools.toJSONString(param));
-        int chainId = param.getChainId();
-        int groupId = param.getGroupId();
+        String chainId = param.getChainId();
+        String groupId = param.getGroupId();
         String contractPath = param.getContractPath();
         List<TbContract> contractList = contractManager.listContractByPath(chainId, groupId, contractPath);
         if (contractList == null || contractList.isEmpty()) {
@@ -735,8 +740,8 @@ public class ContractService {
     public List<TbContract> queryContractListMultiPath(ReqContractByPath param) throws BaseException {
         log.debug("start queryContractListMultiPath ReqListContract:{}",
             JsonTools.toJSONString(param));
-        int chainId = param.getChainId();
-        int groupId = param.getGroupId();
+        String chainId = param.getChainId();
+        String groupId = param.getGroupId();
         this.groupManager.requireGroupExist(chainId, groupId);
         List<String> pathList = param.getContractPathList();
         List<TbContract> resultList = new ArrayList<>();

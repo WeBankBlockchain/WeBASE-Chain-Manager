@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class TranxCount {
-    private Integer chainId;
-    private Integer groupId;
+    private String chainId;
+    private String groupId;
     private Long startTime;
     private Long endTime;
     private int tranxCount;

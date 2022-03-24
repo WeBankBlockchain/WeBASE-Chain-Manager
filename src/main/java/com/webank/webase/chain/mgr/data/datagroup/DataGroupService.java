@@ -13,9 +13,9 @@
  */
 package com.webank.webase.chain.mgr.data.datagroup;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.contract.ContractService;
 import com.webank.webase.chain.mgr.group.GroupService;
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BaseQueryParam;
 import com.webank.webase.chain.mgr.base.enums.ContractStatus;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
@@ -76,7 +76,7 @@ public class DataGroupService {
     /**
      * query group overview information.
      */
-    public GroupGeneral queryGroupGeneral(Integer chainId, Integer groupId) throws BaseException {
+    public GroupGeneral queryGroupGeneral(String chainId, String groupId) throws BaseException {
         NodeParam nodeParam = new NodeParam();
         nodeParam.setChainId(chainId);
         nodeParam.setGroupId(groupId);
@@ -100,7 +100,7 @@ public class DataGroupService {
         return generalInfo;
     }
 
-    public List<TbTxnDaily> getTransDaily(Integer chainId, Integer groupId) {
+    public List<TbTxnDaily> getTransDaily(String chainId, String groupId) {
         try {
             List<TbTxnDaily> listTrans = txnDailyService.listSeventDayOfTrans(chainId, groupId);
             return listTrans;
@@ -192,7 +192,7 @@ public class DataGroupService {
     /**
      * query count of trans by app
      */
-    public int queryTransCountByApp(int chainId, int groupId, String appName) throws BaseException {
+    public int queryTransCountByApp(String chainId, String groupId, String appName) throws BaseException {
         try {
             return dataGroupMapper.queryTransCountByApp(chainId, groupId, appName);
         } catch (RuntimeException ex) {
@@ -204,7 +204,7 @@ public class DataGroupService {
     /**
      * query count of trans by contract
      */
-    public int queryTransCountByContract(int chainId, int groupId, String contractAddress) throws BaseException {
+    public int queryTransCountByContract(String chainId, String groupId, String contractAddress) throws BaseException {
         try {
             return dataGroupMapper.queryTransCountByContract(chainId, groupId, contractAddress);
         } catch (RuntimeException ex) {

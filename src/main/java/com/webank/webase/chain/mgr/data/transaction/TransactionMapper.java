@@ -26,10 +26,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TransactionMapper {
 
-    Integer add(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer add(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("trans") TbTransaction tbTransaction);
 
-    Integer getCount(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer getCount(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("param") TransListParam param);
 
     List<String> getAllTranxTables();
@@ -40,25 +40,25 @@ public interface TransactionMapper {
     List<TbTransaction> getAllTranxList(@Param("list") List<String> list,
         @Param("startTime") long startTime, @Param("endTime") long endTime);
 
-    Integer getCountByMinMax(@Param("chainId") int chainId, @Param("groupId") int groupId);
+    Integer getCountByMinMax(@Param("chainId") String chainId, @Param("groupId") String groupId);
 
-    TbTransaction getByHash(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    TbTransaction getByHash(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("transHash") String transHash);
 
-    List<TbTransaction> getList(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    List<TbTransaction> getList(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("param") TransListParam param);
 
-    List<MinMaxBlock> queryMinMaxBlock(@Param("chainId") int chainId, @Param("groupId") int groupId);
+    List<MinMaxBlock> queryMinMaxBlock(@Param("chainId") String chainId, @Param("groupId") String groupId);
 
-    List<String> listOfUnStatTransHash(@Param("chainId") int chainId, @Param("groupId") int groupId);
+    List<String> listOfUnStatTransHash(@Param("chainId") String chainId, @Param("groupId") String groupId);
 
-    void updateTransStatFlag(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    void updateTransStatFlag(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("transHash") String transHash);
 
-    void rollback(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    void rollback(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("blockNumber") long blockNumber);
 
-    Integer remove(@Param("chainId") int chainId, @Param("groupId") Integer groupId, @Param("subTransNum") Integer subTransNum);
+    Integer remove(@Param("chainId") String chainId, @Param("groupId") String groupId, @Param("subTransNum") Integer subTransNum);
 
 
 }

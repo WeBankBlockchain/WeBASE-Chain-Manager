@@ -26,8 +26,8 @@ import java.util.List;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class ContractParam extends BaseQueryParam {
-    private Integer chainId;
-    private Integer groupId;
+    private String chainId;
+    private String groupId;
     private Integer contractId;
     private String contractName;
     private String contractPath;
@@ -37,19 +37,19 @@ public class ContractParam extends BaseQueryParam {
     private Integer contractType;
     private String partOfBytecodeBin;
     private List<Integer> contractIdList;
-    private List<Integer> groupIdList;
+    private List<String> groupIdList;
 
     /**
      * init by contractId.
      */
-    public ContractParam(int chainId, int contractId, int groupId) {
+    public ContractParam(String chainId, int contractId, String groupId) {
         super();
         super.setChainId(chainId);
         this.contractId = contractId;
         this.groupId = groupId;
     }
 
-    public ContractParam(Integer chainId, List<Integer> groupIds) {
+    public ContractParam(String chainId, List<String> groupIds) {
         this.chainId = chainId;
         this.groupIdList = groupIds;
     }

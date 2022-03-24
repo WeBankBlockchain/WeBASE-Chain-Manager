@@ -26,10 +26,10 @@ import java.util.List;
 @AllArgsConstructor
 public class ReqGenerateGroup {
     @NotNull
-    private Integer chainId;
+    private String chainId;
     //    @NotNull
     private String groupName;
-    private Integer generateGroupId;
+    private String generateGroupId;
     //    @NotNull
     private BigInteger timestamp;
     private List<String> nodeList;

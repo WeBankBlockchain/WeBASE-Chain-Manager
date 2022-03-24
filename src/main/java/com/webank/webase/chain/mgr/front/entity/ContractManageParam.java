@@ -25,9 +25,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ContractManageParam {
     @NotNull
-    private Integer chainId;
+    private String chainId;
     @NotNull
-    private Integer groupId;
+    private String groupId;
     @NotBlank
     private String nodeId;
     @NotBlank

@@ -25,7 +25,7 @@ import lombok.Data;
 @Data
 public class CompileInputParam{
     @NotNull
-    private Integer chainId;
+    private String chainId;
     @NotBlank
     private String nodeId;
     @NotBlank

@@ -20,8 +20,8 @@ import java.util.List;
 @Data
 public class QueryContractParam {
     private List<Integer> contractIdList;
-    private Integer chainId;
-    private Integer groupId;
+    private String chainId;
+    private String groupId;
     private String contractName;
     private String contractAddress;
     private Integer contractStatus;

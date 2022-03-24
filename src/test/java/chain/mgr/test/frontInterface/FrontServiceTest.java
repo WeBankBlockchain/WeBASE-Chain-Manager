@@ -18,7 +18,7 @@ import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.SyncStatus;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
-import org.fisco.bcos.sdk.client.protocol.response.ConsensusStatus.ConsensusInfo;
+import org.fisco.bcos.sdk.client.protocol.response.ConsensusStatus.ConsensusStatusInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +34,8 @@ public class FrontServiceTest {
 
     @Autowired
     private FrontInterfaceService frontInterface;
-    private Integer chainId = 100001;
-    private Integer groupId = 1;
+    private String chainId = "chain0";
+    private String groupId = "group0";
     private BigInteger blockNumber = new BigInteger("1");
     private String frontPeerName = "";
     private String frontIp = "127.0.0.1";
@@ -79,7 +79,7 @@ public class FrontServiceTest {
 
     @Test
     public void getConsensusStatusTest() {
-        ConsensusInfo consensusStatus = frontInterface.getConsensusStatus(chainId, groupId);
+        ConsensusStatusInfo consensusStatus = frontInterface.getConsensusStatus(chainId, groupId);
         assert (consensusStatus != null);
         System.out.println("=====================consensusStatus:" + consensusStatus);
     }

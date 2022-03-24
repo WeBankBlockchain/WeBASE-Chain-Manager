@@ -14,6 +14,7 @@
 
 package com.webank.webase.chain.mgr.deploy.config;
 
+import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,7 +26,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.fisco.bcos.sdk.model.CryptoType;
 import org.ini4j.Ini;
 
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.deploy.service.PathService;
@@ -110,7 +110,7 @@ public class NodeConfig {
      * @param oldNode
      * @param newNode
      */
-    public static void copyGroupConfigFiles(Path oldNode,Path newNode, int groupId) {
+    public static void copyGroupConfigFiles(Path oldNode,Path newNode, String groupId) {
         if (Files.exists(oldNode)) {
             String groupGenesisFileName =String.format("conf/group.%s.genesis",groupId);
             String groupIniFileName =String.format("conf/group.%s.ini",groupId);

@@ -27,8 +27,8 @@ public class TbTransaction {
 
     private long id;
     private Integer chainType = 0;
-    private Integer chainId;
-    private Integer groupId;
+    private String chainId;
+    private String groupId;
     private String chainName;
     private String appName;
     private String transHash;
@@ -40,7 +40,7 @@ public class TbTransaction {
     private LocalDateTime createTime;
     private LocalDateTime modifyTime;
 
-    public TbTransaction(Integer chainId, Integer groupId, String transHash, BigInteger blockNumber,
+    public TbTransaction(String chainId, String groupId, String transHash, BigInteger blockNumber,
             LocalDateTime blockTimestamp, String transDetail) {
         this.chainId = chainId;
         this.groupId = groupId;

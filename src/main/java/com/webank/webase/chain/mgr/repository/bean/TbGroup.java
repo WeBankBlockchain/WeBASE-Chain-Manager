@@ -14,7 +14,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class TbGroup implements Serializable {
 
-    public TbGroup(BigInteger timestamp, Integer groupId, Integer chainId, String groupName, Integer nodeCount, String description, Integer groupType) {
+    public TbGroup(BigInteger timestamp, String groupId, String chainId, String groupName, Integer nodeCount, String description, Integer groupType) {
         this.groupId = groupId;
         this.chainId = chainId;
         this.groupName = groupName;
@@ -27,7 +27,7 @@ public class TbGroup implements Serializable {
         this.modifyTime = now;
     }
 
-    public TbGroup(Integer groupId, Integer chainId, String groupName, Integer nodeCount, String description, Integer groupType) {
+    public TbGroup(String groupId, String chainId, String groupName, Integer nodeCount, String description, Integer groupType) {
         this.groupId = groupId;
         this.chainId = chainId;
         this.groupName = groupName;
@@ -46,7 +46,7 @@ public class TbGroup implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer groupId;
+    private String groupId;
 
     /**
      *
@@ -55,7 +55,7 @@ public class TbGroup implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer chainId;
+    private String chainId;
 
     /**
      *
