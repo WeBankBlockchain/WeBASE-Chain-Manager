@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -98,7 +99,7 @@ public class TxnDailyService {
      * delete by groupId.
      */
     public void deleteByGroupId(String chainId, String groupId) {
-        if (chainId.isEmpty() || groupId.isEmpty()) {
+        if (StringUtils.isBlank(chainId)|| StringUtils.isBlank(groupId)) {
             return;
         }
         txnDailyMapper.deleteByGroupId(chainId, groupId);

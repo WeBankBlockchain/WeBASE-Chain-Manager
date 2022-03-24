@@ -18,9 +18,9 @@ mybatis:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/webasechainmanager?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull
-    username: root
-    password: 12345wb!
+    url: jdbc:mysql://${WEBASE_DB_IP:127.0.0.1}:${WEBASE_DB_PORT:3306}/webasechainmanager?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    username: ${WEBASE_DB_UNAME:defaultAccount}
+    password: ${WEBASE_DB_PWD:defaultPassword}
 
 #log config
 logging:

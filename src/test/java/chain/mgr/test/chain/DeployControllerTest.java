@@ -53,8 +53,8 @@ public class DeployControllerTest {
     @Test
     public void testNewChain() throws Exception {
         ChainInfo param = new ChainInfo();
-        param.setChainId(1001);
-        param.setChainName("aaa");
+        param.setChainId("chain0");
+        param.setChainName("chainName");
         param.setDescription("test");
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post( "/chain/new").

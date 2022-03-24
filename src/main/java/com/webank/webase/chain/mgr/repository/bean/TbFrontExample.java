@@ -1,5 +1,6 @@
 package com.webank.webase.chain.mgr.repository.bean;
 
+import com.webank.webase.chain.mgr.repository.bean.TbContractPathExample.Criteria;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -253,6 +254,11 @@ public class TbFrontExample {
             criteria.add(new Criterion(condition, value1, value2));
         }
 
+        public Criteria andGroupIdEqualTo(String value) {
+            addCriterion("group_id =", value, "groupId");
+            return (Criteria) this;
+        }
+
         public Criteria andFrontIdIsNull() {
             addCriterion("front_id is null");
             return (Criteria) this;
@@ -323,7 +329,7 @@ public class TbFrontExample {
             return (Criteria) this;
         }
 
-        public Criteria andChainIdEqualTo(Integer value) {
+        public Criteria andChainIdEqualTo(String value) {
             addCriterion("chain_id =", value, "chainId");
             return (Criteria) this;
         }

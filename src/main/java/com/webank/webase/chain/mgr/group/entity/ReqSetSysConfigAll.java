@@ -18,11 +18,11 @@ package com.webank.webase.chain.mgr.group.entity;
 import lombok.Data;
 
 @Data
-public class ReqSetSysConfig {
+public class ReqSetSysConfigAll {
+
     private String chainId;
-    private String groupId;
     private String nodeId;
-    private String signUserId;
-    private String configKey;
-    private String configValue;
+
+    private ReqSetSysConfigInfo reqSetSysConfigInfo;
+
 }

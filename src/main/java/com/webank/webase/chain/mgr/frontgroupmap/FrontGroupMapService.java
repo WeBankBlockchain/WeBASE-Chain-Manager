@@ -23,6 +23,7 @@ import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -80,18 +81,20 @@ public class FrontGroupMapService {
             return;
         }
         //remove by chainId
-        this.tbFrontGroupMapMapper.deleteByChainId(chainId);
+        //todo open
+        //this.tbFrontGroupMapMapper.deleteByChainId(chainId);
     }
 
     /**
      * remove by groupId
      */
     public void removeByGroupId(String chainId, String groupId) {
-        if (chainId.isEmpty() || groupId.isEmpty()) {
+        if (StringUtils.isBlank(chainId)|| StringUtils.isBlank(groupId)) {
             return;
         }
         //remove by groupId
-        this.tbFrontGroupMapMapper.deleteByGroupId(chainId, groupId);
+        //todo open
+        //this.tbFrontGroupMapMapper.deleteByGroupId(chainId, groupId);
     }
 
     /**
@@ -112,7 +115,7 @@ public class FrontGroupMapService {
 
         TbFrontGroupMapExample example = new TbFrontGroupMapExample();
         TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
-        criteria.equals(chainId);
+        criteria.andChainIdEqualTo(chainId);
         criteria.andFrontIdIn(frontIdList);
 
         tbFrontGroupMapMapper.deleteByExample(example);
@@ -129,9 +132,9 @@ public class FrontGroupMapService {
         //param
         TbFrontGroupMapExample example = new TbFrontGroupMapExample();
         TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
-        criteria.equals(chainId);
+        criteria.andChainIdEqualTo(chainId);
         if (Objects.nonNull(groupId)) {
-            criteria.equals(groupId);
+            criteria.andGroupIdEqualTo(groupId);
         }
 
         List<TbFrontGroupMap> frontGroupMapList = tbFrontGroupMapMapper.selectByExample(example);
@@ -175,7 +178,7 @@ public class FrontGroupMapService {
         //param
         TbFrontGroupMapExample example = new TbFrontGroupMapExample();
         TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
-        criteria.equals(chainId);
+        criteria.andChainIdEqualTo(chainId);
         criteria.andFrontIdIn(frontIdList);
 
         //query
@@ -199,7 +202,7 @@ public class FrontGroupMapService {
         //param
         TbFrontGroupMapExample example = new TbFrontGroupMapExample();
         TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
-        criteria.equals(chainId);
+        criteria.andChainIdEqualTo(chainId);
         criteria.andFrontIdEqualTo(frontId);
 
         //query
@@ -229,8 +232,8 @@ public class FrontGroupMapService {
         //param
         TbFrontGroupMapExample example = new TbFrontGroupMapExample();
         TbFrontGroupMapExample.Criteria criteria = example.createCriteria();
-        criteria.equals(chain);
-        criteria.equals(group);
+        criteria.andChainIdEqualTo(chain);
+        criteria.andGroupIdEqualTo(group);
         criteria.andFrontIdEqualTo(tbFront.getFrontId());
 
         //delete
@@ -257,4 +260,5 @@ public class FrontGroupMapService {
 //        tbFrontGroupMapMapper.updateOneGroupStatus(frontId,status.getValue(),groupId);
 //        this.frontGroupMapCache.clearMapList(chainId);
 //    }
+
 }

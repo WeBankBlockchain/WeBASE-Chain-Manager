@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS tb_group (
 -- Table structure for tb_front
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS tb_front (
+    group_id VARCHAR(64) NOT NULL COMMENT '群组ID',
     front_id INT(11) NOT NULL AUTO_INCREMENT COMMENT '前置服务编号',
     chain_id VARCHAR(64) NOT NULL COMMENT '所属区块链编号',
     node_id VARCHAR(250) NOT NULL COMMENT '节点编号',

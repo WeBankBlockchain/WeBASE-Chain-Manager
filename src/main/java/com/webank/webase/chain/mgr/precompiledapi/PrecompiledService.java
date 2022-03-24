@@ -224,7 +224,7 @@ public class PrecompiledService {
         funcParams.add(nodeId);
 
         //generate group.x.genesis group.x.ini
-        groupService.generateExistGroupToSingleNode(chainId, groupId, nodeId);
+        //groupService.generateExistGroupToSingleNode(chainId, groupId, nodeId);
 
         //send transaction
         TransResultDto transResultDto = transService.transHandleWithSignForPrecompile(chainId, groupId, signUserId,
@@ -237,7 +237,7 @@ public class PrecompiledService {
         log.info("end addSealer recoverReceipt:{}", recoverReceipt);
 
         //start group
-        groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
+        //groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
     }
 
 
@@ -262,7 +262,7 @@ public class PrecompiledService {
         funcParams.add(nodeId);
 
         //generate group.x.genesis group.x.ini
-        groupService.generateExistGroupToSingleNode(chainId, groupId, nodeId);
+        //groupService.generateExistGroupToSingleNode(chainId, groupId, nodeId);
 
         //send transaction
         TransResultDto transResultDto = transService.transHandleWithSignForPrecompile(chainId, groupId, signUserId,
@@ -274,7 +274,7 @@ public class PrecompiledService {
         this.handleTransactionReceipt(recoverReceipt);
 
         //start group
-        groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
+        //groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
     }
 
 
@@ -321,7 +321,7 @@ public class PrecompiledService {
         frontGroupMapService.removeByChainAndGroupAndNode(chainId, groupId, nodeId);
 
         //stop
-        groupService.stopGroupIfRunning(chainId, nodeId, groupId);
+        //groupService.stopGroupIfRunning(chainId, nodeId, groupId);
     }
 
 
@@ -511,7 +511,7 @@ public class PrecompiledService {
                 if (101004 == ex.getRetCode().getCode()) {
                     log.info("front:{} already on group:{}", front.getFrontIp(), groupId);
                     frontGroupMapService.removeByChainAndGroupAndNode(chainId, groupId, front.getNodeId());
-                    groupService.stopGroupIfRunning(chainId, front.getNodeId(), groupId);
+                    //groupService.stopGroupIfRunning(chainId, front.getNodeId(), groupId);
                 }
             } catch (Exception ex) {
                 log.warn("query peer fail", ex);
@@ -545,7 +545,7 @@ public class PrecompiledService {
                     throw ex;
                 log.info("remove the last node:{}", nodeId);
                 //stop
-                groupService.stopGroupIfRunning(chainId, nodeId, groupId);
+                //groupService.stopGroupIfRunning(chainId, nodeId, groupId);
                 //remove front-group map
                 frontGroupMapService.removeByChainAndGroupAndNode(chainId, groupId, nodeId);
             }

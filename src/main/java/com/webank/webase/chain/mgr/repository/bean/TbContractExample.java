@@ -528,16 +528,6 @@ public class TbContractExample {
             return (Criteria) this;
         }
 
-        public Criteria andGroupIdNotEqualTo(Integer value) {
-            addCriterion("group_id <>", value, "groupId");
-            return (Criteria) this;
-        }
-
-        public Criteria andGroupIdGreaterThan(Integer value) {
-            addCriterion("group_id >", value, "groupId");
-            return (Criteria) this;
-        }
-
         public Criteria andGroupIdGreaterThanOrEqualTo(Integer value) {
             addCriterion("group_id >=", value, "groupId");
             return (Criteria) this;

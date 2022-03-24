@@ -35,14 +35,14 @@ public class FrontGroupMapServiceTest {
 
     @Test
     public void getListTest() {
-        List<FrontGroup> list = tbFrontGroupMapMapper.selectByGroupId(1);
+        List<FrontGroup> list = tbFrontGroupMapMapper.selectByGroupId("group0");
         assert (list != null);
         System.out.println(JsonTools.toJSONString(list));
     }
 
     @Test
     public void listByGroupIdTest() {
-        List<FrontGroup> list = this.tbFrontGroupMapMapper.selectByGroupId(1);
+        List<FrontGroup> list = this.tbFrontGroupMapMapper.selectByGroupId("group0");
         assert (list != null);
         System.out.println(JsonTools.toJSONString(list));
     }

@@ -54,7 +54,7 @@ public class TableService {
      */
     @Transactional
     public void newSubTable(String chainId, String groupId) {
-        if (chainId.isEmpty() || groupId.isEmpty()) {
+        if (StringUtils.isBlank(chainId)|| StringUtils.isBlank(groupId)) {
             return;
         }
         // table created record in map, check if exist in map

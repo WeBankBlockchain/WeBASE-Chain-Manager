@@ -98,7 +98,6 @@ public class ContractControllerTest {
         ReqNewUser param = new ReqNewUser();
         param.setSignUserId(signUserId);
         param.setSignUserName(signUserName);
-        param.setChainId(chainId);
         param.setAppId(appId);
         param.setEncryptType(0);
 
@@ -311,21 +310,21 @@ public class ContractControllerTest {
 
     @Test
     public void testCompileContract2() throws Exception {
-        String filePath = "D:\\project\\sol\\HelloWorld.zip";
-        String base64 = CommonUtils.fileToBase64(filePath);
-        System.out.println("base64：" + base64);
-
-        Map<String, Object> param = new HashMap<>();
-        param.put("chainId", chainId);
-        param.put("nodeId", nodeId);
-        param.put("contractZipBase64", base64);
-
-        ResultActions resultActions =
-                mockMvc.perform(MockMvcRequestBuilders.post("/contract/compile")
-                        .content(JsonTools.toJSONString(param)).contentType(MediaType.APPLICATION_JSON));
-        resultActions.andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
-        System.out.println(
-                "response:" + resultActions.andReturn().getResponse().getContentAsString());
+//        String filePath = "D:\\project\\sol\\HelloWorld.zip";
+//        String base64 = CommonUtils.fileToBase64(filePath);
+//        System.out.println("base64：" + base64);
+//
+//        Map<String, Object> param = new HashMap<>();
+//        param.put("chainId", chainId);
+//        param.put("nodeId", nodeId);
+//        param.put("contractZipBase64", base64);
+//
+//        ResultActions resultActions =
+//                mockMvc.perform(MockMvcRequestBuilders.post("/contract/compile")
+//                        .content(JsonTools.toJSONString(param)).contentType(MediaType.APPLICATION_JSON));
+//        resultActions.andExpect(MockMvcResultMatchers.status().isOk())
+//                .andDo(MockMvcResultHandlers.print());
+//        System.out.println(
+//                "response:" + resultActions.andReturn().getResponse().getContentAsString());
     }
 }

@@ -359,20 +359,20 @@ public class ContractController extends BaseController {
     /**
      * contract status manage.
      */
-    @PostMapping(value = "/statusManage")
-    public Object statusManage(@RequestBody @Valid ContractManageParam param, BindingResult result)
-        throws BaseException {
-        checkBindResult(result);
-        Instant startTime = Instant.now();
-        log.info("start statusManage startTime:{} param:{}", startTime.toEpochMilli(),
-            JsonTools.toJSONString(param));
-
-        Object contractStatusManageResult = contractService.statusManage(param);
-
-        log.info("end statusManage useTime:{}",
-            Duration.between(startTime, Instant.now()).toMillis());
-        return contractStatusManageResult;
-    }
+//    @PostMapping(value = "/statusManage")
+//    public Object statusManage(@RequestBody @Valid ContractManageParam param, BindingResult result)
+//        throws BaseException {
+//        checkBindResult(result);
+//        Instant startTime = Instant.now();
+//        log.info("start statusManage startTime:{} param:{}", startTime.toEpochMilli(),
+//            JsonTools.toJSONString(param));
+//
+//        Object contractStatusManageResult = contractService.statusManage(param);
+//
+//        log.info("end statusManage useTime:{}",
+//            Duration.between(startTime, Instant.now()).toMillis());
+//        return contractStatusManageResult;
+//    }
 
     /**
      * deploy deployInputParam.

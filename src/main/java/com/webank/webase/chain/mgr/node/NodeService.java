@@ -207,7 +207,7 @@ public class NodeService {
      * delete by groupId.
      */
     public void deleteByGroupId(String chainId, String groupId) {
-        if (chainId.isEmpty() || groupId.isEmpty()) {
+        if (StringUtils.isBlank(chainId)|| StringUtils.isBlank(groupId)) {
             return;
         }
         tbNodeMapper.deleteByChainIdAndGroupId(chainId, groupId);

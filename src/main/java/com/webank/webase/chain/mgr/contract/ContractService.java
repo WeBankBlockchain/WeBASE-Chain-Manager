@@ -324,7 +324,7 @@ public class ContractService {
     public void deleteByGroupId(String chainId, String groupId) {
         log.info("start deleteByGroupId chainId:{} groupId:{}", chainId, groupId);
 
-        if (chainId.isEmpty()|| groupId.isEmpty()) {
+        if (chainId.isEmpty()|| StringUtils.isBlank(groupId)) {
             return;
         }
         this.tbContractMapper.deleteByChainIdAndGroupId(chainId, groupId);
@@ -582,41 +582,41 @@ public class ContractService {
     }
 
 
-    /**
-     * contract manage.
-     */
-    public Object statusManage(ContractManageParam inputParam) throws BaseException {
-        log.debug("start statusManage. param:{}", JsonTools.toJSONString(inputParam));
-        // check front
-        TbFront tbFront =
-                frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
-        if (tbFront == null) {
-            log.error("fail statusManage node front not exists.");
-            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
-        }
-
-        // transaction param
-        Map<String, Object> params = new HashMap<>();
-        params.put("groupId", inputParam.getGroupId());
-        params.put("contractAddress", inputParam.getContractAddress());
-        params.put("handleType", inputParam.getHandleType());
-        params.put("signUserId", inputParam.getSignUserId());
-        params.put("grantAddress", inputParam.getGrantAddress());
-
-        //httpEntity
-        HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(tbFront.getFrontPeerName());
-        HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, params);
-
-        // send transaction
-        Object contractStatusManageResult =
-                frontInterface.postToSpecificFront(inputParam.getGroupId(), tbFront.getFrontIp(),
-                        tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_STATUS_MANAGE, httpEntity,
-                        Object.class);
-
-        log.debug("end statusManage. contractStatusManageResult:{}",
-                JsonTools.toJSONString(contractStatusManageResult));
-        return contractStatusManageResult;
-    }
+//    /**
+//     * contract manage.
+//     */
+//    public Object statusManage(ContractManageParam inputParam) throws BaseException {
+//        log.debug("start statusManage. param:{}", JsonTools.toJSONString(inputParam));
+//        // check front
+//        TbFront tbFront =
+//                frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());
+//        if (tbFront == null) {
+//            log.error("fail statusManage node front not exists.");
+//            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
+//        }
+//
+//        // transaction param
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("groupId", inputParam.getGroupId());
+//        params.put("contractAddress", inputParam.getContractAddress());
+//        params.put("handleType", inputParam.getHandleType());
+//        params.put("signUserId", inputParam.getSignUserId());
+//        params.put("grantAddress", inputParam.getGrantAddress());
+//
+//        //httpEntity
+//        HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(tbFront.getFrontPeerName());
+//        HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, params);
+//
+//        // send transaction
+//        Object contractStatusManageResult =
+//                frontInterface.postToSpecificFront(inputParam.getGroupId(), tbFront.getFrontIp(),
+//                        tbFront.getFrontPort(), FrontRestTools.URI_CONTRACT_STATUS_MANAGE, httpEntity,
+//                        Object.class);
+//
+//        log.debug("end statusManage. contractStatusManageResult:{}",
+//                JsonTools.toJSONString(contractStatusManageResult));
+//        return contractStatusManageResult;
+//    }
 
 
     /**
