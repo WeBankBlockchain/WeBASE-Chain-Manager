@@ -1,5 +1,6 @@
 package com.webank.webase.chain.mgr.repository.bean;
 
+import com.webank.webase.chain.mgr.repository.bean.TbTaskExample.Criteria;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -263,6 +264,10 @@ public class TbGroupExample {
             return (Criteria) this;
         }
 
+        public Criteria andGroupIdEqualTo(String value) {
+            addCriterion("group_id =", value, "groupId");
+            return (Criteria) this;
+        }
 
         public Criteria andGroupIdIn(List<String> values) {
             addCriterion("group_id in", values, "groupId");

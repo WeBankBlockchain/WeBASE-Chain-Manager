@@ -19,11 +19,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 
+@Slf4j
 @Component
 public class FrontGroupMapCache {
 
@@ -42,7 +44,11 @@ public class FrontGroupMapCache {
      * reset mapList.
      */
     public Map<String, List<FrontGroup>> resetMapList(String chainId) {
-        mapList.put(chainId, this.tbFrontGroupMapMapper.selectByChainId(chainId));
+        List<FrontGroup> frontGroupList = this.tbFrontGroupMapMapper.selectByChainId(chainId);
+        if (frontGroupList.size() > 0) {
+            mapList.put(chainId, frontGroupList);
+        }
+        log.info("get frontGroupList size is 0");
         return mapList;
     }
 
@@ -55,7 +61,7 @@ public class FrontGroupMapCache {
             return null;
         }
         List<FrontGroup> map =
-                list.stream().filter(m -> groupId == m.getGroupId()).collect(Collectors.toList());
+                list.stream().filter(m -> m.getGroupId().equals(groupId)).collect(Collectors.toList());
         return map;
     }
 

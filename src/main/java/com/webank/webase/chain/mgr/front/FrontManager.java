@@ -64,7 +64,7 @@ public class FrontManager {
         //param
         TbFrontExample example = new TbFrontExample();
         TbFrontExample.Criteria criteria = example.createCriteria();
-        criteria.equals(chainId);
+        criteria.andGroupIdEqualTo(chainId);
         criteria.andFrontStatusNotEqualTo(FrontStatusEnum.ABANDONED.getId());
 
         //query
@@ -84,7 +84,7 @@ public class FrontManager {
         //param
         TbFrontExample example = new TbFrontExample();
         TbFrontExample.Criteria criteria = example.createCriteria();
-        criteria.equals(chainId);
+        criteria.andChainIdEqualTo(chainId);
         criteria.andNodeIdIn(nodeIdList);
         criteria.andFrontStatusNotEqualTo(FrontStatusEnum.ABANDONED.getId());
 
@@ -135,13 +135,10 @@ public class FrontManager {
         TbFrontExample.Criteria criteria = example.createCriteria();
 
         if (Objects.nonNull(param.getChainId()))
-            criteria.equals(param.getChainId());
+            criteria.andChainIdEqualTo(param.getChainId());
 
         if (Objects.nonNull(param.getExtAgencyId()))
             criteria.andExtAgencyIdEqualTo(param.getExtAgencyId());
-
-        if (Objects.nonNull(param.getFrontId()))
-            criteria.andFrontIdEqualTo(param.getFrontId());
 
         if (Objects.nonNull(param.getFrontId()))
             criteria.andFrontIdEqualTo(param.getFrontId());
@@ -233,7 +230,7 @@ public class FrontManager {
         log.info("start exec method[requireNotFoundFront] chainId:{} nodeId:{} frontPeerName:{}", chainId, nodeId, frontPeerName);
         TbFrontExample example = new TbFrontExample();
         TbFrontExample.Criteria criteria = example.createCriteria();
-        criteria.equals(chainId);
+        criteria.andChainIdEqualTo(chainId);
         criteria.andNodeIdEqualTo(nodeId);
 
         tbFrontMapper.getOneByExample(example).ifPresent(front -> {

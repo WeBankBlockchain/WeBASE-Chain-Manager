@@ -72,14 +72,14 @@ public class TaskManager {
      * @param group
      * @param nodeId
      */
-    public void queryByChainAndGroupAndNode(int chain, int group, String nodeId) {
+    public void queryByChainAndGroupAndNode(String chain, String group, String nodeId) {
         log.info("start exec method[queryByChainAndGroupAndNode] chain:{} group:{} nodeId:{}",
             chain, group, nodeId);
         //params
         TbTaskExample example = new TbTaskExample();
         TbTaskExample.Criteria criteria = example.createCriteria();
-        criteria.equals(chain);
-        criteria.equals(group);
+        criteria.andChainIdEqualTo(chain);
+        criteria.andGroupIdEqualTo(group);
         criteria.andNodeIdEqualTo(nodeId);
         //query
         long count = taskMapper.countByExample(example);
@@ -221,7 +221,6 @@ public class TaskManager {
         if (chainId.isEmpty()) {
             return;
         }
-
         taskMapper.deleteByChainId(chainId);
     }
 

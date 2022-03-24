@@ -129,117 +129,117 @@ public class FrontController extends BaseController {
         return baseResponse;
     }
 
-    @GetMapping(value = "/mointorInfo/{frontId}")
-    public BaseResponse getChainMoinntorInfo(@PathVariable("frontId") Integer frontId,
-                                             @RequestParam(required = false) @DateTimeFormat(
-                                                     iso = ISO.DATE_TIME) LocalDateTime beginDate,
-                                             @RequestParam(required = false) @DateTimeFormat(
-                                                     iso = ISO.DATE_TIME) LocalDateTime endDate,
-                                             @RequestParam(required = false) @DateTimeFormat(
-                                                     iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
-                                             @RequestParam(required = false) @DateTimeFormat(
-                                                     iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
-                                             @RequestParam(required = false, defaultValue = "1") int gap,
-                                             @RequestParam(required = false, defaultValue = "1") String groupId) throws BaseException {
-        Instant startTime = Instant.now();
-        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
-        log.info(
-                "start getChainInfo. startTime:{} frontId:{} beginDate:{} endDate:{} "
-                        + "contrastBeginDate:{} contrastEndDate:{} gap:{} groupId:{}",
-                startTime.toEpochMilli(), frontId, beginDate, endDate, contrastBeginDate,
-                contrastEndDate, gap, groupId);
-        Object rspObj = frontService.getNodeMonitorInfo(frontId, beginDate, endDate,
-                contrastBeginDate, contrastEndDate, gap, groupId);
-
-        response.setData(rspObj);
-        log.info("end getChainInfo. endTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
-
-        return response;
-    }
-
-    /**
-     * get ratio of performance.
-     */
-    @GetMapping(value = "/ratio/{frontId}")
-    public BaseResponse getPerformanceRatio(@PathVariable("frontId") Integer frontId,
-                                            @RequestParam(required = false) @DateTimeFormat(
-                                                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
-                                            @RequestParam(required = false) @DateTimeFormat(
-                                                    iso = ISO.DATE_TIME) LocalDateTime endDate,
-                                            @RequestParam(required = false) @DateTimeFormat(
-                                                    iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
-                                            @RequestParam(required = false) @DateTimeFormat(
-                                                    iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
-                                            @RequestParam(value = "gap", required = false, defaultValue = "1") int gap)
-            throws BaseException {
-        Instant startTime = Instant.now();
-        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
-        log.info(
-                "start getPerformanceRatio. startTime:{} frontId:{} beginDate:{}"
-                        + " endDate:{} contrastBeginDate:{} contrastEndDate:{} gap:{}",
-                startTime.toEpochMilli(), frontId, beginDate, endDate, contrastBeginDate,
-                contrastEndDate, gap);
-
-        Object rspObj = frontService.getPerformanceRatio(frontId, beginDate, endDate,
-                contrastBeginDate, contrastEndDate, gap);
-        response.setData(rspObj);
-        log.info("end getPerformanceRatio. useTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
-
-        return response;
-    }
+//    @GetMapping(value = "/mointorInfo/{frontId}")
+//    public BaseResponse getChainMoinntorInfo(@PathVariable("frontId") Integer frontId,
+//                                             @RequestParam(required = false) @DateTimeFormat(
+//                                                     iso = ISO.DATE_TIME) LocalDateTime beginDate,
+//                                             @RequestParam(required = false) @DateTimeFormat(
+//                                                     iso = ISO.DATE_TIME) LocalDateTime endDate,
+//                                             @RequestParam(required = false) @DateTimeFormat(
+//                                                     iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
+//                                             @RequestParam(required = false) @DateTimeFormat(
+//                                                     iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
+//                                             @RequestParam(required = false, defaultValue = "1") int gap,
+//                                             @RequestParam(required = false, defaultValue = "1") String groupId) throws BaseException {
+//        Instant startTime = Instant.now();
+//        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+//        log.info(
+//                "start getChainInfo. startTime:{} frontId:{} beginDate:{} endDate:{} "
+//                        + "contrastBeginDate:{} contrastEndDate:{} gap:{} groupId:{}",
+//                startTime.toEpochMilli(), frontId, beginDate, endDate, contrastBeginDate,
+//                contrastEndDate, gap, groupId);
+//        Object rspObj = frontService.getNodeMonitorInfo(frontId, beginDate, endDate,
+//                contrastBeginDate, contrastEndDate, gap, groupId);
+//
+//        response.setData(rspObj);
+//        log.info("end getChainInfo. endTime:{} response:{}",
+//                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
+//
+//        return response;
+//    }
+//
+//    /**
+//     * get ratio of performance.
+//     */
+//    @GetMapping(value = "/ratio/{frontId}")
+//    public BaseResponse getPerformanceRatio(@PathVariable("frontId") Integer frontId,
+//                                            @RequestParam(required = false) @DateTimeFormat(
+//                                                    iso = ISO.DATE_TIME) LocalDateTime beginDate,
+//                                            @RequestParam(required = false) @DateTimeFormat(
+//                                                    iso = ISO.DATE_TIME) LocalDateTime endDate,
+//                                            @RequestParam(required = false) @DateTimeFormat(
+//                                                    iso = ISO.DATE_TIME) LocalDateTime contrastBeginDate,
+//                                            @RequestParam(required = false) @DateTimeFormat(
+//                                                    iso = ISO.DATE_TIME) LocalDateTime contrastEndDate,
+//                                            @RequestParam(value = "gap", required = false, defaultValue = "1") int gap)
+//            throws BaseException {
+//        Instant startTime = Instant.now();
+//        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+//        log.info(
+//                "start getPerformanceRatio. startTime:{} frontId:{} beginDate:{}"
+//                        + " endDate:{} contrastBeginDate:{} contrastEndDate:{} gap:{}",
+//                startTime.toEpochMilli(), frontId, beginDate, endDate, contrastBeginDate,
+//                contrastEndDate, gap);
+//
+//        Object rspObj = frontService.getPerformanceRatio(frontId, beginDate, endDate,
+//                contrastBeginDate, contrastEndDate, gap);
+//        response.setData(rspObj);
+//        log.info("end getPerformanceRatio. useTime:{} response:{}",
+//                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
+//
+//        return response;
+//    }
 
     /**
      * get config of performance.
      */
-    @GetMapping(value = "/config/{frontId}")
-    public BaseResponse getPerformanceConfig(@PathVariable("frontId") Integer frontId)
-            throws BaseException {
-        Instant startTime = Instant.now();
-        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
-        log.info("start getPerformanceConfig. startTime:{} frontId:{}", startTime.toEpochMilli(),
-                frontId);
-        Object frontRsp = frontService.getPerformanceConfig(frontId);
-        response.setData(frontRsp);
-        log.info("end getPerformanceConfig. useTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
-        return response;
-    }
+//    @GetMapping(value = "/config/{frontId}")
+//    public BaseResponse getPerformanceConfig(@PathVariable("frontId") Integer frontId)
+//            throws BaseException {
+//        Instant startTime = Instant.now();
+//        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+//        log.info("start getPerformanceConfig. startTime:{} frontId:{}", startTime.toEpochMilli(),
+//                frontId);
+//        Object frontRsp = frontService.getPerformanceConfig(frontId);
+//        response.setData(frontRsp);
+//        log.info("end getPerformanceConfig. useTime:{} response:{}",
+//                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
+//        return response;
+//    }
 
     /**
      * check node process.
      */
-    @GetMapping(value = "/checkNodeProcess/{frontId}")
-    public BaseResponse checkNodeProcess(@PathVariable("frontId") Integer frontId)
-            throws BaseException {
-        Instant startTime = Instant.now();
-        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
-        log.info("start checkNodeProcess. startTime:{} frontId:{}", startTime.toEpochMilli(),
-                frontId);
-        Object frontRsp = frontService.checkNodeProcess(frontId);
-        response.setData(frontRsp);
-        log.info("end checkNodeProcess. useTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
-        return response;
-    }
+//    @GetMapping(value = "/checkNodeProcess/{frontId}")
+//    public BaseResponse checkNodeProcess(@PathVariable("frontId") Integer frontId)
+//            throws BaseException {
+//        Instant startTime = Instant.now();
+//        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+//        log.info("start checkNodeProcess. startTime:{} frontId:{}", startTime.toEpochMilli(),
+//                frontId);
+//        Object frontRsp = frontService.checkNodeProcess(frontId);
+//        response.setData(frontRsp);
+//        log.info("end checkNodeProcess. useTime:{} response:{}",
+//                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
+//        return response;
+//    }
 
     /**
      * get group size infos.
      */
-    @GetMapping(value = "/getGroupSizeInfos/{frontId}")
-    public BaseResponse getGroupSizeInfos(@PathVariable("frontId") Integer frontId)
-            throws BaseException {
-        Instant startTime = Instant.now();
-        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
-        log.info("start getGroupSizeInfos. startTime:{} frontId:{}", startTime.toEpochMilli(),
-                frontId);
-        Object frontRsp = frontService.getGroupSizeInfos(frontId);
-        response.setData(frontRsp);
-        log.info("end getGroupSizeInfos. useTime:{} response:{}",
-                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
-        return response;
-    }
+//    @GetMapping(value = "/getGroupSizeInfos/{frontId}")
+//    public BaseResponse getGroupSizeInfos(@PathVariable("frontId") Integer frontId)
+//            throws BaseException {
+//        Instant startTime = Instant.now();
+//        BaseResponse response = new BaseResponse(ConstantCode.SUCCESS);
+//        log.info("start getGroupSizeInfos. startTime:{} frontId:{}", startTime.toEpochMilli(),
+//                frontId);
+//        Object frontRsp = frontService.getGroupSizeInfos(frontId);
+//        response.setData(frontRsp);
+//        log.info("end getGroupSizeInfos. useTime:{} response:{}",
+//                Duration.between(startTime, Instant.now()).toMillis(), JsonTools.toJSONString(response));
+//        return response;
+//    }
 
     /**
      * @param param

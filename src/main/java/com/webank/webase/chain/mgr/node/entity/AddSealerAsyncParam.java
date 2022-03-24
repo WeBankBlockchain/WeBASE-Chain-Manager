@@ -27,10 +27,10 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class AddSealerAsyncParam {
-    @ApiModelProperty(value = "链Id", example = "1", required = true)
+    @ApiModelProperty(value = "链Id", example = "chain0", required = true)
     @NotNull
     private String chainId;
-    @ApiModelProperty(value = "当前群组编号", example = "1", required = true)
+    @ApiModelProperty(value = "当前群组编号", example = "group0", required = true)
     @NotNull
     private String groupId;
     @ApiModelProperty(value = "需要更改状态的节点列表")

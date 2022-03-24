@@ -199,7 +199,7 @@ public class ContractManager {
      */
     public void deleteByChainAndGroupAndPath(String chainId, String groupId, String path) {
         log.info("start deleteByChainAndGroupAndPath. chainId:{} groupId:{} path:{}", chainId, groupId, path);
-        if (chainId.isEmpty() || groupId.isEmpty() || StringUtils.isBlank(path))
+        if (StringUtils.isBlank(chainId)|| StringUtils.isBlank(groupId) || StringUtils.isBlank(path))
             throw new BaseException(ConstantCode.INVALID_PARAM_INFO.attach("require chainId>0 and groupId not empty and path not empty"));
 
         TbContractExample example = new TbContractExample();

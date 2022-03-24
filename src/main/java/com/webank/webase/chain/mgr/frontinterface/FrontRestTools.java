@@ -48,6 +48,7 @@ import java.util.*;
 public class FrontRestTools {
 
     // public static final String FRONT_URL = "http://%1s:%2d/WeBASE-Front/%3s";
+    public static final String URI_CLIENT_VERSION = "web3/clientVersion";
     public static final String URI_BLOCK_NUMBER = "web3/blockNumber";
     public static final String URI_BLOCK_BY_NUMBER = "web3/blockByNumber/%1d";
     public static final String URI_BLOCK_BY_HASH = "web3/blockByHash/%1s";
@@ -58,7 +59,7 @@ public class FrontRestTools {
     public static final String URI_QUERY_TRANSACTION = "trans/query-transaction";
     public static final String URI_CODE = "web3/code/%1s/%2s";
     public static final String URI_GROUP_PLIST = "web3/groupList";
-    public static final String URI_NODEID_LIST = "web3/nodeIdList";
+    public static final String URI_NODEID_LIST = "web3/groupPeers";
     public static final String URI_GET_SEALER_LIST = "web3/sealerList";
     public static final String URI_GET_OBSERVER_LIST = "web3/observerList";
     public static final String URI_GROUP_PEERS = "web3/groupPeers";
@@ -66,43 +67,23 @@ public class FrontRestTools {
     public static final String URI_CONSENSUS_STATUS = "web3/consensusStatus";
     public static final String URI_CSYNC_STATUS = "web3/syncStatus";
     public static final String URI_SYSTEMCONFIG_BY_KEY = "web3/systemConfigByKey/%1s";
-    public static final String URI_GENERATE_GROUP = "web3/generateGroup";
-    public static final String URI_OPERATE_GROUP = "web3/operateGroup/%1s";
-    public static final String URI_CLIENT_VERSION = "web3/clientVersion";
-    public static final String URI_GET_GROUP_STATUS = "web3/queryGroupStatus";
-    public static final String FRONT_PERFORMANCE_RATIO = "performance";
-    public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
+    public static final String URI_NODE_STATUS_LIST = "web3/nodeStatusList";
+    public static final String URI_ENCRYPT_TYPE = "web3/encrypt";
+
     public static final String URI_MULTI_CONTRACT_COMPILE = "contract/multiContractCompile";
     public static final String URI_CONTRACT_COMPILE = "contract/contractCompile";
     public static final String URI_CONTRACT_DEPLOY = "contract/deployWithSign";
     public static final String URI_SEND_TRANSACTION = "trans/handleWithSign";
-    public static final String URI_CHAIN = "chain";
-    public static final String URI_CHECK_NODE_PROCESS = "chain/checkNodeProcess";
-    public static final String URI_GET_GROUP_SIZE_INFOS = "chain/getGroupSizeInfos";
-    public static final String URI_CHARGING_GET_NETWORK_DATA = "charging/getNetWorkData";
-    public static final String URI_CHARGING_GET_TXGASDATA = "charging/getTxGasData";
-    public static final String URI_CHARGING_DELETE_DATA = "charging/deleteData";
 
-
-    public static final String URI_SYS_CONFIG_LIST = "sys/config/list";
-    public static final String URI_SYS_CONFIG = "sys/config";
-    public static final String URI_CONSENSUS_LIST = "precompiled/consensus/list";
-    public static final String URI_CONSENSUS = "precompiled/consensus";
-    public static final String URI_CONTRACT_STATUS_MANAGE = "precompiled/contractStatusManage";
-
-    public static final String URI_NODE_STATUS_LIST = "web3/nodeStatusList";
-
-    public static final String URI_CERT = "cert";
-    public static final String URI_ENCRYPT_TYPE = "encrypt";
+    public static final String URI_SYS_CONFIG_LIST = "/precntauth/precompiled/sys/config/list";
+    public static final String URI_SYS_CONFIG = "/precntauth/precompiled/sys/config";
+    public static final String URI_CONSENSUS_LIST = "/precntauth/precompiled/consensus/list";
+    public static final String URI_CONSENSUS = "/precntauth/precompiled/consensus/manage";
 
     // 不需要在url中包含groupId的
     private static final List<String> URI_NOT_CONTAIN_GROUP_ID =
             Arrays.asList(URI_MULTI_CONTRACT_COMPILE, URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION,
                     URI_SYS_CONFIG_LIST, URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS,
-                    URI_CONTRACT_STATUS_MANAGE, URI_CERT, URI_ENCRYPT_TYPE,
-                    URI_CHARGING_GET_NETWORK_DATA, URI_CHARGING_GET_TXGASDATA,
-                    URI_CHARGING_DELETE_DATA, URI_CHAIN, FRONT_PERFORMANCE_RATIO,
-                    FRONT_PERFORMANCE_CONFIG, URI_CHECK_NODE_PROCESS, URI_GET_GROUP_SIZE_INFOS,
                     URI_SIGNED_TRANSACTION, URI_QUERY_TRANSACTION, URI_CONTRACT_COMPILE);
 
 
@@ -242,7 +223,7 @@ public class FrontRestTools {
             return null;
         }
         if (uri.contains(URI_CONTRACT_DEPLOY) || uri.contains(URI_MULTI_CONTRACT_COMPILE)
-                || uri.contains(URI_CHARGING_GET_TXGASDATA) || uri.contains(URI_SIGNED_TRANSACTION)) {
+            || uri.contains(URI_SIGNED_TRANSACTION)) {
             return deployRestTemplate;
         }
         return genericRestTemplate;

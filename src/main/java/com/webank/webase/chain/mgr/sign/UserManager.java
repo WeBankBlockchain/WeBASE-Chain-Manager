@@ -33,8 +33,8 @@ public class UserManager {
         //param
         TbUserExample example = new TbUserExample();
         TbUserExample.Criteria criteria = example.createCriteria();
-        criteria.equals(chainId);
-        criteria.equals(groupId);
+        criteria.andChainIdEqualTo(chainId);
+        criteria.andGroupIdEqualTo(groupId);
         criteria.andUserNameEqualTo(userName);
 
         //query

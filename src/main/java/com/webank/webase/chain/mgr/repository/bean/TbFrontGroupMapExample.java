@@ -1,5 +1,6 @@
 package com.webank.webase.chain.mgr.repository.bean;
 
+import com.webank.webase.chain.mgr.repository.bean.TbChainExample.Criteria;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -323,6 +324,11 @@ public class TbFrontGroupMapExample {
             return (Criteria) this;
         }
 
+        public Criteria andChainIdEqualTo(String value) {
+            addCriterion("chain_id =", value, "chainId");
+            return (Criteria) this;
+        }
+
 
         public Criteria andChainIdIn(List<String> values) {
             addCriterion("chain_id in", values, "chainId");
@@ -391,6 +397,11 @@ public class TbFrontGroupMapExample {
 
         public Criteria andFrontIdNotBetween(Integer value1, Integer value2) {
             addCriterion("front_id not between", value1, value2, "frontId");
+            return (Criteria) this;
+        }
+
+        public Criteria andGroupIdEqualTo(String value) {
+            addCriterion("group_id =", value, "groupId");
             return (Criteria) this;
         }
 

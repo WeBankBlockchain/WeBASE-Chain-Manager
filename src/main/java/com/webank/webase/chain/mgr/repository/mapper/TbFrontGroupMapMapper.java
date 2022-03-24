@@ -107,7 +107,7 @@ public interface TbFrontGroupMapMapper {
      * @mbg.generated
      */
     @SelectProvider(type = TbFrontGroupMapSqlProvider.class, method = "selectByExample")
-    @Results({ @Result(column = "map_id", property = "mapId", jdbcType = JdbcType.INTEGER, id = true), @Result(column = "chain_id", property = "chainId", jdbcType = JdbcType.INTEGER), @Result(column = "front_id", property = "frontId", jdbcType = JdbcType.INTEGER), @Result(column = "group_id", property = "groupId", jdbcType = JdbcType.INTEGER), @Result(column = "create_time", property = "createTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "modify_time", property = "modifyTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "front_status", property = "frontStatus", jdbcType = JdbcType.TINYINT) })
+    @Results({ @Result(column = "map_id", property = "mapId", jdbcType = JdbcType.INTEGER, id = true), @Result(column = "chain_id", property = "chainId", jdbcType =JdbcType.VARCHAR), @Result(column = "front_id", property = "frontId", jdbcType = JdbcType.INTEGER), @Result(column = "group_id", property = "groupId", jdbcType =JdbcType.VARCHAR), @Result(column = "create_time", property = "createTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "modify_time", property = "modifyTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "front_status", property = "frontStatus", jdbcType = JdbcType.TINYINT) })
     List<TbFrontGroupMap> selectByExample(TbFrontGroupMapExample example);
 
     /**
@@ -117,7 +117,7 @@ public interface TbFrontGroupMapMapper {
      * @mbg.generated
      */
     @Select({ "select", "map_id, chain_id, front_id, group_id, create_time, modify_time, front_status", "from tb_front_group_map", "where map_id = #{mapId,jdbcType=INTEGER}" })
-    @Results({ @Result(column = "map_id", property = "mapId", jdbcType = JdbcType.INTEGER, id = true), @Result(column = "chain_id", property = "chainId", jdbcType = JdbcType.INTEGER), @Result(column = "front_id", property = "frontId", jdbcType = JdbcType.INTEGER), @Result(column = "group_id", property = "groupId", jdbcType = JdbcType.INTEGER), @Result(column = "create_time", property = "createTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "modify_time", property = "modifyTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "front_status", property = "frontStatus", jdbcType = JdbcType.TINYINT) })
+    @Results({ @Result(column = "map_id", property = "mapId", jdbcType = JdbcType.INTEGER, id = true), @Result(column = "chain_id", property = "chainId", jdbcType =JdbcType.VARCHAR), @Result(column = "front_id", property = "frontId", jdbcType = JdbcType.INTEGER), @Result(column = "group_id", property = "groupId", jdbcType =JdbcType.VARCHAR), @Result(column = "create_time", property = "createTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "modify_time", property = "modifyTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "front_status", property = "frontStatus", jdbcType = JdbcType.TINYINT) })
     TbFrontGroupMap selectByPrimaryKey(Integer mapId);
 
     /**
@@ -173,6 +173,6 @@ public interface TbFrontGroupMapMapper {
      * @mbg.generated
      */
     @SelectProvider(type = TbFrontGroupMapSqlProvider.class, method = "getOneByExample")
-    @Results({ @Result(column = "map_id", property = "mapId", jdbcType = JdbcType.INTEGER, id = true), @Result(column = "chain_id", property = "chainId", jdbcType = JdbcType.INTEGER), @Result(column = "front_id", property = "frontId", jdbcType = JdbcType.INTEGER), @Result(column = "group_id", property = "groupId", jdbcType = JdbcType.INTEGER), @Result(column = "create_time", property = "createTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "modify_time", property = "modifyTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "front_status", property = "frontStatus", jdbcType = JdbcType.TINYINT) })
+    @Results({ @Result(column = "map_id", property = "mapId", jdbcType = JdbcType.INTEGER, id = true), @Result(column = "chain_id", property = "chainId", jdbcType =JdbcType.VARCHAR), @Result(column = "front_id", property = "frontId", jdbcType = JdbcType.INTEGER), @Result(column = "group_id", property = "groupId", jdbcType =JdbcType.VARCHAR), @Result(column = "create_time", property = "createTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "modify_time", property = "modifyTime", jdbcType = JdbcType.TIMESTAMP), @Result(column = "front_status", property = "frontStatus", jdbcType = JdbcType.TINYINT) })
     Optional<TbFrontGroupMap> getOneByExample(TbFrontGroupMapExample example);
 }

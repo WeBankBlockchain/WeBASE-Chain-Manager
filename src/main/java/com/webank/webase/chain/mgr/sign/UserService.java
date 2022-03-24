@@ -7,6 +7,7 @@ import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
+import com.webank.webase.chain.mgr.repository.bean.TbUserExample.Criteria;
 import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.group.GroupManager;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class UserService {
+
     @Autowired
     private SignRestTools signRestTools;
     @Autowired
@@ -58,19 +60,20 @@ public class UserService {
      * @throws BaseException
      */
     public BasePageResponse getUserListByAppId(String appId, Integer pageNumber, Integer pageSize)
-            throws BaseException {
+        throws BaseException {
         //check appId
         TbGroup tbGroup = groupManager.verifyAppId(appId);
         //query user by page
         TbUserExample example = new TbUserExample();
-        example.setStart(Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).filter(p -> p >= 0).orElse(1));
+        example.setStart(
+            Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).filter(p -> p >= 0)
+                .orElse(1));
         example.setCount(pageSize);
         // add order by
         example.setOrderByClause("gmt_modified DESC");
         TbUserExample.Criteria criteria = example.createCriteria();
-        //todo check "criteria.equals"
-        criteria.equals(tbGroup.getChainId());
-        criteria.equals(tbGroup.getGroupId());
+        criteria.andChainIdEqualTo(tbGroup.getChainId());
+        criteria.andGroupIdEqualTo(tbGroup.getGroupId());
         List<TbUser> userList = userMapper.selectByExample(example);
         log.debug("getUserListByAppId userList:{}", userList);
         if (CollectionUtils.isEmpty(userList)) {
@@ -79,25 +82,28 @@ public class UserService {
         }
 
         //query remote server
-        String signUserIdList = userList.stream().map(TbUser::getSignUserId).collect(Collectors.joining(","));
-        String url = String.format(SignRestTools.URI_USER_LIST, signRestTools.getBaseUrl(), appId, pageNumber, pageSize, signUserIdList);
+        String signUserIdList = userList.stream().map(TbUser::getSignUserId)
+            .collect(Collectors.joining(","));
+        String url = String.format(SignRestTools.URI_USER_LIST, signRestTools.getBaseUrl(), appId,
+            pageNumber, pageSize, signUserIdList);
         log.info("Request webase sign server:[{}]", url);
         BaseResponse restResponse = signRestTools.getFromSign(url, BaseResponse.class);
-        List<RspUserInfo> restRspList = CommUtils.getResultData(restResponse, new TypeReference<List<RspUserInfo>>() {
-        });
+        List<RspUserInfo> restRspList = CommUtils.getResultData(restResponse,
+            new TypeReference<List<RspUserInfo>>() {
+            });
 
         //set userName
         for (RspUserInfo rspUserInfo : restRspList) {
             userList.stream()
-                    .filter(user -> user.getSignUserId().equals(rspUserInfo.getSignUserId()))
-                    .findFirst()
-                    .ifPresent(u -> {
-                        rspUserInfo.setId(u.getId());
-                        rspUserInfo.setChainId(u.getChainId());
-                        rspUserInfo.setGroupId(u.getGroupId());
-                        rspUserInfo.setSignUserName(u.getUserName());
-                        rspUserInfo.setDescription(u.getDescription());
-                    });
+                .filter(user -> user.getSignUserId().equals(rspUserInfo.getSignUserId()))
+                .findFirst()
+                .ifPresent(u -> {
+                    rspUserInfo.setId(u.getId());
+                    rspUserInfo.setChainId(u.getChainId());
+                    rspUserInfo.setGroupId(u.getGroupId());
+                    rspUserInfo.setSignUserName(u.getUserName());
+                    rspUserInfo.setDescription(u.getDescription());
+                });
         }
 
         //return
@@ -122,7 +128,8 @@ public class UserService {
             reqNewUser.setSignUserId(buildUserId(tbGroup.getChainId(), tbGroup.getGroupId()));
         }
         //check userName
-        userManager.requireUserNameNotFound(tbGroup.getChainId(), tbGroup.getGroupId(), reqNewUser.getSignUserName());
+        userManager.requireUserNameNotFound(tbGroup.getChainId(), tbGroup.getGroupId(),
+            reqNewUser.getSignUserName());
         //check chainId
         TbChain tbChain = chainManager.requireChainIdExist(tbGroup.getChainId());
         //check encrypt type
@@ -184,7 +191,8 @@ public class UserService {
             log.error("signUserId is null");
             return null;
         }
-        String url = String.format(SignRestTools.URI_USER_INFO, signRestTools.getBaseUrl(), signUserId);
+        String url = String.format(SignRestTools.URI_USER_INFO, signRestTools.getBaseUrl(),
+            signUserId);
         log.debug("checkSignUserId url:{}", url);
         BaseResponse baseResponse = signRestTools.getFromSign(url, BaseResponse.class);
         return CommUtils.getResultData(baseResponse, RspUserInfo.class);
@@ -213,7 +221,8 @@ public class UserService {
      */
     private String buildUserId(String chainId, String groupId) {
         String uuid = UUID.randomUUID().toString().replace("-", "");
-        String signUserId = String.join(ConstantProperties.SEPARATOR, String.valueOf(chainId), String.valueOf(groupId), uuid);
+        String signUserId = String.join(ConstantProperties.SEPARATOR, chainId,
+            groupId, uuid);
         log.info("userId:{}", signUserId);
         return signUserId;
     }
@@ -226,7 +235,8 @@ public class UserService {
      */
     @Transactional
     public TbUser createAdminIfNonexistence(String chainId, String groupId) {
-        log.info("start exec method [createAdminIfNonexistence], chain:{} group:{}", chainId, groupId);
+        log.info("start exec method [createAdminIfNonexistence], chain:{} group:{}", chainId,
+            groupId);
 
         //query group
         TbGroup group = groupMapper.selectByPrimaryKey(groupId, chainId);
@@ -234,7 +244,8 @@ public class UserService {
             throw new BaseException(ConstantCode.NOT_FOUND_GROUP_BY_ID_AND_CHAIN);
 
         //query user
-        String adminUserName = String.format(ConstantProperties.ADMIN_USER_FORMAT, group.getGroupName());
+        String adminUserName = String.format(ConstantProperties.ADMIN_USER_FORMAT,
+            group.getGroupName());
         TbUser adminUser = userManager.queryByChainAndGroupAndName(chainId, groupId, adminUserName);
         if (Objects.nonNull(adminUser)) {
             return adminUser;
@@ -250,7 +261,8 @@ public class UserService {
         //new user
         newUser(reqNewUser);
 
-        log.info("success exec method [createAdminIfNonexistence], chain:{} group:{}", chainId, groupId);
+        log.info("success exec method [createAdminIfNonexistence], chain:{} group:{}", chainId,
+            groupId);
         return userManager.queryByChainAndGroupAndName(chainId, groupId, adminUserName);
     }
 
@@ -261,11 +273,14 @@ public class UserService {
      * @param appIds
      * @return
      */
-    public BasePageResponse queryUserPage(Integer pageNumber, Integer pageSize, List<Integer> chainIds, List<String> appIds) {
+    public BasePageResponse queryUserPage(Integer pageNumber, Integer pageSize,
+        List<Integer> chainIds, List<String> appIds) {
         log.info("start exec method [queryUserPage]");
 
         TbUserExample example = new TbUserExample();
-        example.setStart(Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).filter(p -> p >= 0).orElse(1));
+        example.setStart(
+            Optional.ofNullable(pageNumber).map(page -> (page - 1) * pageSize).filter(p -> p >= 0)
+                .orElse(1));
         example.setCount(pageSize);
 
         if (CollectionUtils.isNotEmpty(appIds)) {
@@ -275,8 +290,8 @@ public class UserService {
 
             for (TbGroup tbGroup : groupList) {
                 TbUserExample.Criteria criteria = example.createCriteria();
-                criteria.equals(tbGroup.getChainId());
-                criteria.equals(tbGroup.getGroupId());
+                criteria.andChainIdEqualTo(tbGroup.getChainId());
+                criteria.andGroupIdEqualTo(tbGroup.getGroupId());
                 example.or(criteria);
             }
         }
@@ -300,10 +315,11 @@ public class UserService {
 
             if (CollectionUtils.isNotEmpty(allGroupList))
                 rspUserInfo.setAppId(allGroupList.stream()
-                        .filter(group -> group.getChainId().equals(tbUser.getChainId()) && group.getGroupId().equals(tbUser.getGroupId()))
-                        .findFirst()
-                        .map(g -> g.getGroupName())
-                        .orElse(null));
+                    .filter(group -> group.getChainId().equals(tbUser.getChainId())
+                        && group.getGroupId().equals(tbUser.getGroupId()))
+                    .findFirst()
+                    .map(g -> g.getGroupName())
+                    .orElse(null));
 
             //兼容老数据
             if (StringUtils.isBlank(tbUser.getAddress())) {
@@ -319,13 +335,49 @@ public class UserService {
             restRspList.add(rspUserInfo);
         }
 
-
         BasePageResponse basePageResponse = new BasePageResponse(ConstantCode.SUCCESS);
         basePageResponse.setTotalCount(new Long(userCount).intValue());
         basePageResponse.setData(restRspList);
 
-
-        log.info("success exec method [queryUserPage] result:{}", JsonTools.objToString(basePageResponse));
+        log.info("success exec method [queryUserPage] result:{}",
+            JsonTools.objToString(basePageResponse));
         return basePageResponse;
+    }
+
+    /**
+     * query by group id and address.
+     */
+    public String getSignUserIdByAddress(String groupId, String address) throws BaseException {
+        TbUser user = queryUser(groupId, address);
+        if (user == null) {
+            throw new BaseException(ConstantCode.USER_SIGN_USER_ID_NOT_EXIST);
+        }
+        if (StringUtils.isBlank(user.getSignUserId())) {
+            log.error("getSignUserIdByAddress userAddress's signUserId not exist, address:{}",
+                address);
+            throw new BaseException(ConstantCode.USER_SIGN_USER_ID_NOT_EXIST);
+        }
+        return user.getSignUserId();
+    }
+
+    /**
+     * query user row.
+     */
+    public TbUser queryUser(String groupId, String address) throws BaseException {
+        log.debug("start queryUser groupId:{}  address:{}", groupId, address);
+        try {
+            TbUserExample example = new TbUserExample();
+            TbUserExample.Criteria criteria = example.createCriteria();
+            criteria.andAddressEqualTo(address);
+            criteria.andGroupIdEqualTo(groupId);
+            TbUser userRow = userMapper.selectByExample(example).get(0);
+            log.debug("end queryUser groupId:{}  address:{} TbUser:{}",
+                groupId, address, JsonTools.toJSONString(userRow));
+            return userRow;
+        } catch (RuntimeException ex) {
+            log.error("fail queryUser groupId:{} address:{}",
+                groupId, address, ex);
+            throw new BaseException(ConstantCode.DB_EXCEPTION);
+        }
     }
 }

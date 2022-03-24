@@ -116,7 +116,7 @@ public class GroupManager {
     @Transactional
     public TbGroup saveGroup(String groupName, BigInteger timestamp, String groupId, String chainId, List<String> genesisNodeList, int nodeCount, String description,
                              int groupType) {
-        if (groupId.isEmpty()) {
+        if (StringUtils.isBlank(groupId)) {
             return null;
         }
 
