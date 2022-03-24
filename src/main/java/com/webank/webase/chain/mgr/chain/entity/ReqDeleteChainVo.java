@@ -7,5 +7,5 @@ import javax.validation.constraints.NotNull;
 @Data
 public class ReqDeleteChainVo {
     @NotNull
-    private Integer chainId;
+    private String chainId;
 }

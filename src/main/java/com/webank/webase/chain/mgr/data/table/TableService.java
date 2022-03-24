@@ -53,8 +53,8 @@ public class TableService {
      * create sub table.
      */
     @Transactional
-    public void newSubTable(int chainId, int groupId) {
-        if (chainId == 0 || groupId == 0) {
+    public void newSubTable(String chainId, String groupId) {
+        if (StringUtils.isBlank(chainId)|| StringUtils.isBlank(groupId)) {
             return;
         }
         // table created record in map, check if exist in map
@@ -73,7 +73,7 @@ public class TableService {
     /**
      * drop table.
      */
-    public void dropTable(int chainId, int groupId) {
+    public void dropTable(String chainId, String groupId) {
         for (TableName enumName : TableName.values()) {
             dropTableByName(enumName.getTableName(chainId, groupId));
         }

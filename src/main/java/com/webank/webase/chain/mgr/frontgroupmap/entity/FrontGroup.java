@@ -20,8 +20,8 @@ import lombok.Data;
 @Data
 public class FrontGroup {
     private Integer mapId;
-    private Integer chainId;
-    private Integer groupId;
+    private String chainId;
+    private String groupId;
     private Integer frontId;
     private String frontIp;
     private Integer frontPort;

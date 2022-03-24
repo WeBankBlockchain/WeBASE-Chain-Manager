@@ -39,7 +39,7 @@ public class RollBackService {
      * @param blockNumber
      */
     @Transactional
-    public void rollback(int chainId, int groupId, long blockNumber) {
+    public void rollback(String chainId, String groupId, long blockNumber) {
         blockMapper.rollback(chainId, groupId, blockNumber);
         transactionMapper.rollback(chainId, groupId, blockNumber);
     }

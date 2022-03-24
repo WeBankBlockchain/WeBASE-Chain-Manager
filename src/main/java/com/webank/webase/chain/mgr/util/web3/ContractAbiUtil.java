@@ -23,11 +23,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.fisco.bcos.sdk.abi.TypeReference;
-import org.fisco.bcos.sdk.abi.datatypes.DynamicArray;
-import org.fisco.bcos.sdk.abi.datatypes.Type;
-import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
-import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition.NamedType;
+import org.fisco.bcos.sdk.codec.datatypes.*;
+import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition.NamedType;
 
 /**
  * ContractAbiUtil.

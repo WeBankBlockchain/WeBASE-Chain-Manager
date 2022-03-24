@@ -55,7 +55,7 @@ public class UserControllerTest {
     }
 
 
-    private static final Integer chainId = 1;
+    private static final String chainId = "chain0";
     private static String signUserId = null;
     private static final String appId = "chain_1_group_1";
 

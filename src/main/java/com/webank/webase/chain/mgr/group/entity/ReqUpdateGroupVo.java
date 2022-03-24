@@ -8,9 +8,9 @@ import javax.validation.constraints.NotNull;
 @Data
 public class ReqUpdateGroupVo {
     @NotNull
-    private Integer chainId;
+    private String chainId;
     @NotNull
-    private Integer groupId;
+    private String groupId;
     @NotBlank
     private String description;
 }

@@ -17,7 +17,7 @@ public class PrecompiledByTaskService {
     private PrecompiledService precompiledService;
 
     @Transactional
-    public void checkAndAddSealer(int taskId, int chain, int group, String node) {
+    public void checkAndAddSealer(int taskId, String chain, String group, String node) {
         log.info("start exec method[checkAndAddSealer]  taskId:{} chain:{} group:{} node:{}", taskId, chain, group, node);
 
         //check sealer

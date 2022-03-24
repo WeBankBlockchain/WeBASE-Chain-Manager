@@ -391,7 +391,7 @@ public class TbContractPathExample {
             return (Criteria) this;
         }
 
-        public Criteria andChainIdEqualTo(Integer value) {
+        public Criteria andChainIdEqualTo(String value) {
             addCriterion("chain_id =", value, "chainId");
             return (Criteria) this;
         }
@@ -451,7 +451,7 @@ public class TbContractPathExample {
             return (Criteria) this;
         }
 
-        public Criteria andGroupIdEqualTo(Integer value) {
+        public Criteria andGroupIdEqualTo(String value) {
             addCriterion("group_id =", value, "groupId");
             return (Criteria) this;
         }

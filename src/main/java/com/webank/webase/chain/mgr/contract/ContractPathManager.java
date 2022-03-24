@@ -27,7 +27,7 @@ public class ContractPathManager {
     private TbContractPathMapper tbContractPathMapper;
 
 
-    public boolean checkPathExist(Integer chainId, Integer groupId, String pathName) {
+    public boolean checkPathExist(String chainId, String groupId, String pathName) {
         TbContractPath contractPath =
             tbContractPathMapper.findOne(chainId, groupId, pathName);
         if (contractPath != null) {

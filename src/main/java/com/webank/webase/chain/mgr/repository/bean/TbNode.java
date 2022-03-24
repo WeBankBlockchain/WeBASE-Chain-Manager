@@ -14,7 +14,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class TbNode implements Serializable {
 
-    public static TbNode init(int chainId, String nodeId, String nodeName, int groupId, String ip, int p2pPort, String description, DataStatus dataStatus) {
+    public static TbNode init(String chainId, String nodeId, String nodeName, String groupId, String ip, int p2pPort, String description, DataStatus dataStatus) {
         Date now = new Date();
         TbNode node = new TbNode();
         node.setNodeId(nodeId);
@@ -48,7 +48,7 @@ public class TbNode implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer chainId;
+    private String chainId;
 
     /**
      *
@@ -57,7 +57,7 @@ public class TbNode implements Serializable {
      *
      * @mbg.generated
      */
-    private Integer groupId;
+    private String groupId;
 
     /**
      *

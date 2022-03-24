@@ -17,13 +17,9 @@ package com.webank.webase.chain.mgr.util;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.exception.BaseException;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Map;
-import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 
 /**
  * Constants and tool function related with Precompiled module

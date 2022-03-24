@@ -29,47 +29,47 @@ public interface BlockMapper {
     /**
      * Add new block data.
      */
-    Integer add(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer add(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("block") TbBlock tbBlock);
 
     /**
      * query latest block number
      */
-    BigInteger getLatestBlockNumber(@Param("chainId") int chainId, @Param("groupId") int groupId);
+    BigInteger getLatestBlockNumber(@Param("chainId") String chainId, @Param("groupId") String groupId);
 
     /**
      * findByBlockNumber.
      */
-    TbBlock findByBlockNumber(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    TbBlock findByBlockNumber(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("blockNumber") long blockNumber);
 
     /**
      * query list of block by page.
      */
-    List<TbBlock> getList(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    List<TbBlock> getList(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("param") BlockListParam param);
 
     /**
      * query block count.
      */
-    Integer getCount(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer getCount(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("blockHash") String blockHash,
         @Param("blockNumber") BigInteger blockNumber);
 
     /**
      * get block count by max minux min
      */
-    Integer getBlockCountByMinMax(@Param("chainId") int chainId, @Param("groupId") int groupId);
+    Integer getBlockCountByMinMax(@Param("chainId") String chainId, @Param("groupId") String groupId);
 
     /**
      * Delete block height.
      */
-    Integer remove(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    Integer remove(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("blockRetainMax") BigInteger blockRetainMax);
 
     /**
      * rollback.
      */
-    void rollback(@Param("chainId") int chainId, @Param("groupId") int groupId,
+    void rollback(@Param("chainId") String chainId, @Param("groupId") String groupId,
         @Param("blockNumber") long blockNumber);
 }

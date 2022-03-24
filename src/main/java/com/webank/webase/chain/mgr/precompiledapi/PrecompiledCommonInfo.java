@@ -18,8 +18,6 @@ package com.webank.webase.chain.mgr.precompiledapi;
 
 
 import com.webank.webase.chain.mgr.base.enums.PrecompiledTypes;
-import org.fisco.bcos.sdk.contract.precompiled.contractmgr.ContractLifeCyclePrecompiled;
-import org.fisco.bcos.sdk.contract.precompiled.permission.PermissionPrecompiled;
 
 
 /**
@@ -113,12 +111,6 @@ public class PrecompiledCommonInfo {
                 return ABI_CONSENSUS;
             case CNS:
                 return ABI_CNS;
-            case PERMISSION:
-                return PermissionPrecompiled.ABI;
-            case CSM:
-                return ContractLifeCyclePrecompiled.ABI;
-//            case CHAIN_GOVERN:
-//                return ChainGovernance.ABI;
             default:
                 return "";
         }

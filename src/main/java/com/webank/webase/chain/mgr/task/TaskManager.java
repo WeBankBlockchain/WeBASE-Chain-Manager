@@ -22,6 +22,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class TaskManager {
+
     @Autowired
     private TbTaskMapper taskMapper;
 
@@ -31,8 +32,9 @@ public class TaskManager {
      * @param nodeId
      */
     @Transactional
-    public TbTask saveTaskOfAddSealerNode(int chain, int group, String nodeId) {
-        log.info("start exec method[saveTaskOfAddSealerNode] chain:{} group:{} nodeId:{}", chain, group, nodeId);
+    public TbTask saveTaskOfAddSealerNode(String chain, String group, String nodeId) {
+        log.info("start exec method[saveTaskOfAddSealerNode] chain:{} group:{} nodeId:{}", chain,
+            group, nodeId);
 
         //check before save
         TbTaskExample example = new TbTaskExample();
@@ -42,7 +44,9 @@ public class TaskManager {
         criteria.andNodeIdEqualTo(nodeId);
         Optional<TbTask> taskOptional = taskMapper.getOneByExample(example);
         if (taskOptional.isPresent()) {
-            log.info("finish exec method[saveTaskOfAddSealerNode] fount task record by chain:{} group:{} nodeId:{}", chain, group, nodeId);
+            log.info(
+                "finish exec method[saveTaskOfAddSealerNode] fount task record by chain:{} group:{} nodeId:{}",
+                chain, group, nodeId);
             return taskOptional.get();
         }
 
@@ -56,7 +60,9 @@ public class TaskManager {
         tbTask.setGmtModified(new Date());
         taskMapper.insertSelective(tbTask);
 
-        log.info("success exec method[saveTaskOfAddSealerNode] chain:{} group:{} nodeId:{},result:{}", chain, group, nodeId);
+        log.info(
+            "success exec method[saveTaskOfAddSealerNode] chain:{} group:{} nodeId:{},result:{}",
+            chain, group, nodeId);
         return taskMapper.selectByPrimaryKey(tbTask.getId());
     }
 
@@ -66,8 +72,9 @@ public class TaskManager {
      * @param group
      * @param nodeId
      */
-    public void queryByChainAndGroupAndNode(int chain, int group, String nodeId) {
-        log.info("start exec method[queryByChainAndGroupAndNode] chain:{} group:{} nodeId:{}", chain, group, nodeId);
+    public void queryByChainAndGroupAndNode(String chain, String group, String nodeId) {
+        log.info("start exec method[queryByChainAndGroupAndNode] chain:{} group:{} nodeId:{}",
+            chain, group, nodeId);
         //params
         TbTaskExample example = new TbTaskExample();
         TbTaskExample.Criteria criteria = example.createCriteria();
@@ -78,9 +85,11 @@ public class TaskManager {
         long count = taskMapper.countByExample(example);
         log.info("count:{}", count);
         if (count > 0)
-            throw new BaseException(ConstantCode.NODE_IN_TASK.attach(String.format("node:%s already in task", nodeId)));
+            throw new BaseException(
+                ConstantCode.NODE_IN_TASK.attach(String.format("node:%s already in task", nodeId)));
 
-        log.info("finish exec method[queryByChainAndGroupAndNode] chain:{} group:{} nodeId:{}", chain, group, nodeId);
+        log.info("finish exec method[queryByChainAndGroupAndNode] chain:{} group:{} nodeId:{}",
+            chain, group, nodeId);
     }
 
 
@@ -90,7 +99,8 @@ public class TaskManager {
      * @return
      */
     public List<TbTask> selectTaskList(List<Byte> statusList, TaskTypeEnum taskTypeEnum) {
-        log.info("start exec method[selectTaskList] statusList:{} taskTypeEnum:{} ", JsonTools.objToString(statusList), JsonTools.objToString(taskTypeEnum));
+        log.info("start exec method[selectTaskList] statusList:{} taskTypeEnum:{} ",
+            JsonTools.objToString(statusList), JsonTools.objToString(taskTypeEnum));
 
         //param
         TbTaskExample example = new TbTaskExample();
@@ -121,8 +131,10 @@ public class TaskManager {
      * @param taskStatusEnum
      * @return true:success  false:fail
      */
-    public TbTask updateStatusByTbTask(TbTask oldTask, TaskStatusEnum taskStatusEnum, String remark) {
-        log.debug("start exec method[updateTaskStatus] task:{} taskTypeEnum:{} remark:{}", JsonTools.objToString(oldTask), JsonTools.objToString(taskStatusEnum), remark);
+    public TbTask updateStatusByTbTask(TbTask oldTask, TaskStatusEnum taskStatusEnum,
+        String remark) {
+        log.debug("start exec method[updateTaskStatus] task:{} taskTypeEnum:{} remark:{}",
+            JsonTools.objToString(oldTask), JsonTools.objToString(taskStatusEnum), remark);
         if (Objects.isNull(oldTask)) {
             log.warn("fail exec method[updateTaskStatus]. task is null");
             return null;
@@ -145,10 +157,8 @@ public class TaskManager {
         int modifyCount = taskMapper.updateByExampleWithBLOBs(newTask, example);
         log.info("modifyCount:{}", modifyCount);
 
-
         if (modifyCount > 0)
             newTask = taskMapper.selectByPrimaryKey(oldTask.getId());
-
 
         log.warn("finish exec method[updateTaskStatus]. result:{}", JsonTools.objToString(newTask));
         return newTask;
@@ -161,16 +171,22 @@ public class TaskManager {
      * @param remark
      * @return
      */
-    public TbTask updateStatusByPrimaryKey(int taskId, TaskStatusEnum taskStatusEnum, String remark) {
-        log.debug("start exec method[updateStatusByPrimaryKey] taskId:{} taskStatusEnum:{} remark:{}", taskId, JsonTools.objToString(taskStatusEnum), remark);
+    public TbTask updateStatusByPrimaryKey(int taskId, TaskStatusEnum taskStatusEnum,
+        String remark) {
+        log.debug(
+            "start exec method[updateStatusByPrimaryKey] taskId:{} taskStatusEnum:{} remark:{}",
+            taskId, JsonTools.objToString(taskStatusEnum), remark);
         TbTask tbTask = taskMapper.selectByPrimaryKey(taskId);
         if (Objects.isNull(tbTask)) {
-            log.warn("fail exec method [updateStatusByPrimaryKey]. not found task record by taskId:{}", taskId);
+            log.warn(
+                "fail exec method [updateStatusByPrimaryKey]. not found task record by taskId:{}",
+                taskId);
             return null;
         }
 
         TbTask taskRsp = updateStatusByTbTask(tbTask, taskStatusEnum, remark);
-        log.debug("finish exec method[updateStatusByPrimaryKey]. result:{}", JsonTools.objToString(taskRsp));
+        log.debug("finish exec method[updateStatusByPrimaryKey]. result:{}",
+            JsonTools.objToString(taskRsp));
         return taskRsp;
     }
 
@@ -201,11 +217,10 @@ public class TaskManager {
     }
 
     @Transactional
-    public void removeByChainId(int chainId) {
-        if (chainId == 0) {
+    public void removeByChainId(String chainId) {
+        if (chainId.isEmpty()) {
             return;
         }
-
         taskMapper.deleteByChainId(chainId);
     }
 
@@ -214,8 +229,9 @@ public class TaskManager {
      * @param groupId
      */
     @Transactional
-    public void removeByChainAndGroup(int chainId, int groupId) {
-        log.info("start exec method[removeByChainAndGroup] chainId:{} groupId:{}", chainId, groupId);
+    public void removeByChainAndGroup(String chainId, String groupId) {
+        log.info("start exec method[removeByChainAndGroup] chainId:{} groupId:{}", chainId,
+            groupId);
 
         TbTaskExample example = new TbTaskExample();
         TbTaskExample.Criteria criteria = example.createCriteria();
@@ -223,7 +239,8 @@ public class TaskManager {
         criteria.andGroupIdEqualTo(groupId);
 
         taskMapper.deleteByExample(example);
-        log.info("finish exec method[removeByChainAndGroup] chainId:{} groupId:{}", chainId, groupId);
+        log.info("finish exec method[removeByChainAndGroup] chainId:{} groupId:{}", chainId,
+            groupId);
 
     }
 }

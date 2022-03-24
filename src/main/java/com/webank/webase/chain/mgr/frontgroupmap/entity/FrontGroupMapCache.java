@@ -19,50 +19,56 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 
+@Slf4j
 @Component
 public class FrontGroupMapCache {
 
     @Autowired private TbFrontGroupMapMapper tbFrontGroupMapMapper;
 
-    private static Map<Integer, List<FrontGroup>> mapList = new ConcurrentHashMap<>();
+    private static Map<String, List<FrontGroup>> mapList = new ConcurrentHashMap<String, List<FrontGroup>>();
 
     /**
      * clear mapList.
      */
-    public void clearMapList(int chainId) {
+    public void clearMapList(String chainId) {
         mapList.remove(chainId);
     }
 
     /**
      * reset mapList.
      */
-    public Map<Integer, List<FrontGroup>> resetMapList(int chainId) {
-        mapList.put(chainId, this.tbFrontGroupMapMapper.selectByChainId(chainId));
+    public Map<String, List<FrontGroup>> resetMapList(String chainId) {
+        List<FrontGroup> frontGroupList = this.tbFrontGroupMapMapper.selectByChainId(chainId);
+        if (frontGroupList.size() > 0) {
+            mapList.put(chainId, frontGroupList);
+        }
+        log.info("get frontGroupList size is 0");
         return mapList;
     }
 
     /**
      * get mapList.
      */
-    public List<FrontGroup> getMapListByChainId(int chainId, int groupId) {
+    public List<FrontGroup> getMapListByChainId(String chainId, String groupId) {
         List<FrontGroup> list = getAllMap(chainId);
         if (list == null) {
             return null;
         }
         List<FrontGroup> map =
-                list.stream().filter(m -> groupId == m.getGroupId()).collect(Collectors.toList());
+                list.stream().filter(m -> m.getGroupId().equals(groupId)).collect(Collectors.toList());
         return map;
     }
 
     /**
      * get all mapList.
      */
-    public List<FrontGroup> getAllMap(int chainId) {
+    public List<FrontGroup> getAllMap(String chainId) {
         if (mapList == null || mapList.get(chainId) == null) {
             mapList = resetMapList(chainId);
         }

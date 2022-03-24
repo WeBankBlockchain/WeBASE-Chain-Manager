@@ -78,7 +78,7 @@ public class DataDeleteTask {
     /**
      * delete by groupId.
      */
-    private void deleteByGroupId(int chainId, int groupId) {
+    private void deleteByGroupId(String chainId, String groupId) {
         //delete block
         deleteBlock(chainId, groupId);
         //delete transHash
@@ -89,7 +89,7 @@ public class DataDeleteTask {
     /**
      * delete block.
      */
-    private void deleteBlock(int chainId, int groupId) {
+    private void deleteBlock(String chainId, String groupId) {
         log.debug("start deleteBlock. chainId:{},groupId:{}", chainId, groupId);
         try {
             Integer removeCount = blockService.remove(chainId, groupId, cProperties.getBlockRetainMax());
@@ -102,7 +102,7 @@ public class DataDeleteTask {
     /**
      * delete transHash.
      */
-    private void deleteTransaction(int chainId, int groupId) {
+    private void deleteTransaction(String chainId, String groupId) {
         log.debug("start deleteTransHash. chainId:{},groupId:{}", chainId, groupId);
         try {
 //            TransListParam queryParam = new TransListParam(null, null);

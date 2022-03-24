@@ -20,7 +20,7 @@ import lombok.Data;
 
 @Data
 public class ConsensusHandle {
-    private Integer groupId;
+    private String groupId;
     private String nodeType;
     private String signUserId;
     private String nodeId;

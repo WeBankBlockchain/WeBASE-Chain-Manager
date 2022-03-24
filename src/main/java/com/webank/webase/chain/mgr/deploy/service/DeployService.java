@@ -18,14 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
-import com.webank.webase.chain.mgr.util.FileUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
