@@ -98,8 +98,6 @@ public class PrecompiledService {
      */
     public void setConsensusStatus(ConsensusParam consensusParam) {
         log.info("start exec method[setConsensusStatus] param:{}", JsonTools.objToString(consensusParam));
-        //reset group list
-//        groupService.resetGroupList();
 
         //check params
         Set<String> nodeIds = checkBeforeSetConsensusStatus(consensusParam);
@@ -129,9 +127,6 @@ public class PrecompiledService {
             }
         }
 
-        //reset group list
-//        groupService.resetGroupList();
-
         log.info("finish exec method[setConsensusStatus]");
 
     }
@@ -151,9 +146,6 @@ public class PrecompiledService {
         Set<String> errorMessages = new HashSet<>();
         for (String node : nodeIds) {
             try {
-                //check task
-//                taskManager.requireNotFoundTaskByChainAndGroupAndNode(param.getChainId(), param.getGroupId(), node);
-
                 //handle by type
                 String nodeType = nodeService.getNodeType(param.getChainId(), param.getGroupId(), node);
                 if (PrecompiledUtils.NODE_TYPE_SEALER.equals(nodeType)) {
@@ -196,7 +188,6 @@ public class PrecompiledService {
     public void addObserverAndSaveSealerTask(String chainId, String groupId, String nodeId) {
         log.info("start exec method[addObserverAndSaveSealerTask] chain:{} chain:{} node:{}", chainId, groupId, nodeId);
 
-//        checkBeforeAddObserver(chainId, groupId, SetUtils.hashSet(nodeId));
         // Save it to the task table, and take it out periodically by the timed task for processing
         taskManager.saveTaskOfAddSealerNode(chainId, groupId, nodeId);
 
@@ -223,9 +214,6 @@ public class PrecompiledService {
         List<Object> funcParams = new ArrayList<>();
         funcParams.add(nodeId);
 
-        //generate group.x.genesis group.x.ini
-        //groupService.generateExistGroupToSingleNode(chainId, groupId, nodeId);
-
         //send transaction
         TransResultDto transResultDto = transService.transHandleWithSignForPrecompile(chainId, groupId, signUserId,
                 PrecompiledTypes.CONSENSUS, FUNC_ADDSEALER, funcParams);
@@ -236,8 +224,6 @@ public class PrecompiledService {
         this.handleTransactionReceipt(recoverReceipt);
         log.info("end addSealer recoverReceipt:{}", recoverReceipt);
 
-        //start group
-        //groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
     }
 
 
@@ -261,9 +247,6 @@ public class PrecompiledService {
         List<Object> funcParams = new ArrayList<>();
         funcParams.add(nodeId);
 
-        //generate group.x.genesis group.x.ini
-        //groupService.generateExistGroupToSingleNode(chainId, groupId, nodeId);
-
         //send transaction
         TransResultDto transResultDto = transService.transHandleWithSignForPrecompile(chainId, groupId, signUserId,
                 PrecompiledTypes.CONSENSUS, FUNC_ADDOBSERVER, funcParams);
@@ -273,8 +256,6 @@ public class PrecompiledService {
         BeanUtils.copyProperties(transResultDto, recoverReceipt);
         this.handleTransactionReceipt(recoverReceipt);
 
-        //start group
-        //groupService.startGroupIfNotRunning(chainId, nodeId, groupId);
     }
 
 
@@ -365,14 +346,6 @@ public class PrecompiledService {
      */
     public Set<String> checkBeforeAddSealer(String chainId, String groupId, Set<String> nodeIds) {
         log.info("start exec method[checkBeforeAddSealer]. chainId:{} groupId:{} nodeIds:{}", chainId, groupId, JsonTools.objToString(nodeIds));
-
-        //require nodeId is observer
-//        List<String> observerList = frontInterfaceService.getObserverList(chainId, groupId);
-//        if (CollectionUtils.isEmpty(observerList))
-//            throw new BaseException(ConstantCode.NOT_FOUND_OBSERVER_NODE);
-//        Set<String> nodeIdIsNotObserver = nodeIds.stream().filter(node -> !observerList.contains(node)).collect(Collectors.toSet());
-//        if (CollectionUtils.isNotEmpty(nodeIdIsNotObserver))
-//            throw new BaseException(ConstantCode.SET_CONSENSUS_STATUS_FAIL.attach(String.format("The types of these nodes are not observers:%s", JsonTools.objToString(nodeIdIsNotObserver))));
 
         //check blockNumber
         SyncStatus syncStatus = frontInterfaceService.getSyncStatus(chainId, groupId);

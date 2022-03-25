@@ -112,7 +112,7 @@ public class AgencyService {
                         .map(g -> g.getGroupId())
                         .distinct()
                         .collect(Collectors.toList());
-                List<TbContract> contractList = contractService.qureyContractList(new ContractParam(chainId, groupIdList));
+                List<TbContract> contractList = contractService.queryContractList(new ContractParam(chainId, groupIdList));
                 if (CollectionUtils.isEmpty(contractList)) continue;
 
                 //all owned contract
