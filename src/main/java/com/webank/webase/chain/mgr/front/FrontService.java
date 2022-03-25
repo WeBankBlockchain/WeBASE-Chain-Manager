@@ -488,6 +488,7 @@ public class FrontService {
      * @param failed
      * @return
      */
+    @Deprecated
     @Transactional(rollbackFor = Throwable.class)
     public boolean restart(String chainId, String nodeId, OptionType optionType, FrontStatusEnum before,
                            FrontStatusEnum success, FrontStatusEnum failed) {
