@@ -26,6 +26,7 @@ import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
 
 import lombok.extern.slf4j.Slf4j;
 
+@Deprecated
 @Component
 @Slf4j
 public class DeployService {
@@ -44,7 +45,7 @@ public class DeployService {
         // check image tar file when install with offline
         imageService.checkLocalImageByDockerImageTypeEnum(imageTypeEnum,deploy.getVersion());
         // generate config files and insert data to db
-        this.chainService.generateChainConfig(deploy, imageTypeEnum);
+//        this.chainService.generateChainConfig(deploy, imageTypeEnum);
     }
 
 

@@ -74,8 +74,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class TransService {
 
-    private BigInteger DEFAULT_BLOCK_NUMBER_INTERVAL = BigInteger.valueOf(3600 * 24 * 7);
-
     @Autowired
     private ContractManager contractManager;
     @Autowired
@@ -147,6 +145,7 @@ public class TransService {
         log.info("signMessage encryptType: {}", encryptType);
         TransactionEncoderService encoderService = new TransactionEncoderService(
             cryptoSuiteMap.get(encryptType));
+        // todo fix
         TransactionData extendedRawTransaction = new TransactionData();
         byte[] encodedTransaction = encoderService.encode(extendedRawTransaction);
         String encodedDataStr = Numeric.toHexString(encodedTransaction);
@@ -229,7 +228,7 @@ public class TransService {
         }
 
         byte[] encodedFunction = this.encodeFunction2ByteArr(contractAbi, funName, funcParams,
-            groupId, rspUserInfo.getEncryptType());
+            rspUserInfo.getEncryptType());
 
         //send transaction
         TransResultDto transResultDto = new TransResultDto();
@@ -241,6 +240,7 @@ public class TransService {
         // send transaction
         TransactionReceipt receipt = frontInterface.sendSignedTransaction(chainId, groupId, signMsg,
             true);
+        // todo fix copy
         BeanUtils.copyProperties(receipt, transResultDto);
         transResultDto.setConstant(false);
 
@@ -257,13 +257,12 @@ public class TransService {
      * @param funcParam
      * @return
      */
-    public byte[] encodeFunction2ByteArr(String abiStr, String funcName, List<Object> funcParam,
-        String groupId, Integer encryptType) {
+    public byte[] encodeFunction2ByteArr(String abiStr, String funcName, List<Object> funcParam, Integer encryptType) {
 
         funcParam = funcParam == null ? new ArrayList<>() : funcParam;
         this.validFuncParam(abiStr, funcName, funcParam, encryptType);
-        log.debug("abiStr:{} ,funcName:{},funcParam {},groupID {}", abiStr, funcName,
-            funcParam, groupId);
+        log.debug("abiStr:{} ,funcName:{},funcParam {}", abiStr, funcName,
+            funcParam);
         ABICodec abiCodec = new ABICodec(getCryptoSuite(encryptType), false);
         byte[] encodeFunction;
         try {
@@ -290,10 +289,9 @@ public class TransService {
         for (int i = 0; i < inputTypeList.size(); i++) {
             String type = inputTypeList.get(i).getType();
             if (type.startsWith("bytes")) {
+                // not support bytes [][]
                 if (type.contains("[][]")) {
-                    // todo bytes[][]
                     log.warn("validFuncParam param, not support bytes 2d array or more");
-//                    throw new FrontException(ConstantCode.FUNC_PARAM_BYTES_NOT_SUPPORT_HIGH_D);
                     return;
                 }
                 // if not bytes[], bytes or bytesN
