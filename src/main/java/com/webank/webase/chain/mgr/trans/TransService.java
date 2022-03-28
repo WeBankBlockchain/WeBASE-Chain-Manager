@@ -77,6 +77,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class TransService {
 
+    private BigInteger DEFAULT_BLOCK_NUMBER_INTERVAL = BigInteger.valueOf(3600 * 24 * 7);
+
     @Autowired
     private ContractManager contractManager;
     @Autowired
@@ -149,11 +151,11 @@ public class TransService {
             cryptoSuiteMap.get(encryptType));
 
         TransactionData extendedRawTransaction = new TransactionData();
-        extendedRawTransaction.setBlockLimit(DEFAULT_BLOCK_NUMBER_INTERVAL.bitLength());
+        extendedRawTransaction.setBlockLimit(DEFAULT_BLOCK_NUMBER_INTERVAL.intValue());
         extendedRawTransaction.setChainID(chainId);
         extendedRawTransaction.setGroupID(groupId);
         extendedRawTransaction.setTo(contractAddress);
-        extendedRawTransaction.setInput(data.getBytes());
+        extendedRawTransaction.setInput(Hex.decode(data));
 
         byte[] encodedTransaction = encoderService.encode(extendedRawTransaction);
         String encodedDataStr = Numeric.toHexString(encodedTransaction);
