@@ -134,6 +134,7 @@ public class ContractService {
         HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(tbFront.getFrontPeerName());
         HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, params);
         List<RspContractCompile> compileInfos = frontInterface.postToSpecificFront(
+            // random groupId
             "group0", tbFront.getFrontIp(), tbFront.getFrontPort(),
             FrontRestTools.URI_MULTI_CONTRACT_COMPILE, httpEntity, List.class);
 
@@ -338,13 +339,13 @@ public class ContractService {
     /**
      * query contract list.
      */
-    public List<TbContract> qureyContractList(ContractParam param) throws BaseException {
-        log.debug("start qureyContractList ContractListParam:{}", JsonTools.toJSONString(param));
+    public List<TbContract> queryContractList(ContractParam param) throws BaseException {
+        log.debug("start queryContractList ContractListParam:{}", JsonTools.toJSONString(param));
 
         // query contract list
         List<TbContract> listOfContract = this.tbContractMapper.selectByParam(param);
 
-        log.debug("end qureyContractList listOfContract:{}", JsonTools.toJSONString(listOfContract));
+        log.debug("end queryContractList listOfContract:{}", JsonTools.toJSONString(listOfContract));
         return listOfContract;
     }
 
@@ -480,9 +481,6 @@ public class ContractService {
         // check contract
         contractManager.verifyContractNotDeploy(inputParam.getChainId(), inputParam.getContractId(),
                 inputParam.getGroupId());
-        // check contractName
-//        contractManager.verifyContractNameNotExist(inputParam.getChainId(), inputParam.getGroupId(),
-//                inputParam.getContractPath(), contractName, inputParam.getContractId());
         // check front
         TbFront tbFront =
                 frontService.getByChainIdAndNodeId(inputParam.getChainId(), inputParam.getNodeId());

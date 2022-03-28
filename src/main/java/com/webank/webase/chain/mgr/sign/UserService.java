@@ -254,7 +254,6 @@ public class UserService {
         //new user param
         ReqNewUser reqNewUser = new ReqNewUser();
         reqNewUser.setAppId(group.getGroupName());
-//        reqNewUser.setChainId(chainId);
         reqNewUser.setSignUserName(adminUserName);
         reqNewUser.setDescription("admin user");
 

@@ -255,76 +255,11 @@ public class NodeService {
                 continue;
             }
             tbNode.setBlockNumber(nodeStatusInfo.getBlockNumber());
-//            tbNode.setPbftView(new BigInteger(String.valueOf(nodeStatusInfo.getPbftView())));
             tbNode.setNodeActive(nodeStatusInfo.getStatus() == 1 ? DataStatus.NORMAL.getValue() : DataStatus.INVALID.getValue());
             tbNode.setModifyTime(DateTime.now());
             //update node
             updateNode(tbNode);
         }
-//        // getPeerOfConsensusStatus
-//        List<PeerOfConsensusStatus> consensusList = getPeerOfConsensusStatus(chainId, groupId);
-//        if (Objects.isNull(consensusList)) {
-//            log.error("fail checkNodeStatus, consensusList is null");
-//            return;
-//        }
-//
-//        // getObserverList
-//        List<String> observerList = frontInterface.getObserverList(chainId, groupId);
-//        int nodeCount = CollectionUtils.size(consensusList) + CollectionUtils.size(observerList);
-//
-//        for (TbNode tbNode : nodeList) {
-//            String nodeId = tbNode.getNodeId();
-//            BigInteger localBlockNumber = BigInteger.valueOf(tbNode.getBlockNumber());
-//            BigInteger localPbftView = BigInteger.valueOf(tbNode.getPbftView());
-//            LocalDateTime modifyTime = CommonUtils.timestamp2LocalDateTime(tbNode.getModifyTime().getTime());
-//            LocalDateTime createTime = CommonUtils.timestamp2LocalDateTime(tbNode.getCreateTime().getTime());
-//
-//            Duration duration = Duration.between(modifyTime, LocalDateTime.now());
-//            Long subTime = duration.toMillis();
-//            if (subTime < (nodeCount * 1000 + EXT_CHECK_NODE_WAIT_MIN_MILLIS) && createTime.isBefore(modifyTime)) {
-//                log.warn("checkNodeStatus jump over. for time internal subTime:{}", subTime);
-//                return;
-//            }
-//
-//            int nodeType = 0; // 0-consensus;1-observer
-//            if (observerList != null) {
-//                nodeType = observerList.stream()
-//                        .filter(observer -> observer.equals(tbNode.getNodeId())).map(c -> 1)
-//                        .findFirst().orElse(0);
-//            }
-//
-//            BigInteger latestNumber = getBlockNumberOfNodeOnChain(chainId, groupId, nodeId);// blockNumber
-//            BigInteger latestView =
-//                    consensusList.stream().filter(cl -> nodeId.equals(cl.getNodeId()))
-//                            .map(c -> c.getView()).findFirst().orElse(BigInteger.ZERO);// pbftView
-//
-//            if (nodeType == 0) { // 0-consensus;1-observer
-//                if (localBlockNumber.equals(latestNumber) && localPbftView.equals(latestView)) {
-//                    log.warn(
-//                            "node[{}] is invalid. localNumber:{} chainNumber:{} localView:{} chainView:{}",
-//                            nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
-//                    tbNode.setNodeActive(DataStatus.INVALID.getValue());
-//                } else {
-//                    tbNode.setBlockNumber(latestNumber.longValue());
-//                    tbNode.setPbftView(latestView.longValue());
-//                    tbNode.setNodeActive(DataStatus.NORMAL.getValue());
-//                }
-//            } else { // observer
-//                if (!latestNumber.equals(frontInterface.getLatestBlockNumber(chainId, groupId))) {
-//                    log.warn(
-//                            "node[{}] is invalid. localNumber:{} chainNumber:{} localView:{} chainView:{}",
-//                            nodeId, localBlockNumber, latestNumber, localPbftView, latestView);
-//                    tbNode.setNodeActive(DataStatus.INVALID.getValue());
-//                } else {
-//                    tbNode.setBlockNumber(latestNumber.longValue());
-//                    tbNode.setPbftView(latestView.longValue());
-//                    tbNode.setNodeActive(DataStatus.NORMAL.getValue());
-//                }
-//            }
-//
-//            // update node
-//            updateNode(tbNode);
-//        }
     }
 
     /**
@@ -408,7 +343,7 @@ public class NodeService {
 
         List<String> result = sealerAndObserverOnGroup
                 .stream()
-                .filter(node -> nodeIdByAgency.contains(node))
+                .filter(nodeIdByAgency::contains)
                 .distinct()
                 .collect(Collectors.toList());
 
@@ -451,6 +386,7 @@ public class NodeService {
      * @param hostIndex
      * @param nodeId
      */
+    @Deprecated
     public static void mvNodeOnRemoteHost(String ip, String rooDirOnHost, String chainName, int hostIndex, String nodeId,
                                           String sshUser, int sshPort, String privateKey) {
         // create /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss as a parent
