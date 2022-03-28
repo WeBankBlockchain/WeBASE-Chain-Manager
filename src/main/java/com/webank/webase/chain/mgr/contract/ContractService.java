@@ -66,7 +66,10 @@ import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.sdk.codec.ABICodec;
+import org.fisco.bcos.sdk.codec.abi.FunctionEncoder;
 import org.fisco.bcos.sdk.codec.datatypes.Address;
+import org.fisco.bcos.sdk.codec.datatypes.Type;
 import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
@@ -131,7 +134,6 @@ public class ContractService {
         HttpHeaders httpHeaders = HttpEntityUtils.buildHttpHeaderByHost(tbFront.getFrontPeerName());
         HttpEntity httpEntity = HttpEntityUtils.buildHttpEntity(httpHeaders, params);
         List<RspContractCompile> compileInfos = frontInterface.postToSpecificFront(
-            //todo check groupId
             "group0", tbFront.getFrontIp(), tbFront.getFrontPort(),
             FrontRestTools.URI_MULTI_CONTRACT_COMPILE, httpEntity, List.class);
 
@@ -398,7 +400,6 @@ public class ContractService {
 
     /**
      * deploy by contractId.
-     * todo fix invalid signature, deploy success of /deploy api
      * @param req
      * @return
      */
@@ -413,17 +414,14 @@ public class ContractService {
         }
         // check parameters
         TbContract tbContract = contractManager.verifyContractId(req.getContractId());
-
         // check contract
         contractManager.verifyContractNotDeploy(tbContract.getChainId(), tbContract.getContractId(), tbContract.getGroupId());
-
         List<Object> params = req.getConstructorParams();
         if (CollectionUtils.isEmpty(params) && StringUtils.isNotBlank(req.getConstructorParamsJson())) {
             params = JsonTools.toJavaObjectList(req.getConstructorParamsJson(), Object.class);
         }
         if (CollectionUtils.isEmpty(params))
             params = Arrays.asList();
-
         ABIDefinition abiDefinition = null;
         try {
             // get constructor abi
@@ -440,14 +438,9 @@ public class ContractService {
         // Constructor encode
         String encodedConstructor = "";
         if (funcInputTypes.size() > 0) {
-            //todo check the class
-//            List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
-//            encodedConstructor = FunctionEncoder.encodeConstructor(finalInputs);
-
-//            List<Object> params = req.getFuncParam() == null ? new ArrayList<>() : req.getFuncParam();
-//            ABICodec abiCodec = new ABICodec(web3ApiService.getCryptoSuite(groupId), false);
-//            byte[] encodedConstructor;
-//             encodedConstructor = abiCodec.encodeConstructor(abiStr, bytecodeBin, params);
+            List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
+            encodedConstructor = FunctionEncoder.encodeConstructor(finalInputs).toString();
+//            ABICodec abiCodec = new ABICodec(transService.getCryptoSuite(1), false);
         }
         // data sign
         String data = tbContract.getBytecodeBin() + encodedConstructor;
