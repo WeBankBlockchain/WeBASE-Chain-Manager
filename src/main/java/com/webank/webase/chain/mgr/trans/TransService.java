@@ -43,6 +43,8 @@ import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.protocol.model.tars.TransactionData;
 import org.fisco.bcos.sdk.codec.ABICodec;
 import org.fisco.bcos.sdk.codec.ABICodecException;
@@ -61,6 +63,7 @@ import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.fisco.bcos.sdk.transaction.builder.TransactionBuilderInterface;
 import org.fisco.bcos.sdk.transaction.builder.TransactionBuilderService;
 import org.fisco.bcos.sdk.transaction.codec.encode.TransactionEncoderService;
+import org.fisco.bcos.sdk.transaction.manager.TransactionProcessorFactory;
 import org.fisco.bcos.sdk.utils.Hex;
 import org.fisco.bcos.sdk.utils.Numeric;
 import org.springframework.beans.BeanUtils;
@@ -73,6 +76,8 @@ import org.springframework.stereotype.Service;
 @Log4j2
 @Service
 public class TransService {
+
+    private BigInteger DEFAULT_BLOCK_NUMBER_INTERVAL = BigInteger.valueOf(3600 * 24 * 7);
 
     @Autowired
     private ContractManager contractManager;
@@ -141,12 +146,17 @@ public class TransService {
      */
     public String signMessage(String chainId, String groupId, String signUserId, int encryptType,
         String contractAddress, String data) throws BaseException {
-        String signMsg;
         log.info("signMessage encryptType: {}", encryptType);
         TransactionEncoderService encoderService = new TransactionEncoderService(
             cryptoSuiteMap.get(encryptType));
-        // todo fix
+
         TransactionData extendedRawTransaction = new TransactionData();
+        extendedRawTransaction.setBlockLimit(DEFAULT_BLOCK_NUMBER_INTERVAL.intValue());
+        extendedRawTransaction.setChainID(chainId);
+        extendedRawTransaction.setGroupID(groupId);
+        extendedRawTransaction.setTo(contractAddress);
+        extendedRawTransaction.setInput(Hex.decode(data));
+
         byte[] encodedTransaction = encoderService.encode(extendedRawTransaction);
         String encodedDataStr = Numeric.toHexString(encodedTransaction);
 
@@ -165,12 +175,12 @@ public class TransService {
         }
 
         SignatureResult signData = CommonUtils.stringToSignatureData(signDataStr, encryptType);
-        //todo check "attribute"
         byte[] signedMessage = encoderService.encodeToTransactionBytes(extendedRawTransaction,
             signData, 1);
-        signMsg = Numeric.toHexString(signedMessage);
-        return signMsg;
+        return Numeric.toHexString(signedMessage);
     }
+
+
 
 
     /**
@@ -242,7 +252,6 @@ public class TransService {
             true);
         // todo fix copy
         BeanUtils.copyProperties(receipt, transResultDto);
-        transResultDto.setConstant(false);
 
         log.debug("finish exec method[handleTransaction], result:{}",
             JsonTools.objToString(transResultDto));
