@@ -14,9 +14,13 @@
 
 package com.webank.webase.chain.mgr.trans.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import lombok.Data;
 
 import java.math.BigInteger;
+import org.fisco.bcos.sdk.model.MerkleProofUnit;
+import org.fisco.bcos.sdk.model.TransactionReceipt.Logs;
 
 /**
  * TransResultDto.
@@ -24,16 +28,24 @@ import java.math.BigInteger;
  */
 @Data
 public class TransResultDto {
-    private boolean constant;
-    private String queryInfo;
+
+    private String version;
+    private String contractAddress;
+    private String gasUsed;
+    private int status;
+    private String blockNumber;
+    private String output;
     private String transactionHash;
-    private String blockHash;
-    private BigInteger blockNumber;
-    private BigInteger gasUsed;
-    private String status;
+
+    @JsonProperty("hash")
+    private String receiptHash;
+
+    private List<Logs> logEntries;
+    private String input;
     private String from;
     private String to;
-    private String input;
-    private String output;
+    private List<MerkleProofUnit> transactionProof;
+    private List<MerkleProofUnit> receiptProof;
     private String message;
+
 }
