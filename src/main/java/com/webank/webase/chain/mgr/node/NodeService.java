@@ -17,9 +17,6 @@ import cn.hutool.core.date.DateTime;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.base.tools.CommonUtils;
-import com.webank.webase.chain.mgr.util.JsonTools;
-import com.webank.webase.chain.mgr.deploy.service.PathService;
 import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
 import com.webank.webase.chain.mgr.frontinterface.entity.PeerOfConsensusStatus;
@@ -31,10 +28,17 @@ import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbNodeMapper;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.util.PrecompiledUtils;
-import com.webank.webase.chain.mgr.util.SshUtil;
 import com.webank.webase.chain.mgr.util.ValidateUtil;
 import com.webank.webase.chain.mgr.util.entity.NodeStatusInfo;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,16 +47,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigInteger;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * services for node data.
@@ -378,33 +372,6 @@ public class NodeService {
         }
         return node;
     }
-
-    /**
-     * @param ip
-     * @param rooDirOnHost
-     * @param chainName
-     * @param hostIndex
-     * @param nodeId
-     */
-    @Deprecated
-    public static void mvNodeOnRemoteHost(String ip, String rooDirOnHost, String chainName, int hostIndex, String nodeId,
-                                          String sshUser, int sshPort, String privateKey) {
-        // create /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss as a parent
-        String chainDeleteRootOnHost = PathService.getChainDeletedRootOnHost(rooDirOnHost, chainName);
-        SshUtil.createDirOnRemote(ip, chainDeleteRootOnHost, sshUser, sshPort, privateKey);
-
-        // e.g. /opt/fisco/default_chain
-        String chainRootOnHost = PathService.getChainRootOnHost(rooDirOnHost, chainName);
-        // e.g. /opt/fisco/default_chain/node[x]
-        String src_nodeRootOnHost = PathService.getNodeRootOnHost(chainRootOnHost, hostIndex);
-
-        // move to /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss/[nodeid(128)]
-        String dst_nodeDeletedRootOnHost =
-                PathService.getNodeDeletedRootOnHost(chainDeleteRootOnHost, nodeId);
-        // move
-        SshUtil.mvDirOnRemote(ip, src_nodeRootOnHost, dst_nodeDeletedRootOnHost, sshUser, sshPort, privateKey);
-    }
-
 
     /**
      * @param chainId

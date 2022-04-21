@@ -14,18 +14,14 @@
 package com.webank.webase.chain.mgr.chain;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.enums.*;
+import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
+import com.webank.webase.chain.mgr.base.enums.DeployTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
-import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.contract.ContractService;
-import com.webank.webase.chain.mgr.deploy.config.NodeConfig;
-import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
-import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
-import com.webank.webase.chain.mgr.deploy.service.PathService;
-import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.front.entity.ClientVersionDTO;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
@@ -36,33 +32,29 @@ import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
-import com.webank.webase.chain.mgr.repository.bean.TbFront;
-import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import com.webank.webase.chain.mgr.task.TaskManager;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.util.NetUtils;
 import com.webank.webase.chain.mgr.util.NumberUtil;
 import com.webank.webase.chain.mgr.util.SshUtil;
-import com.webank.webase.chain.mgr.util.ThymeleafUtil;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * service of chain.
@@ -104,12 +96,6 @@ public class ChainService {
     private FrontInterfaceService frontInterface;
     @Autowired
     private ConstantProperties constantProperties;
-    @Autowired
-    private DeployShellService deployShellService;
-    @Autowired
-    private PathService pathService;
-    @Autowired
-    private DockerOptions dockerOptions;
 
 
     /**
@@ -172,13 +158,13 @@ public class ChainService {
     private void checkBeforeAddNewChain(ChainInfo chainInfo) {
         log.info("start checkBeforeAddNewChain chainInfo:{}", JsonTools.objToString(chainInfo));
         // check id
-        if (Objects.nonNull(tbChainMapper.selectByPrimaryKey(chainInfo.getChainId())))
+        if (Objects.nonNull(tbChainMapper.selectByPrimaryKey(chainInfo.getChainId()))) {
             throw new BaseException(ConstantCode.CHAIN_ID_EXISTS);
-
+        }
         // check name
-        if (tbChainMapper.countByName(chainInfo.getChainName()) > 0)
+        if (tbChainMapper.countByName(chainInfo.getChainName()) > 0) {
             throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS);
-
+        }
         Integer encryptType = null;// front's encrypt type same as chain(guomi or standard)
         String buildTime = null;// node's build time
 
@@ -469,24 +455,6 @@ public class ChainService {
         newChain.setModifyTime(new Date());
         newChain.setRemark(remark);
         return this.tbChainMapper.updateByPrimaryKeySelective(newChain) == 1;
-    }
-
-    /**
-     * @param ip
-     * @param rootDirOnHost
-     * @param chainName
-     */
-    public static void mvChainOnRemote(String ip, String rootDirOnHost, String chainName, String sshUser, int sshPort, String privateKey) {
-        // create /opt/fisco/deleted-tmp/ as a parent dir
-        String deleteRootOnHost = PathService.getDeletedRootOnHost(rootDirOnHost);
-        SshUtil.createDirOnRemote(ip, deleteRootOnHost, sshUser, sshPort, privateKey);
-
-        // like /opt/fisco/default_chain
-        String src_chainRootOnHost = PathService.getChainRootOnHost(rootDirOnHost, chainName);
-        // move to /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss
-        String dst_chainDeletedRootOnHost = PathService.getChainDeletedRootOnHost(rootDirOnHost, chainName);
-
-        SshUtil.mvDirOnRemote(ip, src_chainRootOnHost, dst_chainDeletedRootOnHost, sshUser, sshPort, privateKey);
     }
 
     /**
