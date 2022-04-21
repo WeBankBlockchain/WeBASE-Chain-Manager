@@ -16,38 +16,53 @@ package com.webank.webase.chain.mgr.group;
 import com.webank.webase.chain.mgr.agency.entity.RspAgencyVo;
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
-import com.webank.webase.chain.mgr.base.enums.*;
+import com.webank.webase.chain.mgr.base.enums.DataStatus;
+import com.webank.webase.chain.mgr.base.enums.FrontStatusEnum;
+import com.webank.webase.chain.mgr.base.enums.GroupType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
-import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.contract.ContractService;
-import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
-import com.webank.webase.chain.mgr.deploy.service.PathService;
 import com.webank.webase.chain.mgr.front.FrontManager;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.front.entity.RspEntityOfGroupPage;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
 import com.webank.webase.chain.mgr.frontgroupmap.entity.FrontGroupMapCache;
 import com.webank.webase.chain.mgr.frontinterface.FrontInterfaceService;
-import com.webank.webase.chain.mgr.frontinterface.entity.GenerateGroupInfo;
 import com.webank.webase.chain.mgr.group.entity.GroupGeneral;
-import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
-import com.webank.webase.chain.mgr.group.entity.ReqStartGroup;
 import com.webank.webase.chain.mgr.group.entity.RspGroupDetailVo;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.node.entity.NodeParam;
 import com.webank.webase.chain.mgr.node.entity.PeerInfo;
 import com.webank.webase.chain.mgr.node.entity.RspNodeInfoVo;
-import com.webank.webase.chain.mgr.repository.bean.*;
+import com.webank.webase.chain.mgr.repository.bean.TbChain;
+import com.webank.webase.chain.mgr.repository.bean.TbFront;
+import com.webank.webase.chain.mgr.repository.bean.TbGroup;
+import com.webank.webase.chain.mgr.repository.bean.TbGroupExample;
+import com.webank.webase.chain.mgr.repository.bean.TbNode;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontGroupMapMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbFrontMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.sign.UserService;
 import com.webank.webase.chain.mgr.task.TaskManager;
+import com.webank.webase.chain.mgr.util.JsonTools;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,18 +72,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
-import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * services for group data.
@@ -105,10 +108,6 @@ public class GroupService {
     private ContractService contractService;
     @Autowired
     private ConstantProperties constants;
-    @Autowired
-    private PathService pathService;
-    @Autowired
-    private DeployShellService deployShellService;
     @Autowired
     private GroupManager groupManager;
     @Autowired
@@ -499,78 +498,7 @@ public class GroupService {
 
     }
 
-    private void pullAllGroupFiles(String generateGroupId, TbFront tbFront) {
-        this.pullGroupStatusFile(generateGroupId, tbFront);
-        this.pullGroupConfigFile(generateGroupId, tbFront);
-    }
 
-
-    /**
-     * pull docker node's group config file and group_status file
-     * when generateGroup/operateGroup
-     *
-     * @include group.x.genesis, group.x.ini, .group_status
-     */
-    @Deprecated
-    private void pullGroupConfigFile(String generateGroupId, TbFront tbFront) {
-        // only support docker node/front
-        String chainName = tbFront.getChainName();
-        int nodeIndex = tbFront.getHostIndex();
-
-        // scp group config files from remote to local
-        // path pattern: /host.getRootDir/chain_name
-        // ex: (in the remote host) /opt/fisco/chain1
-        String remoteChainPath = PathService.getChainRootOnHost(tbFront.getRootOnHost(), chainName);
-        // ex: (in the remote host) /opt/fisco/chain1/node0/conf/group.1001.*
-        String remoteGroupConfSource = String.format("%s/node%s/conf/group.%s.*",
-                remoteChainPath, nodeIndex, generateGroupId);
-        // path pattern: /NODES_ROOT/chain_name/[ip]/node[index]
-        // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0
-        String localNodePath = pathService.getNodeRoot(chainName, tbFront.getFrontIp(), tbFront.getHostIndex()).toString();
-        // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0/conf/group.1001.*
-        Path localDst = Paths.get(String.format("%s/conf/", localNodePath, generateGroupId));
-        try {
-            if (Files.notExists(localDst)) {
-                Files.createDirectories(localDst);
-            }
-            // copy group config files to local node's conf dir
-            deployShellService.scp(ScpTypeEnum.DOWNLOAD, tbFront.getSshUser(),
-                    tbFront.getFrontIp(), tbFront.getSshPort(), remoteGroupConfSource, localDst.toAbsolutePath().toString());
-        } catch (Exception e) {
-            log.error("Backup group config files:[{} to {}] error.", remoteGroupConfSource, localDst.toAbsolutePath().toString(), e);
-        }
-    }
-
-
-    private void pullGroupStatusFile(String generateGroupId, TbFront tbFront) {
-        // only support docker node/front
-        String chainName = tbFront.getChainName();
-        int nodeIndex = tbFront.getHostIndex();
-        // scp group status files from remote to local
-        // path pattern: /host.getRootDir/chain_name
-        // ex: (in the remote host) /opt/fisco/chain1
-        String remoteChainPath = PathService.getChainRootOnHost(tbFront.getRootOnHost(), chainName);
-        // ex: (in the remote host) /opt/fisco/chain1/node0/data/group1001/.group_status
-        String remoteGroupStatusSource = String.format("%s/node%s/data/group%s/.group_status",
-                remoteChainPath, nodeIndex, generateGroupId);
-        // path pattern: /NODES_ROOT/chain_name/[ip]/node[index]
-        // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0
-        String localNodePath = pathService.getNodeRoot(chainName, tbFront.getFrontIp(), tbFront.getHostIndex()).toString();
-        // ex: (node-mgr local) ./NODES_ROOT/chain1/127.0.0.1/node0/data/group[groupId]/group.1001.*
-        Path localDst = Paths.get(String.format("%s/data/group%s/.group_status", localNodePath, generateGroupId));
-        // create data parent directory
-        try {
-            if (Files.notExists(localDst.getParent())) {
-                Files.createDirectories(localDst.getParent());
-            }
-            // copy group status file to local node's conf dir
-            deployShellService.scp(ScpTypeEnum.DOWNLOAD, tbFront.getSshUser(),
-                    tbFront.getFrontIp(), tbFront.getSshPort(), remoteGroupStatusSource, localDst.toAbsolutePath().toString());
-        } catch (Exception e) {
-            log.error("Backup group files:[{} to {}] error.", remoteGroupStatusSource, localDst.toAbsolutePath().toString(), e);
-        }
-
-    }
 
     /**
      * @param chainId
@@ -673,60 +601,6 @@ public class GroupService {
         log.info("success exec method[listGroupByChainAndAgencyId] chainId:{} agencyId:{} result:{}", chainId, agencyId, JsonTools.objToString(groupList));
         return groupList;
     }
-
-
-    /**
-     * @param chainId
-     * @param nodeId
-     * @param groupId
-     */
-//    public void startGroupIfNotRunning(String chainId, String nodeId, String groupId) {
-//        log.info("start exec method[startGroupIfNotRunning] chainId:{} nodeId:{} groupId:{}", chainId, nodeId, groupId);
-//        // get front
-//        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
-//        if (tbFront == null) {
-//            log.error("fail startGroupIfNotRunning node front not exists.");
-//            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
-//        }
-//
-//        //get group status
-//        Map<Integer, String> restGroupStatus = frontInterface.
-//                queryGroupStatus(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort(), Arrays.asList(groupId));
-//        log.info("restGroupStatus:{}", JsonTools.objToString(restGroupStatus));
-//
-//        //start group
-//        if (!GroupStatusEnum.RUNNING.getValue().equalsIgnoreCase(restGroupStatus.get(groupId)))
-//            operateGroup(chainId, nodeId, groupId, GroupOperateTypeEnum.START.getValue());
-//
-//        log.info("finish exec method[startGroupIfNotRunning] chainId:{} nodeId:{} groupId:{}", chainId, nodeId, groupId);
-//    }
-
-
-    /**
-     * @param chainId
-     * @param nodeId
-     * @param groupId
-     */
-//    public void stopGroupIfRunning(String chainId, String nodeId, String groupId) {
-//        log.info("start exec method[stopGroupIfRunning] chainId:{} nodeId:{} groupId:{}", chainId, nodeId, groupId);
-//        // get front
-//        TbFront tbFront = frontService.getByChainIdAndNodeId(chainId, nodeId);
-//        if (tbFront == null) {
-//            log.error("fail stopGroupIfRunning node front not exists.");
-//            throw new BaseException(ConstantCode.NODE_NOT_EXISTS);
-//        }
-//
-//        //get group status
-//        Map<Integer, String> restGroupStatus = frontInterface.
-//                queryGroupStatus(tbFront.getFrontPeerName(), tbFront.getFrontIp(), tbFront.getFrontPort(), Arrays.asList(groupId));
-//        log.info("restGroupStatus:{}", JsonTools.objToString(restGroupStatus));
-//
-//        //start group
-//        if (GroupStatusEnum.RUNNING.getValue().equalsIgnoreCase(restGroupStatus.get(groupId)))
-//            operateGroup(chainId, nodeId, groupId, GroupOperateTypeEnum.STOP.getValue());
-//
-//        log.info("finish exec method[stopGroupIfRunning] chainId:{} nodeId:{} groupId:{}", chainId, nodeId, groupId);
-//    }
 
 
     /**
