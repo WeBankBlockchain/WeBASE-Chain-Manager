@@ -68,16 +68,6 @@ constant:
   dockerRepository: fiscoorg/fisco-webase
   dockerRestartPeriodTime: 30000
   webaseSignAddress: ${WEBASE_SIGN:127.0.0.1:5004}
-  # SSH 免密登录的账号
-  sshDefaultUser: root
-  # SSH 服务的端口
-  sshDefaultPort: 22
-
-  # 链 chainId 和交易服地址的对应关系，可配置多行
-  # 1 表示链 id，127.0.0.1:5003 表示交易服地址
-  # 需要在部署链成功后，再启动交易服
-  transactionMap: # webase-transaction 配置，跟 ChainId 相关  TODO 已废弃，需移除
-    1: "127.0.0.1:5003"
 
 # executor config
 executor:

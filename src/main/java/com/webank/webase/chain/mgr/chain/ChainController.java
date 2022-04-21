@@ -146,57 +146,6 @@ public class ChainController extends BaseController {
     }
 
 
-//    @ApiOperation(value = "部署链")
-//    @PostMapping(value = "deploy")
-//    public BaseResponse deploy(
-//            @RequestBody @Valid ReqDeploy reqDeploy,
-//            BindingResult result) throws BaseException {
-//        checkBindResult(result);
-//
-//        Instant startTime = Instant.now();
-//        log.info("Start:[{}] deploy chain:[{}] ", startTime, JsonTools.toJSONString(reqDeploy));
-//
-//        try {
-//            // check chain name
-//            if (StringUtils.isBlank(reqDeploy.getChainName())) {
-//                reqDeploy.setChainName(String.valueOf(reqDeploy.getChainId()));
-//            }
-//
-//            //verify dockerImageType
-//            DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqDeploy.getDockerImageType());
-//
-//            // generate node config and return shell execution log
-//            this.deployService.deployChain(reqDeploy, imageTypeEnum);
-//
-//            // init host and start node
-//            this.nodeAsyncService.asyncDeployChain(reqDeploy, OptionType.DEPLOY_CHAIN, imageTypeEnum);
-//
-//            return new BaseResponse(ConstantCode.SUCCESS);
-//        } catch (BaseException e) {
-//            return new BaseResponse(e.getRetCode());
-//        }
-//    }
-
-//    @ApiOperation(value = "新增节点", hidden = true)
-//    @PostMapping(value = "addNode")
-//    public BaseResponse addNode(
-//            @RequestBody @Valid ReqAddNode reqAddNode,
-//            BindingResult result) throws BaseException {
-//        checkBindResult(result);
-//
-//        Instant startTime = Instant.now();
-//        log.info("Start:[{}] add node:[{}] ", startTime, JsonTools.toJSONString(reqAddNode));
-//
-//        try {
-//            // generate node config and return shell execution log
-////            this.deployService.addNode(reqAddNode);
-//
-//            return new BaseResponse(ConstantCode.SUCCESS);
-//        } catch (BaseException e) {
-//            return new BaseResponse(e.getRetCode());
-//        }
-//    }
-
     @ApiOperation(value = "查询单链信息")
     @GetMapping("/get/{chainId}")
     public BaseResponse getChain(@PathVariable("chainId") String chainId)
@@ -214,41 +163,4 @@ public class ChainController extends BaseController {
         return new BaseResponse(ConstantCode.CHAIN_ID_NOT_EXISTS);
     }
 
-//    @ApiOperation(value = "查询镜像获取方式")
-//    @GetMapping("/image/type")
-//    public BaseResponse getChain() throws BaseException {
-//
-//        Instant startTime = Instant.now();
-//        log.info("Start:[{}] get image type ", startTime);
-//
-//        return BaseResponse.success(DockerImageTypeEnum.getTypeMap());
-//    }
-//
-//    @ApiOperation(value = "节点机器初始化（拉镜像/确认端口未被占用）")
-//    @PostMapping("/initHostList")
-//    public BaseResponse initHostList(@RequestBody @Valid ReqDeploy reqDeploy,
-//                                     BindingResult result) throws BaseException {
-//        checkBindResult(result);
-//
-//        Instant startTime = Instant.now();
-//        log.info("Start:[{}] initHostList, param:[{}] ", startTime, JsonTools.toJSONString(reqDeploy));
-//
-//        try {
-//            //verify dockerImageType
-//            DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqDeploy.getDockerImageType());
-//
-//            // init host and start node
-//            List<RespInitHost> list = nodeAsyncService.initHostList(reqDeploy.getDeployHostList(), reqDeploy.getVersion(), imageTypeEnum);
-//
-//            BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-//            baseResponse.setData(list);
-//            return baseResponse;
-//        } catch (BaseException e) {
-//            log.error("fail initHostList with BaseException", e);
-//            return new BaseResponse(e.getRetCode());
-//        } catch (Exception e) {
-//            log.error("fail initHostList with Exception", e);
-//            return new BaseResponse(ConstantCode.HOST_INIT_NOT_SUCCESS);
-//        }
-//    }
 }
