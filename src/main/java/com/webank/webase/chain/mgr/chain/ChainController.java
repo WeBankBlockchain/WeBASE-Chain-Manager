@@ -18,32 +18,29 @@ import com.webank.webase.chain.mgr.base.code.ConstantCode;
 import com.webank.webase.chain.mgr.base.controller.BaseController;
 import com.webank.webase.chain.mgr.base.entity.BasePageResponse;
 import com.webank.webase.chain.mgr.base.entity.BaseResponse;
-import com.webank.webase.chain.mgr.base.enums.DockerImageTypeEnum;
 import com.webank.webase.chain.mgr.base.enums.EnumService;
-import com.webank.webase.chain.mgr.base.enums.OptionType;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
-import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.chain.entity.ReqDeleteChainVo;
-import com.webank.webase.chain.mgr.deploy.req.ReqAddNode;
-import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
-import com.webank.webase.chain.mgr.deploy.resp.RespInitHost;
-import com.webank.webase.chain.mgr.deploy.service.DeployService;
-import com.webank.webase.chain.mgr.deploy.service.NodeAsyncService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import javax.validation.Valid;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * chain controller
@@ -57,11 +54,6 @@ public class ChainController extends BaseController {
     private TbChainMapper tbChainMapper;
     @Autowired
     private ChainService chainService;
-
-    @Autowired
-    private DeployService deployService;
-    @Autowired
-    private NodeAsyncService nodeAsyncService;
     @Autowired
     private EnumService enumService;
 
@@ -154,57 +146,6 @@ public class ChainController extends BaseController {
     }
 
 
-//    @ApiOperation(value = "部署链")
-//    @PostMapping(value = "deploy")
-//    public BaseResponse deploy(
-//            @RequestBody @Valid ReqDeploy reqDeploy,
-//            BindingResult result) throws BaseException {
-//        checkBindResult(result);
-//
-//        Instant startTime = Instant.now();
-//        log.info("Start:[{}] deploy chain:[{}] ", startTime, JsonTools.toJSONString(reqDeploy));
-//
-//        try {
-//            // check chain name
-//            if (StringUtils.isBlank(reqDeploy.getChainName())) {
-//                reqDeploy.setChainName(String.valueOf(reqDeploy.getChainId()));
-//            }
-//
-//            //verify dockerImageType
-//            DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqDeploy.getDockerImageType());
-//
-//            // generate node config and return shell execution log
-//            this.deployService.deployChain(reqDeploy, imageTypeEnum);
-//
-//            // init host and start node
-//            this.nodeAsyncService.asyncDeployChain(reqDeploy, OptionType.DEPLOY_CHAIN, imageTypeEnum);
-//
-//            return new BaseResponse(ConstantCode.SUCCESS);
-//        } catch (BaseException e) {
-//            return new BaseResponse(e.getRetCode());
-//        }
-//    }
-
-//    @ApiOperation(value = "新增节点", hidden = true)
-//    @PostMapping(value = "addNode")
-//    public BaseResponse addNode(
-//            @RequestBody @Valid ReqAddNode reqAddNode,
-//            BindingResult result) throws BaseException {
-//        checkBindResult(result);
-//
-//        Instant startTime = Instant.now();
-//        log.info("Start:[{}] add node:[{}] ", startTime, JsonTools.toJSONString(reqAddNode));
-//
-//        try {
-//            // generate node config and return shell execution log
-////            this.deployService.addNode(reqAddNode);
-//
-//            return new BaseResponse(ConstantCode.SUCCESS);
-//        } catch (BaseException e) {
-//            return new BaseResponse(e.getRetCode());
-//        }
-//    }
-
     @ApiOperation(value = "查询单链信息")
     @GetMapping("/get/{chainId}")
     public BaseResponse getChain(@PathVariable("chainId") String chainId)
@@ -222,41 +163,4 @@ public class ChainController extends BaseController {
         return new BaseResponse(ConstantCode.CHAIN_ID_NOT_EXISTS);
     }
 
-//    @ApiOperation(value = "查询镜像获取方式")
-//    @GetMapping("/image/type")
-//    public BaseResponse getChain() throws BaseException {
-//
-//        Instant startTime = Instant.now();
-//        log.info("Start:[{}] get image type ", startTime);
-//
-//        return BaseResponse.success(DockerImageTypeEnum.getTypeMap());
-//    }
-//
-//    @ApiOperation(value = "节点机器初始化（拉镜像/确认端口未被占用）")
-//    @PostMapping("/initHostList")
-//    public BaseResponse initHostList(@RequestBody @Valid ReqDeploy reqDeploy,
-//                                     BindingResult result) throws BaseException {
-//        checkBindResult(result);
-//
-//        Instant startTime = Instant.now();
-//        log.info("Start:[{}] initHostList, param:[{}] ", startTime, JsonTools.toJSONString(reqDeploy));
-//
-//        try {
-//            //verify dockerImageType
-//            DockerImageTypeEnum imageTypeEnum = enumService.verifyDockerImageTypeEnumId(reqDeploy.getDockerImageType());
-//
-//            // init host and start node
-//            List<RespInitHost> list = nodeAsyncService.initHostList(reqDeploy.getDeployHostList(), reqDeploy.getVersion(), imageTypeEnum);
-//
-//            BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-//            baseResponse.setData(list);
-//            return baseResponse;
-//        } catch (BaseException e) {
-//            log.error("fail initHostList with BaseException", e);
-//            return new BaseResponse(e.getRetCode());
-//        } catch (Exception e) {
-//            log.error("fail initHostList with Exception", e);
-//            return new BaseResponse(ConstantCode.HOST_INIT_NOT_SUCCESS);
-//        }
-//    }
 }
