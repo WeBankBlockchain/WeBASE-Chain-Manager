@@ -22,8 +22,6 @@ import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
 import com.webank.webase.chain.mgr.chain.ChainService;
 import com.webank.webase.chain.mgr.util.JsonTools;
-import com.webank.webase.chain.mgr.deploy.service.PathService;
-import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
 import com.webank.webase.chain.mgr.front.entity.FrontParam;
 import com.webank.webase.chain.mgr.frontgroupmap.FrontGroupMapService;
@@ -89,10 +87,6 @@ public class FrontService {
     private ResetGroupListTask resetGroupListTask;
     @Autowired
     private FrontService frontService;
-    @Autowired
-    private DockerOptions dockerOptions;
-    @Autowired
-    private PathService pathService;
     @Autowired
     private ConstantProperties constantProperties;
     @Qualifier(value = "deployAsyncScheduler")
@@ -438,28 +432,28 @@ public class FrontService {
             log.warn("No front in chain:[{}]", chainId);
             return;
         }
-        Set<Integer> deleteHostId = new HashSet<>();
-        for (TbFront front : frontList) {
-
-            // delete on remote host
-            if (deleteHostId.contains(front.getExtHostId())) {
-                continue;
-            }
-
-            if (Objects.nonNull(front.getDockerPort()) && StringUtils.isNotBlank(front.getContainerName())) {
-                // remote docker container
-                this.dockerOptions.stop(front.getFrontIp(),
-                        front.getDockerPort(), front.getSshUser(),
-                        front.getSshPort(), front.getContainerName());
-
-
-                // move chain config files
-                ChainService.mvChainOnRemote(front.getFrontIp(), front.getRootOnHost(), front.getChainName(),
-                        front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
-                deleteHostId.add(front.getExtHostId());
-            }
-
-        }
+//        Set<Integer> deleteHostId = new HashSet<>();
+//        for (TbFront front : frontList) {
+//
+//            // delete on remote host
+//            if (deleteHostId.contains(front.getExtHostId())) {
+//                continue;
+//            }
+//
+//            if (Objects.nonNull(front.getDockerPort()) && StringUtils.isNotBlank(front.getContainerName())) {
+//                // remote docker container
+//                this.dockerOptions.stop(front.getFrontIp(),
+//                        front.getDockerPort(), front.getSshUser(),
+//                        front.getSshPort(), front.getContainerName());
+//
+//
+//                // move chain config files
+//                ChainService.mvChainOnRemote(front.getFrontIp(), front.getRootOnHost(), front.getChainName(),
+//                        front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
+//                deleteHostId.add(front.getExtHostId());
+//            }
+//
+//        }
 
         // remove front
         this.tbFrontMapper.deleteByChainId(chainId);
@@ -478,55 +472,6 @@ public class FrontService {
         log.info("Update front:[{}] status to:[{}]", frontId, newStatus.toString());
         return this.tbFrontMapper.updateStatus(frontId, newStatus.getId()) == 1;
     }
-
-    /**
-     * @param chainId
-     * @param nodeId
-     * @param optionType
-     * @param before
-     * @param success
-     * @param failed
-     * @return
-     */
-    @Deprecated
-    @Transactional(rollbackFor = Throwable.class)
-    public boolean restart(String chainId, String nodeId, OptionType optionType, FrontStatusEnum before,
-                           FrontStatusEnum success, FrontStatusEnum failed) {
-        TbChain chain = this.tbChainMapper.selectByPrimaryKey(chainId);
-        if (chain == null) {
-            log.error("Chain:[{}] not exists.", chainId);
-            return false;
-        }
-
-        log.info("Restart node:[{}:{}]", chainId, nodeId);
-        // get front
-        TbFront front = this.tbFrontMapper.getByChainIdAndNodeId(chainId, nodeId);
-        if (front == null) {
-            throw new BaseException(ConstantCode.NODE_ID_NOT_EXISTS_ERROR);
-        }
-
-        // set front status to stopped to avoid error for time task.
-        ((FrontService) AopContext.currentProxy()).updateStatus(front.getFrontId(), before);
-
-        log.info("Docker start container front id:[{}:{}].", front.getFrontId(), front.getContainerName());
-        try {
-            this.dockerOptions.run(
-                    front.getFrontIp(), front.getDockerPort(), front.getSshUser(), front.getSshPort(),
-                    front.getVersion(), front.getContainerName(),
-                    PathService.getChainRootOnHost(front.getRootOnHost(), front.getChainName()), front.getHostIndex());
-
-            threadPoolTaskScheduler.schedule(() -> {
-                // update front status
-                this.updateStatus(front.getFrontId(), success);
-            }, Instant.now().plusMillis(constantProperties.getDockerRestartPeriodTime()));
-            return true;
-        } catch (Exception e) {
-            log.error("Start front:[{}:{}] failed.", front.getFrontIp(), front.getHostIndex(), e);
-            ((FrontService) AopContext.currentProxy()).updateStatus(front.getFrontId(), failed);
-            throw new BaseException(ConstantCode.START_NODE_ERROR);
-        }
-    }
-
 
     /**
      * @param groupId

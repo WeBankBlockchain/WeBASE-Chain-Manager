@@ -14,18 +14,14 @@
 package com.webank.webase.chain.mgr.chain;
 
 import com.webank.webase.chain.mgr.base.code.ConstantCode;
-import com.webank.webase.chain.mgr.base.enums.*;
+import com.webank.webase.chain.mgr.base.enums.ChainStatusEnum;
+import com.webank.webase.chain.mgr.base.enums.DeployTypeEnum;
+import com.webank.webase.chain.mgr.base.enums.EncryptTypeEnum;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
 import com.webank.webase.chain.mgr.base.tools.CommonUtils;
-import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.chain.entity.ChainInfo;
 import com.webank.webase.chain.mgr.contract.ContractService;
-import com.webank.webase.chain.mgr.deploy.config.NodeConfig;
-import com.webank.webase.chain.mgr.deploy.req.ReqDeploy;
-import com.webank.webase.chain.mgr.deploy.service.DeployShellService;
-import com.webank.webase.chain.mgr.deploy.service.PathService;
-import com.webank.webase.chain.mgr.deploy.service.docker.DockerOptions;
 import com.webank.webase.chain.mgr.front.FrontService;
 import com.webank.webase.chain.mgr.front.entity.ClientVersionDTO;
 import com.webank.webase.chain.mgr.front.entity.FrontInfo;
@@ -36,33 +32,29 @@ import com.webank.webase.chain.mgr.group.GroupManager;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.node.NodeService;
 import com.webank.webase.chain.mgr.repository.bean.TbChain;
-import com.webank.webase.chain.mgr.repository.bean.TbFront;
-import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.repository.mapper.TbChainMapper;
 import com.webank.webase.chain.mgr.repository.mapper.TbGroupMapper;
 import com.webank.webase.chain.mgr.scheduler.ResetGroupListTask;
 import com.webank.webase.chain.mgr.task.TaskManager;
+import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.util.NetUtils;
 import com.webank.webase.chain.mgr.util.NumberUtil;
 import com.webank.webase.chain.mgr.util.SshUtil;
-import com.webank.webase.chain.mgr.util.ThymeleafUtil;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * service of chain.
@@ -104,12 +96,6 @@ public class ChainService {
     private FrontInterfaceService frontInterface;
     @Autowired
     private ConstantProperties constantProperties;
-    @Autowired
-    private DeployShellService deployShellService;
-    @Autowired
-    private PathService pathService;
-    @Autowired
-    private DockerOptions dockerOptions;
 
 
     /**
@@ -172,13 +158,13 @@ public class ChainService {
     private void checkBeforeAddNewChain(ChainInfo chainInfo) {
         log.info("start checkBeforeAddNewChain chainInfo:{}", JsonTools.objToString(chainInfo));
         // check id
-        if (Objects.nonNull(tbChainMapper.selectByPrimaryKey(chainInfo.getChainId())))
+        if (Objects.nonNull(tbChainMapper.selectByPrimaryKey(chainInfo.getChainId()))) {
             throw new BaseException(ConstantCode.CHAIN_ID_EXISTS);
-
+        }
         // check name
-        if (tbChainMapper.countByName(chainInfo.getChainName()) > 0)
+        if (tbChainMapper.countByName(chainInfo.getChainName()) > 0) {
             throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS);
-
+        }
         Integer encryptType = null;// front's encrypt type same as chain(guomi or standard)
         String buildTime = null;// node's build time
 
@@ -216,27 +202,6 @@ public class ChainService {
                     log.error("fail checkBeforeAddNewChain, frontIp:{},frontPort:{},front's buildTime not match first buildTime:{}", frontIp, frontPort, buildTime);
                     throw new BaseException(ConstantCode.BUILD_TIME_NOT_MATCH);
                 }
-            }
-
-            //check ssh
-            if (StringUtils.isNotBlank(front.getSshUser()) && Objects.nonNull(front.getSshPort())) {
-                //check ssh connect
-                SshUtil.verifyHostConnect(front.getFrontIp(), front.getSshUser(), front.getSshPort(), constantProperties.getPrivateKey());
-                //check port
-                Integer[] portArray = new Integer[]{front.getChannelPort(), front.getP2pPort(), front.getJsonrpcPort()};
-                Arrays.stream(portArray).forEach(port -> {
-                    if (Objects.nonNull(port)) {
-                        Pair<Boolean, Integer> portReachable = NetUtils.anyPortNotInUse(front.getFrontIp(),
-                                front.getSshUser(),
-                                front.getSshPort(),
-                                constantProperties.getPrivateKey(),
-                                port);
-                        if (portReachable.getKey()) {
-                            String message = String.format("Port:[%1d] is not in use on host :[%2s] failed", portReachable.getValue(), front.getFrontIp());
-                            throw new BaseException(ConstantCode.CHECK_PORT_NOT_SUCCESS.getCode(), message);
-                        }
-                    }
-                });
             }
         }
 
@@ -277,171 +242,10 @@ public class ChainService {
             // remove task
             taskManager.removeByChainId(chainId);
 
-//            log.info("Delete chain:[{}] config files", chainId);
-//            try {
-//                this.pathService.deleteChain(chain.getChainName());
-//            } catch (IOException e) {
-//                log.error("Delete chain:[{}:{}] files error", chainId, chain.getChainName(), e);
-//            }
         } finally {
             isDeleting.set(false);
         }
     }
-
-//    /**
-//     * @param deploy
-//     */
-//    @Transactional
-//    public void generateChainConfig(ReqDeploy deploy, DockerImageTypeEnum dockerImageTypeEnum) {
-//        // check deploy count
-//        int totalNodeNum = deploy.getDeployHostList().stream().mapToInt(ReqDeploy.DeployHost::getNum).sum();
-//        if (totalNodeNum < 2) {
-//            throw new BaseException(ConstantCode.TWO_NODES_AT_LEAST);
-//        }
-//
-//        log.info("Check chainId:[{}] exists....", deploy.getChainId());
-//        TbChain chain = tbChainMapper.selectByPrimaryKey(deploy.getChainId());
-//        if (chain != null) {
-//            throw new BaseException(ConstantCode.CHAIN_ID_EXISTS);
-//        }
-//
-//        log.info("Check chainName:[{}] exists....", deploy.getChainName());
-//        chain = tbChainMapper.getByChainName(deploy.getChainName());
-//        if (chain != null) {
-//            throw new BaseException(ConstantCode.CHAIN_NAME_EXISTS_ERROR);
-//        }
-//
-//        // get encrypt type
-//        EncryptTypeEnum encryptType = EncryptTypeEnum.getById(deploy.getEncryptType());
-//
-//        // build ipConf
-//        String[] ipConf = new String[CollectionUtils.size(deploy.getDeployHostList())];
-//        for (int i = 0; i < deploy.getDeployHostList().size(); i++) {
-//            ReqDeploy.DeployHost host = deploy.getDeployHostList().get(i);
-//            //check host connect
-//            SshUtil.verifyHostConnect(host.getIp(), host.getSshUser(), host.getSshPort(), constantProperties.getPrivateKey());
-//
-//            // check docker image exists
-//            if (DockerImageTypeEnum.MANUAL == dockerImageTypeEnum) {
-//                boolean exists = this.dockerOptions.checkImageExists(host.getIp(), host.getDockerDemonPort(),
-//                        host.getSshUser(), host.getSshPort(), deploy.getVersion());
-//                if (!exists) {
-//                    log.error("Docker image:[{}] not exists on host:[{}].", deploy.getVersion(), host.getIp());
-//                    throw new BaseException(ConstantCode.IMAGE_NOT_EXISTS_ON_HOST.attach(host.getIp()));
-//                }
-//            }
-//
-//            String ipConfigLine = String.format("%s:%s %s %s %s,%s,%s",
-//                    host.getIp(), host.getNum(), host.getExtOrgId(), ConstantProperties.DEFAULT_GROUP_ID,
-//                    host.getP2pPort(), host.getChannelPort(), host.getJsonrpcPort());
-//            ipConf[i] = ipConfigLine;
-//        }
-//
-//        // exec build_chain.sh shell script
-//
-//        String fiscoVersion = StringUtils.removeStart(deploy.getVersion(), "v");
-//        deployShellService.execBuildChain(encryptType, ipConf, fiscoVersion, deploy.getChainName());
-//
-//        try {
-//            // generate chain config
-//            ((ChainService) AopContext.currentProxy()).initChainDbData(encryptType, deploy.getVersion(), deploy);
-//        } catch (Exception e) {
-//            log.error("Init chain:[{}] data error. remove generated files:[{}]",
-//                    deploy.getChainName(), this.pathService.getChainRoot(deploy.getChainName()), e);
-//            try {
-//                this.pathService.deleteChain(deploy.getChainName());
-//            } catch (IOException ex) {
-//                log.error("Delete chain directory error when init chain data throws an exception.", e);
-//                throw new BaseException(ConstantCode.DELETE_CHAIN_ERROR,
-//                        "Delete chain directory error when init chain data throws an exception");
-//            }
-//            throw e;
-//        }
-//    }
-//
-//    /**
-//     * @param encryptTypeEnum
-//     * @param version
-//     * @param reqDeploy
-//     */
-//    @Transactional
-//    public void initChainDbData(EncryptTypeEnum encryptTypeEnum, String version, ReqDeploy reqDeploy) {
-//        // insert chain
-//        final TbChain newChain = ((ChainService) AopContext.currentProxy())
-//                .insert(reqDeploy.getChainId(), reqDeploy.getChainName(), reqDeploy.getDescription(),
-//                        version, encryptTypeEnum, ChainStatusEnum.INITIALIZED, reqDeploy.getConsensusType(),
-//                        reqDeploy.getStorageType(), DeployTypeEnum.API);
-//
-//        // save group if new , default node count = 0
-//        groupManager.saveGroup("", null, ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId(), null, 0, "deploy", GroupType.DEPLOY.getValue());
-//
-//        // insert default group
-//        Map<String, AtomicInteger> ipIndexMap = new HashMap<>();
-//        for (ReqDeploy.DeployHost deployHost : reqDeploy.getDeployHostList()) {
-//            List<Path> nodeOfIpList = null;
-//            try {
-//                nodeOfIpList = pathService.listHostNodesPath(newChain.getChainName(), deployHost.getIp());
-//            } catch (Exception e) {
-//                throw new BaseException(ConstantCode.LIST_HOST_NODE_DIR_ERROR, deployHost.getIp());
-//            }
-//
-//            List<Path> nodeOfHostList = new ArrayList<>();
-//            AtomicInteger index = ipIndexMap.get(deployHost.getIp());
-//            if (index != null) { // exists ip
-//                for (int i = 0; i < deployHost.getNum(); i++) {
-//                    nodeOfHostList.add(nodeOfIpList.get(index.get()));
-//                    index.incrementAndGet();
-//                }
-//            } else { // new ip
-//                for (int i = 0; i < deployHost.getNum(); i++) {
-//                    nodeOfHostList.add(nodeOfIpList.get(i));
-//                }
-//                ipIndexMap.put(deployHost.getIp(), new AtomicInteger(deployHost.getNum()));
-//            }
-//
-//            for (Path nodeRoot : CollectionUtils.emptyIfNull(nodeOfHostList)) {
-//                // get node properties
-//                NodeConfig nodeConfig = NodeConfig.read(nodeRoot, encryptTypeEnum);
-//
-//                // frontPort = 5002 + indexOnHost(0,1,2,3...)
-//                int frontPort = deployHost.getFrontPort() + (nodeConfig.getP2pPort() - deployHost.getP2pPort());
-//
-//                String frontDesc = String.format("front of chain:[%s] on host:[%s:%s]", newChain.getChainId(),
-//                        deployHost.getIp(), nodeConfig.getHostIndex());
-//                // pass object
-//                TbFront front = TbFront.build(newChain.getChainId(), nodeConfig.getNodeId(), deployHost.getIp(), frontPort,
-//                        String.valueOf(deployHost.getExtOrgId()), frontDesc, FrontStatusEnum.INITIALIZED, version,
-//                        DockerOptions.getContainerName(deployHost.getRootDirOnHost(), reqDeploy.getChainName(), nodeConfig.getHostIndex()),
-//                        nodeConfig.getJsonrpcPort(), nodeConfig.getP2pPort(), nodeConfig.getChannelPort(), reqDeploy.getChainName(),
-//                        deployHost.getExtCompanyId(), deployHost.getExtOrgId(), deployHost.getExtHostId(), nodeConfig.getHostIndex(),
-//                        deployHost.getSshUser(), deployHost.getSshPort(), deployHost.getDockerDemonPort(), deployHost.getRootDirOnHost(),
-//                        PathService.getNodeRootOnHost(PathService
-//                                .getChainRootOnHost(deployHost.getRootDirOnHost(), reqDeploy.getChainName()), nodeConfig.getHostIndex()));
-//
-//                this.frontService.insert(front);
-//
-//                // insert node and front group mapping
-//                String nodeName = NodeService.getNodeName(newChain.getChainId(), ConstantProperties.DEFAULT_GROUP_ID, nodeConfig.getNodeId());
-//                this.nodeService.insert(newChain.getChainId(), nodeConfig.getNodeId(), nodeName,
-//                        ConstantProperties.DEFAULT_GROUP_ID, deployHost.getIp(), nodeConfig.getP2pPort(),
-//                        nodeName, DataStatus.INVALID);
-//
-//                // insert front group mapping
-//                this.frontGroupMapService.newFrontGroup(newChain.getChainId(), front.getFrontId(), ConstantProperties.DEFAULT_GROUP_ID);
-//
-//                // generate front application.yml
-//                try {
-//                    ThymeleafUtil.newFrontConfig(nodeRoot, (byte) encryptTypeEnum.getType(), nodeConfig.getChannelPort(), frontPort);
-//                } catch (IOException e) {
-//                    throw new BaseException(ConstantCode.GENERATE_FRONT_YML_ERROR);
-//                }
-//            }
-//
-//            // update node count of goup
-//            TbGroup group = this.tbGroupMapper.selectByPrimaryKey(ConstantProperties.DEFAULT_GROUP_ID, newChain.getChainId());
-//            this.groupService.updateGroupNodeCount(newChain.getChainId(), ConstantProperties.DEFAULT_GROUP_ID, group.getNodeCount() + deployHost.getNum());
-//        }
-//    }
 
     @Transactional(propagation = Propagation.REQUIRED)
     public TbChain insert(String chainId, String chainName, String chainDesc, String version, EncryptTypeEnum encryptType, ChainStatusEnum status,
@@ -469,24 +273,6 @@ public class ChainService {
         newChain.setModifyTime(new Date());
         newChain.setRemark(remark);
         return this.tbChainMapper.updateByPrimaryKeySelective(newChain) == 1;
-    }
-
-    /**
-     * @param ip
-     * @param rootDirOnHost
-     * @param chainName
-     */
-    public static void mvChainOnRemote(String ip, String rootDirOnHost, String chainName, String sshUser, int sshPort, String privateKey) {
-        // create /opt/fisco/deleted-tmp/ as a parent dir
-        String deleteRootOnHost = PathService.getDeletedRootOnHost(rootDirOnHost);
-        SshUtil.createDirOnRemote(ip, deleteRootOnHost, sshUser, sshPort, privateKey);
-
-        // like /opt/fisco/default_chain
-        String src_chainRootOnHost = PathService.getChainRootOnHost(rootDirOnHost, chainName);
-        // move to /opt/fisco/deleted-tmp/default_chain-yyyyMMdd_HHmmss
-        String dst_chainDeletedRootOnHost = PathService.getChainDeletedRootOnHost(rootDirOnHost, chainName);
-
-        SshUtil.mvDirOnRemote(ip, src_chainRootOnHost, dst_chainDeletedRootOnHost, sshUser, sshPort, privateKey);
     }
 
     /**

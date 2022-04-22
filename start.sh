@@ -45,7 +45,7 @@ start(){
         echo "==============================================================================================="
     else
         echo -n "Starting Server $APP_MAIN Port $SERVER_PORT ..."
-        nohup $JAVA_HOME/bin/java -Djdk.tls.namedGroups="secp256k1" $JAVA_OPTS -cp $CLASSPATH $APP_MAIN >> $LOG_DIR/chain-manager.out 2>&1 &
+        nohup $JAVA_HOME/bin/java -Djdk.tls.namedGroups="secp256k1" $JAVA_OPTS -cp $CLASSPATH $APP_MAIN >> $LOG_DIR/server.out 2>&1 &
         
         count=1
         result=0
