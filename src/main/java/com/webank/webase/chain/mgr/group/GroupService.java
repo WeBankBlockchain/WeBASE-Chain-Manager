@@ -66,6 +66,7 @@ import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.sdk.client.protocol.response.Peers;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -337,8 +338,16 @@ public class GroupService {
         // get all local nodes
         List<TbNode> localNodeList = nodeService.queryByGroupId(chainId, groupId);
         // get peers on chain
-        PeerInfo[] peerArr = frontInterface.getPeersFromSpecificFront(frontPeerName, frontIp, frontPort, groupId);
-        List<PeerInfo> peerList = Arrays.asList(peerArr);
+        Peers.PeersInfo peersPeersInfo =
+            frontInterface.getPeersFromSpecificFront(frontPeerName, frontIp, frontPort,
+                groupId);
+        List<PeerInfo> peerList = new ArrayList<>();
+        for (int i = 0; i < peersPeersInfo.getPeers().size(); i++) {
+            PeerInfo peerInfo = new PeerInfo();
+            peerInfo.setNodeId(peersPeersInfo.getPeers().get(i).getP2pNodeID());
+            peerInfo.setIPAndPort(peersPeersInfo.getEndPoint());
+            peerList.add(peerInfo);
+        }
         // save new nodes
         for (String nodeId : groupPeerList) {
             long count = localNodeList.stream()
