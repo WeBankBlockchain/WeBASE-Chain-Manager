@@ -44,6 +44,7 @@ import com.webank.webase.chain.mgr.util.NumberUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.fisco.bcos.sdk.client.protocol.response.Peers;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,7 +118,8 @@ public class FrontService {
         String frontIp = frontInfo.getFrontIp();
         Integer frontPort = frontInfo.getFrontPort();
         try {
-            groupIdList = frontInterface.getGroupListFromSpecificFront(frontPeerName, frontIp, frontPort);
+            groupIdList = frontInterface.getGroupListFromSpecificFront(frontPeerName, frontIp,
+                frontPort);
         } catch (Exception e) {
             log.error("fail newFront, frontIp:{},frontPort:{}", frontIp, frontPort);
             throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
@@ -125,19 +127,19 @@ public class FrontService {
         // check front not exist
         String newNodeId = null;
         if (CollectionUtils.isNotEmpty(groupIdList)) {
-            SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontPeerName, frontIp, frontPort,
-                    groupIdList.get(0));
+            SyncStatus syncStatus = frontInterface.getSyncStatusFromSpecificFront(frontPeerName,
+                frontIp, frontPort,
+                groupIdList.get(0));
             newNodeId = syncStatus.getNodeId();
         }
-        if (StringUtils.isBlank(newNodeId)) //TODO 临时方案，最终等front有nodeInfo接口后改成调nodeInfo接口
-            newNodeId = frontInfo.getNodeId();
+//        if (StringUtils.isBlank(newNodeId)) //TODO 临时方案，最终等front有nodeInfo接口后改成调nodeInfo接口
+//            newNodeId = frontInfo.getNodeId();
 
-        if (StringUtils.isNotBlank(frontInfo.getNodeId()) && !newNodeId.equals(frontInfo.getNodeId()))
-            throw new BaseException(ConstantCode.PARAM_EXCEPTION.attach(String.format("input nodeId:%s but front connect the node is:%s", frontInfo.getNodeId(), newNodeId)));
+//        if (StringUtils.isNotBlank(frontInfo.getNodeId()) && !newNodeId.equals(frontInfo.getNodeId()))
+//            throw new BaseException(ConstantCode.PARAM_EXCEPTION.attach(String.format("input nodeId:%s but front connect the node is:%s", frontInfo.getNodeId(), newNodeId)));
 
         if (StringUtils.isBlank(newNodeId))
             throw new BaseException(ConstantCode.NODE_ID_EMPTY);
-
 
         frontManager.requireNotFoundFront(chainId, newNodeId, frontPeerName);
         requireNotFoundFront(frontIp, frontPort, frontPeerName);
@@ -163,26 +165,37 @@ public class FrontService {
                 String group = groupId;
                 // peer in group
                 List<String> groupPeerList =
-                        frontInterface.getGroupPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
+                    frontInterface.getGroupPeersFromSpecificFront(frontPeerName, frontIp, frontPort,
+                        group);
                 // get peers on chain
-                PeerInfo[] peerArr =
-                        frontInterface.getPeersFromSpecificFront(frontPeerName, frontIp, frontPort, group);
-                List<PeerInfo> peerList = Arrays.asList(peerArr);
+                Peers.PeersInfo peersPeersInfo =
+                    frontInterface.getPeersFromSpecificFront(frontPeerName, frontIp, frontPort,
+                        group);
+                List<PeerInfo> peerList = new ArrayList<>();
+                for (int i = 0; i < peersPeersInfo.getPeers().size(); i++) {
+                    PeerInfo peerInfo = new PeerInfo();
+                    peerInfo.setNodeId(peersPeersInfo.getPeers().get(i).getP2pNodeID());
+                    peerInfo.setIPAndPort(peersPeersInfo.getEndPoint());
+                    peerList.add(peerInfo);
+                }
+
                 // add group
-                groupManager.saveGroup("", null, group, chainId, null, groupPeerList.size(), "synchronous",
-                        GroupType.SYNC.getValue());
+                groupManager.saveGroup("", null, group, chainId, null, groupPeerList.size(),
+                    "synchronous",
+                    GroupType.SYNC.getValue());
                 // save front group map
                 frontGroupMapService.newFrontGroup(chainId, tbFront.getFrontId(), group);
                 // save nodes
                 for (String nodeId : groupPeerList) {
                     PeerInfo newPeer =
-                            peerList.stream().map(p -> CommonUtils.object2JavaBean(p, PeerInfo.class))
-                                    .filter(peer -> nodeId.equals(peer.getNodeId())).findFirst()
-                                    .orElseGet(() -> new PeerInfo(nodeId));
+                        peerList.stream().map(p -> CommonUtils.object2JavaBean(p, PeerInfo.class))
+                            .filter(peer -> nodeId.equals(peer.getNodeId())).findFirst()
+                            .orElseGet(() -> new PeerInfo(nodeId));
                     nodeService.addNodeInfo(chainId, group, newPeer);
                 }
                 // add sealer(consensus node) and observer in nodeList
-                refreshSealerAndObserverInNodeList(frontPeerName, frontIp, frontPort, chainId, group);
+                refreshSealerAndObserverInNodeList(frontPeerName, frontIp, frontPort, chainId,
+                    group);
             }
         }
 

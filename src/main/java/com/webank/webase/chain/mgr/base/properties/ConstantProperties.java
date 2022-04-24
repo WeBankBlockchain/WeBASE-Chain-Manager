@@ -107,6 +107,8 @@ public class ConstantProperties {
 
     private BigInteger transRetainMax = new BigInteger("10000");
 
+    private Map<Integer, String> transactionMap = new HashMap<>();
+
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
         log.info("Init constant properties, webaseSignAddress: [{}]", webaseSignAddress);

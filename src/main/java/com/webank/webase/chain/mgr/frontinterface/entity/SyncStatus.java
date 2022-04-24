@@ -13,6 +13,7 @@
  */
 package com.webank.webase.chain.mgr.frontinterface.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigInteger;
 import java.util.List;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class SyncStatus {
     private String genesisHash;
     private Boolean isSyncing;
     private String latestHash;
+    @JsonProperty("nodeID")
     private String nodeId;
     private Integer protocolId;
     private String txPoolSize;

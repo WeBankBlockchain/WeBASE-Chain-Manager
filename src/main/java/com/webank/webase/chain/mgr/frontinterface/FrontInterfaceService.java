@@ -52,6 +52,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
 import org.fisco.bcos.sdk.client.protocol.response.BcosBlock.Block;
 import org.fisco.bcos.sdk.client.protocol.response.ConsensusStatus.ConsensusStatusInfo;
+import org.fisco.bcos.sdk.client.protocol.response.Peers;
 import org.fisco.bcos.sdk.model.NodeVersion.ClientVersion;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.BeanUtils;
@@ -170,11 +171,11 @@ public class FrontInterfaceService {
     /**
      * get peers from specific front.
      */
-    public PeerInfo[] getPeersFromSpecificFront(String peerName, String frontIp, Integer frontPort,
+    public Peers.PeersInfo getPeersFromSpecificFront(String peerName, String frontIp, Integer frontPort,
         String groupId) {
         HttpEntity entity = HttpEntityUtils.buildHttpEntityByHost(peerName);
         return getFromSpecificFront(groupId, frontIp, frontPort, URI_PEERS, entity,
-            PeerInfo[].class);
+            Peers.PeersInfo.class);
     }
 
     /**
