@@ -104,8 +104,9 @@ public class ChainService {
     @Transactional
     public TbChain newChain(ChainInfo chainInfo) {
         log.info("start newChain chainInfo:{}", chainInfo);
+        //todo check 'checkBeforeAddNewChain'
         //check before new chain
-        checkBeforeAddNewChain(chainInfo);
+        //checkBeforeAddNewChain(chainInfo);
 
         // copy attribute
         TbChain tbChain = new TbChain();
@@ -134,6 +135,7 @@ public class ChainService {
         }
         log.info("newChain tbChain:{}", tbChain);
         // save chain info
+        //todo check try catch
         int result = tbChainMapper.insertSelective(tbChain);
         if (result == 0) {
             log.warn("fail newChain, after save, tbChain:{}", JsonTools.toJSONString(tbChain));
@@ -232,7 +234,7 @@ public class ChainService {
             // remove front group map
             this.frontGroupMapService.removeByChainId(chainId);
             // remove node
-            nodeService.deleteByChainId(chainId);
+            //nodeService.deleteByChainId(chainId);
             // remove contract
             contractService.deleteContractByChainId(chainId);
             // clear cache

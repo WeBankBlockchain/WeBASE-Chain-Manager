@@ -52,8 +52,10 @@ public class TransactionRestTools {
     public static final String URI_CONTRACT_DEPLOY = "%s/contract/deploy";
     public static final String URI_SEND_TRANSACTION = "%s/trans/send";
 
-    @Autowired private ConstantProperties constantProperties;
-    @Autowired private RestTemplate restTemplate;
+    @Autowired
+    private ConstantProperties constantProperties;
+    @Autowired
+    private RestTemplate restTemplate;
 
     /**
      *
