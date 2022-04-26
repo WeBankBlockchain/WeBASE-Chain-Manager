@@ -59,6 +59,8 @@ public class FrontRestTools {
     public static final String URI_QUERY_TRANSACTION = "trans/query-transaction";
     public static final String URI_CODE = "web3/code/%1s/%2s";
     public static final String URI_GROUP_PLIST = "web3/groupList";
+    public static final String URI_GENERATE_GROUP = "web3/generateGroup";
+    public static final String URI_OPERATE_GROUP = "web3/operateGroup/%1s";
     public static final String URI_NODEID_LIST = "web3/groupPeers";
     public static final String URI_GET_SEALER_LIST = "web3/sealerList";
     public static final String URI_GET_OBSERVER_LIST = "web3/observerList";
@@ -69,6 +71,11 @@ public class FrontRestTools {
     public static final String URI_SYSTEMCONFIG_BY_KEY = "web3/systemConfigByKey/%1s";
     public static final String URI_NODE_STATUS_LIST = "web3/nodeStatusList";
     public static final String URI_ENCRYPT_TYPE = "web3/encrypt";
+
+    public static final String URI_CHAIN = "chain";
+    public static final String URI_CHECK_NODE_PROCESS = "chain/checkNodeProcess";
+    public static final String URI_GET_GROUP_SIZE_INFOS = "chain/getGroupSizeInfos";
+    public static final String URI_FRONT_PERFORMANCE_RATIO = "performance";
 
     public static final String URI_MULTI_CONTRACT_COMPILE = "contract/multiContractCompile";
     public static final String URI_CONTRACT_COMPILE = "contract/contractCompile";
@@ -82,9 +89,11 @@ public class FrontRestTools {
 
     // 不需要在url中包含groupId的
     private static final List<String> URI_NOT_CONTAIN_GROUP_ID =
-            Arrays.asList(URI_MULTI_CONTRACT_COMPILE, URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION,
-                    URI_SYS_CONFIG_LIST, URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS,
-                    URI_SIGNED_TRANSACTION, URI_QUERY_TRANSACTION, URI_CONTRACT_COMPILE);
+        Arrays.asList(URI_MULTI_CONTRACT_COMPILE, URI_CONTRACT_DEPLOY, URI_SEND_TRANSACTION,
+            URI_SYS_CONFIG_LIST, URI_SYS_CONFIG, URI_CONSENSUS_LIST, URI_CONSENSUS,
+            URI_SIGNED_TRANSACTION, URI_QUERY_TRANSACTION, URI_CONTRACT_COMPILE, URI_CHAIN,
+            URI_FRONT_PERFORMANCE_RATIO, URI_CHECK_NODE_PROCESS, URI_GET_GROUP_SIZE_INFOS,
+            URI_SIGNED_TRANSACTION, URI_QUERY_TRANSACTION, URI_CONTRACT_COMPILE);
 
 
     @Qualifier(value = "genericRestTemplate")
@@ -133,7 +142,7 @@ public class FrontRestTools {
         int failCount = failInfo.getFailCount();
         Long subTime = Duration.between(failInfo.getLatestTime(), Instant.now()).toMillis();
         if (failCount > cproperties.getMaxRequestFail()
-                && subTime < cproperties.getSleepWhenHttpMaxFail()) {
+            && subTime < cproperties.getSleepWhenHttpMaxFail()) {
             return true;
         } else if (subTime > cproperties.getSleepWhenHttpMaxFail()) {
             // service is sleep
@@ -190,7 +199,8 @@ public class FrontRestTools {
     /**
      * build url of front service.
      */
-    private Pair<String, FrontGroup> buildFrontUrl(ArrayList<FrontGroup> list, String uri, HttpMethod httpMethod) {
+    private Pair<String, FrontGroup> buildFrontUrl(ArrayList<FrontGroup> list, String uri,
+        HttpMethod httpMethod) {
         Collections.shuffle(list);// random one
         log.debug("====================map list:{}", JsonTools.toJSONString(list));
         Iterator<FrontGroup> iterator = list.iterator();
@@ -200,7 +210,7 @@ public class FrontRestTools {
 
             uri = uriAddGroupId(frontGroup.getGroupId(), uri);// append groupId to uri
             String url = String.format(cproperties.getFrontUrl(), frontGroup.getFrontIp(),
-                    frontGroup.getFrontPort(), uri).replaceAll(" ", "");
+                frontGroup.getFrontPort(), uri).replaceAll(" ", "");
             iterator.remove();
 
             if (isServiceSleep(url, httpMethod.toString())) {
@@ -241,7 +251,7 @@ public class FrontRestTools {
      * post from front for entity.
      */
     public <T> T postForEntity(String chainId, String groupId, String uri, Object params,
-                               Class<T> clazz) {
+        Class<T> clazz) {
         return restTemplateExchange(chainId, groupId, uri, HttpMethod.POST, params, clazz);
     }
 
@@ -249,7 +259,7 @@ public class FrontRestTools {
      * delete from front for entity.
      */
     public <T> T deleteForEntity(String chainId, String groupId, String uri, Object params,
-                                 Class<T> clazz) {
+        Class<T> clazz) {
         return restTemplateExchange(chainId, groupId, uri, HttpMethod.DELETE, params, clazz);
     }
 
@@ -257,7 +267,7 @@ public class FrontRestTools {
      * restTemplate exchange.
      */
     private <T> T restTemplateExchange(String chainId, String groupId, String uri,
-                                       HttpMethod method, Object param, Class<T> clazz) {
+        HttpMethod method, Object param, Class<T> clazz) {
         List<FrontGroup> frontList = frontGroupMapCache.getMapListByChainId(chainId, groupId);
         if (frontList == null || frontList.size() == 0) {
             log.error("fail restTemplateExchange. frontList is empty");
@@ -272,13 +282,15 @@ public class FrontRestTools {
 
             try {
                 if (Objects.isNull(restTemplate) || Objects.isNull(url)) {
-                    log.error("fail restTemplateExchange, rest or url is null. groupId:{} url:{}", chainId, url);
+                    log.error("fail restTemplateExchange, rest or url is null. groupId:{} url:{}",
+                        chainId, url);
                     throw new BaseException(ConstantCode.SYSTEM_EXCEPTION);
                 }
 
                 FrontGroup frontGroup = pair.getRight();
                 HttpHeaders headers = HttpEntityUtils.instantiateHttpHeaders();
-                if (Objects.nonNull(frontGroup) && StringUtils.isNotBlank(frontGroup.getFrontPeerName())) {
+                if (Objects.nonNull(frontGroup) && StringUtils.isNotBlank(
+                    frontGroup.getFrontPeerName())) {
                     headers.set(HttpHeaders.HOST, frontGroup.getFrontPeerName());
                 }
                 HttpEntity entity = HttpEntityUtils.buildHttpEntity(headers, param);// build entity
@@ -316,7 +328,7 @@ public class FrontRestTools {
         if (errorMessage.contains("code")) {
             JsonNode errorInside = JsonTools.stringToJsonNode(errorMessage).get("error");
             throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
-                    errorInside.get("message").asText());
+                errorInside.get("message").asText());
         }
         throw new BaseException(error.get("code").asInt(), errorMessage);
     }
