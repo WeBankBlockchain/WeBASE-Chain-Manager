@@ -41,7 +41,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
 import java.time.Duration;
 import java.time.Instant;
@@ -87,29 +86,6 @@ public class GroupController extends BaseController {
 //        TbGroup tbGroup = groupService.generateToSingleNode(nodeId, req);
 //        baseResponse.setData(tbGroup);
 //        log.info("end generateToSingleNode useTime:{}",
-//                Duration.between(startTime, Instant.now()).toMillis());
-//        return baseResponse;
-//    }
-
-//    /**
-//     * generate group.
-//     */
-//    @PostMapping("/generate")
-//    public BaseResponse generateGroup(@RequestBody @Valid ReqGenerateGroup req,
-//                                      BindingResult result) throws BaseException {
-//        checkBindResult(result);
-//        Instant startTime = Instant.now();
-//        BaseResponse baseResponse = new BaseResponse(ConstantCode.SUCCESS);
-//        log.info("start generateGroup startTime:{} groupId:{}", startTime.toEpochMilli(),
-//                req.getGenerateGroupId());
-//        if (Objects.equals(ConstantProperties.DEFAULT_GROUP_ID, req.getGenerateGroupId())) {
-//            throw new BaseException(ConstantCode.CANNOT_USE_DEFAULT_GROUP_ID);
-//        }
-//        TbGroup tbGroup = groupService.generateGroup(req);
-//        baseResponse.setData(tbGroup);
-//
-//        resetGroupListTask.asyncResetGroupList();
-//        log.info("end generateGroup useTime:{}",
 //                Duration.between(startTime, Instant.now()).toMillis());
 //        return baseResponse;
 //    }

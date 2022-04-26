@@ -19,12 +19,12 @@ import java.util.List;
 
 @Data
 public class QueryContractParam {
-    private List<Integer> contractIdList;
+//    private List<Integer> contractIdList;
     private String chainId;
     private String groupId;
-    private String contractName;
-    private String contractAddress;
-    private Integer contractStatus;
+//    private String contractName;
+//    private String contractAddress;
+//    private Integer contractStatus;
     private Integer pageNumber;
     private Integer pageSize;
 }

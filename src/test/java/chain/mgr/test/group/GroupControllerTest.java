@@ -15,19 +15,12 @@
  */
 package chain.mgr.test.group;
 
-import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.Application;
-import com.webank.webase.chain.mgr.group.entity.ReqGenerateGroup;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
