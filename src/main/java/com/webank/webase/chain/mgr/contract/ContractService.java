@@ -349,6 +349,19 @@ public class ContractService {
         return listOfContract;
     }
 
+    /**
+     * query contract list.
+     */
+    public List<TbContract> queryContractListByChainIdAndGroupId(TbContractExample example) throws BaseException {
+        log.debug("start queryContractList ContractListParam:{}", JsonTools.toJSONString(example));
+
+        // query contract list
+        List<TbContract> listOfContract = this.tbContractMapper.selectByExample(example);
+
+        log.debug("end queryContractList listOfContract:{}", JsonTools.toJSONString(listOfContract));
+        return listOfContract;
+    }
+
 
     /**
      * query count of contract.

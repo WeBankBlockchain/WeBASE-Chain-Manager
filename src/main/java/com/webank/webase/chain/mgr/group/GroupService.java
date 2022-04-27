@@ -52,7 +52,6 @@ import com.webank.webase.chain.mgr.util.JsonTools;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -118,7 +117,6 @@ public class GroupService {
     private ThreadPoolTaskExecutor mgrAsyncExecutor;
     @Autowired
     private TaskManager taskManager;
-
 
     /**
      * query all group info.

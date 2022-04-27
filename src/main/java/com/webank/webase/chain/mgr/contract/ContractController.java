@@ -37,12 +37,14 @@ import com.webank.webase.chain.mgr.contract.entity.TransactionInputParam;
 import com.webank.webase.chain.mgr.front.entity.ContractManageParam;
 import com.webank.webase.chain.mgr.group.GroupService;
 import com.webank.webase.chain.mgr.repository.bean.TbContract;
+import com.webank.webase.chain.mgr.repository.bean.TbContractExample;
 import com.webank.webase.chain.mgr.repository.bean.TbContractPath;
 import com.webank.webase.chain.mgr.repository.bean.TbGroup;
 import com.webank.webase.chain.mgr.util.JsonTools;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -222,30 +224,19 @@ public class ContractController extends BaseController {
         log.info("start contractList. startTime:{} inputParam:{}", startTime.toEpochMilli(),
             JsonTools.toJSONString(inputParam));
 
-        //get groupId which status is normal
-        List<TbGroup> groupList = groupService.getGroupList(inputParam.getChainId(), DataStatus.NORMAL.getValue());
-        List<String> groupIds = null;
-        if (CollectionUtils.isNotEmpty(groupList))
-            groupIds = groupList.stream().map(g -> g.getGroupId()).distinct().collect(Collectors.toList());
-
-        // param
-        ContractParam queryParam = new ContractParam();
-        BeanUtils.copyProperties(inputParam, queryParam);
-        queryParam.setGroupIdList(groupIds);
-
-
-        int count = contractService.countOfContract(queryParam);
-        if (count > 0) {
-            Integer start = Optional.ofNullable(inputParam.getPageNumber())
-                .map(page -> (page - 1) * inputParam.getPageSize()).orElse(0);
-            queryParam.setStart(start);
-            queryParam.setFlagSortedByTime(SqlSortType.DESC.getValue());
-            // query list
-            List<TbContract> listOfContract = contractService.queryContractList(queryParam);
-
-            pagesponse.setData(listOfContract);
-            pagesponse.setTotalCount(count);
+        // query list
+        List<TbContract> listOfContract = new ArrayList<>();
+        try {
+            TbContractExample example = new TbContractExample();
+            TbContractExample.Criteria criteria = example.createCriteria();
+            criteria.andChainIdEqualTo(inputParam.getChainId());
+            criteria.andGroupIdEqualTo(inputParam.getGroupId());
+            listOfContract = contractService.queryContractListByChainIdAndGroupId(example);
+        } catch (Exception e) {
+            log.error("Exception is " + e.getMessage());
         }
+        pagesponse.setData(listOfContract);
+        pagesponse.setTotalCount(listOfContract.size());
 
         log.info("end contractList. useTime:{}",
             Duration.between(startTime, Instant.now()).toMillis());
