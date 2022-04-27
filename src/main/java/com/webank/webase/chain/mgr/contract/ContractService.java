@@ -352,7 +352,7 @@ public class ContractService {
     /**
      * query contract list.
      */
-    public List<TbContract> queryContractList1(TbContractExample example) throws BaseException {
+    public List<TbContract> queryContractListByChainIdAndGroupId(TbContractExample example) throws BaseException {
         log.debug("start queryContractList ContractListParam:{}", JsonTools.toJSONString(example));
 
         // query contract list

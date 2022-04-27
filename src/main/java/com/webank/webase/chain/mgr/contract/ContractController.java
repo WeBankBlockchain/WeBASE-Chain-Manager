@@ -231,7 +231,7 @@ public class ContractController extends BaseController {
             TbContractExample.Criteria criteria = example.createCriteria();
             criteria.andChainIdEqualTo(inputParam.getChainId());
             criteria.andGroupIdEqualTo(inputParam.getGroupId());
-            listOfContract = contractService.queryContractList1(example);
+            listOfContract = contractService.queryContractListByChainIdAndGroupId(example);
         } catch (Exception e) {
             log.error("Exception is " + e.getMessage());
         }
