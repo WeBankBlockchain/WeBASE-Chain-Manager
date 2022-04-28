@@ -3,11 +3,11 @@
         <v-content-head :headTitle="'群组管理'" @changGroup='changGroup'></v-content-head>
         <div class="module-wrapper">
             <h3 style="padding: 20px 0 0 40px;">群组列表</h3>
-            <div class="search-part" style="padding-top: 20px;">
+            <!-- <div class="search-part" style="padding-top: 20px;">
                 <div class="search-part-left">
                     <el-button type="primary" class="search-part-left-btn" @click="createGroup">新增群组</el-button>
                 </div>
-            </div>
+            </div> -->
             <div class="search-table">
                 <el-table :data="groupData" class="search-table-content" v-loading="loading">
                     <el-table-column
@@ -32,6 +32,9 @@
                         prop="createTime"
                         label="创建时间"
                         >
+                         <template slot-scope="scope">
+                            <span class="">{{scope.row.createTime|dateSet}}</span>
+                        </template>
                     </el-table-column>
                     
                 </el-table>

@@ -234,8 +234,8 @@ export default {
     -o-transition: width 0.5s;
 }
 .menu-hide {
-    /* width: 56px; */
-    width: 56px;
+    /* width: 54px; */
+    width: 54px;
     transition: width 0.5s;
     -moz-transition: width 0.5s;
     -webkit-transition: width 0.5s;
@@ -250,8 +250,8 @@ export default {
     -o-transition: width 0.5s;
 }
 .view-hide {
-    padding-left: 56px;
-    /* width: calc(100% - 56px); */
+    padding-left: 54px;
+    /* width: calc(100% - 54px); */
     transition: width 0.5s;
     -moz-transition: width 0.5s;
     -webkit-transition: width 0.5s;

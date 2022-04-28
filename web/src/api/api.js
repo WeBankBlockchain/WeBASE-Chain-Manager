@@ -57,7 +57,7 @@ export function getMointorInfo(data,list) {
 //前置节点服务器监控信息
 export function getRatio(data,list) {
     return get({
-        url: `${url.ORG_LIST}/front/ratio/${data}`,
+        url: `${url.ORG_LIST}/chain`,
         method: 'get',
         params: list
     })

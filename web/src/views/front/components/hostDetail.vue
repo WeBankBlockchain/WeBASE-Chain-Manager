@@ -48,7 +48,7 @@
             </div>
             <div class="metric-content">
                 <el-button-group class="tab-list">
-                    <el-button :class="tab==='hostInfo'?'active':''" @click="changeTab('hostInfo')">主机信息</el-button>
+                    <!-- <el-button :class="tab==='hostInfo'?'active':''" @click="changeTab('hostInfo')">主机信息</el-button> -->
                     <el-button :class="tab==='chainInfo'?'active':''" @click="changeTab('chainInfo')">节点信息</el-button>
                 </el-button-group>
                 <div class="tab-metric">
@@ -109,7 +109,7 @@ export default {
             reloadNum: 1,
             nodesReloadNum: 1,
             colNum: 12,
-            tab: "hostInfo",
+            tab: "chainInfo",
             chartParam: {
                 gap: 60,
                 beginDate: `${format(new Date().getTime(),'yyyy-MM-dd')}T${format(new Date(formatData()).getTime(),'HH:mm:ss')}`,
@@ -144,7 +144,7 @@ export default {
     },
 
     mounted() {
-        this.getChartData();
+        this.getHealthData();
     },
     methods: {
         changGroup(val){
