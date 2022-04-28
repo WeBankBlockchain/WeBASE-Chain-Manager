@@ -8,6 +8,8 @@ import ElementUI from 'element-ui';
 import VueClipboard from 'vue-clipboard2'
 import 'element-ui/lib/theme-chalk/index.css';
 import '@/assets/css/common.css'
+import filters from './util/filter.js'
+
 
 Vue.config.productionTip = false
 Vue.prototype.$axios = axios;

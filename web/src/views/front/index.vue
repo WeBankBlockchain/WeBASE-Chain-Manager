@@ -63,6 +63,9 @@
                         prop="createTime"
                         label="创建时间"
                         width="180">
+                            <template slot-scope="scope">
+                            <span class="">{{scope.row.createTime|dateSet}}</span>
+                        </template>
                     </el-table-column>
                     <el-table-column
                         fixed="right"
@@ -103,13 +106,13 @@ export default {
     },
     mounted: function(){
         if(localStorage.getItem('chainId')){
-            this.getFrontList();
+            //this.getFrontList();
             this.getGroupList()
         }
     },
     methods: {
         changGroup: function(){
-            this.getFrontList();
+            //this.getFrontList();
             this.getGroupList()
         },
         search: function(){
@@ -161,6 +164,7 @@ export default {
                     this.groupList = res.data.data;
                     if(res.data.data.length){
                         this.groupId = res.data.data[0].groupId
+                        this.getFrontList();
                     }
                 }else {
                     this.$message({

@@ -150,6 +150,9 @@
             width="150"
             align="center"
           >
+           <template slot-scope="scope">
+                            <span class="">{{scope.row.createTime|dateSet}}</span>
+                        </template>
             <!-- <template slot-scope="scope">
                             <span>{{format(scope.row.createTime,"HH:mm:ss") }}</span>
                         </template> -->

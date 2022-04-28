@@ -63,17 +63,20 @@
                         width='140'
                         >
                     </el-table-column>
-                    <el-table-column
+                    <!-- <el-table-column
                         prop="pbftView"
                         label="pbftView"
                         width='140'
                         >
-                    </el-table-column>
+                    </el-table-column> -->
                     <el-table-column
                         prop="createTime"
                         label="创建时间"
                         width='160'
                         >
+                            <template slot-scope="scope">
+                            <span class="">{{scope.row.createTime|dateSet}}</span>
+                        </template>
                     </el-table-column>
                 </el-table>
                 <el-pagination class="page" @size-change="handleSizeChange" 

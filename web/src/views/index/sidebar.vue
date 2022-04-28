@@ -17,14 +17,14 @@
     <div style="height: 100%;">
         <div style="height: 100%;background-color: #0c1220" class="sidebar-content">
             <div class="image-flex justify-center center" style="height: 54px;position:relative;" >
-                <img :src="maxLog" alt="" style="width:120px">
+                <img :src="maxLog" alt="" style="width:120px" :class="{'logClass':menuShow}">
                 <span class="sidebar-contract-icon">
                     <i class="el-icon-caret-left font-color-aeb1b5" @click="hideMune(true)" style="font-size: 18px;"></i>
                 </span>
             </div>
-            <!-- <div class="mini-sidebar-contract-icon" v-if="!menuShowC" style="padding-bottom:40px">
+            <div class="mini-sidebar-contract-icon" v-if="!menuShowC" style="padding-bottom:40px">
                 <i class="el-icon-caret-right font-color-aeb1b5" @click="hideMune(false)" style="font-size: 18px;"></i>
-            </div> -->
+            </div>
             <el-menu default-active="999" router class="el-menu-vertical-demo" text-color="#9da2ab" active-text-color="#37eef2" active-background-color="#1e293e" background-color="#0c1220" @select="select"  @open="handleOpen" @close="handleClose">
                 <el-menu-item index="/chain">
                     <template slot="title">
@@ -68,7 +68,8 @@ export default {
             activeIndex: 0,
             activeRoute: "",
             userRole: localStorage.getItem("root"),
-            routesList: []
+            routesList: [],
+            menuShow:false
         };
     },
     computed: {
@@ -195,5 +196,8 @@ export default {
 }
 .sidebar-contract-icon i {
     cursor: pointer;
+}
+.logClass{
+    width: 50px !important;
 }
 </style>

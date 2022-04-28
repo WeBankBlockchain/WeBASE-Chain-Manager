@@ -31,6 +31,9 @@
                         prop="createTime"
                         label="创建时间"
                         >
+                            <template slot-scope="scope">
+                            <span class="">{{scope.row.createTime|dateSet}}</span>
+                        </template>
                     </el-table-column>
                     <el-table-column
                         prop="description"
