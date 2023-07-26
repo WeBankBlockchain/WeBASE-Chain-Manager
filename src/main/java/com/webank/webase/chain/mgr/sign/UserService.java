@@ -7,6 +7,7 @@ import com.webank.webase.chain.mgr.base.entity.BaseResponse;
 import com.webank.webase.chain.mgr.base.enums.DataStatus;
 import com.webank.webase.chain.mgr.base.exception.BaseException;
 import com.webank.webase.chain.mgr.base.properties.ConstantProperties;
+import com.webank.webase.chain.mgr.repository.bean.TbUserExample.Criteria;
 import com.webank.webase.chain.mgr.util.JsonTools;
 import com.webank.webase.chain.mgr.chain.ChainManager;
 import com.webank.webase.chain.mgr.group.GroupManager;
@@ -326,5 +327,20 @@ public class UserService {
 
         log.info("success exec method [queryUserPage] result:{}", JsonTools.objToString(basePageResponse));
         return basePageResponse;
+    }
+
+    public long countByChainLocal(Integer chainId, Integer groupId) {
+        log.info("countByChainLocal start {}|{}", chainId, groupId);
+        TbUserExample example = new TbUserExample();
+        Criteria criteria = example.createCriteria();
+        if (chainId != null) {
+            criteria.andChainIdEqualTo(chainId);
+        }
+        if (groupId != null) {
+            criteria.andGroupIdEqualTo(groupId);
+        }
+        long userCount = userMapper.countByExample(example);
+        log.info("countByChainLocal start {}|{}, res:{}", chainId, groupId, userCount);
+        return userCount;
     }
 }
