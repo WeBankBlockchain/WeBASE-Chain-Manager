@@ -98,4 +98,17 @@ public class UserController extends BaseController {
         log.info("queryUserPage finish. pageNumber：{}  pageSize：{} chainIds:{} appIds：{} result:{}", pageNumber, pageSize, JsonTools.objToString(chainIds), JsonTools.objToString(appIds), JsonTools.objToString(pageResponse));
         return pageResponse;
     }
+
+    /**
+     * get user count
+     */
+    @ApiOperation(value = "count user in chainmgr", notes = "count user info ")
+    @GetMapping("/count")
+    public BaseResponse countByChainLocal(@RequestParam(value = "chainId") Integer chainId,
+                                          @RequestParam(value = "groupId") Integer groupId) throws BaseException {
+
+        log.info("countByChainLocal start {}|{}", chainId, groupId);
+        long count = userService.countByChainLocal(chainId, groupId);
+        return new BaseResponse(ConstantCode.SUCCESS, count);
+    }
 }
